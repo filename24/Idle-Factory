@@ -1,0 +1,37 @@
+# Packages
+node_modules/
+package-lock.json
+
+# Log files
+logs/*
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# Env
+.env
+config.*
+
+# Miscellaneous
+.tmp/
+.idea/
+.DS_Store
+
+# Database
+*.sqlite
+
+# Build data
+build/
+
+# yarn
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
