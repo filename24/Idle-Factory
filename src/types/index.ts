@@ -10,7 +10,7 @@ import {
   ShardingManagerOptions
 } from 'discord.js'
 import { ReportType } from '@utils/Constants'
-
+import { InitOptions } from 'i18next'
 export interface ErrorReportOptions {
   executer?:
     | Message<true>
@@ -32,6 +32,10 @@ export type IConfig = {
   repository?: string
 } & { logger: LoggerConfig } & { bot: BotConfig } & {
   report: ErrorReportConfig
+} & { i18n: i18nConfig }
+
+export interface i18nConfig {
+  options: InitOptions
 }
 
 export interface LoggerConfig {

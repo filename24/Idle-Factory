@@ -16,6 +16,8 @@ import EventManager from '@managers/EventManager'
 import ErrorManager from '@managers/ErrorManager'
 import DatabaseManager from '@managers/DatabaseManager'
 import InteractionManager from '@managers/InteractionManager'
+import i18nManager from '@managers/i18nManager'
+import { i18n } from 'i18next'
 
 const logger = new Logger('bot')
 
@@ -36,10 +38,13 @@ export default class BotClient extends Client {
   public error: ErrorManager = new ErrorManager(this)
   public database: DatabaseManager = new DatabaseManager(this)
   public interaction: InteractionManager = new InteractionManager(this)
+  public i18n: i18n = new i18nManager(this).i18n
+
   public dokdo: Dokdo = new Dokdo(this, {
     prefix: this.config.bot.prefix,
     noPerm: async (message) =>
-      message.reply('You do not have permission to use this command.')
+      message.reply('You do not have permission to use this command.'),
+    owners: config.bot.owners?.length === 0 ? [] : config.bot.owners
   })
 
   public constructor(options: ClientOptions) {
@@ -53,6 +58,7 @@ export default class BotClient extends Client {
     this.event.load()
     this.interaction.load()
     this.database.load()
+    new i18nManager(this).load()
 
     logger.info('Loading version data...')
     this.VERSION = config.BUILD_VERSION

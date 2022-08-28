@@ -3,11 +3,71 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
-  url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DatabaseURL")
 }
 
-model Dummy {
-  id   String @id @default(auto()) @map("_id") @db.ObjectId
-  name String
+model User {
+  id       String    @id
+  nickname String?
+  factory  Factory[]
+}
+
+model Guild {
+  id        String @id
+  name      String
+  lang      String @default("ko")
+  tax       Int    @default(0)
+  globalExp Int    @default(0)
+  flags     Int    @default(0)
+}
+
+model Factory {
+  id      String   @id
+  ownerID String
+  owners  String[] @default([])
+  exp     Int      @default(0)
+  flag    Int      @default(0)
+  owner   User?    @relation(fields: [ownerID], references: [id])
+  workers Worker[]
+  items   Item[]
+}
+
+model Item {
+  id        String  @id
+  factoryID String
+  name      String
+  count     Int     @default(0)
+  price     Int     @default(0)
+  flag      Int     @default(0)
+  factory   Factory @relation(fields: [factoryID], references: [id])
+}
+
+model Worker {
+  id           String      @id @default(cuid())
+  factoryID    String
+  attributesID String
+  job          String
+  name         String
+  exp          BigInt      @default(0)
+  factory      Factory     @relation(fields: [factoryID], references: [id])
+  attributes   Attributes?
+}
+
+model Attributes {
+  id           String @id @default(cuid())
+  workerID     String @unique
+  worker       Worker @relation(fields: [workerID], references: [id])
+  athletics    Int    @default(0) // 달리기
+  strength     Int    @default(0) // 힘
+  machinery    Int    @default(0) // 작동(?)
+  construction Int    @default(0) // 건설
+}
+
+model Notice {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  postedAt    DateTime @default(now())
+  updatedAt   DateTime @default(now())
 }

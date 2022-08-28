@@ -12,24 +12,13 @@
     "resolveJsonModule": true,
     "baseUrl": "src",
     "paths": {
-      "@types": [
-        "types/index"
-      ],
-      "@structures/*": [
-        "structures/*"
-      ],
-      "@managers/*": [
-        "managers/*"
-      ],
-      "@utils/*": [
-        "utils/*"
-      ]
-    },
+      "@types": ["types/index"],
+      "@structures/*": ["structures/*"],
+      "@managers/*": ["managers/*"],
+      "@utils/*": ["utils/*"],
+      "@locales/*": ["locales/*", "locales/index"]
+    }
   },
-  "include": [
-    "./src/**/*.ts"
-  ],
-  "exclude": [
-    "./src/**/example.*"
-  ]
+  "include": ["./src/**/*.ts"],
+  "exclude": ["./src/**/example.*"]
 }

@@ -1,6 +1,6 @@
-import { BaseCommand } from '@structures/Command'
+import { BaseCommand } from '../../structures/Command'
 import Discord from 'discord.js'
-import Embed from '@utils/Embed'
+import Embed from '../../utils/Embed'
 import { SlashCommandBuilder } from '@discordjs/builders'
 
 export default new BaseCommand(
@@ -10,28 +10,32 @@ export default new BaseCommand(
     aliases: ['핑', '측정', 'vld']
   },
   async (client, message, args) => {
-    let embed = new Embed(client, 'warn').setTitle('핑 측정중...')
+    let embed = new Embed(client, 'warn').setTitle(
+      client.i18n.t('command.ping.loading.title')
+    )
 
     let m = await message.reply({
       embeds: [embed]
     })
-    embed = new Embed(client, 'success').setTitle('PONG!').addFields([
-      {
-        name: '메세지 응답속도',
-        value: `${Number(m.createdAt) - Number(message.createdAt)}ms`,
-        inline: true
-      },
-      {
-        name: 'API 반응속도',
-        value: `${client.ws.ping}ms`,
-        inline: true
-      },
-      {
-        name: '업타임',
-        value: `<t:${(Number(client.readyAt) / 1000) | 0}:R>`,
-        inline: true
-      }
-    ])
+    embed = new Embed(client, 'success')
+      .setTitle(client.i18n.t('command.ping.success.title'))
+      .addFields([
+        {
+          name: client.i18n.t('command.ping.success.fields.message'),
+          value: `${Number(m.createdAt) - Number(message.createdAt)}ms`,
+          inline: true
+        },
+        {
+          name: client.i18n.t('command.ping.success.fields.api'),
+          value: `${client.ws.ping}ms`,
+          inline: true
+        },
+        {
+          name: client.i18n.t('command.ping.success.fields.uptime'),
+          value: `<t:${(Number(client.readyAt) / 1000) | 0}:R>`,
+          inline: true
+        }
+      ])
 
     m.edit({
       embeds: [embed]
@@ -40,7 +44,9 @@ export default new BaseCommand(
   {
     data: new SlashCommandBuilder()
       .setName('ping')
-      .setDescription('핑을 측정합니다.')
+      .setDescription('Check the latency of the bot.')
+      .setNameLocalization('ko', '핑')
+      .setDescriptionLocalization('ko', '핑을 측정합니다.')
       .toJSON(),
     options: {
       name: 'ping',
@@ -48,20 +54,20 @@ export default new BaseCommand(
     },
     async execute(client, interaction) {
       let PingEmbed = new Embed(client, 'success')
-        .setTitle('핑 측정')
+        .setTitle(client.i18n.t('command.ping.success.title'))
         .addFields([
           {
-            name: '메세지 응답속도',
+            name: client.i18n.t('command.ping.success.fields.message'),
             value: `${Number(Date.now()) - Number(interaction.createdAt)}ms`,
             inline: true
           },
           {
-            name: 'API 반응속도',
+            name: client.i18n.t('command.ping.success.fields.api'),
             value: `${client.ws.ping}ms`,
             inline: true
           },
           {
-            name: '업타임',
+            name: client.i18n.t('command.ping.success.fields.uptime'),
             value: `<t:${(Number(client.readyAt) / 1000) | 0}:R>`,
             inline: true
           }

@@ -1,8 +1,8 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
-// https://github.com/microsoft/vscode-dev-containers/tree/v0.238.1/containers/javascript-node-mongo
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.238.1/containers/javascript-node-postgres
 // Update the VARIANT arg in docker-compose.yml to pick a Node.js version
 {
-  "name": "Node.js & Mongo DB",
+  "name": "Node.js & PostgreSQL",
   "dockerComposeFile": "docker-compose.yml",
   "service": "app",
   "workspaceFolder": "/workspace",
@@ -12,12 +12,13 @@
     // Configure properties specific to VS Code.
     "vscode": {
       // Add the IDs of extensions you want installed when the container is created.
-      "extensions": ["mongodb.mongodb-vscode", "ms-azuretools.vscode-docker"]
+      "extensions": ["ms-azuretools.vscode-docker"]
     }
   },
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
-  "forwardPorts": [27017],
+  // This can be used to network with other containers or with the host.
+  "forwardPorts": [5432],
 
   // Use 'postCreateCommand' to run commands after the container is created.
   "postCreateCommand": "yarn install",
@@ -25,9 +26,8 @@
   // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
   "remoteUser": "node",
   "features": {
-    "docker-in-docker": "20.10",
-    "docker-from-docker": "20.10",
-    "github-cli": "latest",
-    "python": "latest"
+    "docker-in-docker": "latest",
+    "docker-from-docker": "latest",
+    "git": "latest"
   }
 }
