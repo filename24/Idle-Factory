@@ -1,5 +1,5 @@
-import { ChatInputCommandInteraction, Interaction, Message } from 'discord.js'
-import { i18n, TFunction } from 'i18next'
+import { ChatInputCommandInteraction, Message } from 'discord.js'
+import { TFunction } from 'i18next'
 import BotClient from './BotClient'
 import { InteractionData } from './Interaction'
 
