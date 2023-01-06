@@ -1,6 +1,8 @@
 import { execSync } from 'child_process'
 import { IConfig } from '@types'
 import { ReportType } from './utils/Constants'
+import { en, ko } from '@locales'
+import { IntentsBitField } from 'discord.js'
 
 const config: IConfig = {
   BUILD_NUMBER: execSync('git rev-parse --short HEAD').toString().trim(),
@@ -11,12 +13,15 @@ const config: IConfig = {
   bot: {
     sharding: false,
     options: {
-      intents: [130815],
+      intents: [
+        IntentsBitField.Flags.GuildMessages,
+        IntentsBitField.Flags.Guilds
+      ],
       allowedMentions: { parse: ['users', 'roles'], repliedUser: false }
     },
     token: '',
     owners: [],
-    prefix: '!',
+    prefix: '<@786891249005232179> ',
     cooldown: 2000
   },
   report: {
@@ -32,6 +37,19 @@ const config: IConfig = {
   logger: {
     level: 'chat',
     dev: false
+  },
+  i18n: {
+    options: {
+      lng: 'en',
+      resources: {
+        en: {
+          translation: en
+        },
+        ko: {
+          translation: ko
+        }
+      }
+    }
   }
 }
 

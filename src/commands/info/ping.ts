@@ -9,29 +9,29 @@ export default new BaseCommand(
     description: '핑을 측정합니다.',
     aliases: ['핑', '측정', 'vld']
   },
-  async (client, message, args) => {
+  async (client, message, t) => {
     let embed = new Embed(client, 'warn').setTitle(
-      client.i18n.t('command.ping.loading.title')
+      t('command.ping.loading.title')
     )
 
     let m = await message.reply({
       embeds: [embed]
     })
     embed = new Embed(client, 'success')
-      .setTitle(client.i18n.t('command.ping.success.title'))
+      .setTitle(t('command.ping.success.title'))
       .addFields([
         {
-          name: client.i18n.t('command.ping.success.fields.message'),
+          name: t('command.ping.success.fields.message'),
           value: `${Number(m.createdAt) - Number(message.createdAt)}ms`,
           inline: true
         },
         {
-          name: client.i18n.t('command.ping.success.fields.api'),
+          name: t('command.ping.success.fields.api'),
           value: `${client.ws.ping}ms`,
           inline: true
         },
         {
-          name: client.i18n.t('command.ping.success.fields.uptime'),
+          name: t('command.ping.success.fields.uptime'),
           value: `<t:${(Number(client.readyAt) / 1000) | 0}:R>`,
           inline: true
         }
@@ -52,22 +52,22 @@ export default new BaseCommand(
       name: 'ping',
       isSlash: true
     },
-    async execute(client, interaction) {
+    async execute(client, interaction, t) {
       let PingEmbed = new Embed(client, 'success')
-        .setTitle(client.i18n.t('command.ping.success.title'))
+        .setTitle(t('command.ping.success.title'))
         .addFields([
           {
-            name: client.i18n.t('command.ping.success.fields.message'),
+            name: t('command.ping.success.fields.message'),
             value: `${Number(Date.now()) - Number(interaction.createdAt)}ms`,
             inline: true
           },
           {
-            name: client.i18n.t('command.ping.success.fields.api'),
+            name: t('command.ping.success.fields.api'),
             value: `${client.ws.ping}ms`,
             inline: true
           },
           {
-            name: client.i18n.t('command.ping.success.fields.uptime'),
+            name: t('command.ping.success.fields.uptime'),
             value: `<t:${(Number(client.readyAt) / 1000) | 0}:R>`,
             inline: true
           }

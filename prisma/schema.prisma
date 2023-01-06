@@ -3,69 +3,65 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DatabaseURL")
 }
 
 model User {
-  id       String    @id
+  id       String    @id @map("_id")
   nickname String?
+  lang     String    @default("ko")
   factory  Factory[]
 }
 
 model Guild {
-  id        String @id
+  id        String @id @map("_id")
   name      String
   lang      String @default("ko")
-  tax       Int    @default(0)
-  globalExp Int    @default(0)
-  flags     Int    @default(0)
+  tax       Float  @default(0)
+  globalExp Float  @default(0)
+  flags     Float  @default(0)
 }
 
 model Factory {
-  id      String   @id
-  ownerID String
+  id      String   @id @map("_id")
+  ownerId String
   owners  String[] @default([])
-  exp     Int      @default(0)
-  flag    Int      @default(0)
-  owner   User?    @relation(fields: [ownerID], references: [id])
+  exp     Float    @default(0)
+  flag    Float    @default(0)
   workers Worker[]
   items   Item[]
+  owner   User     @relation(fields: [ownerId], references: [id])
 }
 
 model Item {
-  id        String  @id
-  factoryID String
+  id        String  @id @map("_id")
+  factoryId String
   name      String
-  count     Int     @default(0)
-  price     Int     @default(0)
-  flag      Int     @default(0)
-  factory   Factory @relation(fields: [factoryID], references: [id])
+  count     Float   @default(0)
+  price     Float   @default(0)
+  flag      Float   @default(0)
+  factory   Factory @relation(fields: [factoryId], references: [id])
 }
 
-model Worker {
-  id           String      @id @default(cuid())
+type Worker {
   factoryID    String
   attributesID String
   job          String
   name         String
-  exp          BigInt      @default(0)
-  factory      Factory     @relation(fields: [factoryID], references: [id])
+  exp          Float       @default(0)
   attributes   Attributes?
 }
 
-model Attributes {
-  id           String @id @default(cuid())
-  workerID     String @unique
-  worker       Worker @relation(fields: [workerID], references: [id])
-  athletics    Int    @default(0) // 달리기
-  strength     Int    @default(0) // 힘
-  machinery    Int    @default(0) // 작동(?)
-  construction Int    @default(0) // 건설
+type Attributes {
+  athletics    Float @default(0) // 달리기
+  strength     Float @default(0) // 힘
+  machinery    Float @default(0) // 작동(?)
+  construction Float @default(0) // 건설
 }
 
 model Notice {
-  id          String   @id @default(uuid())
+  id          String   @id @default(uuid()) @map("_id")
   title       String
   description String
   postedAt    DateTime @default(now())

@@ -12,14 +12,27 @@ export default new Event('interactionCreate', async (client, interaction) => {
   if (!interaction.inCachedGuild()) return
 
   if (interaction.isChatInputCommand()) {
-    if (interaction.user.bot) return
-
     const command = commandManager.get(interaction.commandName)
+    if (!command) return
+    // const guildData = await client.db.guild.findFirst({
+    //   where: {
+    //     id: interaction.guild.id
+    //   }
+    // })
+    // const userData = await client.db.user.findFirst({
+    //   where: {
+    //     id: interaction.user.id
+    //   }
+    // })
+    const i18n = await client.i18n.changeLanguage(
+      // userData?.lang ?? guildData?.lang
+      'ko'
+    )
     try {
       if (CommandManager.isSlash(command)) {
         command.slash
-          ? await command.slash.execute(client, interaction)
-          : await command.execute(client, interaction)
+          ? await command.slash.execute(client, interaction, i18n)
+          : await command.execute(client, interaction, i18n)
       }
       //await interaction.deferReply().catch(() => { })
     } catch (error: any) {

@@ -81,5 +81,4 @@ export type EmbedType =
   | 'info'
   | HexColorString
 
-export * from './structures'
 export * from './command'

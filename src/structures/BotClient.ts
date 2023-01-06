@@ -4,8 +4,6 @@ import { config as dotenvConfig } from 'dotenv'
 import Dokdo from 'dokdo'
 
 import Logger from '@utils/Logger'
-
-import { BaseCommand } from '@types'
 import { BaseInteraction } from './Interaction'
 import { Event } from './Event'
 
@@ -18,6 +16,7 @@ import DatabaseManager from '@managers/DatabaseManager'
 import InteractionManager from '@managers/InteractionManager'
 import i18nManager from '@managers/i18nManager'
 import { i18n } from 'i18next'
+import { Command } from './Command'
 
 const logger = new Logger('bot')
 
@@ -26,11 +25,12 @@ export default class BotClient extends Client {
   public readonly BUILD_NUMBER: string
   public readonly config = config
 
-  public commands: Collection<string, BaseCommand> = new Collection()
+  public commands: Collection<string, Command> = new Collection()
   public events: Collection<keyof ClientEvents, Event<keyof ClientEvents>> =
     new Collection()
   public errors: Collection<string, string> = new Collection()
-  public interactions: Collection<string, BaseInteraction> = new Collection()
+  public interactions: Collection<string | string[], BaseInteraction> =
+    new Collection()
   public db!: PrismaClient
 
   public command: CommandManager = new CommandManager(this)
@@ -44,7 +44,7 @@ export default class BotClient extends Client {
     prefix: this.config.bot.prefix,
     noPerm: async (message) =>
       message.reply('You do not have permission to use this command.'),
-    owners: config.bot.owners?.length === 0 ? [] : config.bot.owners
+    owners: config.bot.owners?.length === 0 ? undefined : config.bot.owners
   })
 
   public constructor(options: ClientOptions) {
@@ -77,18 +77,14 @@ export default class BotClient extends Client {
     if (status.includes('dev')) {
       logger.warn('Changed status to Developent mode')
       this.user?.setPresence({
-        activities: [
-          { name: `${this.config.bot.prefix}help | ${this.VERSION} : ${name}` }
-        ],
+        activities: [{ name: `/help | ${this.VERSION} : ${name}` }],
         status: 'dnd'
       })
     } else if (status.includes('online')) {
       logger.info('Changed status to Online mode')
 
       this.user?.setPresence({
-        activities: [
-          { name: `${this.config.bot.prefix}help | ${this.VERSION}` }
-        ],
+        activities: [{ name: `/help | ${this.VERSION}` }],
         status: 'online'
       })
     }

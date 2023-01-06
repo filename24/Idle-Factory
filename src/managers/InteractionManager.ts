@@ -35,14 +35,14 @@ export default class InteractionManager extends BaseManager {
                 // eslint-disable-next-line @typescript-eslint/no-var-requires
                 require(`../interactions/${folder}/${interactionFile}`).default
 
-              if (!interaction.name)
+              if (!interaction.customId)
                 return this.logger.debug(
-                  `interaction ${interactionFile} has no name. Skipping.`
+                  `interaction ${interactionFile} has no customId. Skipping.`
                 )
 
-              this.interactions.set(interaction.name, interaction)
+              this.interactions.set(interaction.customId, interaction)
 
-              this.logger.debug(`Loaded interaction ${interaction.name}`)
+              this.logger.debug(`Loaded interaction ${interaction.customId}`)
             } catch (error: any) {
               this.logger.error(
                 `Error loading interaction '${interactionFile}'.\n` +
@@ -52,8 +52,6 @@ export default class InteractionManager extends BaseManager {
               this.logger.debug(
                 `Succesfully loaded interactions. count: ${this.interactions.size}`
               )
-              // eslint-disable-next-line no-unsafe-finally
-              return this.interactions
             }
           })
         } catch (error: any) {
@@ -65,9 +63,10 @@ export default class InteractionManager extends BaseManager {
     } catch (error: any) {
       this.logger.error('Error fetching folder list.\n' + error.stack)
     }
+    return this.interactions.toJSON()
   }
 
-  public get(name: string): BaseInteraction | undefined {
-    return this.interactions.get(name)
+  public get(customId: string): BaseInteraction | undefined {
+    return this.interactions.find((_, id) => id.includes(customId))
   }
 }

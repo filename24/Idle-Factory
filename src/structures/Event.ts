@@ -1,5 +1,4 @@
 import { ClientEvents } from 'discord.js'
-import { EventFunction, EventOptions } from '@types'
 import BotClient from './BotClient'
 
 /**
@@ -43,4 +42,13 @@ export class Event<E extends keyof ClientEvents> {
       client.on(event, eventFunction)
     })
   }
+}
+
+export type EventFunction<E extends keyof ClientEvents> = (
+  client: BotClient,
+  ...args: ClientEvents[E]
+) => Promise<any>
+
+export interface EventOptions {
+  once: boolean
 }

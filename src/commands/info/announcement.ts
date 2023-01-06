@@ -9,10 +9,8 @@ export default new SlashCommand(
     .setDescription('Check the notice board')
     .setDescriptionLocalization('ko', '공지 게시판을 확인합니다')
     .toJSON(),
-  async (client, interaction) => {
-    const embed = new Embed(client, 'info').setTitle(
-      client.i18n.t('command.notice.title')
-    )
+  async (client, interaction, t) => {
+    const embed = new Embed(client, 'info').setTitle(t('command.notice.title'))
 
     await interaction.reply({
       ephemeral: true,

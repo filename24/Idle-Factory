@@ -4,15 +4,20 @@ import {
   REST,
   Routes
 } from 'discord.js'
-import { BaseCommand as Command, InteractionData } from '@types'
 
 import Logger from '@utils/Logger'
 import BaseManager from './BaseManager'
 import fs from 'fs'
 import path from 'path'
 import BotClient from '@structures/BotClient'
-import { BaseCommand, MessageCommand, SlashCommand } from '@structures/Command'
+import {
+  BaseCommand,
+  Command,
+  MessageCommand,
+  SlashCommand
+} from '@structures/Command'
 import { InteractionType } from '@utils/Constants'
+import { InteractionData } from '@structures/Interaction'
 
 export default class CommandManager extends BaseManager {
   private logger = new Logger('CommandManager')
@@ -24,7 +29,7 @@ export default class CommandManager extends BaseManager {
     this.commands = client.commands
   }
 
-  public load(commandPath: string = path.join(__dirname, '../commands')): void {
+  public load(commandPath: string = path.join(__dirname, '../commands')) {
     this.logger.debug('Loading commands...')
 
     const commandFolder = fs.readdirSync(commandPath)
@@ -58,8 +63,6 @@ export default class CommandManager extends BaseManager {
               this.logger.debug(
                 `Succesfully loaded commands. count: ${this.commands.size}`
               )
-              // eslint-disable-next-line no-unsafe-finally
-              return this.commands
             }
           })
         } catch (error: any) {
@@ -71,20 +74,11 @@ export default class CommandManager extends BaseManager {
     } catch (error: any) {
       this.logger.error('Error fetching folder list.\n' + error.stack)
     }
+    return this.commands.toJSON()
   }
 
   public get(commandName: string): Command | undefined {
-    let command = this.commands.get(commandName)
-
-    command =
-      command ??
-      this.commands
-        .filter(
-          (c) =>
-            CommandManager.isMessageCommand(c) &&
-            c.data.aliases?.includes(commandName)
-        )
-        .first()
+    const command = this.commands.get(commandName)
 
     return command
   }
@@ -95,11 +89,15 @@ export default class CommandManager extends BaseManager {
     this.commands.clear()
     try {
       this.load(commandPath)
+    } catch (e) {
+      this.logger.error(e as string)
+      return {
+        message: '[500] Error!'
+      }
     } finally {
       this.logger.debug('Succesfully reloaded commands.')
-      // eslint-disable-next-line no-unsafe-finally
-      return { message: '[200] Succesfully reloaded commands.' }
     }
+    return { message: '[200] Succesfully reloaded commands.' }
   }
 
   public static isSlash(command: Command | undefined): command is SlashCommand {
@@ -119,7 +117,7 @@ export default class CommandManager extends BaseManager {
   }
 
   public async slashCommandSetup(
-    guildID: string
+    guildID?: string
   ): Promise<ApplicationCommandDataResolvable[] | undefined> {
     this.logger.scope = 'CommandManager: SlashSetup'
     const rest = new REST().setToken(this.client.token!)

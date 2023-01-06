@@ -16,7 +16,7 @@ export const ko = {
       dev: {
         title: '이런...',
         description:
-          '현재 점검중임으로 해당 기능을 이용하실수 없습니다.\n자세한 내용은 `/announcement` 를 참고하세요.'
+          '현재 점검중임으로 해당 기능을 이용하실수 없습니다.\n자세한 내용은 `/공지사항` 를 참고하세요.'
       }
     }
   },
@@ -40,33 +40,17 @@ export const ko = {
         }
       }
     },
-    slashSetup: {
-      wait: {
-        description:
-          'Slash Command를 사용하려면 봇 초대할 떄 `applications.commands` 스코프를 사용하지 않았을 경우 해당기능을 이용할 수 없습니다. 만약 `applications.commands` 스코프를 안 할 경우 [여기를](https://discord.com/api/oauth2/authorize?client_id=${clientID}&scope=applications.commands) 클릭하여 허용해 주시기 바랍니다.',
-        title: '잠시만요!',
-        timeout: '시간 초과. 다시 시도해주세요...'
-      },
-      error: {
-        noPerm: '명령어 요청한 **${username}**만 사용할수 있어요.',
-        missingAccess:
-          '제 봇 권한이 부족합니다...\n> 필요한 권한\n`applications.commands`스코프'
-      },
-      loading: {
-        title: 'Slash Command 로딩중...',
-        name: '잠시만 기다려주십시요...'
-      },
-      success: {
-        title: '로딩완료!',
-        description:
-          '${size}개의 (/) 명령어를 생성했어요!\n이제 Idle Factory를 (/) 로 쓸수있다니 너무 기대되요!'
+    setup: {
+      available: {
+        title: '제가 아는 ${factoryName}이군요!',
+        description: '등록된 공장은 재등록 불가능합니다!'
       }
     },
     notice: {
       title: '공지사항'
     }
   }
-}
+} as const
 
 export const en = {
   main: {
@@ -74,4 +58,4 @@ export const en = {
       world: 'Hello world'
     }
   }
-}
+} as const

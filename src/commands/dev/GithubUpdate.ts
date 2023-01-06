@@ -16,7 +16,7 @@ export default new MessageCommand(
     description: '최신 업데이트 내용을 확인합니다.',
     aliases: ['업데이트', 'djqepdlxm', '촏차', 'check']
   },
-  async (client, message, args) => {
+  async (client, message, t) => {
     // @ts-ignore
     if (!client.dokdo.owners.includes(message.author.id))
       return message.reply(
