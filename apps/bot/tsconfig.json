@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./build",
+    "resolveJsonModule": true,
+    "baseUrl": "src",
+    "paths": {
+      "@types": ["types/index"],
+      "@structures/*": ["structures/*"],
+      "@managers/*": ["managers/*"],
+      "@utils/*": ["utils/*"],
+      "@locales": ["locales/index"]
+    }
+  },
+  "include": ["./src/**/*.ts"]
+}

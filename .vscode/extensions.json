@@ -1,7 +1,3 @@
 {
-  "recommendations": [
-    "esbenp.prettier-vscode",
-    "eamodio.gitlens",
-    "prisma.prisma"
-  ]
+  "recommendations": ["esbenp.prettier-vscode", "dbaeumer.vscode-eslint"]
 }
