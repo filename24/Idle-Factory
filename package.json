@@ -28,5 +28,11 @@
     "apps/**",
     "packages/**"
   ],
+  "engines": {
+    "node": ">=16.9"
+  },
+  "prisma": {
+    "seed": "node ./prisma/seed.js"
+  },
   "private": true
 }
