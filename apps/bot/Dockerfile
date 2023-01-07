@@ -3,21 +3,27 @@ FROM node:16-alpine
 WORKDIR /app
 
 RUN apk update && apk upgrade && \
-    apk add --no-cache bash git openssh python3 build-base
+    apk add --no-cache bash git openssh python3 build-base libc6-compat
 
-COPY package.json /app/
-COPY yarn.lock /app/
-COPY .yarn/ /app/.yarn/
-COPY .yarnrc.yml /app/
+COPY package.json .
+COPY .yarn/ ./.yarn
+COPY .yarnrc.yml .
+COPY yarn.lock .
 
-RUN yarn install
+COPY .git ./.git
+COPY prisma/ ./prisma
+
+COPY turbo.json .
+COPY packages/ ./packages
+COPY apps/bot ./apps/bot
+
+RUN yarn install --inline-builds
 RUN yarn cache clean
 
-COPY . /app/
+COPY tsup.config.ts .
+COPY tsconfig.json .
 
-RUN yarn build
+RUN yarn build --filter bot
 RUN yarn generate
 
-RUN rm src/ -rf
-
-CMD yarn start:node
+CMD yarn start --filter bot
