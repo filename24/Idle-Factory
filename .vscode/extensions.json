@@ -1,7 +1,8 @@
 {
   "recommendations": [
     "esbenp.prettier-vscode",
-    "eamodio.gitlens",
-    "prisma.prisma"
+    "dbaeumer.vscode-eslint",
+    "prisma.prisma",
+    "EditorConfig.EditorConfig"
   ]
 }

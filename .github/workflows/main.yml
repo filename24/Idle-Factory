@@ -1,44 +1,29 @@
-name: Build & lint project
+name: Build and type check
 on: [push, pull_request]
 
 jobs:
-  test:
-    name: Pretest
+  notify:
+    name: Cache conflict error
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Install Node v16
-        uses: actions/setup-node@v2
-        with:
-          node-version: 16
-          cache: yarn
-
-      - name: Copy config file
-        run: cp src/example.config.ts src/config.ts
-
-      - name: Install dependencies
-        run: yarn install --immutable
-
-      - name: Prebuild
-        run: yarn build
+      - uses: actions/checkout@v2
+      - name: Merge Conflict finder
+        uses: InfiniteTeam/action-conflict-finder@master
 
   lint:
-    name: ESLint type check
+    name: ESLint style check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Install Node v16
-        uses: actions/setup-node@v2
+      - name: Install Node v17
+        uses: actions/setup-node@v3
         with:
-          node-version: 16
-          cache: yarn
+          node-version: 17
 
       - name: Install dependencies
-        run: yarn install --immutable
+        run: yarn install --immutable --inline-builds
 
       - name: Run ESLint
         run: yarn lint:fix
@@ -46,49 +31,25 @@ jobs:
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_options: '--no-verify'
-          skip_dirty_check: false
-          skip_fetch: false
-          commit_message: 'style(eslint): Fixed eslint style format'
-  build:
-    name: Build and publish project
+          commit_message: 'style(eslint): fixed eslint style format'
+  appbuild:
+    name: Build apps
     runs-on: ubuntu-latest
-    needs: [test, lint]
+    needs: [lint]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Install Node v16
-        uses: actions/setup-node@v2
+      - name: Install Node v17
+        uses: actions/setup-node@v3
         with:
-          node-version: 16
-          cache: yarn
-
-      - name: Copy config file
-        run: cp src/example.config.ts src/config.ts
+          node-version: 17
 
       - name: Install dependencies
-        run: yarn install --immutable
+        run: yarn install --immutable --inline-builds
 
-      - name: Build
+      - name: Copy config file (bot)
+        run: cp apps/bot/src/example.config.ts apps/bot/src/config.ts
+
+      - name: Build apps
         run: yarn build
-
-      - name: Remove fake config.js
-        run: rm build/config.js
-
-      - name: Copy .gitignore file
-        run: cp .gitignore build/
-
-      - name: Deploy with gh-pages
-        if: ${{ github.ref_name == 'stable' }}
-        run: |
-          git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
-          npx gh-pages -d build -b "build" -m "build: Hosting build for branch ${GITHUB_REF##*/} - ${GITHUB_SHA::7}" -u "github-actions-bot <support+actions@github.com>"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: buildData
-          path: build

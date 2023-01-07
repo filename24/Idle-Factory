@@ -1,0 +1,51 @@
+{
+  "name": "idle-factory",
+  "repository": "https://github.com/InfiniteTeam/Idle-Factory",
+  "author": "__filename",
+  "license": "MIT",
+  "main": "build/index.js",
+  "scripts": {
+    "start": "yarn build && node .",
+    "start:node": "node .",
+    "dev": "yarn generate && ts-node-dev -r tsconfig-paths/register --transpile-only --respawn --rs --trace-warnings --trace-uncaught --exit-child -- ./src/index.ts",
+    "generate": "prisma generate",
+    "build": "tsc && tsc-alias",
+    "update": "yarn upgrade-interactive",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "prettier --write '**/*.ts' && eslint . --ext .ts --fix"
+  },
+  "dependencies": {
+    "@prisma/client": "^4.4.0",
+    "chalk": "4.1.2",
+    "discord.js": "^14.6.0",
+    "dokdo": "^0.6.2",
+    "dotenv": "^16.0.3",
+    "i18next": "^21.10.0",
+    "node-fetch": "2.6.7",
+    "uuid": "^9.0.0",
+    "winston": "^3.8.2"
+  },
+  "devDependencies": {
+    "@types/node-fetch": "^2.6.2",
+    "@types/uuid": "^8.3.4",
+    "eslint-plugin-unused-imports": "^2.0.0",
+    "prisma": "^4.4.0",
+    "ts-node-dev": "^2.0.0",
+    "tsc-alias": "^1.7.0",
+    "tsconfig-paths": "^4.1.0"
+  },
+  "eslintIgnore": [
+    "node_modules",
+    "src/commands/",
+    "example.*",
+    "eslintrc.*"
+  ],
+  "engines": {
+    "node": ">=16.9"
+  },
+  "prisma": {
+    "seed": "node ./prisma/seed.js"
+  },
+  "packageManager": "yarn@3.2.2",
+  "private": true
+}

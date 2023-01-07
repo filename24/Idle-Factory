@@ -1,9 +1,8 @@
 {
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "[prisma]": {
-    "editor.defaultFormatter": "Prisma.prisma"
-  },
   "editor.tabSize": 2,
-  "editor.formatOnPaste": true,
-  "editor.formatOnSave": true,
+  "files.eol": "\n",
+  "npm.packageManager": "yarn",
+  "search.exclude": {
+    "**/.yarn": true
+  }
 }
