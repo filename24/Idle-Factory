@@ -13,7 +13,7 @@ export default class i18nManager {
 
   public async load() {
     this.logger.info('Loading i18n...')
-    this.i18n.on('initialized', async (lang) => {
+    this.i18n.on('initialized', async () => {
       this.logger.info('Succesfully loaded i18n.')
     })
     await i18next.init(this.client.config.i18n.options)

@@ -562,7 +562,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:^18.11.0, @types/node@npm:^18.11.18":
+"@types/node@npm:*, @types/node@npm:^18.11.18":
   version: 18.11.18
   resolution: "@types/node@npm:18.11.18"
   checksum: 03f17f9480f8d775c8a72da5ea7e9383db5f6d85aa5fefde90dd953a1449bd5e4ffde376f139da4f3744b4c83942166d2a7603969a6f8ea826edfb16e6e3b49d
@@ -613,7 +613,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/eslint-plugin@npm:^5.40.0, @typescript-eslint/eslint-plugin@npm:^5.48.0":
+"@typescript-eslint/eslint-plugin@npm:^5.48.0":
   version: 5.48.0
   resolution: "@typescript-eslint/eslint-plugin@npm:5.48.0"
   dependencies:
@@ -636,7 +636,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/parser@npm:^5.40.0, @typescript-eslint/parser@npm:^5.48.0":
+"@typescript-eslint/parser@npm:^5.48.0":
   version: 5.48.0
   resolution: "@typescript-eslint/parser@npm:5.48.0"
   dependencies:
@@ -1531,7 +1531,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-config-prettier@npm:^8.5.0, eslint-config-prettier@npm:^8.6.0":
+"eslint-config-prettier@npm:^8.6.0":
   version: 8.6.0
   resolution: "eslint-config-prettier@npm:8.6.0"
   peerDependencies:
@@ -1624,7 +1624,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^8.25.0, eslint@npm:^8.31.0":
+"eslint@npm:^8.31.0":
   version: 8.31.0
   resolution: "eslint@npm:8.31.0"
   dependencies:
@@ -2199,27 +2199,19 @@ __metadata:
   resolution: "idle-factory@workspace:apps/bot"
   dependencies:
     "@prisma/client": ^4.4.0
-    "@types/node": ^18.11.0
     "@types/node-fetch": ^2.6.2
     "@types/uuid": ^8.3.4
-    "@typescript-eslint/eslint-plugin": ^5.40.0
-    "@typescript-eslint/parser": ^5.40.0
     chalk: 4.1.2
     discord.js: ^14.6.0
     dokdo: ^0.6.2
     dotenv: ^16.0.3
-    eslint: ^8.25.0
-    eslint-config-prettier: ^8.5.0
-    eslint-plugin-prettier: ^4.2.1
     eslint-plugin-unused-imports: ^2.0.0
     i18next: ^21.10.0
     node-fetch: 2.6.7
-    prettier: ^2.7.1
     prisma: ^4.4.0
     ts-node-dev: ^2.0.0
     tsc-alias: ^1.7.0
     tsconfig-paths: ^4.1.0
-    typescript: latest
     uuid: ^9.0.0
     winston: ^3.8.2
   languageName: unknown
@@ -3252,15 +3244,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:^2.7.1":
-  version: 2.8.2
-  resolution: "prettier@npm:2.8.2"
-  bin:
-    prettier: bin-prettier.js
-  checksum: 740c56c2128d587d656ea1dde9bc9c3503dfc94db4f3ac387259215eeb2e216680bdad9d18a0c9feecc6b42cfa188d6fa777df4c36c1d00cedd4199074fbfbd2
-  languageName: node
-  linkType: hard
-
 "prettier@npm:^2.8.1":
   version: 2.8.1
   resolution: "prettier@npm:2.8.1"
@@ -4182,7 +4165,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^4.9.4, typescript@npm:latest":
+"typescript@npm:^4.9.4":
   version: 4.9.4
   resolution: "typescript@npm:4.9.4"
   bin:
@@ -4202,7 +4185,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^4.9.4#~builtin<compat/typescript>, typescript@patch:typescript@latest#~builtin<compat/typescript>":
+"typescript@patch:typescript@^4.9.4#~builtin<compat/typescript>":
   version: 4.9.4
   resolution: "typescript@patch:typescript@npm%3A4.9.4#~builtin<compat/typescript>::version=4.9.4&hash=ad5954"
   bin:
