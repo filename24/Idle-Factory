@@ -1,5 +1,4 @@
 import { BaseCommand } from '../../structures/Command'
-import Discord from 'discord.js'
 import Embed from '../../utils/Embed'
 import { SlashCommandBuilder } from '@discordjs/builders'
 
@@ -14,7 +13,7 @@ export default new BaseCommand(
       t('command.ping.loading.title')
     )
 
-    let m = await message.reply({
+    const m = await message.reply({
       embeds: [embed]
     })
     embed = new Embed(client, 'success')
@@ -53,7 +52,7 @@ export default new BaseCommand(
       isSlash: true
     },
     async execute(client, interaction, t) {
-      let PingEmbed = new Embed(client, 'success')
+      const PingEmbed = new Embed(client, 'success')
         .setTitle(t('command.ping.success.title'))
         .addFields([
           {
