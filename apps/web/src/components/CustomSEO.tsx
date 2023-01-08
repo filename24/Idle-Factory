@@ -1,6 +1,6 @@
 import Head from 'next/head'
 
-const Name = 'Template'
+const Name = 'Idle Factory'
 
 const CustomSEO: React.FC<SeoProps> = ({
   title,
@@ -35,8 +35,8 @@ const CustomSEO: React.FC<SeoProps> = ({
 
 CustomSEO.defaultProps = {
   title: Name,
-  description: 'This site created with next.js',
-  keyword: '',
+  description: '모바일 게임의 종류인 Idle game 기반으로 개발된 게임봇',
+  keyword: '디시코드봇, Idle game, 게임봇',
   image: '',
 }
 
