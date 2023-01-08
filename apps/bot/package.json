@@ -1,8 +1,7 @@
 {
-  "name": "idle-factory",
+  "name": "bot",
   "repository": "https://github.com/InfiniteTeam/Idle-Factory",
   "author": "__filename",
-  "license": "MIT",
   "main": "build/index.js",
   "scripts": {
     "start": "yarn build && node .",

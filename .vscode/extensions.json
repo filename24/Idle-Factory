@@ -3,6 +3,7 @@
     "esbenp.prettier-vscode",
     "dbaeumer.vscode-eslint",
     "prisma.prisma",
-    "EditorConfig.EditorConfig"
+    "EditorConfig.EditorConfig",
+    "bradlc.vscode-tailwindcss"
   ]
 }
