@@ -27,5 +27,6 @@
         "argsIgnorePattern": "^_"
       }
     ]
-  }
+  },
+  "ignorePatterns": ["**/*.js"]
 }
