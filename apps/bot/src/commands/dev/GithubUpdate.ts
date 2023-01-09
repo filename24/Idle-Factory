@@ -23,7 +23,7 @@ export default new MessageCommand(
         `해당 명령어는 ${client.user?.username}의 주인이 사용할 수 있는 명령어입니다.`
       )
 
-    let LoadingEmbed = new Embed(client, 'warn')
+    const LoadingEmbed = new Embed(client, 'warn')
       .setTitle('잠시만 기다려주십시요')
       .setDescription('최신 업데이트 내용을 불러오는 중입니다...')
 
@@ -42,7 +42,7 @@ export default new MessageCommand(
       await msg.edit({ embeds: [LoadingEmbed] })
     }
 
-    let repo = client.config.repository?.replaceAll('https://github.com/', '')
+    const repo = client.config.repository?.replaceAll('https://github.com/', '')
     const res = await fetch(`https://api.github.com/repos/${repo}/commits`, {
       headers: {
         Authorization: client.config.githubToken
@@ -61,10 +61,10 @@ export default new MessageCommand(
       return msg.edit({ embeds: [LoadingEmbed] })
     }
 
-    let json: GithubCommitAPI[] = await res.json()
+    const json: GithubCommitAPI[] = await res.json()
 
     if (json[0].sha.trim().substring(0, 7) === client.BUILD_NUMBER) {
-      let SuccessEmbed = new Embed(client, 'success')
+      const SuccessEmbed = new Embed(client, 'success')
         .setTitle('확인 완료!')
         .setDescription('현재 최신 버전을 이용중입니다!')
         .addFields([
@@ -86,7 +86,7 @@ export default new MessageCommand(
     for (let count = 0; count < json.length; count++) {
       const commit = json[count]
       if (commit.sha.trim().substring(0, 7) === client.BUILD_NUMBER) {
-        let NewUpdateEmbed = new Embed(client, 'success')
+        const NewUpdateEmbed = new Embed(client, 'success')
           .setTitle('최신 업데이트가 있습니다!')
           .setDescription(
             `최신 업데이트된 ${count}개의 내용이 있습니다. 지금 업데이트 하시겠습니까?`
@@ -109,18 +109,18 @@ export default new MessageCommand(
             }
           ])
 
-        let buttonData = new ButtonBuilder()
+        const buttonData = new ButtonBuilder()
           .setStyle(ButtonStyle.Success)
           .setLabel('업데이트 하기')
           .setEmoji('✅')
           .setCustomId('update.run')
 
-        let components =
+        const components =
           new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
             [buttonData]
           )
 
-        let collector = msg.channel.createMessageComponentCollector({
+        const collector = msg.channel.createMessageComponentCollector({
           time: 10 * 1000
         })
 
@@ -150,7 +150,7 @@ export default new MessageCommand(
         })
         break
       } else if (count > 0) {
-        let BranchErrorEmbed = new Embed(client, 'error')
+        const BranchErrorEmbed = new Embed(client, 'error')
           .setTitle('뭔가 잘못된거 같아요...')
           .setDescription(
             '업데이트를 정보를 찾을수 없습니다. 브랜치가 다른걸수도 있습니다.\n기본 브랜치를 바꿔보는건 어떨까요?'
