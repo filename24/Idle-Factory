@@ -9,7 +9,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        dark: '#0e0e0d',
+        dark: '#121315',
+        primary: '#3E4149',
+      },
+      fontFamily: {
+        pretendard: [
+          'Pretendard Variable',
+          '-apple-system',
+          'Noto Sans KR',
+          'sans-serif',
+        ],
       },
     },
   },

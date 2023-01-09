@@ -11,7 +11,7 @@ const CustomSEO: React.FC<SeoProps> = ({
   return (
     <>
       <Head>
-        <title>{`${Name} - ` + title}</title>
+        <title>{`${Name}ㅣ` + title}</title>
         <link rel="icon" href="/favicon.ico" />
         <meta name="description" content={description} />
         <meta name="keyword" content={keyword} />
