@@ -6,9 +6,9 @@ const Navbar: React.FC = () => {
   return (
     <header className="absolute top-0 flex w-full flex-col items-center">
       <div className="flex w-full max-w-[90rem] flex-row items-center justify-between p-6">
-        <a className="text-white font-bold text-xl" href="/">
+        <Link className="text-white font-bold text-xl" href="/">
           Idle Factory
-        </a>
+        </Link>
         <div className="hidden md:flex items-center">
           <Link
             className="px-2 py-1 mx-3 text-white font-semibold rounded-md"
