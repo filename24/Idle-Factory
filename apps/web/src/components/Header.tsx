@@ -25,7 +25,7 @@ const Navbar: React.FC = () => {
           <Link
             href="/login"
             className={classNames(
-              'flex flex-row px-5 py-2 mx-3 rounded-full shadow-lg font-semibold text-white bg-blue-700 transition-all duration-300 items-center justify-center',
+              'flex flex-row px-3 py-2 mx-3 rounded-full shadow-lg font-semibold text-white bg-blue-700 transition-all duration-300 items-center justify-center',
               'hover:text-gray-100 hover:bg-blue-600 hover:shadow-xl',
               'focus:translate-y-1 focus:shadow-none'
             )}
@@ -37,9 +37,9 @@ const Navbar: React.FC = () => {
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
               className=""
             >
               <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
