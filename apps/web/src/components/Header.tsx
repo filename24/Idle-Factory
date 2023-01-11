@@ -18,9 +18,9 @@ const Navbar: React.FC = () => {
           </Link>
           <Link
             className="px-2 py-1 mx-3 text-white font-semibold rounded-md"
-            href="/docs"
+            href="/blog"
           >
-            문서
+            블로그
           </Link>
           <Link
             href="/login"

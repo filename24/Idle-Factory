@@ -10,7 +10,7 @@ const Home: NextPage = () => {
       <CustomSEO title="디스코드 게임봇" />
       <Section className="bg-dark">
         <div className="w-full max-w-[90rem] p-20 flex h-[100vh] flex-col items-center justify-center">
-          <h1 className="text-6xl font-semibold">Idle Factory</h1>
+          <h1 className="text-6xl  font-semibold">Idle Factory</h1>
           <p className="text-2xl mt-3">
             모바일 게임의 종류인 Idle Game 기반으로 개발된 게임봇
           </p>
@@ -31,7 +31,7 @@ const Home: NextPage = () => {
             <p className="text-2xl font-medium">현재 단계 : {nowStatus}</p>
           </div>
           <Image
-            src="/progress-bar.jpg"
+            src="/progressbar/width.png"
             alt="Progress bar"
             width={1280 / 2}
             height="100"
