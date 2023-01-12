@@ -12,6 +12,9 @@
     "update": "yarn upgrade-interactive"
   },
   "dependencies": {
+    "@emotion/react": "^11.10.5",
+    "@emotion/styled": "^11.10.5",
+    "@mui/material": "^5.11.4",
     "classnames": "^2.3.2",
     "next": "13.1.1",
     "next-pwa": "^5.6.0",
