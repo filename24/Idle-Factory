@@ -45,8 +45,6 @@ model Item {
 }
 
 type Worker {
-  factoryID    String
-  attributesID String
   job          String
   name         String
   exp          Float       @default(0)
@@ -56,7 +54,7 @@ type Worker {
 type Attributes {
   athletics    Float @default(0) // 달리기
   strength     Float @default(0) // 힘
-  machinery    Float @default(0) // 작동(?)
+  machinery    Float @default(0) // 작동
   construction Float @default(0) // 건설
 }
 
