@@ -31,8 +31,8 @@
     "{apps,packages}/**/*.ts": "eslint --fix --ext ts"
   },
   "workspaces": [
-    "apps/**",
-    "packages/**"
+    "apps/*",
+    "packages/*"
   ],
   "engines": {
     "node": ">=16.9"

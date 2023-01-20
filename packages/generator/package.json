@@ -2,8 +2,8 @@
   "name": "@idle/generator",
   "scripts": {
     "build": "tsup",
-    "lint": "prettier --check . && eslint src --ext .mjs,.js,.ts",
-    "format": "prettier --write . && eslint src --ext .mjs,.js,.ts --fix"
+    "lint": "prettier --check . \"!src/template\" && eslint src --ext .mjs,.js,.ts",
+    "format": "prettier --write . \"!src/template\" && eslint src --ext .mjs,.js,.ts --fix"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -19,5 +19,6 @@
     "@types/fs-extra": "^11",
     "commander": "^10.0.0",
     "tsup": "^6.5.0"
-  }
+  },
+  "prettier": {}
 }
