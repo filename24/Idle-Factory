@@ -1,0 +1,19 @@
+{
+  "name": "@idle/api-types",
+  "packageManager": "yarn@3.3.1",
+  "license": "MIT",
+  "author": {
+    "email": "filename@inft.kr",
+    "name": "__filename",
+    "url": "https://github.com/filename24"
+  },
+  "scripts": {
+    "build": "tsup",
+    "lint": "prettier --check . && eslint src --ext .mjs,.js,.ts",
+    "format": "prettier --write . && eslint src --ext .mjs,.js,.ts --fix"
+  },
+  "devDependencies": {
+    "tsup": "^6.5.0"
+  },
+  "private": true
+}

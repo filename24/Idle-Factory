@@ -7,7 +7,7 @@
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "sourceType": "module"
+    "project": "./tsconfig.eslint.json"
   },
   "plugins": ["@typescript-eslint", "prettier", "unused-imports"],
   "rules": {
@@ -28,5 +28,5 @@
       }
     ]
   },
-  "ignorePatterns": ["**/*.js"]
+  "ignorePatterns": ["**/dist/*"]
 }

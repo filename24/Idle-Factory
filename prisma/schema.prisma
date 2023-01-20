@@ -23,6 +23,10 @@ model Guild {
   flags     Float  @default(0)
 }
 
+model Stock {
+  id String @id @map("_id")
+}
+
 model Factory {
   id      String   @id @map("_id")
   ownerId String
@@ -44,19 +48,29 @@ model Item {
   factory   Factory @relation(fields: [factoryId], references: [id])
 }
 
-type Worker {
-  factoryID    String
-  attributesID String
-  job          String
-  name         String
-  exp          Float       @default(0)
-  attributes   Attributes?
+model Worker {
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  factoryId  String?
+  rate       WorkerRate
+  name       String
+  job        String
+  exp        Float       @default(0)
+  attributes Attributes?
+  factory    Factory?    @relation(fields: [factoryId], references: [id])
+}
+
+enum WorkerRate {
+  Common
+  Rare
+  Epic
+  Emerald
+  Legendery
 }
 
 type Attributes {
   athletics    Float @default(0) // 달리기
   strength     Float @default(0) // 힘
-  machinery    Float @default(0) // 작동(?)
+  machinery    Float @default(0) // 작동
   construction Float @default(0) // 건설
 }
 
@@ -66,4 +80,9 @@ model Notice {
   description String
   postedAt    DateTime @default(now())
   updatedAt   DateTime @default(now())
+}
+
+enum FactoryStatus {
+  Closed
+  Opened
 }
