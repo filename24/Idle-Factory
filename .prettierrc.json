@@ -3,5 +3,7 @@
   "endOfLine": "lf",
   "printWidth": 100,
   "singleQuote": true,
-  "trailingComma": "all"
+  "trailingComma": "all",
+  "editorconfig": true,
+  "semi": false
 }
