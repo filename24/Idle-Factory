@@ -18,7 +18,7 @@
   "devDependencies": {
     "@types/fs-extra": "^11",
     "commander": "^10.0.0",
-    "tsup": "^6.5.0"
+    "tsup": "^6.7.0"
   },
   "prettier": {}
 }

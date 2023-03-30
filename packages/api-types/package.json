@@ -1,5 +1,6 @@
 {
   "name": "@idle/api-types",
+  "version": "1.0.0",
   "packageManager": "yarn@3.3.1",
   "license": "MIT",
   "author": {
@@ -7,13 +8,24 @@
     "name": "__filename",
     "url": "https://github.com/filename24"
   },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "typings": "./dist/index.d.ts",
+  "exports": {
+    "import": "./dist/index.mjs",
+    "require": "./dist/index.js",
+    "types": "./dist/index.d.ts"
+  },
   "scripts": {
     "build": "tsup",
     "lint": "prettier --check . && eslint src --ext .mjs,.js,.ts",
     "format": "prettier --write . && eslint src --ext .mjs,.js,.ts --fix"
   },
   "devDependencies": {
-    "tsup": "^6.5.0"
+    "tsup": "^6.7.0"
   },
-  "private": true
+  "private": true,
+  "dependencies": {
+    "@sapphire/snowflake": "^3.4.0"
+  }
 }
