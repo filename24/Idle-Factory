@@ -19,13 +19,13 @@
     "discord.js": "^14.8.0",
     "dokdo": "^0.6.2",
     "dotenv": "^16.0.3",
-    "i18next": "^21.10.0",
+    "i18next": "^22.4.13",
     "node-fetch": "2.6.7",
     "uuid": "^9.0.0",
     "winston": "^3.8.2"
   },
   "devDependencies": {
-    "@types/node-fetch": "^2.6.2",
+    "@types/node-fetch": "^2.6.3",
     "@types/uuid": "^8.3.4",
     "eslint-plugin-unused-imports": "^2.0.0",
     "prisma": "^4.12.0",
