@@ -41,7 +41,16 @@ export async function createPackage(
   // Create package.json
   await writeFile(`package.json`, JSON.stringify(packageJSON, null, 2));
 
-  process.chdir("../..");
+  // Create readme.md
+  await writeFile(
+    `Readme.md`,
+    `# ${packageName}
+${packageDescription}
+  `
+  );
+
+  process.chdir(join("..", ".."));
+
   // Copy default files over
   await copy(
     join("packages", "generator", "src", "template", "default"),

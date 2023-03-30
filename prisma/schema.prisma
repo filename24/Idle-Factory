@@ -9,6 +9,7 @@ datasource db {
 
 model User {
   id       String    @id @map("_id")
+  flag     BigInt    @default(1)
   nickname String?
   lang     String    @default("ko")
   factory  Factory[]
@@ -20,11 +21,16 @@ model Guild {
   lang      String @default("ko")
   tax       Float  @default(0)
   globalExp Float  @default(0)
-  flags     Float  @default(0)
+  flag      Float  @default(1)
 }
 
 model Stock {
-  id String @id @map("_id")
+  id          String   @id @map("_id")
+  name        String
+  price       BigInt   @default(1000)
+  latestPrice BigInt[] @default([])
+  boughtCount Float    @default(0)
+  soldCount   Float    @default(0)
 }
 
 model Factory {
@@ -32,7 +38,8 @@ model Factory {
   ownerId String
   owners  String[] @default([])
   exp     Float    @default(0)
-  flag    Float    @default(0)
+  type    BigInt
+  flag    BigInt   @default(1)
   workers Worker[]
   items   Item[]
   owner   User     @relation(fields: [ownerId], references: [id])
@@ -44,14 +51,14 @@ model Item {
   name      String
   count     Float   @default(0)
   price     Float   @default(0)
-  flag      Float   @default(0)
+  flag      BigInt  @default(1)
   factory   Factory @relation(fields: [factoryId], references: [id])
 }
 
 model Worker {
   id         String      @id @default(auto()) @map("_id") @db.ObjectId
   factoryId  String?
-  rate       WorkerRate
+  flag       BigInt      @default(1)
   name       String
   job        String
   exp        Float       @default(0)
@@ -59,19 +66,13 @@ model Worker {
   factory    Factory?    @relation(fields: [factoryId], references: [id])
 }
 
-enum WorkerRate {
-  Common
-  Rare
-  Epic
-  Emerald
-  Legendery
-}
-
 type Attributes {
-  athletics    Float @default(0) // 달리기
-  strength     Float @default(0) // 힘
-  machinery    Float @default(0) // 작동
-  construction Float @default(0) // 건설
+  // 달리기
+  athletics Float @default(0)
+  // 힘
+  strength  Float @default(0)
+  // 작동
+  machinery Float @default(0)
 }
 
 model Notice {
@@ -79,7 +80,7 @@ model Notice {
   title       String
   description String
   postedAt    DateTime @default(now())
-  updatedAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt()
 }
 
 enum FactoryStatus {
