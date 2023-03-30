@@ -9,7 +9,8 @@
     "dev": "turbo run dev",
     "postinstall": "is-ci || husky install",
     "update": "yarn upgrade-interactive",
-    "create-package": "node packages/generator/src/packageScript.mjs"
+    "create-package": "node packages/generator/src/packageScript.mjs",
+    "generate": "prisma generate"
   },
   "packageManager": "yarn@3.3.1",
   "devDependencies": {
