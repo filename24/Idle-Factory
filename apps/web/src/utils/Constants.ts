@@ -14,9 +14,9 @@ export const enum ProgressStatus {
   DevPrev4 = '개발자 프리뷰 4',
   DevPrev5 = '개발자 프리뷰 5',
   Beta1 = '베타 테스트 1',
-  Beta2 = '베타 테스트 1',
-  Beta3 = '베타 테스트 1',
-  Beta4 = '베타 테스트 1',
+  Beta2 = '베타 테스트 2',
+  Beta3 = '베타 테스트 3',
+  Beta4 = '베타 테스트 4',
   Release = '최종 릴리즈',
 }
 
