@@ -14,23 +14,22 @@
     "lint:fix": "prettier --write '**/*.ts' && eslint . --ext .ts --fix"
   },
   "dependencies": {
-    "@prisma/client": "^4.12.0",
     "chalk": "4.1.2",
-    "discord.js": "^14.8.0",
+    "discord.js": "^14.14.1",
     "dokdo": "^0.6.2",
-    "dotenv": "^16.0.3",
-    "i18next": "^22.4.13",
-    "node-fetch": "2.6.7",
+    "dotenv": "^16.3.1",
+    "i18next": "^21.10.0",
+    "node-fetch": "2.7.0",
     "uuid": "^9.0.0",
-    "winston": "^3.8.2"
+    "winston": "^3.11.0"
   },
   "devDependencies": {
-    "@types/node-fetch": "^2.6.3",
-    "@types/uuid": "^8.3.4",
+    "@types/node-fetch": "^2.6.11",
+    "@types/uuid": "^9.0.7",
+    "eslint-config-idle": "workspace:^",
     "eslint-plugin-unused-imports": "^2.0.0",
-    "prisma": "^4.12.0",
     "ts-node-dev": "^2.0.0",
-    "tsc-alias": "^1.8.5",
+    "tsc-alias": "^1.8.8",
     "tsconfig-paths": "^4.2.0"
   },
   "eslintIgnore": [
