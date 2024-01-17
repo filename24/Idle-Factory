@@ -1,0 +1,39 @@
+{
+  "name": "@idle/database",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "build": "tsup",
+    "lint": "prettier --check . && eslint src --ext .mjs,.js,.ts",
+    "format": "prettier --write . && eslint src --ext .mjs,.js,.ts --fix",
+    "studio": "prisma studio",
+    "db:format": "prisma format",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "typings": "./dist/index.d.ts",
+  "exports": {
+    "import": "./dist/index.mjs",
+    "require": "./dist/index.js",
+    "types": "./dist/index.d.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@prisma/client": "^5.8.1",
+    "eslint-config-idle": "workspace:^",
+    "ioredis": "^5.3.2",
+    "prisma": "^5.8.1",
+    "tsconfig": "workspace:^",
+    "tsup": "^8",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -14,42 +14,65 @@ jobs:
     name: ESLint style check
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: 🧹 Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install Node v17
+      - name: 🌐 Install Node v18
         uses: actions/setup-node@v3
         with:
-          node-version: 17
+          node-version: 18
 
-      - name: Install dependencies
-        run: yarn install --immutable --inline-builds
+      - name: 📥 Install dependencies
+        uses: ./.github/actions/yarnCache
+        with:
+          cwd: '.'
+          enable-corepack: false
+          cache-node-modules: true
+          cache-install-state: true
 
-      - name: Run ESLint
+      - name: 🏃‍♂️ Run ESLint
         run: yarn format
 
-      - name: Commit changes
+      - name: 📦 Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: 'style(eslint): fixed eslint style format'
-  appbuild:
-    name: Build apps
+
+  build:
+    name: Build
     runs-on: ubuntu-latest
     needs: [lint]
+    env:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
     steps:
-      - name: Checkout repository
+      - name: 🧹 Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install Node v17
+      - name: 🌐 Install Node v18
         uses: actions/setup-node@v3
         with:
-          node-version: 17
+          node-version: 18
 
-      - name: Install dependencies
-        run: yarn install --immutable --inline-builds
+      - name: 📥 Install dependencies
+        uses: ./.github/actions/yarnCache
+        with:
+          cwd: '.'
+          enable-corepack: false
+          cache-node-modules: true
+          cache-install-state: true
 
-      - name: Copy config file (bot)
+      - name: 📥 Copy config file (bot)
         run: cp apps/bot/src/example.config.ts apps/bot/src/config.ts
 
-      - name: Build apps
-        run: yarn build
+      - name: 💾  Build packages
+        run: yarn build:packages --summarize
+
+      - name: 📝 Summarize Turborepo Output
+        uses: ./.github/actions/turboSummary
+
+      - name: 💾 Build apps
+        run: yarn build:apps --summarize
+
+      - name: 📝 Summarize Turborepo Output
+        uses: ./.github/actions/turboSummary

@@ -1,57 +1,70 @@
 {
   "$schema": "https://turborepo.org/schema.json",
-  "globalDependencies": ["yarn.lock"],
+  "globalDependencies": ["yarn.lock", "**/tsconfig.json", "**/tsup.config.ts", "**/.env"],
   "pipeline": {
     "build": {
-      "dependsOn": ["^build"],
-      "inputs": [
-        "../../tsconfig.json",
-        "../../tsup.config.ts",
-        "src/**/*.ts",
-        "tsconfig.json",
-        "tsup.config.ts"
-      ],
-      "outputs": ["dist/**", "build/**"]
+      "dependsOn": ["^build", "db:generate"],
+      "inputs": ["src/**/*.ts"],
+      "outputs": ["dist/**", "build/**"],
+      "outputMode": "errors-only"
+    },
+    "web#build": {
+      "inputs": ["public/**", "src/**/*.tsx", "src/**/*.ts", "src/**/*.css", "next.config.js"],
+      "outputs": [".next/**", "!.next/cache/**"],
+      "outputMode": "full"
     },
     "lint": {
-      "dependsOn": ["^build"],
       "inputs": [
-        "../../.eslintrc.json",
-        "../../.prettierrc.json",
-        "../../tsconfig.json",
-        "../../tsconfig.eslint.json",
+        "**/.eslintignore",
+        "**/.eslintrc.json",
+        "**/.prettierignore",
+        "**/.prettierrc.json",
+        "**/tsconfig.eslint.json",
         "src/**/*.tsx",
         "src/**/*.ts",
-        ".eslintrc.json",
-        ".prettierrc.json",
-        "tsconfig.json",
-        "tsconfig.eslint.json",
-        "tsup.config.ts"
+        "src/**/*.css",
+        "src/**/*.js",
+        "src/**/*.mjs",
+        ".prettierrc.js",
+        ".prettierrc.cjs",
+        "next.config.js"
       ],
-      "outputs": []
+      "outputs": [],
+      "outputMode": "errors-only"
     },
     "format": {
-      "dependsOn": ["^build"],
       "inputs": [
-        "../../.eslintrc.json",
-        "../../.prettierrc.json",
-        "../../tsconfig.json",
-        "../../tsconfig.eslint.json",
+        "**/.eslintignore",
+        "**/.eslintrc.json",
+        "**/.prettierignore",
+        "**/.prettierrc.json",
+        "**/tsconfig.eslint.json",
         "src/**/*.tsx",
         "src/**/*.ts",
-        ".eslintrc.json",
-        ".prettierrc.json",
-        "tsconfig.json",
-        "tsconfig.eslint.json",
-        "tsup.config.ts"
+        "src/**/*.css",
+        "src/**/*.js",
+        "src/**/*.mjs",
+        ".prettierrc.js",
+        ".prettierrc.cjs",
+        "next.config.js"
       ],
-      "outputs": []
+      "outputs": [],
+      "outputMode": "errors-only"
     },
     "dev": {
-      "cache": false
+      "dependsOn": ["db:generate", "^build"],
+      "cache": false,
+      "persistent": true
     },
     "test": {
+      "dependsOn": ["db:generate", "^build"],
       "cache": true
-    }
+    },
+    "db:generate": {
+      "cache": false
+    },
+    "db:migrate:deploy": {},
+    "db:push": {},
+    "db:seed": {}
   }
 }

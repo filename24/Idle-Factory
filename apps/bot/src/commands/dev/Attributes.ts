@@ -41,11 +41,6 @@ export default new SlashCommand(
         inline: true
       },
       {
-        name: '건설',
-        value: String(attributes.construction),
-        inline: true
-      },
-      {
         name: '작동',
         value: String(attributes.machinery),
         inline: true
@@ -103,11 +98,6 @@ export default new SlashCommand(
           {
             name: '달리기',
             value: String(attributes.athletics),
-            inline: true
-          },
-          {
-            name: '건설',
-            value: String(attributes.construction),
             inline: true
           },
           {

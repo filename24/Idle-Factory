@@ -22,10 +22,13 @@
     "format": "prettier --write . && eslint src --ext .mjs,.js,.ts --fix"
   },
   "devDependencies": {
-    "tsup": "^6.7.0"
+    "eslint-config-idle": "workspace:^",
+    "tsconfig": "workspace:^",
+    "tsup": "^8",
+    "typescript": "^5.3.3"
   },
   "private": true,
   "dependencies": {
-    "@sapphire/snowflake": "^3.4.0"
+    "@sapphire/snowflake": "^3.5.2"
   }
 }
