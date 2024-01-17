@@ -1,9 +1,9 @@
-import { PrismaClient } from '@prisma/client'
 import { Client, ClientOptions, ClientEvents, Collection } from 'discord.js'
 import { config as dotenvConfig } from 'dotenv'
 import Dokdo from 'dokdo'
+import { Job } from 'node-schedule'
 
-import Logger from '@utils/Logger'
+import { Logger } from '@idle/utils'
 import { BaseInteraction } from './Interaction'
 import { Event } from './Event'
 
@@ -15,8 +15,10 @@ import ErrorManager from '@managers/ErrorManager'
 import DatabaseManager from '@managers/DatabaseManager'
 import InteractionManager from '@managers/InteractionManager'
 import i18nManager from '@managers/i18nManager'
+import { CacheName, CacheData } from '@types'
 import { i18n } from 'i18next'
 import { Command } from './Command'
+import { DatabaseClient } from '@idle/database'
 
 const logger = new Logger('bot')
 
@@ -31,7 +33,9 @@ export default class BotClient extends Client {
   public errors: Collection<string, string> = new Collection()
   public interactions: Collection<string | string[], BaseInteraction> =
     new Collection()
-  public db!: PrismaClient
+  public schedules: Collection<string, Job> = new Collection()
+  public cache: Collection<CacheName, CacheData<CacheName>> = new Collection()
+  public db!: DatabaseClient
 
   public command: CommandManager = new CommandManager(this)
   public event: EventManager = new EventManager(this)
@@ -51,7 +55,8 @@ export default class BotClient extends Client {
     super(options)
 
     logger.info('Loading config data...')
-    dotenvConfig()
+    if (process.cwd().includes('apps')) dotenvConfig({ path: '../../.env' })
+    else dotenvConfig()
 
     logger.info('Loading managers...')
     this.command.load()

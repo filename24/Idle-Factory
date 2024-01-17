@@ -5,7 +5,7 @@ import {
   Routes
 } from 'discord.js'
 
-import Logger from '@utils/Logger'
+import { Logger } from '@idle/utils'
 import BaseManager from './BaseManager'
 import fs from 'fs'
 import path from 'path'

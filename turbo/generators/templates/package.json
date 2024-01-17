@@ -1,0 +1,28 @@
+{
+  "name": "{{name}}",
+  "version": "0.0.1",
+  "description": "{{description}}",
+  "scripts": {
+    "build": "tsup",
+    "lint": "prettier --check . && eslint src --ext .mjs,.js,.ts",
+    "format": "prettier --write . && eslint src --ext .mjs,.js,.ts --fix"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "typings": "./dist/index.d.ts",
+  "exports": {
+    "import": "./dist/index.mjs",
+    "require": "./dist/index.js",
+    "types": "./dist/index.d.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "tsup": "^7.1.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

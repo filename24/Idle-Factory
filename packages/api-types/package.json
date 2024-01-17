@@ -22,7 +22,7 @@
     "format": "prettier --write . && eslint src --ext .mjs,.js,.ts --fix"
   },
   "devDependencies": {
-    "tsup": "^6.7.0"
+    "tsup": "^7.1.0"
   },
   "private": true,
   "dependencies": {

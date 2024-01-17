@@ -49,7 +49,7 @@ export default new Event('interactionCreate', async (client, interaction) => {
     } catch (error: any) {
       errorManager.report(error, { executer: interaction, isSend: true })
     }
-  } else if (interaction.isSelectMenu()) {
+  } else if (interaction.isAnySelectMenu()) {
     const interactionData = interactionManager.get(interaction.customId)
 
     if (!interactionData) return

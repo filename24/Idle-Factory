@@ -5,7 +5,7 @@ import {
   Interaction,
   ModalSubmitInteraction,
   RESTPostAPIApplicationCommandsJSONBody,
-  SelectMenuInteraction
+  AnySelectMenuInteraction
 } from 'discord.js'
 import { InteractionType } from '@utils/Constants'
 import BotClient from './BotClient'
@@ -22,7 +22,7 @@ export class SelectMenu {
   public type: InteractionType.Select = InteractionType.Select
   constructor(
     public customId: string | string[],
-    public execute: BaseInteractionFunction<SelectMenuInteraction<'cached'>>
+    public execute: BaseInteractionFunction<AnySelectMenuInteraction<'cached'>>
   ) {}
 }
 

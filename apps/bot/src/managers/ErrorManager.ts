@@ -1,13 +1,13 @@
 import { Guild, WebhookClient } from 'discord.js'
 import BaseManager from './BaseManager'
 import Embed from '@utils/Embed'
-import Logger from '@utils/Logger'
-import { v4 } from 'uuid'
+import { Logger } from '@idle/utils'
 import { ErrorReportOptions } from '@types'
 import BotClient from '@structures/BotClient'
 
 import config from '../config'
 import { ReportType } from '@utils/Constants'
+import { snowflake } from '@utils/SnowFlake'
 
 /**
  * @extends BaseManager
@@ -26,7 +26,7 @@ export default class ErrorManager extends BaseManager {
 
     const date = (Number(new Date()) / 1000) | 0
     const errorText = `**[<t:${date}:T> ERROR]** ${error.stack}`
-    const errorCode = v4()
+    const errorCode = String(snowflake)
 
     this.client.errors.set(errorCode, error.stack as string)
 

@@ -5,7 +5,7 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 import config from './config'
 import chalk from 'chalk'
-import Logger from '@utils/Logger'
+import { Logger } from '@idle/utils'
 
 const logger = new Logger('ShardManager')
 

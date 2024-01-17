@@ -81,4 +81,13 @@ export type EmbedType =
   | 'info'
   | HexColorString
 
+export type CacheData<Data extends keyof BaseCache> = BaseCache[Data]
+export type CacheName = keyof BaseCache
+export interface BaseCache {
+  stock: {
+    status: 'open' | 'closed'
+    message?: string
+  }
+}
+
 export * from './command'

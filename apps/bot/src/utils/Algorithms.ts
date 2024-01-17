@@ -3,7 +3,6 @@ import { Attributes } from '@prisma/client'
 export function getRandomAttributes(): Partial<Attributes> {
   return {
     athletics: getRandomAttributesNumber(),
-    construction: getRandomAttributesNumber(),
     machinery: getRandomAttributesNumber(),
     strength: getRandomAttributesNumber()
   }

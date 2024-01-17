@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import Logger from '@utils/Logger'
+import { Logger } from '@idle/utils'
 import config from './config'
 
 import BotClient from '@structures/BotClient'

@@ -2,7 +2,7 @@ import { lstatSync, readdirSync } from 'fs'
 import { join } from 'path'
 import BotClient from '@structures/BotClient'
 import { BaseInteraction } from '@structures/Interaction'
-import Logger from '@utils/Logger'
+import { Logger } from '@idle/utils'
 import BaseManager from './BaseManager'
 
 export default class InteractionManager extends BaseManager {

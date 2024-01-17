@@ -1,6 +1,6 @@
 import i18next, { i18n } from 'i18next'
 import BotClient from '../structures/BotClient'
-import Logger from '../utils/Logger'
+import { Logger } from '@idle/utils'
 
 export default class i18nManager {
   private client: BotClient

@@ -1,7 +1,7 @@
-import Logger from '@utils/Logger'
+import { Logger } from '@idle/utils'
 import BaseManager from './BaseManager'
 import BotClient from '@structures/BotClient'
-import { PrismaClient } from '@prisma/client'
+import { DatabaseClient } from '@idle/database'
 
 /**
  * @extends {BaseManager}
@@ -18,7 +18,7 @@ export default class DatabaseManager extends BaseManager {
   async load() {
     this.logger.debug('Using Prisma...')
 
-    this.client.db = new PrismaClient()
+    this.client.db = new DatabaseClient({})
 
     this.client.db.$connect().then(() => {
       this.logger.info('Connected to Prisma')
