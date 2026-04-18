@@ -23,11 +23,5 @@ dist/
 .idea/
 .DS_Store
 
-# yarn
+# pnpm
 .pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions

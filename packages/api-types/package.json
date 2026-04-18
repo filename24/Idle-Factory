@@ -1,7 +1,7 @@
 {
   "name": "@idle/api-types",
   "version": "1.0.0",
-  "packageManager": "yarn@3.3.1",
+  "packageManager": "pnpm@10.9.0",
   "license": "MIT",
   "author": {
     "email": "filename@inft.kr",
@@ -24,8 +24,8 @@
   "devDependencies": {
     "eslint-config-idle": "workspace:^",
     "tsconfig": "workspace:^",
-    "tsup": "^8",
-    "typescript": "^5.3.3"
+    "tsup": "^8.5.1",
+    "typescript": "^5.8.0"
   },
   "private": true,
   "dependencies": {

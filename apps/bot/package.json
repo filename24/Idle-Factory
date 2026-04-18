@@ -11,7 +11,7 @@
     "generate": "prisma generate",
     "build": "tsup",
     "typecheck": "tsc --noEmit",
-    "update": "yarn upgrade-interactive",
+    "update": "pnpm update -i",
     "lint": "eslint . --ext .ts",
     "lint:fix": "prettier --write '**/*.ts' && eslint . --ext .ts --fix"
   },
@@ -42,6 +42,6 @@
   "engines": {
     "node": ">=18"
   },
-  "packageManager": "yarn@4.0.2",
+  "packageManager": "pnpm@10.9.0",
   "private": true
 }

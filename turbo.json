@@ -1,6 +1,6 @@
 {
   "$schema": "https://turborepo.org/schema.json",
-  "globalDependencies": ["yarn.lock", "**/tsconfig.json", "**/tsup.config.ts", "**/.env"],
+  "globalDependencies": ["pnpm-lock.yaml", "**/tsconfig.json", "**/tsup.config.ts", "**/.env"],
   "pipeline": {
     "build": {
       "dependsOn": ["^build", "db:generate"],

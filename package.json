@@ -8,10 +8,10 @@
     "format": "turbo run format",
     "dev": "turbo run dev",
     "postinstall": "is-ci || husky",
-    "update": "yarn upgrade-interactive",
+    "update": "pnpm update -i -r",
     "generate": "turbo gen"
   },
-  "packageManager": "yarn@4.0.2",
+  "packageManager": "pnpm@10.9.0",
   "devDependencies": {
     "@commitlint/cli": "^20.5.0",
     "@commitlint/config-angular": "^20.5.0",
@@ -27,12 +27,18 @@
     "turbo": "^2.9.6",
     "typescript": "^5.8.0"
   },
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "engines": {
     "node": ">=18"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "esbuild",
+      "prisma",
+      "sharp",
+      "unrs-resolver"
+    ]
   },
   "private": true
 }
