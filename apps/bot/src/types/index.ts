@@ -11,6 +11,14 @@ import {
 } from 'discord.js'
 import { ReportType } from '@utils/Constants'
 import { InitOptions } from 'i18next'
+
+declare module '@sapphire/pieces' {
+  interface Container {
+    db: import('@prisma/client').PrismaClient
+    i18n: import('i18next').i18n
+  }
+}
+
 export interface ErrorReportOptions {
   executer?:
     | Message<true>
@@ -80,5 +88,3 @@ export type EmbedType =
   | 'warn'
   | 'info'
   | HexColorString
-
-export * from './command'

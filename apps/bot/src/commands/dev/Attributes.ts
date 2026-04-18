@@ -1,139 +1,13 @@
+import { Command } from '@sapphire/framework'
 import {
   ActionRowBuilder,
-  APIEmbedField,
+  type APIEmbedField,
   ButtonBuilder,
   ButtonStyle,
-  ComponentType,
-  SlashCommandBuilder
+  ComponentType
 } from 'discord.js'
-import { SlashCommand } from '@structures/Command'
 import { getRandomAttributes } from '@utils/Algorithms'
 import Embed from '@utils/Embed'
-
-export default new SlashCommand(
-  new SlashCommandBuilder()
-    .setName('attributes')
-    .setNameLocalization('ko', '특성')
-    .setDescription('특성 뽑기')
-    .toJSON(),
-  async (client, interaction) => {
-    const attributes = getRandomAttributes()
-
-    const fields: APIEmbedField[] = [
-      {
-        name: '지원자',
-        value: getRandomKoreanFood(),
-        inline: true
-      },
-      {
-        name: '특성',
-        value: '** **',
-        inline: false
-      },
-      {
-        name: '힘',
-        value: String(attributes.strength),
-        inline: true
-      },
-      {
-        name: '달리기',
-        value: String(attributes.athletics),
-        inline: true
-      },
-      {
-        name: '작동',
-        value: String(attributes.machinery),
-        inline: true
-      }
-    ]
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setCustomId('reroll')
-        .setStyle(ButtonStyle.Secondary)
-        .setEmoji('🔄')
-        .setLabel('다시 뽑기'),
-      new ButtonBuilder()
-        .setLabel('합격')
-        .setEmoji('✅')
-        .setCustomId('accept')
-        .setStyle(ButtonStyle.Success)
-    )
-    const embed = new Embed(client, 'info')
-      .setTitle('공장 직원 특성')
-      .addFields(fields)
-
-    await interaction.reply({
-      embeds: [embed],
-      components: [row]
-    })
-
-    const collector = interaction.channel?.createMessageComponentCollector({
-      idle: 1 * 60 * 1000,
-      filter: (i) =>
-        i.user.id === interaction.user.id &&
-        ['accept', 'reroll'].includes(i.customId),
-      componentType: ComponentType.Button
-    })
-
-    collector?.on('collect', async (i) => {
-      if (i.customId === 'reroll') {
-        const attributes = getRandomAttributes()
-
-        const fields: APIEmbedField[] = [
-          {
-            name: '지원자',
-            value: getRandomKoreanFood(),
-            inline: true
-          },
-          {
-            name: '특성',
-            value: '** **',
-            inline: false
-          },
-          {
-            name: '힘',
-            value: String(attributes.strength),
-            inline: true
-          },
-          {
-            name: '달리기',
-            value: String(attributes.athletics),
-            inline: true
-          },
-          {
-            name: '작동',
-            value: String(attributes.machinery),
-            inline: true
-          }
-        ]
-        const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-          new ButtonBuilder()
-            .setCustomId('reroll')
-            .setStyle(ButtonStyle.Secondary)
-            .setEmoji('🔄')
-            .setLabel('다시 뽑기'),
-          new ButtonBuilder()
-            .setLabel('합격')
-            .setEmoji('✅')
-            .setCustomId('accept')
-            .setStyle(ButtonStyle.Success)
-        )
-        const embed = new Embed(client, 'info')
-          .setTitle('공장 직원 특성')
-          .addFields(fields)
-
-        await i.update({
-          embeds: [embed],
-          components: [row]
-        })
-      } else if (i.customId === 'accept') {
-        await i.deferReply()
-
-        await i.followUp('성공적으로 해당 직원을 공장에 지원했습니다!')
-      }
-    })
-  }
-)
 
 export function getRandomKoreanFood(): string {
   const foods = [
@@ -156,6 +30,85 @@ export function getRandomKoreanFood(): string {
     '갈비찜',
     '갈비탕'
   ]
-
   return foods[Math.floor(Math.random() * foods.length)]
+}
+
+function buildAttributeFields(
+  name: string,
+  attrs: ReturnType<typeof getRandomAttributes>
+): APIEmbedField[] {
+  return [
+    { name: '지원자', value: name, inline: true },
+    { name: '특성', value: '** **', inline: false },
+    { name: '힘', value: String(attrs.strength), inline: true },
+    { name: '달리기', value: String(attrs.athletics), inline: true },
+    { name: '작동', value: String(attrs.machinery), inline: true }
+  ]
+}
+
+function buildRow() {
+  return new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId('reroll')
+      .setStyle(ButtonStyle.Secondary)
+      .setEmoji('🔄')
+      .setLabel('다시 뽑기'),
+    new ButtonBuilder()
+      .setLabel('합격')
+      .setEmoji('✅')
+      .setCustomId('accept')
+      .setStyle(ButtonStyle.Success)
+  )
+}
+
+export class AttributesCommand extends Command {
+  public constructor(context: Command.LoaderContext, options: Command.Options) {
+    super(context, { ...options })
+  }
+
+  public override async chatInputRun(
+    interaction: Command.ChatInputCommandInteraction
+  ) {
+    const { client } = this.container
+    const attrs = getRandomAttributes()
+    const embed = new Embed(client, 'info')
+      .setTitle('공장 직원 특성')
+      .addFields(buildAttributeFields(getRandomKoreanFood(), attrs))
+
+    await interaction.reply({ embeds: [embed], components: [buildRow()] })
+
+    const collector = interaction.channel?.createMessageComponentCollector({
+      idle: 60_000,
+      filter: (i) =>
+        i.user.id === interaction.user.id &&
+        ['accept', 'reroll'].includes(i.customId),
+      componentType: ComponentType.Button
+    })
+
+    collector?.on('collect', async (i) => {
+      if (i.customId === 'reroll') {
+        const newAttrs = getRandomAttributes()
+        await i.update({
+          embeds: [
+            new Embed(client, 'info')
+              .setTitle('공장 직원 특성')
+              .addFields(buildAttributeFields(getRandomKoreanFood(), newAttrs))
+          ],
+          components: [buildRow()]
+        })
+      } else if (i.customId === 'accept') {
+        await i.deferReply()
+        await i.followUp('성공적으로 해당 직원을 공장에 지원했습니다!')
+      }
+    })
+  }
+
+  public override registerApplicationCommands(registry: Command.Registry) {
+    registry.registerChatInputCommand((builder) =>
+      builder
+        .setName('attributes')
+        .setDescription('특성 뽑기')
+        .setNameLocalization('ko', '특성')
+    )
+  }
 }
