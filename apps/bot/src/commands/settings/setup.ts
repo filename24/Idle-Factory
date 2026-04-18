@@ -1,5 +1,6 @@
 import { Command } from '@sapphire/framework'
 import Embed from '@utils/Embed'
+import config from '../../config'
 
 export class SetupCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -10,7 +11,7 @@ export class SetupCommand extends Command {
     interaction: Command.ChatInputCommandInteraction
   ) {
     const { client, db, i18n } = this.container
-    const t = await i18n.changeLanguage('ko')
+    const t = await i18n.changeLanguage(config.i18n.options.lng ?? 'en')
 
     const guildData = await db.guild.findFirst({
       where: { id: interaction.guildId! }
@@ -30,6 +31,33 @@ export class SetupCommand extends Command {
         ]
       })
     }
+
+    const guild = interaction.guild
+    if (!guild) {
+      return interaction.reply({
+        content: '길드 정보를 가져올 수 없습니다.',
+        ephemeral: true
+      })
+    }
+
+    const created = await db.guild.create({
+      data: {
+        id: guild.id,
+        name: guild.name,
+        lang: config.i18n.options.lng ?? 'en'
+      }
+    })
+
+    return interaction.reply({
+      ephemeral: true,
+      embeds: [
+        new Embed(client, 'success')
+          .setTitle(
+            t('command.setup.success.title', { factoryName: created.name })
+          )
+          .setDescription(t('command.setup.success.description'))
+      ]
+    })
   }
 
   public override registerApplicationCommands(registry: Command.Registry) {

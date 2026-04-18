@@ -10,13 +10,35 @@ export class NoticeCommand extends Command {
   ) {
     const option = interaction.options.getString('옵션') as 'delete' | 'send'
     const id = interaction.options.getString('id')
+    const { db } = this.container
 
-    if (option === 'delete' && !id) {
+    if (option === 'delete') {
+      if (!id) {
+        return interaction.reply({
+          content: '삭제 옵션을 사용하려면 ID를 입력해야 합니다.',
+          ephemeral: true
+        })
+      }
+
+      const existing = await db.notice.findUnique({ where: { id } })
+      if (!existing) {
+        return interaction.reply({
+          content: '해당 ID의 공지를 찾을 수 없습니다.',
+          ephemeral: true
+        })
+      }
+
+      await db.notice.delete({ where: { id } })
       return interaction.reply({
-        content: '삭제 옵션을 사용하려면 ID를 입력해야 합니다.',
+        content: `공지 \`${existing.title}\` 을(를) 삭제했습니다.`,
         ephemeral: true
       })
     }
+
+    return interaction.reply({
+      content: '공지 전송 기능은 아직 구현되지 않았습니다.',
+      ephemeral: true
+    })
   }
 
   public override registerApplicationCommands(registry: Command.Registry) {

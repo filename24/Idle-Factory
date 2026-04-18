@@ -1,5 +1,6 @@
 import { Command } from '@sapphire/framework'
 import Embed from '@utils/Embed'
+import config from '../../config'
 
 export class PingCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -10,7 +11,7 @@ export class PingCommand extends Command {
     interaction: Command.ChatInputCommandInteraction
   ) {
     const { client, i18n } = this.container
-    const t = await i18n.changeLanguage('ko')
+    const t = await i18n.changeLanguage(config.i18n.options.lng ?? 'en')
 
     const loadEmbed = new Embed(client, 'warn').setTitle(
       t('command.ping.loading.title')

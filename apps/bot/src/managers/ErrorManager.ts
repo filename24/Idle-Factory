@@ -1,5 +1,5 @@
 import { container } from '@sapphire/framework'
-import { Guild, WebhookClient, type Interaction } from 'discord.js'
+import { WebhookClient } from 'discord.js'
 import Embed from '@utils/Embed'
 import Logger from '@utils/Logger'
 import { v4 } from 'uuid'
@@ -10,7 +10,7 @@ import config from '../config'
 export default class ErrorManager {
   private logger = new Logger('bot')
 
-  public report(error: Error, options?: ErrorReportOptions) {
+  public async report(error: Error, options?: ErrorReportOptions) {
     this.logger.error(error.stack as string)
 
     const date = (Number(new Date()) / 1000) | 0
@@ -24,22 +24,32 @@ export default class ErrorManager {
       )
       .addFields([{ name: '오류 코드', value: errorCode, inline: true }])
 
-    if (options?.isSend && options.executer) {
-      const executer = options.executer as Interaction
-      if ('reply' in executer && typeof executer.reply === 'function') {
-        ;(executer as any).reply({ embeds: [errorEmbed] }).catch(() => null)
+    const executer = options?.executer
+    if (options?.isSend && executer) {
+      const payload = { embeds: [errorEmbed] }
+      if ('author' in executer) {
+        await executer.reply(payload).catch(() => null)
+      } else {
+        await executer.reply(payload).catch(() => null)
       }
     }
 
     if (config.report.type === ReportType.Webhook) {
+      if (!config.report.webhook.url) return
       const webhook = new WebhookClient({ url: config.report.webhook.url })
-      webhook.send(errorText)
+      await webhook.send(errorText).catch((err) => {
+        this.logger.error(`Failed to send webhook error report: ${err}`)
+      })
     } else if (config.report.type === ReportType.Text) {
       const guild = container.client.guilds.cache.get(
         config.report.text.guildID
-      ) as Guild
-      const channel = guild.channels.cache.get(config.report.text.channelID)
-      if (channel?.isTextBased()) channel.send(errorText)
+      )
+      const channel = guild?.channels.cache.get(config.report.text.channelID)
+      if (channel?.isTextBased()) {
+        await channel.send(errorText).catch((err) => {
+          this.logger.error(`Failed to send text error report: ${err}`)
+        })
+      }
     }
   }
 }

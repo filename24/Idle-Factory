@@ -1,5 +1,6 @@
 import { Command } from '@sapphire/framework'
 import Embed from '@utils/Embed'
+import config from '../../config'
 
 export class AnnouncementCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -10,7 +11,7 @@ export class AnnouncementCommand extends Command {
     interaction: Command.ChatInputCommandInteraction
   ) {
     const { client, i18n } = this.container
-    const t = await i18n.changeLanguage('ko')
+    const t = await i18n.changeLanguage(config.i18n.options.lng ?? 'en')
 
     const embed = new Embed(client, 'info').setTitle(t('command.notice.title'))
     await interaction.reply({ ephemeral: true, embeds: [embed] })
