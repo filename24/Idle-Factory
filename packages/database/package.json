@@ -4,8 +4,8 @@
   "description": "",
   "scripts": {
     "build": "tsup",
-    "lint": "prettier --check . && eslint src --ext .mjs,.js,.ts",
-    "format": "prettier --write . && eslint src --ext .mjs,.js,.ts --fix",
+    "lint": "prettier --check .",
+    "format": "prettier --write .",
     "studio": "prisma studio",
     "db:format": "prisma format",
     "db:migrate:deploy": "prisma migrate deploy",

@@ -15,6 +15,7 @@
     "lint:fix": "prettier --write '**/*.ts' && eslint . --ext .ts --fix"
   },
   "dependencies": {
+    "@prisma/client": "^6.7.0",
     "@sapphire/framework": "^5.3.7",
     "@sapphire/pieces": "^4.3.9",
     "@sapphire/snowflake": "^3.5.4",
@@ -23,6 +24,7 @@
     "dokdo": "^0.6.2",
     "dotenv": "^16.0.0",
     "i18next": "^26.0.5",
+    "strip-ansi": "^7.1.0",
     "uuid": "^9.0.0",
     "winston": "^3.19.0"
   },
