@@ -3,6 +3,7 @@ import {
   Events,
   type ChatInputCommandErrorPayload
 } from '@sapphire/framework'
+import type { ChatInputCommandInteraction } from 'discord.js'
 import ErrorManager from '@managers/ErrorManager'
 
 export class ChatInputCommandErrorListener extends Listener<
@@ -18,12 +19,12 @@ export class ChatInputCommandErrorListener extends Listener<
     })
   }
 
-  public run(error: unknown, payload: ChatInputCommandErrorPayload) {
+  public async run(error: unknown, payload: ChatInputCommandErrorPayload) {
     const errorManager = new ErrorManager()
-    errorManager.report(
+    await errorManager.report(
       error instanceof Error ? error : new Error(String(error)),
       {
-        executer: payload.interaction as any,
+        executer: payload.interaction as ChatInputCommandInteraction<'cached'>,
         isSend: true
       }
     )
