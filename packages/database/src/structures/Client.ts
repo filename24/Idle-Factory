@@ -1,5 +1,4 @@
-import { PrismaClient } from '@prisma/client'
-import { PrismaClientOptions } from '@prisma/client/runtime/library'
+import { Prisma, PrismaClient } from '@prisma/client'
 import { Redis, RedisOptions } from 'ioredis'
 
 export class DatabaseClient extends PrismaClient {
@@ -38,7 +37,7 @@ export type ClientOptions = {
 
 export interface DatabaseOptions {
   redis?: RedisOptions
-  prisma?: PrismaClientOptions
+  prisma?: Prisma.PrismaClientOptions
 }
 
 declare global {
