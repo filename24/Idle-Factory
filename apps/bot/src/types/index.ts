@@ -1,4 +1,5 @@
 import {
+  AnySelectMenuInteraction,
   ButtonInteraction,
   ChatInputCommandInteraction,
   ClientOptions,
@@ -6,7 +7,6 @@ import {
   HexColorString,
   Message,
   ModalSubmitInteraction,
-  SelectMenuInteraction,
   ShardingManagerOptions
 } from 'discord.js'
 import { ReportType } from '@utils/Constants'
@@ -16,7 +16,7 @@ export interface ErrorReportOptions {
     | Message<true>
     | ChatInputCommandInteraction<'cached'>
     | ContextMenuCommandInteraction<'cached'>
-    | SelectMenuInteraction<'cached'>
+    | AnySelectMenuInteraction<'cached'>
     | ButtonInteraction<'cached'>
     | ModalSubmitInteraction<'cached'>
     | undefined

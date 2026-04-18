@@ -1,6 +1,8 @@
 {
   "extends": "tsconfig/base",
   "compilerOptions": {
+    "module": "Preserve",
+    "moduleResolution": "Bundler",
     "outDir": "./build",
     "resolveJsonModule": true,
     "baseUrl": "src",
@@ -12,5 +14,5 @@
       "@locales": ["locales/index"]
     }
   },
-  "include": ["./src/**/*.ts"]
+  "include": ["./src/**/*.ts", "tsup.config.ts"]
 }
