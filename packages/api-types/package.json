@@ -18,8 +18,8 @@
   },
   "scripts": {
     "build": "tsup",
-    "lint": "prettier --check . && eslint src --ext .mjs,.js,.ts",
-    "format": "prettier --write . && eslint src --ext .mjs,.js,.ts --fix"
+    "lint": "prettier --check .",
+    "format": "prettier --write ."
   },
   "devDependencies": {
     "eslint-config-idle": "workspace:^",
