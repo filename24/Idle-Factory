@@ -14,7 +14,6 @@ pids
 
 # Env
 .env
-config.*
 
 # Miscellaneous
 .tmp/
