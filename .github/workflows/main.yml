@@ -20,7 +20,7 @@ jobs:
       - name: 📦 Setup pnpm
         uses: pnpm/action-setup@v4
 
-      - name: 🌐 Install Node v20
+      - name: 🌐 Install Node v22
         uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -52,7 +52,7 @@ jobs:
       - name: 📦 Setup pnpm
         uses: pnpm/action-setup@v4
 
-      - name: 🌐 Install Node v20
+      - name: 🌐 Install Node v22
         uses: actions/setup-node@v4
         with:
           node-version: 22
