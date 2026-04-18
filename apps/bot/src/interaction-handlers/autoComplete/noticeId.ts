@@ -24,7 +24,12 @@ export class NoticeIdAutocomplete extends InteractionHandler {
   }
 
   public async run(interaction: AutocompleteInteraction) {
-    const data = await this.container.db.notice.findMany()
+    const focused = interaction.options.getFocused()
+    const data = await this.container.db.notice.findMany({
+      where: focused ? { title: { contains: focused } } : undefined,
+      take: 25,
+      orderBy: { postedAt: 'desc' }
+    })
     const choices: ApplicationCommandOptionChoiceData[] = data.map(
       (notice: { id: string; title: string }) => ({
         name: `${notice.id} (${notice.title})`,

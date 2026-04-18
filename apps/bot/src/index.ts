@@ -28,7 +28,7 @@ if (!config.bot.sharding) {
 
   const manager = new ShardingManager(
     join(__dirname, './bot.js'),
-    config.bot.shardingOptions
+    config.bot.shardingOptions ?? {}
   )
   manager.spawn()
   manager.on('shardCreate', (shard) => {
