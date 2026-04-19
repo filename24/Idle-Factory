@@ -1,10 +1,10 @@
-import { FlatCompat } from '@eslint/eslintrc'
+import nextTypescript from 'eslint-config-next/typescript'
+import nextCoreWebVitals from 'eslint-config-next/core-web-vitals'
 import idleConfig from 'eslint-config-idle'
 
-const compat = new FlatCompat()
-
 export default [
-  ...compat.extends('next/core-web-vitals'),
+  ...nextTypescript,
+  ...nextCoreWebVitals,
   ...idleConfig,
   {
     ignores: ['node_modules/**', '.next/**'],
