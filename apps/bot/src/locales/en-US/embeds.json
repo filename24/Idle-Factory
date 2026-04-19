@@ -1,0 +1,32 @@
+{
+  "event": {
+    "guildCreate": {
+      "title": "Thanks for inviting Idle Factory!",
+      "description": "Click the button below for additional setup."
+    }
+  },
+  "command": {
+    "ping": {
+      "loading": {
+        "title": "Measuring ping..."
+      },
+      "success": {
+        "title": "🏓 Pong!",
+        "fields": {
+          "message": "Message latency",
+          "api": "API latency",
+          "uptime": "Uptime"
+        }
+      }
+    },
+    "setup": {
+      "available": {
+        "title": "I know this {{factoryName}}!",
+        "description": "Registered factories cannot be re-registered!"
+      }
+    },
+    "notice": {
+      "title": "Notice"
+    }
+  }
+}

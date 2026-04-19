@@ -10,8 +10,7 @@
       "@types": ["types/index"],
       "@structures/*": ["structures/*"],
       "@managers/*": ["managers/*"],
-      "@utils/*": ["utils/*"],
-      "@locales": ["locales/index"]
+      "@utils/*": ["utils/*"]
     }
   },
   "include": ["./src/**/*.ts", "tsup.config.ts"]

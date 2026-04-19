@@ -1,63 +1,56 @@
-import { Guild, WebhookClient } from 'discord.js'
-import BaseManager from './BaseManager'
+import { container } from '@sapphire/framework'
+import { WebhookClient } from 'discord.js'
 import Embed from '@utils/Embed'
 import Logger from '@utils/Logger'
 import { v4 } from 'uuid'
 import { ErrorReportOptions } from '@types'
-import BotClient from '@structures/BotClient'
-
-import config from '../config'
 import { ReportType } from '@utils/Constants'
+import config from '../config'
 
-/**
- * @extends BaseManager
- */
-export default class ErrorManager extends BaseManager {
-  private logger: Logger
+export default class ErrorManager {
+  private logger = new Logger('bot')
 
-  public constructor(client: BotClient) {
-    super(client)
-
-    this.logger = new Logger('bot')
-  }
-
-  public report(error: Error, options?: ErrorReportOptions) {
+  public async report(error: Error, options?: ErrorReportOptions) {
     this.logger.error(error.stack as string)
 
     const date = (Number(new Date()) / 1000) | 0
-    const errorText = `**[<t:${date}:T> ERROR]** ${error.stack}`
     const errorCode = v4()
+    const errorSummary = `${error.name}: ${error.message}`
+    const errorText = `**[<t:${date}:T> ERROR]** \`${errorCode}\` — ${errorSummary}`
 
-    this.client.errors.set(errorCode, error.stack as string)
-
-    const errorEmbed = new Embed(this.client, 'error')
+    const errorEmbed = new Embed(container.client, 'error')
       .setTitle('오류가 발생했습니다.')
       .setDescription(
         '명령어 실행 도중에 오류가 발생하였습니다. 개발자에게 오류코드를 보내 개발에 지원해주세요.'
       )
       .addFields([{ name: '오류 코드', value: errorCode, inline: true }])
 
-    options && options.isSend
-      ? // @ts-ignore
-        options.executer?.reply({ embeds: [errorEmbed] })
-      : null
+    const executer = options?.executer
+    if (options?.isSend && executer) {
+      const payload = { embeds: [errorEmbed] }
+      if ('author' in executer) {
+        await executer.reply(payload).catch(() => null)
+      } else {
+        await executer.reply(payload).catch(() => null)
+      }
+    }
 
     if (config.report.type === ReportType.Webhook) {
-      const webhook = new WebhookClient({
-        url: config.report.webhook.url
+      if (!config.report.webhook.url) return
+      const webhook = new WebhookClient({ url: config.report.webhook.url })
+      await webhook.send(errorText).catch((err) => {
+        this.logger.error(`Failed to send webhook error report: ${err}`)
       })
-
-      webhook.send(errorText)
     } else if (config.report.type === ReportType.Text) {
-      const guild = this.client.guilds.cache.get(
+      const guild = container.client.guilds.cache.get(
         config.report.text.guildID
-      ) as Guild
-      const channel = guild.channels.cache.get(config.report.text.channelID)
-
-      if (!channel?.isTextBased())
-        return new TypeError('Channel is not text channel')
-
-      channel.send(errorText)
+      )
+      const channel = guild?.channels.cache.get(config.report.text.channelID)
+      if (channel?.isTextBased()) {
+        await channel.send(errorText).catch((err) => {
+          this.logger.error(`Failed to send text error report: ${err}`)
+        })
+      }
     }
   }
 }

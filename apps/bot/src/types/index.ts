@@ -10,7 +10,14 @@ import {
   ShardingManagerOptions
 } from 'discord.js'
 import { ReportType } from '@utils/Constants'
-import { InitOptions } from 'i18next'
+import { InternationalizationOptions } from '@sapphire/plugin-i18next'
+
+declare module '@sapphire/pieces' {
+  interface Container {
+    db: import('@idle/database').DatabaseClient
+  }
+}
+
 export interface ErrorReportOptions {
   executer?:
     | Message<true>
@@ -35,7 +42,7 @@ export type IConfig = {
 } & { i18n: i18nConfig }
 
 export interface i18nConfig {
-  options: InitOptions
+  options: InternationalizationOptions
 }
 
 export interface LoggerConfig {
@@ -80,5 +87,3 @@ export type EmbedType =
   | 'warn'
   | 'info'
   | HexColorString
-
-export * from './command'

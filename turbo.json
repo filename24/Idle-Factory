@@ -1,17 +1,18 @@
 {
   "$schema": "https://turborepo.org/schema.json",
-  "globalDependencies": ["pnpm-lock.yaml", "**/tsconfig.json", "**/tsup.config.ts", "**/.env"],
-  "pipeline": {
+  "globalDependencies": ["pnpm-lock.yaml", "**/tsconfig.json", "**/tsup.config.ts"],
+  "globalEnv": ["NODE_ENV", "DATABASE_URL", "REDIS_URL", "BOT_TOKEN"],
+  "tasks": {
     "build": {
       "dependsOn": ["^build", "db:generate"],
       "inputs": ["src/**/*.ts"],
       "outputs": ["dist/**", "build/**"],
-      "outputMode": "errors-only"
+      "outputLogs": "errors-only"
     },
     "web#build": {
       "inputs": ["public/**", "src/**/*.tsx", "src/**/*.ts", "src/**/*.css", "next.config.js"],
       "outputs": [".next/**", "!.next/cache/**"],
-      "outputMode": "full"
+      "outputLogs": "full"
     },
     "lint": {
       "inputs": [
@@ -30,7 +31,7 @@
         "next.config.js"
       ],
       "outputs": [],
-      "outputMode": "errors-only"
+      "outputLogs": "errors-only"
     },
     "format": {
       "inputs": [
@@ -49,7 +50,13 @@
         "next.config.js"
       ],
       "outputs": [],
-      "outputMode": "errors-only"
+      "outputLogs": "errors-only"
+    },
+    "typecheck": {
+      "dependsOn": ["^build", "db:generate"],
+      "inputs": ["src/**/*.ts", "src/**/*.tsx", "tsconfig.json"],
+      "outputs": [],
+      "outputLogs": "errors-only"
     },
     "dev": {
       "dependsOn": ["db:generate", "^build"],

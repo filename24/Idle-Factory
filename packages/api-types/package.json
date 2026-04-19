@@ -18,14 +18,15 @@
   },
   "scripts": {
     "build": "tsup",
-    "lint": "prettier --check . && eslint src --ext .mjs,.js,.ts",
-    "format": "prettier --write . && eslint src --ext .mjs,.js,.ts --fix"
+    "lint": "prettier --check .",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "eslint-config-idle": "workspace:^",
     "tsconfig": "workspace:^",
     "tsup": "^8.5.1",
-    "typescript": "^5.8.0"
+    "typescript": "^6.0.3"
   },
   "private": true,
   "dependencies": {

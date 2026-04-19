@@ -5,22 +5,27 @@
   "author": "__filename",
   "main": "build/index.js",
   "scripts": {
-    "start": "yarn build && node .",
-    "start:node": "node .",
+    "start": "node build/index.js",
     "dev": "tsx --tsconfig tsconfig.json src/index.ts",
     "generate": "prisma generate",
-    "build": "tsup",
+    "build": "tsup && cp -R src/locales build/locales",
     "typecheck": "tsc --noEmit",
     "update": "pnpm update -i",
     "lint": "eslint . --ext .ts",
     "lint:fix": "prettier --write '**/*.ts' && eslint . --ext .ts --fix"
   },
   "dependencies": {
+    "@idle/database": "workspace:^",
+    "@sapphire/framework": "^5.3.7",
+    "@sapphire/pieces": "^4.3.9",
+    "@sapphire/plugin-i18next": "8.0.0",
+    "@sapphire/snowflake": "^3.5.4",
     "chalk": "^5.6.2",
     "discord.js": "^14.26.3",
-    "dokdo": "^0.6.2",
+    "dokdo": "^1.1.0",
     "dotenv": "^16.0.0",
     "i18next": "^26.0.5",
+    "strip-ansi": "^7.1.0",
     "uuid": "^9.0.0",
     "winston": "^3.19.0"
   },
@@ -29,9 +34,10 @@
     "eslint": "^9.0.0",
     "eslint-config-idle": "workspace:^",
     "eslint-plugin-unused-imports": "^4.0.0",
+    "tsconfig": "workspace:*",
     "tsup": "^8.5.1",
     "tsx": "^4.19.4",
-    "typescript": "^5.8.0"
+    "typescript": "^6.0.3"
   },
   "eslintIgnore": [
     "node_modules",
@@ -40,7 +46,7 @@
     "eslintrc.*"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=20.19"
   },
   "packageManager": "pnpm@10.9.0",
   "private": true

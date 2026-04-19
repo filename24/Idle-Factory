@@ -1,0 +1,55 @@
+# apps/web — Next.js Web App
+
+The public web surface for Idle Factory. Currently a thin Next.js 15 scaffold; treat this as the landing/dashboard target.
+
+## Stack
+
+- **Framework:** Next.js 15.3 (App Router).
+- **UI:** React 19 + React DOM 19.
+- **Styling:** Tailwind CSS v4 (`@tailwindcss/postcss`), Prettier Tailwind plugin, Autoprefixer, PostCSS.
+- **Lint:** ESLint 9 flat config via `eslint-config-idle` + `eslint-config-next`.
+- **TypeScript:** extends `tsconfig/base.json`.
+
+## Directory Layout
+
+```
+src/app/
+├─ layout.tsx      Root layout
+├─ page.tsx        Home page (default create-next-app scaffold)
+├─ globals.css     Tailwind entry
+└─ favicon.ico
+public/            Static assets (shipped as-is)
+next.config.js     Next.js config
+tailwind.config.ts Tailwind content globs + theme
+postcss.config.js  PostCSS pipeline (Tailwind v4)
+```
+
+The current `page.tsx` is an untouched `create-next-app` template — replace it rather than layering on top when starting real UI work.
+
+## Scripts
+
+| Command | Purpose |
+| --- | --- |
+| `pnpm dev` | `next dev`. |
+| `pnpm build` | `next build` (outputs `.next/`). |
+| `pnpm start` | `next start` (serves the built app). |
+| `pnpm lint` | `next lint` (wraps the flat ESLint config). |
+
+Turbo overrides `web#build` inputs/outputs in the root `turbo.json` so Next's `.next/cache/**` is excluded from the cache artifact set.
+
+## Conventions
+
+- **App Router only.** Keep route segments, layouts, loading/error boundaries, and server components under `src/app/`. Use `"use client"` sparingly and only at leaves.
+- **Server components by default.** Move data fetching to server components / route handlers; pass minimal props to client islands.
+- **Styling:** Tailwind v4 utility classes. Centralize tokens in `tailwind.config.ts` / `globals.css` (`@theme`); avoid hardcoded colors and magic spacing.
+- **Accessibility:** Use semantic HTML; hero/landing surfaces should meet the web design-quality bar (intentional hierarchy, real hover/focus states, no template-looking defaults).
+- **Performance targets:** LCP < 2.5s, INP < 200ms, CLS < 0.1. Images must declare explicit `width`/`height` and use `next/image`.
+- **Imports:** Use `@idle/api-types` for shared DTOs; do not duplicate types from the bot.
+
+## Environment
+
+No app-specific env is wired yet. When adding env access, prefer `process.env.NEXT_PUBLIC_*` for browser-exposed values and validate server-only env at module load.
+
+## Build/Deploy
+
+Designed to run on any Node >=18 host or Vercel. Ensure `DATABASE_URL` is set at runtime if route handlers query the DB via `@idle/database`.

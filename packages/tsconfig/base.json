@@ -5,6 +5,7 @@
     "target": "ES2022",
     "module": "CommonJS",
     "moduleResolution": "node",
+    "ignoreDeprecations": "6.0",
     "outDir": "dist",
     "removeComments": true,
     "esModuleInterop": true,
