@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import '@sapphire/plugin-i18next/register'
 import Logger from '@utils/Logger'
 import config from './config'
 import BotClient from '@structures/BotClient'

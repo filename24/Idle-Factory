@@ -1,6 +1,6 @@
 import { Command } from '@sapphire/framework'
+import { fetchT } from '@sapphire/plugin-i18next'
 import Embed from '@utils/Embed'
-import config from '../../config'
 
 export class PingCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -10,11 +10,11 @@ export class PingCommand extends Command {
   public override async chatInputRun(
     interaction: Command.ChatInputCommandInteraction
   ) {
-    const { client, i18n } = this.container
-    const t = await i18n.changeLanguage(config.i18n.options.lng ?? 'en')
+    const { client } = this.container
+    const t = await fetchT(interaction)
 
     const loadEmbed = new Embed(client, 'warn').setTitle(
-      t('command.ping.loading.title')
+      t('embeds:command.ping.loading.title')
     )
     const m = await interaction.reply({
       embeds: [loadEmbed],
@@ -22,20 +22,20 @@ export class PingCommand extends Command {
     })
 
     const successEmbed = new Embed(client, 'success')
-      .setTitle(t('command.ping.success.title'))
+      .setTitle(t('embeds:command.ping.success.title'))
       .addFields([
         {
-          name: t('command.ping.success.fields.message'),
+          name: t('embeds:command.ping.success.fields.message'),
           value: `${m.createdTimestamp - interaction.createdTimestamp}ms`,
           inline: true
         },
         {
-          name: t('command.ping.success.fields.api'),
+          name: t('embeds:command.ping.success.fields.api'),
           value: `${client.ws.ping}ms`,
           inline: true
         },
         {
-          name: t('command.ping.success.fields.uptime'),
+          name: t('embeds:command.ping.success.fields.uptime'),
           value: `<t:${(Number(client.readyAt) / 1000) | 0}:R>`,
           inline: true
         }

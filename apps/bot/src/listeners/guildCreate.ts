@@ -1,4 +1,5 @@
 import { Listener, Events } from '@sapphire/framework'
+import { fetchT } from '@sapphire/plugin-i18next'
 import type { Guild } from 'discord.js'
 import Embed from '@utils/Embed'
 
@@ -11,7 +12,8 @@ export class GuildCreateListener extends Listener<typeof Events.GuildCreate> {
   }
 
   public async run(guild: Guild) {
-    const { client, db, i18n } = this.container
+    const { client, db } = this.container
+    const t = await fetchT(guild)
 
     const guildData = await db.guild.upsert({
       where: { id: guild.id },
@@ -20,10 +22,10 @@ export class GuildCreateListener extends Listener<typeof Events.GuildCreate> {
     })
 
     const embed = new Embed(client, 'success')
-      .setTitle(i18n.t('event.guildCreate.title'))
-      .setDescription(i18n.t('event.guildCreate.description'))
+      .setTitle(t('embeds:event.guildCreate.title'))
+      .setDescription(t('embeds:event.guildCreate.description'))
       .addFields({
-        name: i18n.t('event.guildCreate.default.tax'),
+        name: t('embeds:event.guildCreate.default.tax'),
         value: `${guildData.tax}%`
       })
 

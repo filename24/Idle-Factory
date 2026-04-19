@@ -1,0 +1,32 @@
+{
+  "event": {
+    "guildCreate": {
+      "title": "Idle Factory 를 초대해주셔서 감사합니다!",
+      "description": "추가적인 세팅을 원할경우 아래 버튼을 눌러주세요."
+    }
+  },
+  "command": {
+    "ping": {
+      "loading": {
+        "title": "핑 측정중..."
+      },
+      "success": {
+        "title": "🏓 Pong!",
+        "fields": {
+          "message": "메세지 응답속도",
+          "api": "API 반응속도",
+          "uptime": "업타임"
+        }
+      }
+    },
+    "setup": {
+      "available": {
+        "title": "제가 아는 {{factoryName}}이군요!",
+        "description": "등록된 공장은 재등록 불가능합니다!"
+      }
+    },
+    "notice": {
+      "title": "공지사항"
+    }
+  }
+}

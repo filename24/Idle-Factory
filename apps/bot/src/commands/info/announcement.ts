@@ -1,6 +1,6 @@
 import { Command } from '@sapphire/framework'
+import { fetchT } from '@sapphire/plugin-i18next'
 import Embed from '@utils/Embed'
-import config from '../../config'
 
 export class AnnouncementCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -10,10 +10,12 @@ export class AnnouncementCommand extends Command {
   public override async chatInputRun(
     interaction: Command.ChatInputCommandInteraction
   ) {
-    const { client, i18n } = this.container
-    const t = await i18n.changeLanguage(config.i18n.options.lng ?? 'en')
+    const { client } = this.container
+    const t = await fetchT(interaction)
 
-    const embed = new Embed(client, 'info').setTitle(t('command.notice.title'))
+    const embed = new Embed(client, 'info').setTitle(
+      t('embeds:command.notice.title')
+    )
     await interaction.reply({ ephemeral: true, embeds: [embed] })
   }
 

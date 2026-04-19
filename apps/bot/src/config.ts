@@ -1,7 +1,7 @@
 import { execSync } from 'child_process'
+import { fileURLToPath } from 'url'
 import { IConfig } from '@types'
 import { ReportType } from './utils/Constants'
-import { en, ko } from '@locales'
 import { IntentsBitField } from 'discord.js'
 
 const env = (key: string, fallback = ''): string => process.env[key] ?? fallback
@@ -76,13 +76,15 @@ const config: IConfig = {
   },
   i18n: {
     options: {
-      lng: env('I18N_LNG', 'en'),
-      resources: {
-        en: {
-          translation: en
-        },
-        ko: {
-          translation: ko
+      defaultNS: 'common',
+      defaultMissingKey: 'generic',
+      defaultLanguageDirectory: fileURLToPath(
+        new URL('./locales', import.meta.url)
+      ),
+      i18next: {
+        fallbackLng: env('I18N_FALLBACK_LNG', 'en-US'),
+        interpolation: {
+          escapeValue: false
         }
       }
     }

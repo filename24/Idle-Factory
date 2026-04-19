@@ -10,7 +10,7 @@ import {
   ShardingManagerOptions
 } from 'discord.js'
 import { ReportType } from '@utils/Constants'
-import { InitOptions } from 'i18next'
+import { InternationalizationOptions } from '@sapphire/plugin-i18next'
 
 declare module '@sapphire/pieces' {
   interface Container {
@@ -43,7 +43,7 @@ export type IConfig = {
 } & { i18n: i18nConfig }
 
 export interface i18nConfig {
-  options: InitOptions
+  options: InternationalizationOptions
 }
 
 export interface LoggerConfig {
