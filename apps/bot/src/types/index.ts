@@ -14,7 +14,8 @@ import { InternationalizationOptions } from '@sapphire/plugin-i18next'
 
 declare module '@sapphire/pieces' {
   interface Container {
-    db: import('@prisma/client').PrismaClient
+    db: import('@idle/database').DatabaseClient
+    i18n: import('i18next').i18n
   }
 }
 

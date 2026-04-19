@@ -25,13 +25,18 @@
   "files": [
     "dist"
   ],
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.0.0",
+    "@prisma/client": "^7.0.0",
+    "ioredis": "^5.10.1"
+  },
   "devDependencies": {
-    "@prisma/client": "^6.19.3",
+    "dotenv": "^16.4.5",
     "eslint-config-idle": "workspace:^",
-    "ioredis": "^5.10.1",
-    "prisma": "^6.19.3",
+    "prisma": "^7.0.0",
     "tsconfig": "workspace:^",
     "tsup": "^8.5.1",
+    "tsx": "^4.19.4",
     "typescript": "^6.0.3"
   },
   "engines": {
