@@ -58,6 +58,9 @@ importers:
       '@sapphire/pieces':
         specifier: ^4.3.9
         version: 4.4.1
+      '@sapphire/plugin-i18next':
+        specifier: 8.0.0
+        version: 8.0.0(typescript@5.9.3)
       '@sapphire/snowflake':
         specifier: ^3.5.4
         version: 3.5.5
@@ -2010,6 +2013,13 @@ packages:
       }
     engines: { node: '>=v14.0.0', npm: '>=7.0.0' }
 
+  '@sapphire/plugin-i18next@8.0.0':
+    resolution:
+      {
+        integrity: sha512-oZoQQGqcFLmPHFQ470lOG2tankvNyxaDP1SRBgdVzO+1PKUcs7oC23DWsA0zJiP/XsVe9Q12qSObAwpobANc3Q==,
+      }
+    engines: { node: '>=v18', npm: '>=7' }
+
   '@sapphire/ratelimits@2.4.11':
     resolution:
       {
@@ -2070,6 +2080,13 @@ packages:
     resolution:
       {
         integrity: sha512-KxXvfapcixpz6rVEB6HPjOUZT22yN6v0vI0urQSk1L8MlEWPDFCZkhw2xmkyoTGYeFw7tWTZd7e3lVzRZRN/EA==,
+      }
+    engines: { node: '>=18' }
+
+  '@skyra/i18next-backend@2.0.6':
+    resolution:
+      {
+        integrity: sha512-emMWpgHVsycYUobAcylJhBrVAOg/C8huAflam3xGtFSzeVGtjQ1jcEbBzmzDj5c0E+AUcz/QDI1JCnKsXHL1HQ==,
       }
     engines: { node: '>=18' }
 
@@ -3995,6 +4012,17 @@ packages:
       }
     engines: { node: '>=18' }
     hasBin: true
+
+  i18next@25.10.10:
+    resolution:
+      {
+        integrity: sha512-cqUW2Z3EkRx7NqSyywjkgCLK7KLCL6IFVFcONG7nVYIJ3ekZ1/N5jUsihHV6Bq37NfhgtczxJcxduELtjTwkuQ==,
+      }
+    peerDependencies:
+      typescript: ^5 || ^6
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   i18next@26.0.5:
     resolution:
@@ -7028,6 +7056,15 @@ snapshots:
       '@sapphire/utilities': 3.18.2
       tslib: 2.8.1
 
+  '@sapphire/plugin-i18next@8.0.0(typescript@5.9.3)':
+    dependencies:
+      '@sapphire/utilities': 3.18.2
+      '@skyra/i18next-backend': 2.0.6
+      chokidar: 4.0.3
+      i18next: 25.10.10(typescript@5.9.3)
+    transitivePeerDependencies:
+      - typescript
+
   '@sapphire/ratelimits@2.4.11': {}
 
   '@sapphire/result@2.8.0': {}
@@ -7052,6 +7089,10 @@ snapshots:
       '@simple-libs/stream-utils': 1.2.0
 
   '@simple-libs/stream-utils@1.2.0': {}
+
+  '@skyra/i18next-backend@2.0.6':
+    dependencies:
+      tslib: 2.8.1
 
   '@so-ric/colorspace@1.1.6':
     dependencies:
@@ -8357,6 +8398,12 @@ snapshots:
       function-bind: 1.1.2
 
   husky@9.1.7: {}
+
+  i18next@25.10.10(typescript@5.9.3):
+    dependencies:
+      '@babel/runtime': 7.29.2
+    optionalDependencies:
+      typescript: 5.9.3
 
   i18next@26.0.5(typescript@5.9.3):
     dependencies:

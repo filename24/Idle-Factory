@@ -24,12 +24,12 @@ src/
 ├─ interaction-handlers/ Component & modal handlers
 ├─ managers/
 │   └─ ErrorManager.ts
-├─ locales/              i18next resources (en, ko)
+├─ locales/              i18next JSON resources (`<lng>/<ns>.json`, e.g. `en-US/common.json`)
 ├─ types/                IConfig + shared types
 └─ utils/                Logger, Embed, Constants, Algorithms, SnowFlake
 ```
 
-Path aliases (`@utils`, `@structures`, `@types`, `@locales`) are declared in `tsconfig.json` and must be kept in sync when directories move.
+Path aliases (`@utils`, `@structures`, `@types`) are declared in `tsconfig.json` and must be kept in sync when directories move.
 
 ## Configuration
 
@@ -39,22 +39,22 @@ All config flows through `src/config.ts`:
 - Optional env: `BOT_NAME`, `BOT_PREFIX`, `BOT_OWNERS` (comma list), `BOT_COOLDOWN`, `BOT_SHARDING`, `DEV_GUILD_ID`, `GITHUB_TOKEN`.
 - Reporting: `REPORT_TYPE` (`webhook` | `text`), `REPORT_WEBHOOK_URL`, `REPORT_TEXT_GUILD_ID`, `REPORT_TEXT_CHANNEL_ID`.
 - Logging: `LOG_LEVEL`, `LOG_DEV`.
-- i18n: `I18N_LNG` (defaults to `en`). Resources are loaded from `@locales`.
+- i18n: `I18N_FALLBACK_LNG` (defaults to `en-US`). Loaded by `@sapphire/plugin-i18next` from `src/locales/<lng>/<ns>.json`; default namespace is `common`.
 - `BUILD_NUMBER` falls back to `git rev-parse --short HEAD` when unset.
 
 Copy `.env.example` to `.env` for local development. Never commit `.env`.
 
 ## Scripts
 
-| Command | Purpose |
-| --- | --- |
-| `pnpm dev` | `tsx` watch-run of `src/index.ts`. |
-| `pnpm build` | `tsup` bundle into `build/`. |
-| `pnpm start` | Run the built `build/index.js`. |
-| `pnpm generate` | `prisma generate` (bot depends on `@prisma/client`). |
-| `pnpm typecheck` | `tsc --noEmit`. |
-| `pnpm lint` | ESLint over `.ts` files. |
-| `pnpm lint:fix` | Prettier + ESLint `--fix`. |
+| Command          | Purpose                                              |
+| ---------------- | ---------------------------------------------------- |
+| `pnpm dev`       | `tsx` watch-run of `src/index.ts`.                   |
+| `pnpm build`     | `tsup` bundle into `build/`.                         |
+| `pnpm start`     | Run the built `build/index.js`.                      |
+| `pnpm generate`  | `prisma generate` (bot depends on `@prisma/client`). |
+| `pnpm typecheck` | `tsc --noEmit`.                                      |
+| `pnpm lint`      | ESLint over `.ts` files.                             |
+| `pnpm lint:fix`  | Prettier + ESLint `--fix`.                           |
 
 Prisma client generation is a prerequisite for `build`/`dev` and is declared in the root `turbo.json` via `db:generate`.
 

@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import '@sapphire/plugin-i18next/register'
 import { ShardingManager } from 'discord.js'
 import { fileURLToPath } from 'url'
 import { join, dirname } from 'path'

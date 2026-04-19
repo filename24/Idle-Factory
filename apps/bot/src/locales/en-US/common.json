@@ -1,0 +1,20 @@
+{
+  "hello": {
+    "world": "Hello world"
+  },
+  "button": {
+    "accept": "Accept",
+    "cancel": "Cancel",
+    "deny": "Deny"
+  },
+  "rules": {
+    "accept": "I agree."
+  },
+  "error": {
+    "dm": "This feature is not available in DMs.",
+    "dev": {
+      "title": "Oh no...",
+      "description": "This feature is currently unavailable due to maintenance.\nSee `/notice` for details."
+    }
+  }
+}

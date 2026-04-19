@@ -1,7 +1,6 @@
 import { SapphireClient, container } from '@sapphire/framework'
 import { PrismaClient } from '@prisma/client'
 import { type ClientOptions } from 'discord.js'
-import i18next from 'i18next'
 import Dokdo from 'dokdo'
 import { fileURLToPath } from 'url'
 
@@ -20,7 +19,8 @@ export default class BotClient extends SapphireClient {
     super({
       ...options,
       baseUserDirectory: fileURLToPath(new URL('..', import.meta.url)),
-      defaultPrefix: config.bot.prefix
+      defaultPrefix: config.bot.prefix,
+      i18n: config.i18n.options
     })
 
     this.VERSION = config.BUILD_VERSION
@@ -39,11 +39,6 @@ export default class BotClient extends SapphireClient {
     container.db = new PrismaClient()
     await container.db.$connect()
     logger.info('Connected to Prisma')
-
-    logger.info('Loading i18n...')
-    await i18next.init(config.i18n.options)
-    container.i18n = i18next
-    logger.info('Loaded i18n')
 
     logger.info('Logging in bot...')
     return super.login(token)

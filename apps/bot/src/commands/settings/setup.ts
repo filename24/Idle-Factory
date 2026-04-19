@@ -1,6 +1,6 @@
 import { Command } from '@sapphire/framework'
+import { fetchT } from '@sapphire/plugin-i18next'
 import Embed from '@utils/Embed'
-import config from '../../config'
 
 export class SetupCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -10,8 +10,8 @@ export class SetupCommand extends Command {
   public override async chatInputRun(
     interaction: Command.ChatInputCommandInteraction
   ) {
-    const { client, db, i18n } = this.container
-    const t = await i18n.changeLanguage(config.i18n.options.lng ?? 'en')
+    const { client, db } = this.container
+    const t = await fetchT(interaction)
 
     const guildData = await db.guild.findFirst({
       where: { id: interaction.guildId! }
@@ -23,11 +23,11 @@ export class SetupCommand extends Command {
         embeds: [
           new Embed(client, 'error')
             .setTitle(
-              t('command.setup.available.title', {
+              t('embeds:command.setup.available.title', {
                 factoryName: guildData.name
               })
             )
-            .setDescription(t('command.setup.available.description'))
+            .setDescription(t('embeds:command.setup.available.description'))
         ]
       })
     }
@@ -44,7 +44,7 @@ export class SetupCommand extends Command {
       data: {
         id: guild.id,
         name: guild.name,
-        lang: config.i18n.options.lng ?? 'en'
+        lang: interaction.locale ?? 'en-US'
       }
     })
 
@@ -53,9 +53,11 @@ export class SetupCommand extends Command {
       embeds: [
         new Embed(client, 'success')
           .setTitle(
-            t('command.setup.success.title', { factoryName: created.name })
+            t('embeds:command.setup.success.title', {
+              factoryName: created.name
+            })
           )
-          .setDescription(t('command.setup.success.description'))
+          .setDescription(t('embeds:command.setup.success.description'))
       ]
     })
   }
