@@ -14,7 +14,8 @@ pids
 
 # Env
 .env
-config.*
+*.local.ts
+config.local.*
 
 # Miscellaneous
 .tmp/

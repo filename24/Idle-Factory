@@ -5,8 +5,7 @@
   "author": "__filename",
   "main": "build/index.js",
   "scripts": {
-    "start": "yarn build && node .",
-    "start:node": "node .",
+    "start": "node build/index.js",
     "dev": "tsx --tsconfig tsconfig.json src/index.ts",
     "generate": "prisma generate",
     "build": "tsup",
@@ -16,11 +15,16 @@
     "lint:fix": "prettier --write '**/*.ts' && eslint . --ext .ts --fix"
   },
   "dependencies": {
+    "@prisma/client": "^6.7.0",
+    "@sapphire/framework": "^5.3.7",
+    "@sapphire/pieces": "^4.3.9",
+    "@sapphire/snowflake": "^3.5.4",
     "chalk": "^5.6.2",
     "discord.js": "^14.26.3",
     "dokdo": "^0.6.2",
     "dotenv": "^16.0.0",
     "i18next": "^26.0.5",
+    "strip-ansi": "^7.1.0",
     "uuid": "^9.0.0",
     "winston": "^3.19.0"
   },
@@ -29,6 +33,7 @@
     "eslint": "^9.0.0",
     "eslint-config-idle": "workspace:^",
     "eslint-plugin-unused-imports": "^4.0.0",
+    "tsconfig": "workspace:*",
     "tsup": "^8.5.1",
     "tsx": "^4.19.4",
     "typescript": "^5.8.0"

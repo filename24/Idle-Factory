@@ -6,7 +6,7 @@ jobs:
     name: Cache conflict error
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Merge Conflict finder
         uses: InfiniteTeam/action-conflict-finder@master
 
@@ -17,21 +17,20 @@ jobs:
       - name: 🧹 Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🌐 Install Node v18
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: 🌐 Install Node v20
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
+          cache: 'pnpm'
 
       - name: 📥 Install dependencies
-        uses: ./.github/actions/yarnCache
-        with:
-          cwd: '.'
-          enable-corepack: false
-          cache-node-modules: true
-          cache-install-state: true
+        run: pnpm install --frozen-lockfile
 
       - name: 🏃‍♂️ Run ESLint
-        run: yarn format
+        run: pnpm format
 
       - name: 📦 Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
@@ -45,34 +44,31 @@ jobs:
     env:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      BOT_TOKEN: ci-placeholder
     steps:
       - name: 🧹 Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🌐 Install Node v18
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: 🌐 Install Node v20
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
+          cache: 'pnpm'
 
       - name: 📥 Install dependencies
-        uses: ./.github/actions/yarnCache
-        with:
-          cwd: '.'
-          enable-corepack: false
-          cache-node-modules: true
-          cache-install-state: true
-
-      - name: 📥 Copy config file (bot)
-        run: cp apps/bot/src/example.config.ts apps/bot/src/config.ts
+        run: pnpm install --frozen-lockfile
 
       - name: 💾  Build packages
-        run: yarn build:packages --summarize
+        run: pnpm build:packages --summarize
 
       - name: 📝 Summarize Turborepo Output
         uses: ./.github/actions/turboSummary
 
       - name: 💾 Build apps
-        run: yarn build:apps --summarize
+        run: pnpm build:apps --summarize
 
       - name: 📝 Summarize Turborepo Output
         uses: ./.github/actions/turboSummary
