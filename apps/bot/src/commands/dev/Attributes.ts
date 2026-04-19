@@ -97,8 +97,11 @@ export class AttributesCommand extends Command {
           components: [buildRow()]
         })
       } else if (i.customId === 'accept') {
-        await i.deferReply()
-        await i.followUp('성공적으로 해당 직원을 공장에 지원했습니다!')
+        await i.deferUpdate()
+        await i.followUp({
+          content: '성공적으로 해당 직원을 공장에 지원했습니다!',
+          ephemeral: true
+        })
       }
     })
   }

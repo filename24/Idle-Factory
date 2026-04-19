@@ -77,9 +77,7 @@ model Notice {
   description String
   postedAt    DateTime @default(now())
   updatedAt   DateTime @updatedAt
-}
 
-enum FactoryStatus {
-  Closed
-  Opened
+  @@index([title])
+  @@index([postedAt])
 }

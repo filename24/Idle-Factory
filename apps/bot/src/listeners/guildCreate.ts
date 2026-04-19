@@ -13,8 +13,10 @@ export class GuildCreateListener extends Listener<typeof Events.GuildCreate> {
   public async run(guild: Guild) {
     const { client, db, i18n } = this.container
 
-    const guildData = await db.guild.create({
-      data: { id: guild.id, name: guild.name, tax: 0.1 }
+    const guildData = await db.guild.upsert({
+      where: { id: guild.id },
+      create: { id: guild.id, name: guild.name, tax: 0.1 },
+      update: { name: guild.name }
     })
 
     const embed = new Embed(client, 'success')

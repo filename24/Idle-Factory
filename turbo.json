@@ -1,6 +1,7 @@
 {
   "$schema": "https://turborepo.org/schema.json",
-  "globalDependencies": ["pnpm-lock.yaml", "**/tsconfig.json", "**/tsup.config.ts", "**/.env"],
+  "globalDependencies": ["pnpm-lock.yaml", "**/tsconfig.json", "**/tsup.config.ts"],
+  "globalEnv": ["NODE_ENV", "DATABASE_URL", "REDIS_URL", "BOT_TOKEN"],
   "tasks": {
     "build": {
       "dependsOn": ["^build", "db:generate"],

@@ -26,7 +26,9 @@ export class NoticeIdAutocomplete extends InteractionHandler {
   public async run(interaction: AutocompleteInteraction) {
     const focused = interaction.options.getFocused()
     const data = await this.container.db.notice.findMany({
-      where: focused ? { title: { contains: focused } } : undefined,
+      where: focused
+        ? { title: { contains: focused, mode: 'insensitive' } }
+        : undefined,
       take: 25,
       orderBy: { postedAt: 'desc' }
     })
