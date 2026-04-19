@@ -1,6 +1,10 @@
-import { Attributes } from '@prisma/client'
+export interface WorkerAttributes {
+  athletics: number
+  strength: number
+  machinery: number
+}
 
-export function getRandomAttributes(): Partial<Attributes> {
+export function getRandomAttributes(): WorkerAttributes {
   return {
     athletics: getRandomAttributesNumber(),
     machinery: getRandomAttributesNumber(),

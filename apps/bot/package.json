@@ -15,7 +15,7 @@
     "lint:fix": "prettier --write '**/*.ts' && eslint . --ext .ts --fix"
   },
   "dependencies": {
-    "@prisma/client": "^6.7.0",
+    "@prisma/client": "^6.19.3",
     "@sapphire/framework": "^5.3.7",
     "@sapphire/pieces": "^4.3.9",
     "@sapphire/snowflake": "^3.5.4",
@@ -45,7 +45,7 @@
     "eslintrc.*"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=20.19"
   },
   "packageManager": "pnpm@10.9.0",
   "private": true

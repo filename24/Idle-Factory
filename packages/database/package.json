@@ -25,15 +25,15 @@
     "dist"
   ],
   "devDependencies": {
-    "@prisma/client": "^6.7.0",
+    "@prisma/client": "^6.19.3",
     "eslint-config-idle": "workspace:^",
     "ioredis": "^5.10.1",
-    "prisma": "^6.7.0",
+    "prisma": "^6.19.3",
     "tsconfig": "workspace:^",
     "tsup": "^8.5.1",
     "typescript": "^5.8.0"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20.19"
   }
 }

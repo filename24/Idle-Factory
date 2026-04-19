@@ -57,7 +57,8 @@ const config: IConfig = {
     token: requireEnv('BOT_TOKEN'),
     owners: parseList(process.env.BOT_OWNERS),
     prefix: env('BOT_PREFIX', '<@786891249005232179> '),
-    cooldown: Number(env('BOT_COOLDOWN', '2000'))
+    cooldown: Number(env('BOT_COOLDOWN', '2000')),
+    shardingOptions: undefined
   },
   report: {
     type: reportType,

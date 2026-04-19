@@ -1,5 +1,4 @@
-import { PrismaClient } from '@prisma/client'
-import { PrismaClientOptions } from '@prisma/client/runtime/library'
+import { Prisma, PrismaClient } from '@prisma/client'
 import { Redis, RedisOptions } from 'ioredis'
 
 export class DatabaseClient extends PrismaClient {
@@ -8,15 +7,18 @@ export class DatabaseClient extends PrismaClient {
   constructor(public options?: ClientOptions) {
     super(options?.prisma)
 
-    if (!options?.useRedis) {
+    if (options?.useRedis) {
       if (options?.redis) this.redis = new Redis(options.redis)
-
-      if (process.env.REDIS_URL) this.redis = new Redis(process.env.REDIS_URL)
+      else if (process.env.REDIS_URL) this.redis = new Redis(process.env.REDIS_URL)
     }
 
-    this.$connect().then(() => {
-      console.info('Connected to Prisma')
-    })
+    this.$connect()
+      .then(() => {
+        console.info('Connected to Prisma')
+      })
+      .catch((err) => {
+        console.error('Failed to connect to Prisma:', err)
+      })
   }
 
   public async disconnect() {
@@ -38,7 +40,7 @@ export type ClientOptions = {
 
 export interface DatabaseOptions {
   redis?: RedisOptions
-  prisma?: PrismaClientOptions
+  prisma?: Prisma.PrismaClientOptions
 }
 
 declare global {

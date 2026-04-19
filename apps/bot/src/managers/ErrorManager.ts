@@ -14,8 +14,9 @@ export default class ErrorManager {
     this.logger.error(error.stack as string)
 
     const date = (Number(new Date()) / 1000) | 0
-    const errorText = `**[<t:${date}:T> ERROR]** ${error.stack}`
     const errorCode = v4()
+    const errorSummary = `${error.name}: ${error.message}`
+    const errorText = `**[<t:${date}:T> ERROR]** \`${errorCode}\` — ${errorSummary}`
 
     const errorEmbed = new Embed(container.client, 'error')
       .setTitle('오류가 발생했습니다.')
