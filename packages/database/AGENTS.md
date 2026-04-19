@@ -51,16 +51,16 @@ await db.disconnect()
 
 ## Scripts
 
-| Command | Purpose |
-| --- | --- |
-| `pnpm build` | Bundle with `tsup`. |
-| `pnpm lint` / `format` | Prettier check / write. |
-| `pnpm studio` | `prisma studio`. |
-| `pnpm db:format` | `prisma format` — canonicalize schema. |
-| `pnpm db:generate` | `prisma generate` — produce client. |
-| `pnpm db:push` | Push schema without migrations (dev-only). |
-| `pnpm db:migrate:dev` | Create + apply a migration locally. |
-| `pnpm db:migrate:deploy` | Apply migrations (prod / CI). |
+| Command                  | Purpose                                    |
+| ------------------------ | ------------------------------------------ |
+| `pnpm build`             | Bundle with `tsup`.                        |
+| `pnpm lint` / `format`   | Prettier check / write.                    |
+| `pnpm studio`            | `prisma studio`.                           |
+| `pnpm db:format`         | `prisma format` — canonicalize schema.     |
+| `pnpm db:generate`       | `prisma generate` — produce client.        |
+| `pnpm db:push`           | Push schema without migrations (dev-only). |
+| `pnpm db:migrate:dev`    | Create + apply a migration locally.        |
+| `pnpm db:migrate:deploy` | Apply migrations (prod / CI).              |
 
 Turbo's root `db:generate` task is `cache: false` and is a dependency of `build`/`dev`.
 

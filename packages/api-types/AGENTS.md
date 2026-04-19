@@ -24,10 +24,10 @@ Consumers must run the package's `build` task at least once (Turbo handles this 
 
 ## Scripts
 
-| Command | Purpose |
-| --- | --- |
-| `pnpm build` | Bundle with `tsup`. |
-| `pnpm lint` | `prettier --check .`. |
+| Command       | Purpose               |
+| ------------- | --------------------- |
+| `pnpm build`  | Bundle with `tsup`.   |
+| `pnpm lint`   | `prettier --check .`. |
 | `pnpm format` | `prettier --write .`. |
 
 ## Runtime Deps
