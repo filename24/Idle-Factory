@@ -1,11 +1,15 @@
-import { Prisma, PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
 import { Redis, RedisOptions } from 'ioredis'
+import { Prisma, PrismaClient } from '../generated/client.js'
 
 export class DatabaseClient extends PrismaClient {
   public redis!: Redis
 
   constructor(public options?: ClientOptions) {
-    super(options?.prisma)
+    const adapter = new PrismaPg({
+      connectionString: process.env.DATABASE_URL!,
+    })
+    super({ adapter, ...options?.prisma })
 
     if (options?.useRedis) {
       if (options?.redis) this.redis = new Redis(options.redis)
@@ -25,7 +29,7 @@ export class DatabaseClient extends PrismaClient {
     console.warn('Disconnecting Database...')
 
     this.$disconnect().then(() => console.warn('Disconnected to Prisma'))
-    this.redis.disconnect()
+    this.redis?.disconnect()
 
     return true
   }
@@ -40,7 +44,7 @@ export type ClientOptions = {
 
 export interface DatabaseOptions {
   redis?: RedisOptions
-  prisma?: Prisma.PrismaClientOptions
+  prisma?: Omit<Prisma.PrismaClientOptions, 'adapter' | 'accelerateUrl'>
 }
 
 declare global {

@@ -1,5 +1,5 @@
 import { SapphireClient, container } from '@sapphire/framework'
-import { PrismaClient } from '@prisma/client'
+import { DatabaseClient } from '@idle/database'
 import { type ClientOptions } from 'discord.js'
 import i18next from 'i18next'
 import Dokdo from 'dokdo'
@@ -36,8 +36,7 @@ export default class BotClient extends SapphireClient {
 
   public override async login(token = config.bot.token): Promise<string> {
     logger.info('Connecting to database...')
-    container.db = new PrismaClient()
-    await container.db.$connect()
+    container.db = new DatabaseClient()
     logger.info('Connected to Prisma')
 
     logger.info('Loading i18n...')
