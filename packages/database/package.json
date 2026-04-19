@@ -6,6 +6,7 @@
     "build": "tsup",
     "lint": "prettier --check .",
     "format": "prettier --write .",
+    "typecheck": "tsc --noEmit",
     "studio": "prisma studio",
     "db:format": "prisma format",
     "db:migrate:deploy": "prisma migrate deploy",

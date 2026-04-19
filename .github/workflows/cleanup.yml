@@ -7,9 +7,15 @@ on:
       - closed
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   cleanup:
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
     steps:
       - name: Check out code
         uses: actions/checkout@v4

@@ -33,6 +33,7 @@
     "eslint": "^9.0.0",
     "eslint-config-idle": "workspace:^",
     "eslint-plugin-unused-imports": "^4.0.0",
+    "prisma": "^6.19.3",
     "tsconfig": "workspace:*",
     "tsup": "^8.5.1",
     "tsx": "^4.19.4",

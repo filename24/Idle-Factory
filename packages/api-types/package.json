@@ -19,7 +19,8 @@
   "scripts": {
     "build": "tsup",
     "lint": "prettier --check .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "eslint-config-idle": "workspace:^",

@@ -6,6 +6,7 @@
     "build:apps": "turbo run build --filter '!./packages/*'",
     "lint": "turbo run lint",
     "format": "turbo run format",
+    "typecheck": "turbo run typecheck",
     "dev": "turbo run dev",
     "postinstall": "is-ci || husky",
     "update": "pnpm update -i -r",

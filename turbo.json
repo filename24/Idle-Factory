@@ -52,6 +52,12 @@
       "outputs": [],
       "outputLogs": "errors-only"
     },
+    "typecheck": {
+      "dependsOn": ["^build", "db:generate"],
+      "inputs": ["src/**/*.ts", "src/**/*.tsx", "tsconfig.json"],
+      "outputs": [],
+      "outputLogs": "errors-only"
+    },
     "dev": {
       "dependsOn": ["db:generate", "^build"],
       "cache": false,

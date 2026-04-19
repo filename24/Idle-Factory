@@ -34,7 +34,7 @@ const myFormat = printf(({ level, message, label, ms }) => {
       new Date().getSeconds()
     }]`
   )} ${_level === 'chat' ? '' : `[ ${label} ] `}${level} ${colorizer(
-    message
+    String(message)
   )} ${chalk.magentaBright(ms)}`
 })
 
