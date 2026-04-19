@@ -1,0 +1,11 @@
+node_modules/
+dist/
+build/
+.next/
+.turbo/
+
+# Prisma v7 generated client
+packages/database/src/generated/
+
+# Lockfiles
+pnpm-lock.yaml

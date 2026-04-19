@@ -17,6 +17,9 @@ pids
 # Dist
 dist/
 
+# Prisma v7 generated client
+packages/database/src/generated/
+
 # Miscellaneous
 .tmp/
 .turbo

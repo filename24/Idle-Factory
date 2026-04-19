@@ -1,8 +1,8 @@
 import { SapphireClient, container } from '@sapphire/framework'
-import { PrismaClient } from '@prisma/client'
-import { type ClientOptions } from 'discord.js'
+import { DatabaseClient } from '@idle/database'
+import { type ClientOptions, type Message } from 'discord.js'
 import i18next from 'i18next'
-import Dokdo from 'dokdo'
+import { Client as Dokdo } from 'dokdo'
 import { fileURLToPath } from 'url'
 
 import Logger from '@utils/Logger'
@@ -14,7 +14,7 @@ export default class BotClient extends SapphireClient {
   public readonly VERSION: string
   public readonly BUILD_NUMBER: string
   public readonly config = config
-  public readonly dokdo: Dokdo
+  public readonly dokdo: InstanceType<typeof Dokdo>
 
   public constructor(options: ClientOptions) {
     super({
@@ -28,7 +28,7 @@ export default class BotClient extends SapphireClient {
 
     this.dokdo = new Dokdo(this, {
       prefix: config.bot.prefix,
-      noPerm: async (message) =>
+      noPerm: async (message: Message) =>
         message.reply('You do not have permission to use this command.'),
       owners: config.bot.owners?.length === 0 ? undefined : config.bot.owners
     })
@@ -36,8 +36,7 @@ export default class BotClient extends SapphireClient {
 
   public override async login(token = config.bot.token): Promise<string> {
     logger.info('Connecting to database...')
-    container.db = new PrismaClient()
-    await container.db.$connect()
+    container.db = new DatabaseClient()
     logger.info('Connected to Prisma')
 
     logger.info('Loading i18n...')
