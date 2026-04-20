@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@idle/database": "workspace:^",
+    "@idle/game-core": "workspace:^",
     "@sapphire/framework": "^5.3.7",
     "@sapphire/pieces": "^4.3.9",
     "@sapphire/plugin-i18next": "8.0.0",
