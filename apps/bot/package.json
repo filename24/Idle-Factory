@@ -12,7 +12,9 @@
     "typecheck": "tsc --noEmit",
     "update": "pnpm update -i",
     "lint": "eslint . --ext .ts",
-    "lint:fix": "prettier --write '**/*.ts' && eslint . --ext .ts --fix"
+    "lint:fix": "prettier --write '**/*.ts' && eslint . --ext .ts --fix",
+    "test": "vitest run",
+    "test:integration": "vitest run tests/integration"
   },
   "dependencies": {
     "@idle/database": "workspace:^",
@@ -37,7 +39,8 @@
     "tsconfig": "workspace:*",
     "tsup": "^8.5.1",
     "tsx": "^4.19.4",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^2.1.8"
   },
   "eslintIgnore": [
     "node_modules",
