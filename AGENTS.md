@@ -30,17 +30,17 @@ Workspace globs live in `pnpm-workspace.yaml`. Shared env keys (`DATABASE_URL`, 
 
 Run from the repo root:
 
-| Command | Purpose |
-| --- | --- |
-| `pnpm install` | Install all workspace deps. Postinstall wires Husky (skipped in CI). |
-| `pnpm build` | `turbo run build` across all packages/apps. |
-| `pnpm build:packages` | Build libs only (`--filter '!./apps/*'`). |
-| `pnpm build:apps` | Build apps only (`--filter '!./packages/*'`). |
-| `pnpm dev` | `turbo run dev` (persistent, depends on `db:generate`). |
-| `pnpm lint` | Workspace lint. |
-| `pnpm format` | Workspace format. |
-| `pnpm update` | Interactive recursive dep update. |
-| `pnpm generate` | `turbo gen` scaffolding. |
+| Command               | Purpose                                                              |
+| --------------------- | -------------------------------------------------------------------- |
+| `pnpm install`        | Install all workspace deps. Postinstall wires Husky (skipped in CI). |
+| `pnpm build`          | `turbo run build` across all packages/apps.                          |
+| `pnpm build:packages` | Build libs only (`--filter '!./apps/*'`).                            |
+| `pnpm build:apps`     | Build apps only (`--filter '!./packages/*'`).                        |
+| `pnpm dev`            | `turbo run dev` (persistent, depends on `db:generate`).              |
+| `pnpm lint`           | Workspace lint.                                                      |
+| `pnpm format`         | Workspace format.                                                    |
+| `pnpm update`         | Interactive recursive dep update.                                    |
+| `pnpm generate`       | `turbo gen` scaffolding.                                             |
 
 ## Turbo Task Graph
 
@@ -51,6 +51,7 @@ Run from the repo root:
 
 ## Conventions
 
+- **Korean JSDoc (repo-wide):** 모든 workspace의 exported 심볼(함수·클래스·타입·인터페이스·상수)에는 한국어 `/** */` JSDoc 주석을 작성한다. Idle-Factory는 한국어 기준 문서·팀을 따르며, 공식·수치 상수 주석에는 `docs/design/XX-*.md` 출처를 명시한다.
 - **Commits:** Conventional Commits enforced by commitlint (`@commitlint/config-conventional` + angular). Types in use: `feat`, `fix`, `refactor`, `docs`, `chore`, `ci`, `perf`, `test`.
 - **Pre-commit:** `lint-staged` runs formatters/linters on staged files (see `.lintstagedrc.json`).
 - **TS configs:** Apps/packages extend `tsconfig/base.json` (`target: ES2022`, `strict: true`, `moduleResolution: node`). Node-flavored packages use `tsconfig/node16.json`.
