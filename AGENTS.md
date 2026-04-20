@@ -52,7 +52,7 @@ Run from the repo root:
 ## Conventions
 
 - **Korean JSDoc (repo-wide):** 모든 workspace의 exported 심볼(함수·클래스·타입·인터페이스·상수)에는 한국어 `/** */` JSDoc 주석을 작성한다. Idle-Factory는 한국어 기준 문서·팀을 따르며, 공식·수치 상수 주석에는 `docs/design/XX-*.md` 출처를 명시한다.
-- **Discord UI — Components v2 (bot 필수):** `apps/bot`의 모든 유저 응답 페이로드(슬래시 커맨드 응답, 버튼/셀렉트/모달 인터랙션 응답, 정기 알림 등)는 **반드시 `componentsv2-builder` 스킬을 호출**하여 Components v2 (`MessageFlags.IsComponentsV2`) 기반으로 빌드한다. 레거시 `EmbedBuilder` / 단순 `content` 페이로드는 기본 금지. 예외는 (1) Discord API가 Components v2를 지원하지 않는 컨텍스트, (2) Components v2 빌드 자체가 실패한 fallback, (3) 관리자 전용 디버그/로그 plain text뿐. PR 리뷰 시 위반은 blocker. 상세는 `apps/bot/AGENTS.md` 참조.
+- **Discord UI — Components v2 (bot 필수, 예외 없음):** `apps/bot`의 모든 유저 응답 페이로드(슬래시 커맨드 응답, 버튼/셀렉트/모달 인터랙션 응답, 정기 알림, 에러/실패 응답 포함 **전부**)는 **반드시 `componentsv2-builder` 스킬을 호출**하여 Components v2 (`MessageFlags.IsComponentsV2`) 기반으로 빌드한다. `EmbedBuilder`/`embeds`/v2 플래그와 함께 `content` 평문/`poll`/`stickers` 사용은 **절대 금지**. 스킬상 허용 변형은 "Container 루트 없는 의도적 flat 레이아웃" 하나뿐이며 이것도 여전히 Components v2다. PR 리뷰 시 위반은 blocker. 상세는 `.claude/skills/componentsv2-builder/SKILL.md` 및 `apps/bot/AGENTS.md` 참조.
 - **Commits:** Conventional Commits enforced by commitlint (`@commitlint/config-conventional` + angular). Types in use: `feat`, `fix`, `refactor`, `docs`, `chore`, `ci`, `perf`, `test`.
 - **Pre-commit:** `lint-staged` runs formatters/linters on staged files (see `.lintstagedrc.json`).
 - **TS configs:** Apps/packages extend `tsconfig/base.json` (`target: ES2022`, `strict: true`, `moduleResolution: node`). Node-flavored packages use `tsconfig/node16.json`.
