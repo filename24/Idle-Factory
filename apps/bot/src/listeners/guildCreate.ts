@@ -17,7 +17,7 @@ export class GuildCreateListener extends Listener<typeof Events.GuildCreate> {
 
     const guildData = await db.guild.upsert({
       where: { id: guild.id },
-      create: { id: guild.id, name: guild.name, tax: 0.1 },
+      create: { id: guild.id, name: guild.name, taxSurcharge: 0.1 },
       update: { name: guild.name }
     })
 
@@ -26,7 +26,7 @@ export class GuildCreateListener extends Listener<typeof Events.GuildCreate> {
       .setDescription(t('embeds:event.guildCreate.description'))
       .addFields({
         name: t('embeds:event.guildCreate.default.tax'),
-        value: `${guildData.tax}%`
+        value: `${guildData.taxSurcharge * 100}%`
       })
 
     guild.systemChannel?.send({ embeds: [embed] }).catch(async () => {
