@@ -1,6 +1,6 @@
 import { Command } from '@sapphire/framework'
 import { fetchT } from '@sapphire/plugin-i18next'
-import Embed from '@utils/Embed'
+import { simpleContainer, v2Flags, V2_ACCENT } from '@utils/ComponentsV2'
 
 export class PingCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -13,35 +13,36 @@ export class PingCommand extends Command {
     const { client } = this.container
     const t = await fetchT(interaction)
 
-    const loadEmbed = new Embed(client, 'warn').setTitle(
+    const loadContainer = simpleContainer(
+      V2_ACCENT.warn,
       t('embeds:command.ping.loading.title')
     )
-    const m = await interaction.reply({
-      embeds: [loadEmbed],
-      fetchReply: true
+    await interaction.reply({
+      components: [loadContainer],
+      flags: v2Flags()
     })
+    const sent = await interaction.fetchReply()
 
-    const successEmbed = new Embed(client, 'success')
-      .setTitle(t('embeds:command.ping.success.title'))
-      .addFields([
-        {
-          name: t('embeds:command.ping.success.fields.message'),
-          value: `${m.createdTimestamp - interaction.createdTimestamp}ms`,
-          inline: true
-        },
-        {
-          name: t('embeds:command.ping.success.fields.api'),
-          value: `${client.ws.ping}ms`,
-          inline: true
-        },
-        {
-          name: t('embeds:command.ping.success.fields.uptime'),
-          value: `<t:${(Number(client.readyAt) / 1000) | 0}:R>`,
-          inline: true
-        }
-      ])
+    const body = [
+      `**${t('embeds:command.ping.success.fields.message')}:** ${
+        sent.createdTimestamp - interaction.createdTimestamp
+      }ms`,
+      `**${t('embeds:command.ping.success.fields.api')}:** ${client.ws.ping}ms`,
+      `**${t('embeds:command.ping.success.fields.uptime')}:** <t:${
+        (Number(client.readyAt) / 1000) | 0
+      }:R>`
+    ].join('\n')
 
-    await interaction.editReply({ embeds: [successEmbed] })
+    const successContainer = simpleContainer(
+      V2_ACCENT.success,
+      t('embeds:command.ping.success.title'),
+      body
+    )
+
+    await interaction.editReply({
+      components: [successContainer],
+      flags: v2Flags()
+    })
   }
 
   public override registerApplicationCommands(registry: Command.Registry) {

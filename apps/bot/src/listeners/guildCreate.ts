@@ -1,7 +1,11 @@
 import { Listener, Events } from '@sapphire/framework'
 import { fetchT } from '@sapphire/plugin-i18next'
 import type { Guild } from 'discord.js'
-import Embed from '@utils/Embed'
+import {
+  simpleContainer,
+  v2MessageOptions,
+  V2_ACCENT
+} from '@utils/ComponentsV2'
 
 export class GuildCreateListener extends Listener<typeof Events.GuildCreate> {
   public constructor(
@@ -12,7 +16,7 @@ export class GuildCreateListener extends Listener<typeof Events.GuildCreate> {
   }
 
   public async run(guild: Guild) {
-    const { client, db } = this.container
+    const { db } = this.container
     const t = await fetchT(guild)
 
     const guildData = await db.guild.upsert({
@@ -21,16 +25,21 @@ export class GuildCreateListener extends Listener<typeof Events.GuildCreate> {
       update: { name: guild.name }
     })
 
-    const embed = new Embed(client, 'success')
-      .setTitle(t('embeds:event.guildCreate.title'))
-      .setDescription(t('embeds:event.guildCreate.description'))
-      .addFields({
-        name: t('embeds:event.guildCreate.default.tax'),
-        value: `${guildData.taxSurcharge * 100}%`
-      })
+    const body = [
+      t('embeds:event.guildCreate.description'),
+      '',
+      `**${t('embeds:event.guildCreate.default.tax')}:** ${guildData.taxSurcharge * 100}%`
+    ].join('\n')
 
-    guild.systemChannel?.send({ embeds: [embed] }).catch(async () => {
-      ;(await guild.members.fetch(guild.ownerId)).send({ embeds: [embed] })
+    const container = simpleContainer(
+      V2_ACCENT.success,
+      t('embeds:event.guildCreate.title'),
+      body
+    )
+    const payload = v2MessageOptions([container])
+
+    guild.systemChannel?.send(payload).catch(async () => {
+      ;(await guild.members.fetch(guild.ownerId)).send(payload)
     })
   }
 }
