@@ -1,3 +1,7 @@
+// Idle Factory — Prisma Schema
+// 설계 근거: docs/design/01~11
+// 파생값(창고 용량, 등급 배율, 세율 등)은 저장하지 않고 등급·자산에서 계산한다.
+
 generator client {
   provider = "prisma-client"
   output   = "../src/generated"
@@ -7,69 +11,415 @@ datasource db {
   provider = "postgresql"
 }
 
+// ──────────────────────────────────────────────────────────────
+// Enums
+// ──────────────────────────────────────────────────────────────
+
+/// 공장 타입 (docs/03-factories.md)
+enum FactoryType {
+  // T1 원자재
+  FARM // 🌾 농장
+  MINE // ⛏️ 광산
+  LUMBER // 🌲 목재소
+  OIL_WELL // 🛢️ 유전
+  // T2 가공
+  STEEL_MILL // 🏭 제철소
+  REFINERY // ⚗️ 정유소
+  FLOUR_MILL // 🍞 제분소
+  FURNITURE_FACTORY // 🪑 가구공장
+  // T3 완제품 (2×2)
+  CAR_FACTORY // 🚗 자동차 공장
+  ELECTRONICS_FACTORY // 📱 전자제품 공장
+  FOOD_FACTORY // 🍱 식품 공장
+}
+
+enum FactoryTier {
+  T1
+  T2
+  T3
+}
+
+/// 자재 + 원자재 부스터 (docs/03, 04)
+enum MaterialType {
+  // T1
+  GRAIN // 곡물
+  ORE // 광석
+  WOOD // 목재
+  CRUDE_OIL // 원유
+  // T2
+  STEEL // 철강
+  FUEL // 연료
+  PLASTIC // 플라스틱
+  PROCESSED_FOOD // 가공식품
+  FURNITURE // 가구
+  // T3
+  CAR // 자동차
+  ELECTRONIC // 전자기기
+  FINISHED_FOOD // 완제품 식품
+  // 특수 — T3 저확률 드롭, Lv50+ 공장에 영구 투입
+  RAW_BOOSTER
+}
+
+/// 토지 슬롯 종류 (docs/11-land.md)
+enum SlotType {
+  NORMAL
+  ORE // 🪨 광맥 — 광산 +20%
+  FERTILE // 🌱 비옥한 땅 — 농장 +20%
+  FOREST // 🌳 숲 — 목재소 +20%
+  OIL // 🛢️ 유전지 — 유전 +30%
+  WATER // 💧 수로 — 인접 농장·제분소 +10%
+}
+
+/// 업그레이드 부스터 — 3·5·7·10등급 도달 시 선택, 영구 (docs/03)
+enum UpgradeBooster {
+  SAVING // 🔻 소비 자재 -20%
+  RARE // 🔺 희귀 자재 드롭 +1%
+  SPEED // ⚡ tick 생산량 +15%
+  PROFIT // 💰 공장 수익 +10%
+}
+
+/// 자재 부족 시 동작 모드 (docs/03 — A/B/C → 의미로 변환)
+enum ShortageMode {
+  PAUSE // A: 생산 중단 (기본)
+  AUTO_BUY // B: 마켓 자동 구매
+  PARTIAL // C: 비례 생산
+}
+
+/// 유저 상점 등록 상태 (docs/06)
+enum ListingStatus {
+  ACTIVE
+  SOLD
+  EXPIRED
+  CANCELED
+}
+
+/// 주식 시장 구분 (docs/08)
+enum StockMarket {
+  SERVER // 서버 내 주식 (Lv10+)
+  GLOBAL // 글로벌 주식 (Lv40+, 신뢰도 1500+)
+}
+
+/// 거래 로그 종류 — 사기 방지 + XP 중복 방지
+enum TradeKind {
+  MARKET_SELL // 글로벌/유저 상점 판매
+  USER_TRADE // 유저 직거래
+  DIRECT_BUY // 자재 직구매 (×2 할증)
+  STOCK_BUY
+  STOCK_SELL
+  DIVIDEND
+}
+
+// ──────────────────────────────────────────────────────────────
+// 유저 / 서버
+// ──────────────────────────────────────────────────────────────
+
+/// Discord 유저. id 는 Discord snowflake.
 model User {
-  id       String    @id
-  flag     BigInt    @default(1)
-  nickname String?
-  lang     String    @default("ko")
-  factory  Factory[]
+  id                 String   @id
+  nickname           String?
+  lang               String   @default("ko")
+  money              BigInt   @default(0) // 💰 지갑
+  xp                 BigInt   @default(0)
+  level              Int      @default(1)
+  flag               BigInt   @default(1) // 비트 플래그
+  lastActiveAt       DateTime @default(now())
+  // 자재 직구매 일일 한도 캐시 (docs/04, 레벨 구간별 100/500/2000/10000)
+  dailyBought        Int      @default(0)
+  dailyBoughtResetAt DateTime @default(now())
+  createdAt          DateTime @default(now())
+
+  land        Land?
+  warehouse   Warehouse?
+  factories   Factory[]
+  listings    MarketListing[]
+  holdings    StockHolding[]
+  purchases   DailyPurchase[]
+  settlements WeeklySettlement[]
+  tradesFrom  TradeLog[]         @relation("TradeFrom")
+  tradesTo    TradeLog[]         @relation("TradeTo")
 }
 
+/// Discord 서버. id 는 snowflake. 퇴장 추적을 위해 leftAt 유지.
 model Guild {
-  id        String @id
-  name      String
-  lang      String @default("ko")
-  tax       Float  @default(0)
-  globalExp Float  @default(0)
-  flag      Float  @default(1)
+  id           String    @id
+  name         String
+  lang         String    @default("ko")
+  credit       Int       @default(1000) // 신뢰도 0~2000 (docs/07)
+  vault        BigInt    @default(0) // 서버 금고
+  weeklyDAU    Int       @default(0)
+  taxSurcharge Float     @default(0) // 관리자 가산치 0~0.20
+  flag         BigInt    @default(1)
+  joinedAt     DateTime  @default(now())
+  leftAt       DateTime? // 봇 퇴장 시각 — 30일 경과 시 분배 풀로
+
+  factories    Factory[]
+  stocks       Stock[]
+  settlements  WeeklySettlement[]
+  inactivePool InactiveServerPool?
 }
 
-model Stock {
-  id          String   @id
-  name        String
-  price       BigInt   @default(1000)
-  latestPrice BigInt[] @default([])
-  boughtCount Float    @default(0)
-  soldCount   Float    @default(0)
+// ──────────────────────────────────────────────────────────────
+// 토지 / 슬롯
+// ──────────────────────────────────────────────────────────────
+
+/// 유저당 1개 (docs/11). 기본 3×3, 확장으로 최대 10×10.
+model Land {
+  id     String @id @default(cuid())
+  userId String @unique
+  width  Int    @default(3)
+  height Int    @default(3)
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slots Slot[]
 }
 
+/// 토지 내 개별 슬롯. T3 공장(2×2)은 4개 슬롯이 같은 factoryId 를 공유.
+model Slot {
+  id        String   @id @default(cuid())
+  landId    String
+  x         Int
+  y         Int
+  type      SlotType @default(NORMAL)
+  locked    Boolean  @default(false) // 확장 전 잠김
+  factoryId String? // 비어있으면 null
+
+  land    Land     @relation(fields: [landId], references: [id], onDelete: Cascade)
+  factory Factory? @relation(fields: [factoryId], references: [id], onDelete: SetNull)
+
+  @@unique([landId, x, y])
+  @@index([factoryId])
+}
+
+// ──────────────────────────────────────────────────────────────
+// 공장 / 노동자
+// ──────────────────────────────────────────────────────────────
+
+/// 공장. grade 1~10, 생산 배율 = 1.5^(grade-1) (원자재 부스터 적용 시 ×1.2).
+/// T3 는 2×2, 그 외 1×1. anchor 는 좌상단 슬롯 좌표.
 model Factory {
-  id      String   @id
-  ownerId String
-  owners  String[] @default([])
-  exp     Float    @default(0)
-  type    BigInt
-  flag    BigInt   @default(1)
+  id             String          @id @default(cuid())
+  userId         String
+  guildId        String? // 소속 서버 (게임 맥락)
+  type           FactoryType
+  tier           FactoryTier
+  grade          Int             @default(1)
+  exp            BigInt          @default(0)
+  anchorX        Int
+  anchorY        Int
+  width          Int             @default(1)
+  height         Int             @default(1)
+  lastHarvestAt  DateTime        @default(now()) // tick 계산 기준 (10분/tick)
+  shortageMode   ShortageMode    @default(PAUSE)
+  upgradeBooster UpgradeBooster? // 3/5/7/10 등급 선택, 영구
+  hasRawBooster  Boolean         @default(false) // 원자재 부스터 적용 (영구, 1회)
+  flag           BigInt          @default(1)
+  createdAt      DateTime        @default(now())
+
+  owner   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guild   Guild?   @relation(fields: [guildId], references: [id], onDelete: SetNull)
   workers Worker[]
-  items   Item[]
-  owner   User     @relation(fields: [ownerId], references: [id])
+  slots   Slot[]
+  stock   Stock?
+
+  @@index([userId])
+  @@index([guildId])
 }
 
-model Item {
-  id        String  @id @default(cuid())
-  factoryId String
-  name      String
-  count     Float   @default(0)
-  price     Float   @default(0)
-  flag      BigInt  @default(1)
-  factory   Factory @relation(fields: [factoryId], references: [id])
-}
-
+/// 노동자
 model Worker {
   id        String  @id @default(cuid())
   factoryId String?
-  flag      BigInt  @default(1)
   name      String
   job       String
-  exp       Float   @default(0)
-  // 달리기
-  athletics Float   @default(0)
-  // 힘
-  strength  Float   @default(0)
-  // 작동
-  machinery Float   @default(0)
-  factory   Factory? @relation(fields: [factoryId], references: [id])
+  exp       BigInt  @default(0)
+  athletics Float   @default(0) // 달리기
+  strength  Float   @default(0) // 힘
+  machinery Float   @default(0) // 작동
+  flag      BigInt  @default(1)
+
+  factory Factory? @relation(fields: [factoryId], references: [id], onDelete: SetNull)
+
+  @@index([factoryId])
 }
+
+// ──────────────────────────────────────────────────────────────
+// 창고 / 자재
+// ──────────────────────────────────────────────────────────────
+
+/// 공용 창고 — 유저당 1개, 통합 용량 (docs/05). 용량은 grade 에서 계산.
+model Warehouse {
+  id     String @id @default(cuid())
+  userId String @unique
+  grade  Int    @default(1) // 1~10
+
+  user   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stacks WarehouseStack[]
+}
+
+/// 창고 내 자재별 보유량. (warehouseId, material) unique.
+model WarehouseStack {
+  id          String       @id @default(cuid())
+  warehouseId String
+  material    MaterialType
+  count       BigInt       @default(0)
+
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  @@unique([warehouseId, material])
+}
+
+// ──────────────────────────────────────────────────────────────
+// 마켓
+// ──────────────────────────────────────────────────────────────
+
+/// 글로벌 마켓 — 자재별 변동가 (docs/06). 30분 주기 갱신.
+/// 유저 직구매가 = currentPrice × 2.
+model GlobalMarketPrice {
+  material     MaterialType @id
+  basePrice    BigInt
+  currentPrice BigInt
+  recentSales  Int          @default(0) // 최근 30분 거래량
+  updatedAt    DateTime     @updatedAt
+}
+
+/// 유저 상점 등록 (docs/06). 세율은 등록 시점 값으로 고정.
+model MarketListing {
+  id           String        @id @default(cuid())
+  sellerId     String
+  material     MaterialType
+  price        BigInt // 단가
+  qty          Int
+  durationDays Int // 1~30
+  taxRate      Float // 3% ~ 18% (등록 시점 확정)
+  status       ListingStatus @default(ACTIVE)
+  registeredAt DateTime      @default(now())
+  expiresAt    DateTime
+
+  seller User @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  @@index([sellerId])
+  @@index([material, status])
+  @@index([expiresAt])
+}
+
+/// 자재 직구매 일일 한도 추적 (docs/04). (userId, date) unique.
+model DailyPurchase {
+  id          String   @id @default(cuid())
+  userId      String
+  date        DateTime // UTC 00:00 기준
+  totalBought Int      @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+}
+
+// ──────────────────────────────────────────────────────────────
+// 주식
+// ──────────────────────────────────────────────────────────────
+
+/// 상장 공장 (docs/08). Factory 와 1:1. SERVER 시장 종목은 guildId 필수.
+model Stock {
+  id                String      @id @default(cuid())
+  factoryId         String      @unique
+  market            StockMarket
+  guildId           String? // SERVER 시장 종목의 소속 서버
+  ipoPrice          BigInt
+  currentPrice      BigInt
+  sharesOutstanding Int         @default(100)
+  lastTickAt        DateTime    @default(now())
+  weeklyProfit      BigInt      @default(0) // 배당 산정용 (주 1회 정산으로 리셋)
+  listedAt          DateTime    @default(now())
+
+  factory  Factory          @relation(fields: [factoryId], references: [id], onDelete: Cascade)
+  guild    Guild?           @relation(fields: [guildId], references: [id], onDelete: SetNull)
+  holdings StockHolding[]
+  ticks    StockPriceTick[]
+
+  @@index([market])
+  @@index([guildId])
+}
+
+/// 유저의 종목별 보유 주식
+model StockHolding {
+  id      String @id @default(cuid())
+  userId  String
+  stockId String
+  shares  Int    @default(0)
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stock Stock @relation(fields: [stockId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, stockId])
+}
+
+/// 주가 히스토리 — 1시간 주기
+model StockPriceTick {
+  id      String   @id @default(cuid())
+  stockId String
+  price   BigInt
+  tickAt  DateTime @default(now())
+
+  stock Stock @relation(fields: [stockId], references: [id], onDelete: Cascade)
+
+  @@index([stockId, tickAt])
+}
+
+// ──────────────────────────────────────────────────────────────
+// 로그 / 정산 / 재분배
+// ──────────────────────────────────────────────────────────────
+
+/// 거래 로그 — 사기 방지·XP 중복 방지·통계용
+model TradeLog {
+  id         String        @id @default(cuid())
+  fromUserId String?
+  toUserId   String?
+  kind       TradeKind
+  material   MaterialType?
+  amount     BigInt        @default(0)
+  price      BigInt        @default(0)
+  createdAt  DateTime      @default(now())
+
+  fromUser User? @relation("TradeFrom", fields: [fromUserId], references: [id], onDelete: SetNull)
+  toUser   User? @relation("TradeTo", fields: [toUserId], references: [id], onDelete: SetNull)
+
+  @@index([fromUserId, createdAt])
+  @@index([toUserId, createdAt])
+  @@index([kind, createdAt])
+}
+
+/// 주 1회 세금 정산 (docs/07). 일요일 자정 UTC 기준.
+model WeeklySettlement {
+  id           String   @id @default(cuid())
+  userId       String
+  guildId      String
+  weekStart    DateTime
+  salesRevenue BigInt   @default(0)
+  taxPaid      BigInt   @default(0)
+  createdAt    DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekStart])
+  @@index([guildId, weekStart])
+}
+
+/// 비활성 서버 자산 풀 (docs/07).
+/// 봇 퇴장 후 30일 경과 시 적립, 매월 1일 자정에 활성 서버로 분배.
+model InactiveServerPool {
+  id            String    @id @default(cuid())
+  guildId       String    @unique
+  frozenAmount  BigInt    @default(0)
+  exitedAt      DateTime
+  distributedAt DateTime?
+
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade)
+}
+
+// ──────────────────────────────────────────────────────────────
+// 공지
+// ──────────────────────────────────────────────────────────────
 
 model Notice {
   id          String   @id @default(uuid())
