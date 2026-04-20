@@ -38,7 +38,10 @@
       "title": "🧺 Harvest result",
       "summary": "+{{xp}} XP from {{count}} factories",
       "emptyLine": "— Nothing harvested.",
-      "none": "You have no factories to harvest."
+      "none": "You have no factories to harvest.",
+      "line": "{{emoji}} {{type}} +{{produced}} (-{{consumed}}) x{{ticks}}",
+      "noneProduced": "none",
+      "noneConsumed": "none"
     }
   },
   "warehouse": {

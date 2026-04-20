@@ -38,7 +38,10 @@
       "title": "🧺 수확 결과",
       "summary": "{{count}} 공장에서 +{{xp}} XP",
       "emptyLine": "— 수확할 자원이 없었어요.",
-      "none": "수확할 공장이 없습니다."
+      "none": "수확할 공장이 없습니다.",
+      "line": "{{emoji}} {{type}} +{{produced}} (-{{consumed}}) x{{ticks}}",
+      "noneProduced": "없음",
+      "noneConsumed": "없음"
     }
   },
   "warehouse": {
