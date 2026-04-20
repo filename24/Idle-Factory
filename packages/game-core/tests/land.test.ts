@@ -1,13 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import {
-  canPlace,
-  getOccupiedCells,
-  getSpecialSlotBonus,
-} from '../src/land/layout'
-import {
-  SPECIAL_SLOT_TYPES,
-  generateSlotTypes,
-} from '../src/land/specialSlots'
+import { canPlace, getOccupiedCells, getSpecialSlotBonus } from '../src/land/layout'
+import { generateSlotTypes, SPECIAL_SLOT_TYPES } from '../src/land/specialSlots'
 import type { SlotState, SlotType } from '../src/types'
 
 const seq = (values: number[]) => {
@@ -15,11 +8,7 @@ const seq = (values: number[]) => {
   return () => values[i++ % values.length]!
 }
 
-const slot = (
-  x: number,
-  y: number,
-  overrides: Partial<SlotState> = {},
-): SlotState => ({
+const slot = (x: number, y: number, overrides: Partial<SlotState> = {}): SlotState => ({
   x,
   y,
   type: 'NORMAL',

@@ -21,9 +21,7 @@ export interface GenerateSlotTypesParams {
   readonly rng?: SlotGenRng
 }
 
-export function generateSlotTypes(
-  params: GenerateSlotTypesParams,
-): SlotType[][] {
+export function generateSlotTypes(params: GenerateSlotTypesParams): SlotType[][] {
   const { width, height } = params
   const rng = params.rng ?? Math.random
 
@@ -48,14 +46,11 @@ export function generateSlotTypes(
     for (let x = 0; x < width; x++) {
       if (rng() >= SPECIAL_SLOT_PROBABILITY) continue
 
-      const available = SPECIAL_SLOT_TYPES.filter(
-        (t) => count[t] < MAX_PER_SPECIAL_TYPE,
-      )
+      const available = SPECIAL_SLOT_TYPES.filter((t) => count[t] < MAX_PER_SPECIAL_TYPE)
       if (available.length === 0) continue
 
       const raw = Math.floor(rng() * available.length)
-      const idx =
-        raw < 0 ? 0 : raw >= available.length ? available.length - 1 : raw
+      const idx = raw < 0 ? 0 : raw >= available.length ? available.length - 1 : raw
       const picked = available[idx]!
       grid[y]![x] = picked
       count[picked] += 1

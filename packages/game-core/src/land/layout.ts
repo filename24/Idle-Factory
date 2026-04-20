@@ -1,11 +1,7 @@
 import { FACTORY_CATALOG } from '../factories/catalog'
 import type { FactoryType, SlotState, SlotType } from '../types'
 
-export type PlacementFailureReason =
-  | 'OUT_OF_BOUNDS'
-  | 'LOCKED_SLOT'
-  | 'OCCUPIED'
-  | 'OVERLAP'
+export type PlacementFailureReason = 'OUT_OF_BOUNDS' | 'LOCKED_SLOT' | 'OCCUPIED' | 'OVERLAP'
 
 export interface PlacementCheckResult {
   readonly ok: boolean
@@ -41,12 +37,7 @@ export function canPlace(params: CanPlaceParams): PlacementCheckResult {
   const { landWidth, landHeight, slots, type, anchorX, anchorY } = params
   const { width, height } = FACTORY_CATALOG[type].size
 
-  if (
-    anchorX < 0 ||
-    anchorY < 0 ||
-    anchorX + width > landWidth ||
-    anchorY + height > landHeight
-  ) {
+  if (anchorX < 0 || anchorY < 0 || anchorX + width > landWidth || anchorY + height > landHeight) {
     return { ok: false, reason: 'OUT_OF_BOUNDS' }
   }
 
@@ -73,19 +64,15 @@ export function canPlace(params: CanPlaceParams): PlacementCheckResult {
   return { ok: true }
 }
 
-const DIRECT_BONUS_MAP: Readonly<
-  Partial<Record<FactoryType, { slot: SlotType; bonus: number }>>
-> = {
-  FARM: { slot: 'FERTILE', bonus: 1.2 },
-  MINE: { slot: 'ORE', bonus: 1.2 },
-  LUMBER: { slot: 'FOREST', bonus: 1.2 },
-  OIL_WELL: { slot: 'OIL', bonus: 1.3 },
-}
+const DIRECT_BONUS_MAP: Readonly<Partial<Record<FactoryType, { slot: SlotType; bonus: number }>>> =
+  {
+    FARM: { slot: 'FERTILE', bonus: 1.2 },
+    MINE: { slot: 'ORE', bonus: 1.2 },
+    LUMBER: { slot: 'FOREST', bonus: 1.2 },
+    OIL_WELL: { slot: 'OIL', bonus: 1.3 },
+  }
 
-export function getSpecialSlotBonus(
-  slotType: SlotType,
-  factoryType: FactoryType,
-): number {
+export function getSpecialSlotBonus(slotType: SlotType, factoryType: FactoryType): number {
   const entry = DIRECT_BONUS_MAP[factoryType]
   if (entry !== undefined && entry.slot === slotType) {
     return entry.bonus
