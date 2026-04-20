@@ -77,16 +77,16 @@ Current default (see `config.ts`): `GuildMessages` + `Guilds` only. Add intents 
 - Keep user-facing strings in `src/locales/*` and resolve via i18next.
 - Do not import from `@prisma/client` directly; use `@idle/database` when it is added as a dependency.
 
-## Discord UI — Components v2 (필수 규칙)
+## Discord UI — Components v2 (mandatory)
 
-**모든 봇 응답 UI는 반드시 `componentsv2-builder` 스킬을 통해 구성해야 한다. 예외 없음.**
+**Every bot response UI MUST be built through the `componentsv2-builder` skill. No exceptions.**
 
-- 유저에게 노출되는 모든 메시지 페이로드(슬래시 커맨드 응답, 버튼/셀렉트 인터랙션 응답, 모달 제출 응답, 정기 알림, 에러/실패 응답 포함 전부)는 Components v2 (`MessageFlags.IsComponentsV2`) 기반으로 빌드한다.
-- 신규 커맨드/핸들러/렌더러를 작성하거나 기존 UI를 수정할 때는 **항상 먼저 `componentsv2-builder` 스킬을 호출**한다.
-- `EmbedBuilder`, `embeds: [...]`, v2 플래그와 함께 `content: "..."` 평문, `poll`, `stickers` 사용은 **절대 금지**.
+- Every user-facing message payload — slash command replies, button/select interaction responses, modal submit responses, scheduled notifications, and error/failure responses **included** — is built on top of Components v2 (`MessageFlags.IsComponentsV2`).
+- When authoring or modifying any command, handler, or renderer, **invoke the `componentsv2-builder` skill first**.
+- Using `EmbedBuilder`, `embeds: [...]`, raw `content: "..."` alongside the v2 flag, `poll`, or `stickers` is **strictly forbidden**.
 
-### 스킬에 명시된 유일한 허용 변형
+### The only variation the skill acknowledges
 
-- 스킬 체크리스트상 "루트가 Container (**의도적 flat 제외**)" — Container 루트 없이 flat하게 컴포넌트를 배열하는 것은 가능하다. 이는 Components v2 내부의 구성 자유도이지, 레거시 Embed/`content` 사용 허용이 아니다.
+- The skill checklist allows an "intentional flat layout without a Container root". Dropping the Container wrapper is permitted as a compositional choice within Components v2 — it is NOT permission to fall back to legacy Embed / plain `content`.
 
-PR 리뷰 시 이 규칙 위반은 blocker로 간주한다. 상세 가이드는 `.claude/skills/componentsv2-builder/SKILL.md` 참조.
+Violations block PR review. See `.claude/skills/componentsv2-builder/SKILL.md` for the full guide.
