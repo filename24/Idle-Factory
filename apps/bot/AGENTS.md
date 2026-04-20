@@ -76,3 +76,21 @@ Current default (see `config.ts`): `GuildMessages` + `Guilds` only. Add intents 
 - Prefer Sapphire's piece abstractions (`Command`, `Listener`, `InteractionHandler`) over raw discord.js handlers.
 - Keep user-facing strings in `src/locales/*` and resolve via i18next.
 - Do not import from `@prisma/client` directly; use `@idle/database` when it is added as a dependency.
+
+## Discord UI — Components v2 (필수 규칙)
+
+**모든 봇 응답 UI는 반드시 `componentsv2-builder` 스킬을 통해 구성해야 한다.**
+
+- 유저에게 노출되는 모든 메시지 페이로드(슬래시 커맨드 응답, 버튼/셀렉트 인터랙션 응답, 모달 제출 응답, 정기 알림 등)는 Components v2 (`MessageFlags.IsComponentsV2`) 기반으로 빌드한다.
+- 신규 커맨드/핸들러/렌더러를 작성하거나 기존 UI를 수정할 때는 **항상 먼저 `componentsv2-builder` 스킬을 호출**하여 가이드라인·컴포넌트 조합·접근성 규칙을 따른다.
+- 레거시 `EmbedBuilder` / 단순 `content` 문자열 페이로드는 기본적으로 금지한다. Components v2 컨테이너/섹션/텍스트 디스플레이/미디어 갤러리 구성만 사용한다.
+
+### 예외 (Components v2를 쓰지 않아도 되는 경우)
+
+다음 상황에 한해서만 일반 `content` / 레거시 Embed 응답이 허용된다:
+
+- Discord API 제약으로 Components v2가 지원되지 않는 컨텍스트.
+- 인터랙션 실패 복구 경로(`InteractionHandlerError` 등) — Components v2 빌드 자체가 실패한 fallback.
+- 관리자 전용 디버그/로그 출력 채널로 보내는 짧은 plain text.
+
+위 예외에 해당하지 않으면 **무조건 `componentsv2-builder` 스킬을 사용한다.** PR 리뷰 시 이 규칙 위반은 blocker로 간주한다.
