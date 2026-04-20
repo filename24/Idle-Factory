@@ -1,0 +1,35 @@
+{
+  "name": "@idle/game-core",
+  "version": "1.0.0",
+  "packageManager": "pnpm@10.9.0",
+  "license": "MIT",
+  "author": {
+    "email": "filename@inft.kr",
+    "name": "__filename",
+    "url": "https://github.com/filename24"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "typings": "./dist/index.d.ts",
+  "exports": {
+    "import": "./dist/index.mjs",
+    "require": "./dist/index.js",
+    "types": "./dist/index.d.ts"
+  },
+  "scripts": {
+    "build": "tsup",
+    "lint": "prettier --check .",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "eslint-config-idle": "workspace:^",
+    "tsconfig": "workspace:^",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3",
+    "vitest": "^2.1.8"
+  },
+  "private": true
+}
