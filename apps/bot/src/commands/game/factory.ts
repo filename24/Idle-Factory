@@ -333,6 +333,8 @@ export class FactoryCommand extends Command {
               o
                 .setName('x')
                 .setDescription('Anchor X (0-9)')
+                .setNameLocalization('ko', 'x좌표')
+                .setDescriptionLocalization('ko', '앵커 X 좌표 (0-9)')
                 .setRequired(true)
                 .setMinValue(0)
                 .setMaxValue(9)
@@ -341,6 +343,8 @@ export class FactoryCommand extends Command {
               o
                 .setName('y')
                 .setDescription('Anchor Y (0-9)')
+                .setNameLocalization('ko', 'y좌표')
+                .setDescriptionLocalization('ko', '앵커 Y 좌표 (0-9)')
                 .setRequired(true)
                 .setMinValue(0)
                 .setMaxValue(9)
@@ -359,6 +363,8 @@ export class FactoryCommand extends Command {
               o
                 .setName('factory_id')
                 .setDescription('Factory ID')
+                .setNameLocalization('ko', '공장id')
+                .setDescriptionLocalization('ko', '공장 ID')
                 .setRequired(true)
             )
         )
@@ -372,6 +378,8 @@ export class FactoryCommand extends Command {
               o
                 .setName('factory_id')
                 .setDescription('Factory ID')
+                .setNameLocalization('ko', '공장id')
+                .setDescriptionLocalization('ko', '공장 ID')
                 .setRequired(true)
             )
         )
@@ -388,12 +396,16 @@ export class FactoryCommand extends Command {
               o
                 .setName('factory_id')
                 .setDescription('Factory ID')
+                .setNameLocalization('ko', '공장id')
+                .setDescriptionLocalization('ko', '공장 ID')
                 .setRequired(true)
             )
             .addStringOption((o) =>
               o
                 .setName('mode')
                 .setDescription('Shortage mode')
+                .setNameLocalization('ko', '모드')
+                .setDescriptionLocalization('ko', '원료 부족 동작 모드')
                 .setRequired(true)
                 .addChoices(
                   ...SHORTAGE_MODES.map((m) => ({ name: m, value: m }))
