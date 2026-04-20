@@ -6,7 +6,7 @@ import {
   type MaterialType
 } from '@idle/game-core'
 import type { ShortageMode } from '@idle/database'
-import Embed from '@utils/Embed'
+import { simpleV2Payload, V2_ACCENT } from '@utils/ComponentsV2'
 import { formatBigInt, renderFactoryInfo } from '@structures/renderers'
 import { FactoryService } from '../../services/factory'
 import { UserService } from '../../services/user'
@@ -70,7 +70,7 @@ export class FactoryCommand extends Command {
    * 3. 결과를 `renderFactoryInfo` 필드로 Embed 구성.
    */
   private async handleBuild(interaction: Command.ChatInputCommandInteraction) {
-    const { client, db } = this.container
+    const { db } = this.container
     const t = await fetchT(interaction)
 
     const type = interaction.options.getString('type', true) as FactoryType
@@ -98,18 +98,19 @@ export class FactoryCommand extends Command {
             }
           : null
 
-      const embed = new Embed(client, 'success')
-        .setTitle(
-          t('game:factory.build.success', {
+      return interaction.reply(
+        simpleV2Payload({
+          accent: V2_ACCENT.success,
+          title: t('game:factory.build.success', {
             type: factory.type,
             emoji: entry.emoji,
             x: factory.anchorX,
             y: factory.anchorY
-          })
-        )
-        .addFields(renderFactoryInfo(info, entry, nextCost))
-
-      return interaction.reply({ embeds: [embed], ephemeral: true })
+          }),
+          body: renderFactoryInfo(info, entry, nextCost),
+          ephemeral: true
+        })
+      )
     } catch (err) {
       return this.replyFromError(interaction, err, 'build')
     }
@@ -119,7 +120,7 @@ export class FactoryCommand extends Command {
   private async handleUpgrade(
     interaction: Command.ChatInputCommandInteraction
   ) {
-    const { client, db } = this.container
+    const { db } = this.container
     const t = await fetchT(interaction)
     const factoryId = interaction.options.getString('factory_id', true)
 
@@ -129,13 +130,16 @@ export class FactoryCommand extends Command {
         userId: interaction.user.id,
         factoryId
       })
-      const embed = new Embed(client, 'success').setTitle(
-        t('game:factory.upgrade.success', {
-          type: factory.type,
-          grade: factory.grade
+      return interaction.reply(
+        simpleV2Payload({
+          accent: V2_ACCENT.success,
+          title: t('game:factory.upgrade.success', {
+            type: factory.type,
+            grade: factory.grade
+          }),
+          ephemeral: true
         })
       )
-      return interaction.reply({ embeds: [embed], ephemeral: true })
     } catch (err) {
       return this.replyFromError(interaction, err, 'upgrade')
     }
@@ -143,7 +147,7 @@ export class FactoryCommand extends Command {
 
   /** `/factory info` 처리. */
   private async handleInfo(interaction: Command.ChatInputCommandInteraction) {
-    const { client, db } = this.container
+    const { db } = this.container
     const t = await fetchT(interaction)
     const factoryId = interaction.options.getString('factory_id', true)
 
@@ -160,17 +164,18 @@ export class FactoryCommand extends Command {
             }
           : null
 
-      const embed = new Embed(client, 'info')
-        .setTitle(
-          t('game:factory.info.title', {
+      return interaction.reply(
+        simpleV2Payload({
+          accent: V2_ACCENT.info,
+          title: t('game:factory.info.title', {
             emoji: entry.emoji,
             type: info.type,
             grade: info.grade
-          })
-        )
-        .addFields(renderFactoryInfo(info, entry, nextCost))
-
-      return interaction.reply({ embeds: [embed], ephemeral: true })
+          }),
+          body: renderFactoryInfo(info, entry, nextCost),
+          ephemeral: true
+        })
+      )
     } catch (err) {
       return this.replyFromError(interaction, err, 'info')
     }
@@ -180,7 +185,7 @@ export class FactoryCommand extends Command {
   private async handleSetMode(
     interaction: Command.ChatInputCommandInteraction
   ) {
-    const { client, db } = this.container
+    const { db } = this.container
     const t = await fetchT(interaction)
     const factoryId = interaction.options.getString('factory_id', true)
     const mode = interaction.options.getString('mode', true) as ShortageMode
@@ -192,10 +197,13 @@ export class FactoryCommand extends Command {
         factoryId,
         mode
       })
-      const embed = new Embed(client, 'success').setTitle(
-        t('game:factory.setMode.success', { mode })
+      return interaction.reply(
+        simpleV2Payload({
+          accent: V2_ACCENT.success,
+          title: t('game:factory.setMode.success', { mode }),
+          ephemeral: true
+        })
       )
-      return interaction.reply({ embeds: [embed], ephemeral: true })
     } catch (err) {
       return this.replyFromError(interaction, err, 'setmode')
     }
@@ -270,17 +278,20 @@ export class FactoryCommand extends Command {
     }
   }
 
-  /** 이미 번역된 메시지 본문으로 경고 Embed 응답. */
+  /** 이미 번역된 메시지 본문으로 경고 Components v2 응답. */
   private async replyErrorRaw(
     interaction: Command.ChatInputCommandInteraction,
     message: string
   ) {
-    const { client } = this.container
-    const embed = new Embed(client, 'warn').setDescription(message)
+    const payload = simpleV2Payload({
+      accent: V2_ACCENT.warn,
+      body: message,
+      ephemeral: true
+    })
     if (interaction.replied || interaction.deferred) {
-      return interaction.followUp({ embeds: [embed], ephemeral: true })
+      return interaction.followUp(payload)
     }
-    return interaction.reply({ embeds: [embed], ephemeral: true })
+    return interaction.reply(payload)
   }
 
   /** i18n 키로부터 경고 Embed 응답을 만든다. */

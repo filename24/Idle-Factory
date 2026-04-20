@@ -12,7 +12,7 @@
 
 import { Command } from '@sapphire/framework'
 import { fetchT } from '@sapphire/plugin-i18next'
-import Embed from '@utils/Embed'
+import { simpleV2Payload, V2_ACCENT } from '@utils/ComponentsV2'
 import {
   renderLand,
   type FactoryDTO,
@@ -35,10 +35,13 @@ export class LandCommand extends Command {
     if (sub === SUB_VIEW) {
       return this.handleView(interaction)
     }
-    return interaction.reply({
-      ephemeral: true,
-      content: 'Unknown subcommand.'
-    })
+    return interaction.reply(
+      simpleV2Payload({
+        accent: V2_ACCENT.error,
+        body: 'Unknown subcommand.',
+        ephemeral: true
+      })
+    )
   }
 
   /**
@@ -52,7 +55,7 @@ export class LandCommand extends Command {
   private async handleView(
     interaction: Command.ChatInputCommandInteraction
   ): Promise<unknown> {
-    const { client, db } = this.container
+    const { db } = this.container
     const t = await fetchT(interaction)
 
     const hydrated = await UserService.ensure(db, {
@@ -63,14 +66,13 @@ export class LandCommand extends Command {
 
     const land = hydrated.land
     if (!land) {
-      return interaction.reply({
-        ephemeral: true,
-        embeds: [
-          new Embed(client, 'error').setDescription(
-            t('game:common.error.userNotFound')
-          )
-        ]
-      })
+      return interaction.reply(
+        simpleV2Payload({
+          accent: V2_ACCENT.error,
+          body: t('game:common.error.userNotFound'),
+          ephemeral: true
+        })
+      )
     }
 
     const factories = await db.factory.findMany({
@@ -99,12 +101,14 @@ export class LandCommand extends Command {
       slotDTOs
     )
 
-    const embed = new Embed(client, 'info')
-      .setTitle(t('game:land.view.title'))
-      .setDescription(grid)
-      .addFields([{ name: '\u200b', value: legend }])
-
-    return interaction.reply({ ephemeral: true, embeds: [embed] })
+    return interaction.reply(
+      simpleV2Payload({
+        accent: V2_ACCENT.info,
+        title: t('game:land.view.title'),
+        body: `${grid}\n\n${legend}`,
+        ephemeral: true
+      })
+    )
   }
 
   public override registerApplicationCommands(registry: Command.Registry) {

@@ -10,7 +10,7 @@
 
 import { Command } from '@sapphire/framework'
 import { fetchT } from '@sapphire/plugin-i18next'
-import Embed from '@utils/Embed'
+import { simpleV2Payload, V2_ACCENT } from '@utils/ComponentsV2'
 import { UserService } from '../../services/user'
 import { WarehouseService, type WarehouseView } from '../../services/warehouse'
 import { ServiceError } from '../../services/base'
@@ -42,7 +42,7 @@ export class WarehouseCommand extends Command {
   private async handleView(
     interaction: Command.ChatInputCommandInteraction
   ): Promise<unknown> {
-    const { client, db } = this.container
+    const { db } = this.container
     const t = await fetchT(interaction)
 
     await UserService.ensure(db, {
@@ -53,43 +53,30 @@ export class WarehouseCommand extends Command {
 
     const view = await WarehouseService.view(db, interaction.user.id)
 
-    const embed = new Embed(client, 'info')
-      .setTitle(t('game:warehouse.view.title'))
-      .addFields([
-        {
-          name: t('game:warehouse.view.fields.grade'),
-          value: `G${view.grade}`,
-          inline: true
-        },
-        {
-          name: t('game:warehouse.view.fields.capacity'),
-          value: formatBigInt(view.capacity),
-          inline: true
-        },
-        {
-          name: t('game:warehouse.view.fields.used'),
-          value: formatBigInt(view.used),
-          inline: true
-        },
-        {
-          name: t('game:warehouse.view.fields.free'),
-          value: formatBigInt(view.free),
-          inline: true
-        },
-        {
-          name: t('game:warehouse.view.fields.stacks'),
-          value: stacksDisplay(view),
-          inline: false
-        }
-      ])
+    const body = [
+      `**${t('game:warehouse.view.fields.grade')}:** G${view.grade}`,
+      `**${t('game:warehouse.view.fields.capacity')}:** ${formatBigInt(view.capacity)}`,
+      `**${t('game:warehouse.view.fields.used')}:** ${formatBigInt(view.used)}`,
+      `**${t('game:warehouse.view.fields.free')}:** ${formatBigInt(view.free)}`,
+      '',
+      `**${t('game:warehouse.view.fields.stacks')}**`,
+      stacksDisplay(view)
+    ].join('\n')
 
-    return interaction.reply({ embeds: [embed], ephemeral: true })
+    return interaction.reply(
+      simpleV2Payload({
+        accent: V2_ACCENT.info,
+        title: t('game:warehouse.view.title'),
+        body,
+        ephemeral: true
+      })
+    )
   }
 
   private async handleUpgrade(
     interaction: Command.ChatInputCommandInteraction
   ): Promise<unknown> {
-    const { client, db } = this.container
+    const { db } = this.container
     const t = await fetchT(interaction)
 
     await UserService.ensure(db, {
@@ -100,15 +87,23 @@ export class WarehouseCommand extends Command {
 
     try {
       const view = await WarehouseService.upgrade(db, interaction.user.id)
-      const embed = new Embed(client, 'success').setDescription(
-        t('game:warehouse.upgrade.success', { grade: view.grade })
+      return interaction.reply(
+        simpleV2Payload({
+          accent: V2_ACCENT.success,
+          body: t('game:warehouse.upgrade.success', { grade: view.grade }),
+          ephemeral: true
+        })
       )
-      return interaction.reply({ embeds: [embed], ephemeral: true })
     } catch (err) {
       if (err instanceof ServiceError) {
         const msg = this.translateUpgradeError(err, t)
-        const embed = new Embed(client, 'error').setDescription(msg)
-        return interaction.reply({ embeds: [embed], ephemeral: true })
+        return interaction.reply(
+          simpleV2Payload({
+            accent: V2_ACCENT.error,
+            body: msg,
+            ephemeral: true
+          })
+        )
       }
       throw err
     }

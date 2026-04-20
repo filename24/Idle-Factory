@@ -1,13 +1,11 @@
 /**
  * 공장(Factory) 정보 렌더러.
  *
- * Discord Embed 필드 배열로 공장의 현재 상태를 표현한다.
+ * Discord Components v2 TextDisplay 본문(마크다운 문자열)으로 공장의 현재 상태를 표현한다.
  * Prisma/네트워크 의존 없이 순수 입력 → 순수 출력.
  *
  * 참조: `docs/design/03-factories.md` §공장 정보.
  */
-
-import type { APIEmbedField } from 'discord.js'
 
 import type { FactoryCatalogEntry } from '@idle/game-core'
 import type { FactoryType, MaterialType, ShortageMode } from '@idle/game-core'
@@ -45,60 +43,41 @@ export interface NextUpgradeCost {
 }
 
 /**
- * 공장 정보를 Embed 필드 배열로 변환한다.
+ * 공장 정보를 Components v2 TextDisplay 본문 문자열로 변환한다.
  *
- * 필드 구성: 종류·등급·좌표·모드·해금 레벨·(있으면) 다음 업그레이드 비용.
+ * 각 라인은 `**라벨:** 값` 형태의 마크다운이며, 마지막에 (있으면) 다음
+ * 업그레이드 비용 라인이 추가된다.
  *
  * @param factory 공장 런타임 DTO
  * @param catalogEntry 해당 공장 종류의 카탈로그 정의
  * @param nextCost 다음 등급 비용 (최대 등급이면 `null`)
- * @returns Discord EmbedField 배열
+ * @returns TextDisplay 에 바로 넣을 수 있는 멀티라인 문자열
  */
 export function renderFactoryInfo(
   factory: FactoryInfoDTO,
   catalogEntry: FactoryCatalogEntry,
   nextCost: NextUpgradeCost | null
-): APIEmbedField[] {
-  const fields: APIEmbedField[] = [
-    {
-      name: '종류',
-      value: `${catalogEntry.emoji} ${factory.type} (${catalogEntry.tier})`,
-      inline: true
-    },
-    {
-      name: '등급',
-      value: `G${factory.grade}`,
-      inline: true
-    },
-    {
-      name: '좌표',
-      value: `(${factory.anchorX}, ${factory.anchorY})`,
-      inline: true
-    },
-    {
-      name: '모드',
-      value: factory.shortageMode,
-      inline: true
-    },
-    {
-      name: '해금 레벨',
-      value:
-        catalogEntry.unlockLevel >= 9999
-          ? '미공개'
-          : `Lv.${catalogEntry.unlockLevel}`,
-      inline: true
-    }
+): string {
+  const unlockValue =
+    catalogEntry.unlockLevel >= 9999
+      ? '미공개'
+      : `Lv.${catalogEntry.unlockLevel}`
+
+  const lines = [
+    `**종류:** ${catalogEntry.emoji} ${factory.type} (${catalogEntry.tier})`,
+    `**등급:** G${factory.grade}`,
+    `**좌표:** (${factory.anchorX}, ${factory.anchorY})`,
+    `**모드:** ${factory.shortageMode}`,
+    `**해금 레벨:** ${unlockValue}`
   ]
 
   if (nextCost !== null) {
-    fields.push({
-      name: '다음 업그레이드',
-      value: `${formatBigInt(nextCost.money)} 💰 · ${formatBigInt(nextCost.amount)} ${nextCost.material}`,
-      inline: false
-    })
+    lines.push(
+      `**다음 업그레이드:** ${formatBigInt(nextCost.money)} 💰 · ${formatBigInt(nextCost.amount)} ${nextCost.material}`
+    )
   }
 
-  return fields
+  return lines.join('\n')
 }
 
 /**

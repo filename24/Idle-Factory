@@ -11,7 +11,7 @@
 
 import { Command } from '@sapphire/framework'
 import { fetchT } from '@sapphire/plugin-i18next'
-import Embed from '@utils/Embed'
+import { simpleV2Payload, V2_ACCENT } from '@utils/ComponentsV2'
 import { xpRequiredForLevel } from '@idle/game-core'
 import { formatBigInt } from '@structures/renderers'
 import { UserService } from '../../services/user'
@@ -24,7 +24,7 @@ export class ProfileCommand extends Command {
   public override async chatInputRun(
     interaction: Command.ChatInputCommandInteraction
   ) {
-    const { client, db } = this.container
+    const { db } = this.container
     const t = await fetchT(interaction)
 
     const hydrated = await UserService.ensure(db, {
@@ -45,37 +45,22 @@ export class ProfileCommand extends Command {
 
     const displayName = hydrated.nickname ?? interaction.user.username
 
-    const embed = new Embed(client, 'info')
-      .setTitle(t('game:profile.title', { nickname: displayName }))
-      .addFields([
-        {
-          name: t('game:profile.fields.level'),
-          value: `${level}`,
-          inline: true
-        },
-        {
-          name: t('game:profile.fields.xp'),
-          value: `${formatBigInt(xp)} / ${formatBigInt(xpNeeded)}`,
-          inline: true
-        },
-        {
-          name: t('game:profile.fields.money'),
-          value: `${formatBigInt(hydrated.money)} 💰`,
-          inline: true
-        },
-        {
-          name: t('game:profile.fields.warehouseGrade'),
-          value: `G${hydrated.warehouse?.grade ?? 1}`,
-          inline: true
-        },
-        {
-          name: t('game:profile.fields.factoryCount'),
-          value: `${factoryCount}`,
-          inline: true
-        }
-      ])
+    const body = [
+      `**${t('game:profile.fields.level')}:** ${level}`,
+      `**${t('game:profile.fields.xp')}:** ${formatBigInt(xp)} / ${formatBigInt(xpNeeded)}`,
+      `**${t('game:profile.fields.money')}:** ${formatBigInt(hydrated.money)} 💰`,
+      `**${t('game:profile.fields.warehouseGrade')}:** G${hydrated.warehouse?.grade ?? 1}`,
+      `**${t('game:profile.fields.factoryCount')}:** ${factoryCount}`
+    ].join('\n')
 
-    return interaction.reply({ ephemeral: true, embeds: [embed] })
+    return interaction.reply(
+      simpleV2Payload({
+        accent: V2_ACCENT.info,
+        title: t('game:profile.title', { nickname: displayName }),
+        body,
+        ephemeral: true
+      })
+    )
   }
 
   public override registerApplicationCommands(registry: Command.Registry) {

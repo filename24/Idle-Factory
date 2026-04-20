@@ -10,7 +10,7 @@
 import { Command } from '@sapphire/framework'
 import { fetchT } from '@sapphire/plugin-i18next'
 import { getFactoryEntry, type MaterialBag } from '@idle/game-core'
-import Embed from '@utils/Embed'
+import { simpleV2Payload, V2_ACCENT } from '@utils/ComponentsV2'
 import { UserService } from '../../services/user'
 import { HarvestService } from '../../services/harvest'
 import { formatBigInt } from '../../structures/renderers/FactoryRenderer'
@@ -33,7 +33,7 @@ export class HarvestCommand extends Command {
   public override async chatInputRun(
     interaction: Command.ChatInputCommandInteraction
   ) {
-    const { client, db } = this.container
+    const { db } = this.container
     const t = await fetchT(interaction)
 
     await UserService.ensure(db, {
@@ -45,10 +45,14 @@ export class HarvestCommand extends Command {
     const result = await HarvestService.harvestAll(db, interaction.user.id)
 
     if (result.factories.length === 0) {
-      const embed = new Embed(client, 'warn')
-        .setTitle(t('game:harvest.result.title'))
-        .setDescription(t('game:harvest.result.none'))
-      return interaction.reply({ embeds: [embed], ephemeral: true })
+      return interaction.reply(
+        simpleV2Payload({
+          accent: V2_ACCENT.warn,
+          title: t('game:harvest.result.title'),
+          body: t('game:harvest.result.none'),
+          ephemeral: true
+        })
+      )
     }
 
     const noneProduced = t('game:harvest.result.noneProduced')
@@ -74,11 +78,14 @@ export class HarvestCommand extends Command {
       xp: formatBigInt(result.xpGained)
     })
 
-    const embed = new Embed(client, 'success')
-      .setTitle(t('game:harvest.result.title'))
-      .setDescription([summary, '', ...lines].join('\n'))
-
-    return interaction.reply({ embeds: [embed], ephemeral: true })
+    return interaction.reply(
+      simpleV2Payload({
+        accent: V2_ACCENT.success,
+        title: t('game:harvest.result.title'),
+        body: [summary, '', ...lines].join('\n'),
+        ephemeral: true
+      })
+    )
   }
 
   public override registerApplicationCommands(registry: Command.Registry) {
