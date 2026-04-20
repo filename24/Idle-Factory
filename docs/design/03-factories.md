@@ -255,3 +255,14 @@ flowchart TD
 | T1   | 농장, 광산, 목재소 |
 | T2   | 제철소, 제분소     |
 | T3   | 자동차 공장        |
+
+## 관련 스키마
+
+참조: [`packages/database/prisma/schema.prisma`](../../packages/database/prisma/schema.prisma)
+
+- `enum FactoryType` — FARM / MINE / LUMBER / OIL_WELL / STEEL_MILL / REFINERY / FLOUR_MILL / FURNITURE_FACTORY / CAR_FACTORY / ELECTRONICS_FACTORY / FOOD_FACTORY
+- `enum FactoryTier` — T1/T2/T3
+- `enum MaterialType` — 자재 12종 + `RAW_BOOSTER`
+- `enum UpgradeBooster` — SAVING/RARE/SPEED/PROFIT (3·5·7·10등급 선택)
+- `enum ShortageMode` — PAUSE/AUTO_BUY/PARTIAL
+- `Factory` 필드: `grade`, `upgradeBooster`, `hasRawBooster`, `shortageMode`, `lastHarvestAt`, `anchorX/anchorY`, `width/height`

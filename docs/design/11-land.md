@@ -248,3 +248,13 @@ for each slot in new_slots:
 - [x] **이동 비용** 확정: 신축 비용의 25%
 - [x] **철거 환불** 확정: 신축 비용의 50%
 - [x] **특수 슬롯 리롤** 확정: 불가 (고정)
+
+## 관련 스키마
+
+참조: [`packages/database/prisma/schema.prisma`](../../packages/database/prisma/schema.prisma)
+
+- `Land` — 유저당 1개 토지 (`userId` unique, `width`, `height`)
+- `Slot` — 토지 내 셀 (`landId + x + y` unique, `type`)
+- `enum SlotType` — NORMAL / FERTILE / ORE_RICH / SUNNY / WINDY / WAREHOUSE_RESERVED 등 특수 슬롯
+- `Factory` 배치 필드 — `anchorX`, `anchorY`, `width`, `height` (T3는 2×2)
+- `Warehouse` — 토지 위 1 슬롯 차지 (05-warehouse.md 참조)

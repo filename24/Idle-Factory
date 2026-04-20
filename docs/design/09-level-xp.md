@@ -66,3 +66,11 @@ flowchart LR
 - 3, 5, 7, 10등급 공장처럼 특정 레벨마다 부스터 선택
 - 창고 용량 무료 +1
 - 최대 등급 상한 해제
+
+## 관련 스키마
+
+참조: [`packages/database/prisma/schema.prisma`](../../packages/database/prisma/schema.prisma)
+
+- `User.xp` (BigInt) · `User.level` — 레벨/경험치
+- `TradeLog` — 거래 이력 기반 XP 중복 방지 (동일 상대 반복 거래 감지)
+- `enum TradeKind` — XP 지급 대상 행동 분류 (USER_TRADE / MARKET_SELL / STOCK_TRADE 등)

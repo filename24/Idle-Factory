@@ -84,3 +84,14 @@ flowchart LR
 2. **자재 생산 루프 유지**: 직구매 할증 + 일일 한도
 3. **거래 활성화**: T2/T3 공장이 타 공장 자재를 요구
 4. **비활성 서버 경제**: 30일 비활성 시 금고 분배 (07 참조)
+
+## 관련 스키마
+
+참조: [`packages/database/prisma/schema.prisma`](../../packages/database/prisma/schema.prisma)
+
+- `User.money` — 유저 지갑 (BigInt)
+- `User.dailyBought`, `User.dailyBoughtResetAt` — 자재 직구매 일일 한도 캐시
+- `DailyPurchase` — 일자별 직구매 합산 (`userId + date` unique)
+- `GlobalMarketPrice` — 자재별 기준가·현재가 (직구매가 = `currentPrice × 2`)
+- `WeeklySettlement` — 주 1회 세금 정산 기록
+- `enum TradeKind` — `DIRECT_BUY` 등 거래 분류

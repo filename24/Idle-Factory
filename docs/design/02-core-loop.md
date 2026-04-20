@@ -44,3 +44,12 @@ flowchart LR
     Money -->|구매 할증| Mat
     Mat -->|판매| Money
 ```
+
+## 관련 스키마
+
+참조: [`packages/database/prisma/schema.prisma`](../../packages/database/prisma/schema.prisma)
+
+- `User.money`, `User.xp`, `User.level` — 유저 자산/성장
+- `Factory`, `Factory.lastHarvestAt` — 자동 생산 tick 계산 기준
+- `Warehouse`, `WarehouseStack` — 생산 결과 저장
+- `MarketListing`, `GlobalMarketPrice` — 판매·구매 경로

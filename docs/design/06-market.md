@@ -103,3 +103,12 @@ flowchart LR
     Check3 -->|Yes| RateLimit[제한]
     Check3 -->|No| Approve[승인]
 ```
+
+## 관련 스키마
+
+참조: [`packages/database/prisma/schema.prisma`](../../packages/database/prisma/schema.prisma)
+
+- `GlobalMarketPrice` — 자재별 변동가 (`basePrice`, `currentPrice`, `recentSales`, `updatedAt`) · 30분 주기 갱신
+- `MarketListing` — 유저 상점 등록 (`price`, `qty`, `durationDays`, `taxRate`, `status`, `expiresAt`)
+- `enum ListingStatus` — ACTIVE / SOLD / EXPIRED / CANCELED
+- `TradeLog` — 거래 이력 (사기 방지·XP 중복 방지), `enum TradeKind` = MARKET_SELL / USER_TRADE / DIRECT_BUY 등

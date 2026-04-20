@@ -94,3 +94,12 @@ interface Warehouse {
 - [ ] 창고가 가득 찼을 때 **알림** 방식 (DM? 서버 채널?)
 - [ ] 창고 초과 생산을 무시하고 **자동 판매** 옵션 (MVP 이후)
 - [ ] 등급 10 이후 **더 큰 창고** (서버 창고? 길드 창고?)
+
+## 관련 스키마
+
+참조: [`packages/database/prisma/schema.prisma`](../../packages/database/prisma/schema.prisma)
+
+- `Warehouse` — 유저당 1개 (`userId` unique), `grade` 1~10 (용량은 등급에서 계산)
+- `WarehouseStack` — 자재별 보유량 (`warehouseId + material` unique, `count: BigInt`)
+- `enum MaterialType` — 저장 가능한 자재 타입 13종
+- 토지 슬롯 차지는 `Land` / `Slot` 참고 (11-land.md)

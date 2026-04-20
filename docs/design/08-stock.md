@@ -97,3 +97,12 @@ userDividend      = eachShareDividend × userSharesHeld
 - 상장 폐지 조건 (자산 하한 미달 등)
 - 유상증자·주식 분할 기능
 - 주주총회 기능
+
+## 관련 스키마
+
+참조: [`packages/database/prisma/schema.prisma`](../../packages/database/prisma/schema.prisma)
+
+- `Stock` — 상장 종목 (`issuerUserId`, `market`, `totalShares`, `currentPrice`, `dividendRate`)
+- `StockHolding` — 보유 지분 (`userId + stockId` unique, `shares`, `avgBuyPrice`)
+- `StockPriceTick` — 가격 히스토리 (차트·공시용)
+- `enum StockMarket` — SERVER (신뢰도 500+) / GLOBAL (신뢰도 1500+)
