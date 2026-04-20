@@ -1,0 +1,118 @@
+/**
+ * 공장(Factory) 정보 렌더러.
+ *
+ * Discord Embed 필드 배열로 공장의 현재 상태를 표현한다.
+ * Prisma/네트워크 의존 없이 순수 입력 → 순수 출력.
+ *
+ * 참조: `docs/design/03-factories.md` §공장 정보.
+ */
+
+import type { APIEmbedField } from 'discord.js'
+
+import type { FactoryCatalogEntry } from '@idle/game-core'
+import type { FactoryType, MaterialType, ShortageMode } from '@idle/game-core'
+
+/**
+ * 공장 렌더링 입력 DTO.
+ *
+ * DB 엔터티의 최소 표현. BigInt 필드는 이 계층에서 문자열로 포맷팅된다.
+ */
+export interface FactoryInfoDTO {
+  /** 공장 종류 */
+  readonly type: FactoryType
+  /** 현재 등급 1..10 */
+  readonly grade: number
+  /** 배치된 앵커 X */
+  readonly anchorX: number
+  /** 배치된 앵커 Y */
+  readonly anchorY: number
+  /** 원료 부족 시 동작 모드 */
+  readonly shortageMode: ShortageMode
+}
+
+/**
+ * 다음 등급(G+1) 업그레이드 비용 DTO.
+ *
+ * 현재 등급이 최대라면 `null`을 전달한다.
+ */
+export interface NextUpgradeCost {
+  /** 다음 등급에 필요한 화폐 비용 */
+  readonly money: bigint
+  /** 다음 등급에 필요한 재료 종류 */
+  readonly material: MaterialType
+  /** 다음 등급에 필요한 재료 수량 */
+  readonly amount: bigint
+}
+
+/**
+ * 공장 정보를 Embed 필드 배열로 변환한다.
+ *
+ * 필드 구성: 종류·등급·좌표·모드·해금 레벨·(있으면) 다음 업그레이드 비용.
+ *
+ * @param factory 공장 런타임 DTO
+ * @param catalogEntry 해당 공장 종류의 카탈로그 정의
+ * @param nextCost 다음 등급 비용 (최대 등급이면 `null`)
+ * @returns Discord EmbedField 배열
+ */
+export function renderFactoryInfo(
+  factory: FactoryInfoDTO,
+  catalogEntry: FactoryCatalogEntry,
+  nextCost: NextUpgradeCost | null
+): APIEmbedField[] {
+  const fields: APIEmbedField[] = [
+    {
+      name: '종류',
+      value: `${catalogEntry.emoji} ${factory.type} (${catalogEntry.tier})`,
+      inline: true
+    },
+    {
+      name: '등급',
+      value: `G${factory.grade}`,
+      inline: true
+    },
+    {
+      name: '좌표',
+      value: `(${factory.anchorX}, ${factory.anchorY})`,
+      inline: true
+    },
+    {
+      name: '모드',
+      value: factory.shortageMode,
+      inline: true
+    },
+    {
+      name: '해금 레벨',
+      value:
+        catalogEntry.unlockLevel >= 9999
+          ? '미공개'
+          : `Lv.${catalogEntry.unlockLevel}`,
+      inline: true
+    }
+  ]
+
+  if (nextCost !== null) {
+    fields.push({
+      name: '다음 업그레이드',
+      value: `${formatBigInt(nextCost.money)} 💰 · ${formatBigInt(nextCost.amount)} ${nextCost.material}`,
+      inline: false
+    })
+  }
+
+  return fields
+}
+
+/**
+ * `bigint`를 천단위 구분자 문자열로 포맷한다.
+ *
+ * 예: `1_000_000n → '1,000,000'`.
+ *
+ * @param value 변환할 BigInt
+ * @returns 포맷된 문자열
+ */
+export function formatBigInt(value: bigint): string {
+  const s = value.toString(10)
+  const negative = s.startsWith('-')
+  const digits = negative ? s.slice(1) : s
+  const withCommas = digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  return negative ? `-${withCommas}` : withCommas
+}

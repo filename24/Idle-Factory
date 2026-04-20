@@ -1,0 +1,103 @@
+{
+  "factory": {
+    "build": {
+      "success": "{{emoji}} {{type}} 공장을 ({{x}}, {{y}})에 건설했어요!",
+      "error": {
+        "insufficientMoney": "돈이 부족해요. 필요: {{required}} 💰 / 보유: {{have}} 💰",
+        "levelLocked": "이 공장은 레벨 {{level}}부터 해금돼요.",
+        "slotOccupied": "해당 슬롯에는 이미 다른 공장이 있어요.",
+        "slotLocked": "아직 확장되지 않은 슬롯이에요.",
+        "outOfBounds": "토지 경계를 벗어났어요."
+      }
+    },
+    "upgrade": {
+      "success": "{{type}} 공장을 G{{grade}}(으)로 업그레이드했어요!",
+      "error": {
+        "insufficientMoney": "돈이 부족해요. 필요: {{required}} 💰",
+        "insufficientMaterial": "재료가 부족해요. 필요: {{amount}} {{material}}",
+        "maxGrade": "이미 최대 등급이에요."
+      }
+    },
+    "info": {
+      "title": "{{emoji}} {{type}} · G{{grade}}",
+      "fields": {
+        "type": "종류",
+        "grade": "등급",
+        "position": "좌표",
+        "mode": "모드",
+        "nextCost": "다음 업그레이드",
+        "unlock": "해금 레벨"
+      }
+    },
+    "setMode": {
+      "success": "공장 모드를 `{{mode}}`(으)로 변경했어요."
+    }
+  },
+  "harvest": {
+    "result": {
+      "title": "🧺 수확 결과",
+      "summary": "{{count}} 공장에서 +{{xp}} XP",
+      "emptyLine": "— 수확할 자원이 없었어요.",
+      "none": "수확할 공장이 없습니다."
+    }
+  },
+  "warehouse": {
+    "view": {
+      "title": "📦 창고",
+      "fields": {
+        "grade": "창고 등급",
+        "capacity": "전체 용량",
+        "used": "사용 중",
+        "free": "여유",
+        "stacks": "보관 자원"
+      }
+    },
+    "upgrade": {
+      "success": "창고를 G{{grade}}(으)로 업그레이드했어요!",
+      "error": {
+        "insufficientMoney": "돈이 부족해요. 필요: {{required}} 💰",
+        "insufficientMaterial": "재료가 부족해요. 필요: {{amount}} {{material}}",
+        "maxGrade": "창고가 이미 최대 등급이에요."
+      }
+    }
+  },
+  "land": {
+    "view": {
+      "title": "🗺️ 내 토지",
+      "legend": "⬜ 빈 슬롯 · ⬛ 잠김 · 🌱 비옥 · 🌳 숲 · 🛢️ 유전 · 🪨 광맥 · 💧 수원"
+    }
+  },
+  "profile": {
+    "title": "👤 {{nickname}} 님의 프로필",
+    "fields": {
+      "level": "레벨",
+      "xp": "경험치",
+      "money": "보유 자금",
+      "warehouseGrade": "창고 등급",
+      "factoryCount": "공장 수"
+    }
+  },
+  "common": {
+    "error": {
+      "userNotFound": "유저 정보를 찾을 수 없어요. `/start`로 먼저 시작해주세요.",
+      "factoryNotFound": "해당 공장을 찾을 수 없어요.",
+      "warehouseFull": "창고가 가득 찼어요. 창고를 확장하거나 자원을 판매해주세요.",
+      "unknown": "알 수 없는 오류가 발생했어요. 잠시 후 다시 시도해주세요."
+    }
+  },
+  "material": {
+    "GRAIN": "곡물",
+    "ORE": "광석",
+    "WOOD": "목재",
+    "CRUDE_OIL": "원유",
+    "STEEL": "철강",
+    "FUEL": "연료",
+    "PLASTIC": "플라스틱",
+    "PROCESSED_FOOD": "가공식품",
+    "FURNITURE": "가구",
+    "CAR": "자동차",
+    "ELECTRONIC": "전자제품",
+    "FINISHED_FOOD": "완제 식품",
+    "RAW_BOOSTER": "원료 부스터"
+  }
+}

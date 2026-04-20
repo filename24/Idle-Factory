@@ -1,0 +1,103 @@
+{
+  "factory": {
+    "build": {
+      "success": "Built a {{type}} {{emoji}} factory at ({{x}}, {{y}})!",
+      "error": {
+        "insufficientMoney": "Not enough money. Required: {{required}} 💰 / Have: {{have}} 💰",
+        "levelLocked": "This factory unlocks at level {{level}}.",
+        "slotOccupied": "That slot is already occupied by another factory.",
+        "slotLocked": "That slot is still locked (not yet expanded).",
+        "outOfBounds": "That position is outside the land bounds."
+      }
+    },
+    "upgrade": {
+      "success": "Upgraded the {{type}} factory to G{{grade}}!",
+      "error": {
+        "insufficientMoney": "Not enough money. Required: {{required}} 💰",
+        "insufficientMaterial": "Not enough material. Required: {{amount}} {{material}}",
+        "maxGrade": "Already at max grade."
+      }
+    },
+    "info": {
+      "title": "{{emoji}} {{type}} · G{{grade}}",
+      "fields": {
+        "type": "Type",
+        "grade": "Grade",
+        "position": "Position",
+        "mode": "Mode",
+        "nextCost": "Next upgrade",
+        "unlock": "Unlock level"
+      }
+    },
+    "setMode": {
+      "success": "Factory mode changed to `{{mode}}`."
+    }
+  },
+  "harvest": {
+    "result": {
+      "title": "🧺 Harvest result",
+      "summary": "+{{xp}} XP from {{count}} factories",
+      "emptyLine": "— Nothing harvested.",
+      "none": "You have no factories to harvest."
+    }
+  },
+  "warehouse": {
+    "view": {
+      "title": "📦 Warehouse",
+      "fields": {
+        "grade": "Warehouse grade",
+        "capacity": "Total capacity",
+        "used": "Used",
+        "free": "Free",
+        "stacks": "Stored materials"
+      }
+    },
+    "upgrade": {
+      "success": "Warehouse upgraded to G{{grade}}!",
+      "error": {
+        "insufficientMoney": "Not enough money. Required: {{required}} 💰",
+        "insufficientMaterial": "Not enough material. Required: {{amount}} {{material}}",
+        "maxGrade": "Warehouse is already at max grade."
+      }
+    }
+  },
+  "land": {
+    "view": {
+      "title": "🗺️ Your land",
+      "legend": "⬜ Empty · ⬛ Locked · 🌱 Fertile · 🌳 Forest · 🛢️ Oil · 🪨 Ore · 💧 Water"
+    }
+  },
+  "profile": {
+    "title": "👤 {{nickname}}'s profile",
+    "fields": {
+      "level": "Level",
+      "xp": "XP",
+      "money": "Money",
+      "warehouseGrade": "Warehouse grade",
+      "factoryCount": "Factories"
+    }
+  },
+  "common": {
+    "error": {
+      "userNotFound": "User data not found. Please run `/start` first.",
+      "factoryNotFound": "That factory could not be found.",
+      "warehouseFull": "Warehouse is full. Upgrade it or sell some materials.",
+      "unknown": "An unknown error occurred. Please try again in a moment."
+    }
+  },
+  "material": {
+    "GRAIN": "Grain",
+    "ORE": "Ore",
+    "WOOD": "Wood",
+    "CRUDE_OIL": "Crude Oil",
+    "STEEL": "Steel",
+    "FUEL": "Fuel",
+    "PLASTIC": "Plastic",
+    "PROCESSED_FOOD": "Processed Food",
+    "FURNITURE": "Furniture",
+    "CAR": "Car",
+    "ELECTRONIC": "Electronics",
+    "FINISHED_FOOD": "Finished Food",
+    "RAW_BOOSTER": "Raw Booster"
+  }
+}
