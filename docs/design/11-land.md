@@ -251,7 +251,7 @@ for each slot in new_slots:
 
 ## 관련 스키마
 
-참조: [`packages/database/prisma/schema.prisma`](../../packages/database/prisma/schema.prisma)
+참조: [`packages/database/prisma/schema.prisma`](https://github.com/filename24/Idle-Factory/blob/stable/packages/database/prisma/schema.prisma)
 
 - `Land` — 유저당 1개 토지 (`userId` unique, `width`, `height`)
 - `Slot` — 토지 내 셀 (`landId + x + y` unique, `type`)

@@ -47,7 +47,7 @@ flowchart LR
 
 ## 관련 스키마
 
-참조: [`packages/database/prisma/schema.prisma`](../../packages/database/prisma/schema.prisma)
+참조: [`packages/database/prisma/schema.prisma`](https://github.com/filename24/Idle-Factory/blob/stable/packages/database/prisma/schema.prisma)
 
 - `User.money`, `User.xp`, `User.level` — 유저 자산/성장
 - `Factory`, `Factory.lastHarvestAt` — 자동 생산 tick 계산 기준

@@ -106,7 +106,7 @@ flowchart LR
 
 ## 관련 스키마
 
-참조: [`packages/database/prisma/schema.prisma`](../../packages/database/prisma/schema.prisma)
+참조: [`packages/database/prisma/schema.prisma`](https://github.com/filename24/Idle-Factory/blob/stable/packages/database/prisma/schema.prisma)
 
 - `GlobalMarketPrice` — 자재별 변동가 (`basePrice`, `currentPrice`, `recentSales`, `updatedAt`) · 30분 주기 갱신
 - `MarketListing` — 유저 상점 등록 (`price`, `qty`, `durationDays`, `taxRate`, `status`, `expiresAt`)

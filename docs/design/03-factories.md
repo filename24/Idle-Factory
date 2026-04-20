@@ -258,7 +258,7 @@ flowchart TD
 
 ## 관련 스키마
 
-참조: [`packages/database/prisma/schema.prisma`](../../packages/database/prisma/schema.prisma)
+참조: [`packages/database/prisma/schema.prisma`](https://github.com/filename24/Idle-Factory/blob/stable/packages/database/prisma/schema.prisma)
 
 - `enum FactoryType` — FARM / MINE / LUMBER / OIL_WELL / STEEL_MILL / REFINERY / FLOUR_MILL / FURNITURE_FACTORY / CAR_FACTORY / ELECTRONICS_FACTORY / FOOD_FACTORY
 - `enum FactoryTier` — T1/T2/T3

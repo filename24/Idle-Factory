@@ -69,7 +69,7 @@ flowchart LR
 
 ## 관련 스키마
 
-참조: [`packages/database/prisma/schema.prisma`](../../packages/database/prisma/schema.prisma)
+참조: [`packages/database/prisma/schema.prisma`](https://github.com/filename24/Idle-Factory/blob/stable/packages/database/prisma/schema.prisma)
 
 - `User.xp` (BigInt) · `User.level` — 레벨/경험치
 - `TradeLog` — 거래 이력 기반 XP 중복 방지 (동일 상대 반복 거래 감지)

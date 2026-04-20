@@ -97,7 +97,7 @@ interface Warehouse {
 
 ## 관련 스키마
 
-참조: [`packages/database/prisma/schema.prisma`](../../packages/database/prisma/schema.prisma)
+참조: [`packages/database/prisma/schema.prisma`](https://github.com/filename24/Idle-Factory/blob/stable/packages/database/prisma/schema.prisma)
 
 - `Warehouse` — 유저당 1개 (`userId` unique), `grade` 1~10 (용량은 등급에서 계산)
 - `WarehouseStack` — 자재별 보유량 (`warehouseId + material` unique, `count: BigInt`)

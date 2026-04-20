@@ -100,7 +100,7 @@ userDividend      = eachShareDividend × userSharesHeld
 
 ## 관련 스키마
 
-참조: [`packages/database/prisma/schema.prisma`](../../packages/database/prisma/schema.prisma)
+참조: [`packages/database/prisma/schema.prisma`](https://github.com/filename24/Idle-Factory/blob/stable/packages/database/prisma/schema.prisma)
 
 - `Stock` — 상장 종목 (`issuerUserId`, `market`, `totalShares`, `currentPrice`, `dividendRate`)
 - `StockHolding` — 보유 지분 (`userId + stockId` unique, `shares`, `avgBuyPrice`)

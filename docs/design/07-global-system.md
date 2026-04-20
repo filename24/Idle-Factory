@@ -158,7 +158,7 @@ flowchart LR
 
 ## 관련 스키마
 
-참조: [`packages/database/prisma/schema.prisma`](../../packages/database/prisma/schema.prisma)
+참조: [`packages/database/prisma/schema.prisma`](https://github.com/filename24/Idle-Factory/blob/stable/packages/database/prisma/schema.prisma)
 
 - `Guild.credit` — 서버 신뢰도 (-1000 ~ 10000)
 - `Guild.vault` — 서버 금고 (BigInt)
