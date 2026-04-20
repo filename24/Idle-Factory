@@ -8,6 +8,9 @@
     "format": "turbo run format",
     "typecheck": "turbo run typecheck",
     "dev": "turbo run dev",
+    "db:dev:up": "docker compose -f docker-compose.dev.yml up -d",
+    "db:dev:down": "docker compose -f docker-compose.dev.yml down",
+    "db:dev:reset": "docker compose -f docker-compose.dev.yml down -v && docker compose -f docker-compose.dev.yml up -d",
     "postinstall": "is-ci || husky",
     "update": "pnpm update -i -r",
     "generate": "turbo gen"
