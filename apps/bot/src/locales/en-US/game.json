@@ -68,6 +68,15 @@
     "view": {
       "title": "🗺️ Your land",
       "legend": "⬜ Empty · 🌱 Fertile · 🌳 Forest · 🛢️ Oil · 🪨 Ore · 💧 Water"
+    },
+    "buy": {
+      "success": "Purchased land #{{index}}! (-{{cost}} 💰, balance {{remaining}} 💰, owned {{total}})",
+      "error": {
+        "maxLands": "You already own the maximum of {{max}} lands.",
+        "alreadyExists": "A land with that number already exists.",
+        "invalidIndex": "Buyable land index must be between {{min}} and {{max}}. Purchase lands in order.",
+        "insufficientMoney": "Not enough money to buy this land."
+      }
     }
   },
   "profile": {

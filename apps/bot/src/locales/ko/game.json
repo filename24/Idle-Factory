@@ -68,6 +68,15 @@
     "view": {
       "title": "🗺️ 내 토지",
       "legend": "⬜ 빈 슬롯 · 🌱 비옥 · 🌳 숲 · 🛢️ 유전 · 🪨 광맥 · 💧 수원"
+    },
+    "buy": {
+      "success": "{{index}}번째 토지를 구매했어요! (-{{cost}} 💰, 잔액 {{remaining}} 💰, 보유 {{total}}개)",
+      "error": {
+        "maxLands": "이미 최대 {{max}}개의 토지를 보유 중이에요.",
+        "alreadyExists": "해당 번호의 토지는 이미 존재해요.",
+        "invalidIndex": "구매할 수 있는 토지 번호는 {{min}}~{{max}}이에요. 이전 토지부터 순서대로 구매해주세요.",
+        "insufficientMoney": "토지를 구매할 자금이 부족해요."
+      }
     }
   },
   "profile": {
