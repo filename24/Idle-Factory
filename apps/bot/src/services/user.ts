@@ -8,8 +8,9 @@ export interface EnsureUserInput {
   readonly lang?: string
 }
 
-const LAND_WIDTH = 3
-const LAND_HEIGHT = 3
+const LAND_WIDTH = 4
+const LAND_HEIGHT = 4
+const STARTER_LAND_INDEX = 1
 const DEFAULT_WAREHOUSE_GRADE = 1
 /** 신규 유저 초기 자금 (docs/design/00-onboarding.md) */
 const STARTER_MONEY = 1_000n
@@ -18,6 +19,7 @@ async function createLandWithSlots(tx: Tx, userId: string): Promise<void> {
   const land = await tx.land.create({
     data: {
       userId,
+      index: STARTER_LAND_INDEX,
       width: LAND_WIDTH,
       height: LAND_HEIGHT
     }
@@ -50,7 +52,7 @@ async function findHydratedUser(tx: Tx, discordId: string) {
   return tx.user.findUniqueOrThrow({
     where: { id: discordId },
     include: {
-      land: { include: { slots: true } },
+      lands: { include: { slots: true }, orderBy: { index: 'asc' } },
       warehouse: true
     }
   })
@@ -60,7 +62,7 @@ export type HydratedUser = Awaited<ReturnType<typeof findHydratedUser>>
 
 export const UserService = {
   /**
-   * Idempotently ensure a User, their Land (3×3 with generated special slots),
+   * Idempotently ensure a User, their starter Land (index=1, 4×4 with generated special slots),
    * and Warehouse (grade 1) exist. Safe to call repeatedly — returns the
    * hydrated User on every call.
    */
@@ -88,7 +90,9 @@ export const UserService = {
       }
 
       const hasLand = await tx.land.findUnique({
-        where: { userId: discordId },
+        where: {
+          userId_index: { userId: discordId, index: STARTER_LAND_INDEX }
+        },
         select: { id: true }
       })
       if (!hasLand) {

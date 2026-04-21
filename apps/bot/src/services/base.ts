@@ -5,7 +5,6 @@ export type ServiceErrorCode =
   | 'INSUFFICIENT_MONEY'
   | 'INSUFFICIENT_MATERIAL'
   | 'SLOT_OCCUPIED'
-  | 'SLOT_LOCKED'
   | 'OUT_OF_BOUNDS'
   | 'FACTORY_NOT_FOUND'
   | 'LEVEL_LOCKED'

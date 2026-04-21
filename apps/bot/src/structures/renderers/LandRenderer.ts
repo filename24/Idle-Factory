@@ -12,8 +12,6 @@ import type { FactoryType, SlotType } from '@idle/game-core'
 
 /** 빈(배치 가능) 슬롯 이모지. */
 const EMPTY_CELL = '⬜'
-/** 확장 전 잠긴 슬롯 이모지. */
-const LOCKED_CELL = '⬛'
 
 /**
  * 특수 슬롯 타입 → 렌더 이모지 매핑.
@@ -82,8 +80,6 @@ export interface SlotDTO {
   readonly y: number
   /** 슬롯 타입 */
   readonly type: SlotType
-  /** 확장 전 잠긴 슬롯 여부 */
-  readonly locked: boolean
 }
 
 /**
@@ -106,7 +102,7 @@ export interface FactoryDTO {
 export interface RenderedLand {
   /** 줄바꿈으로 구분된 이모지 그리드 */
   readonly grid: string
-  /** 범례 문자열 (빈/잠김/특수 슬롯 설명) */
+  /** 범례 문자열 (빈/특수 슬롯 설명) */
   readonly legend: string
 }
 
@@ -114,14 +110,13 @@ export interface RenderedLand {
  * 토지를 이모지 그리드 문자열로 렌더한다.
  *
  * - 빈 `NORMAL` 슬롯: `⬜`
- * - 잠긴 슬롯: `⬛`
  * - 특수 슬롯(`FERTILE/FOREST/OIL/ORE/WATER`): 해당 이모지
  * - 공장: `FACTORY_CATALOG[type].emoji` + 등급 위첨자(앵커 셀에만)
  * - T3 2×2 공장: 4셀 모두 같은 이모지, 등급 표기는 앵커만
  *
  * @param land 토지 크기 DTO
  * @param factories 현재 배치된 공장 목록
- * @param slots 슬롯 상태 목록 (특수 슬롯/잠금 판정용)
+ * @param slots 슬롯 상태 목록 (특수 슬롯 판정용)
  * @returns 렌더된 그리드와 범례
  */
 export function renderLand(
@@ -170,7 +165,7 @@ export function renderLand(
  * 단일 셀 렌더링.
  *
  * 공장이 있으면 공장 이모지(+앵커면 등급 위첨자), 그 다음에 특수 슬롯,
- * 잠김 여부, 마지막으로 빈 셀 순으로 결정한다.
+ * 마지막으로 빈 셀 순으로 결정한다.
  */
 function renderCell(
   x: number,
@@ -186,9 +181,8 @@ function renderCell(
   }
 
   const slot = slotMap.get(key)
-  if (slot !== undefined) {
-    if (slot.locked) return LOCKED_CELL
-    if (slot.type !== 'NORMAL') return SPECIAL_SLOT_EMOJI[slot.type]
+  if (slot !== undefined && slot.type !== 'NORMAL') {
+    return SPECIAL_SLOT_EMOJI[slot.type]
   }
   return EMPTY_CELL
 }
@@ -202,7 +196,6 @@ function cellKey(x: number, y: number): string {
 function buildLegend(): string {
   const parts = [
     `${EMPTY_CELL} 빈 슬롯`,
-    `${LOCKED_CELL} 잠김`,
     `${SPECIAL_SLOT_EMOJI.FERTILE} 비옥`,
     `${SPECIAL_SLOT_EMOJI.FOREST} 숲`,
     `${SPECIAL_SLOT_EMOJI.OIL} 유전`,

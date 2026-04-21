@@ -2,7 +2,7 @@
  * `/land` 커맨드.
  *
  * 서브커맨드:
- * - `view`: 호출자의 토지(3×3)를 이모지 그리드로 렌더링해서 ephemeral Embed로 응답.
+ * - `view`: 호출자의 토지(4×4)를 이모지 그리드로 렌더링해서 ephemeral Embed로 응답.
  *
  * DB 접근은 `this.container.db` (Prisma 기반 `DatabaseClient`)를 사용한다.
  * 렌더링 자체는 `@structures/renderers`의 순수 함수 `renderLand`에 위임한다.
@@ -64,7 +64,7 @@ export class LandCommand extends Command {
       lang: interaction.locale ?? undefined
     })
 
-    const land = hydrated.land
+    const land = hydrated.lands.find((l) => l.index === 1)
     if (!land) {
       return interaction.reply(
         simpleV2Payload({
@@ -80,13 +80,13 @@ export class LandCommand extends Command {
       select: { type: true, grade: true, anchorX: true, anchorY: true }
     })
 
-    const slotDTOs: SlotDTO[] = land.slots.map((s) => ({
-      x: s.x,
-      y: s.y,
-      type: s.type,
-      // Phase 1 스키마에는 per-slot lock 플래그가 없어 false 고정.
-      locked: false
-    }))
+    const slotDTOs: SlotDTO[] = land.slots.map(
+      (s: (typeof land.slots)[number]) => ({
+        x: s.x,
+        y: s.y,
+        type: s.type
+      })
+    )
 
     const factoryDTOs: FactoryDTO[] = factories.map((f) => ({
       type: f.type,

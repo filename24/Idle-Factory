@@ -285,8 +285,6 @@ export class FactoryCommand extends Command {
       }
       case 'SLOT_OCCUPIED':
         return t('game:factory.build.error.slotOccupied')
-      case 'SLOT_LOCKED':
-        return t('game:factory.build.error.slotLocked')
       case 'OUT_OF_BOUNDS':
         return t('game:factory.build.error.outOfBounds')
       case 'MAX_GRADE':

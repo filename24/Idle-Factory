@@ -3,6 +3,7 @@ import {
   FACTORY_CATALOG,
   buildCost,
   canPlace,
+  generateSlotTypes,
   getOccupiedCells,
   upgradeMaterialCost,
   upgradeMoneyCost,
@@ -13,6 +14,9 @@ import { PrismaClient } from '@idle/database'
 import { ServiceError, Tx, runInTx } from './base'
 
 const MAX_GRADE = 10
+const STARTER_LAND_INDEX = 1
+const LAND_WIDTH = 4
+const LAND_HEIGHT = 4
 
 export interface BuildParams {
   readonly userId: string
@@ -50,22 +54,25 @@ export interface FactoryInfoDTO {
 
 async function ensureLandWithSlots(tx: Tx, userId: string) {
   const land = await tx.land.findUnique({
-    where: { userId },
+    where: { userId_index: { userId, index: STARTER_LAND_INDEX } },
     include: { slots: true }
   })
   if (land) return land
   const created = await tx.land.create({
-    data: { userId }
-  })
-  const slotsData: Array<{ landId: string; x: number; y: number }> = []
-  for (let y = 0; y < created.height; y++) {
-    for (let x = 0; x < created.width; x++) {
-      slotsData.push({ landId: created.id, x, y })
+    data: {
+      userId,
+      index: STARTER_LAND_INDEX,
+      width: LAND_WIDTH,
+      height: LAND_HEIGHT
     }
-  }
+  })
+  const grid = generateSlotTypes({ width: LAND_WIDTH, height: LAND_HEIGHT })
+  const slotsData = grid.flatMap((row, y) =>
+    row.map((type, x) => ({ landId: created.id, x, y, type }))
+  )
   await tx.slot.createMany({ data: slotsData })
   const reread = await tx.land.findUniqueOrThrow({
-    where: { userId },
+    where: { userId_index: { userId, index: STARTER_LAND_INDEX } },
     include: { slots: true }
   })
   return reread
@@ -92,7 +99,6 @@ export const FactoryService = {
         x: s.x,
         y: s.y,
         type: s.type,
-        locked: s.locked,
         factoryId: s.factoryId
       }))
 
@@ -108,8 +114,6 @@ export const FactoryService = {
         switch (placement.reason) {
           case 'OUT_OF_BOUNDS':
             throw new ServiceError('OUT_OF_BOUNDS')
-          case 'LOCKED_SLOT':
-            throw new ServiceError('SLOT_LOCKED')
           case 'OCCUPIED':
           case 'OVERLAP':
           default:
