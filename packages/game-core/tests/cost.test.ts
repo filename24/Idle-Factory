@@ -101,6 +101,34 @@ describe('upgradeMaterialCost', () => {
     })
   })
 
+  it('STEEL_MILL 1→2 material = ORE × 10 (T2 base 10)', () => {
+    expect(upgradeMaterialCost('STEEL_MILL', 1)).toEqual({
+      material: 'ORE',
+      amount: 10n,
+    })
+  })
+
+  it('STEEL_MILL 2→3 material = ORE × 20', () => {
+    expect(upgradeMaterialCost('STEEL_MILL', 2)).toEqual({
+      material: 'ORE',
+      amount: 20n,
+    })
+  })
+
+  it('CAR_FACTORY 1→2 material = STEEL × 5 (T3 base 5)', () => {
+    expect(upgradeMaterialCost('CAR_FACTORY', 1)).toEqual({
+      material: 'STEEL',
+      amount: 5n,
+    })
+  })
+
+  it('CAR_FACTORY 3→4 material = STEEL × 20', () => {
+    expect(upgradeMaterialCost('CAR_FACTORY', 3)).toEqual({
+      material: 'STEEL',
+      amount: 20n,
+    })
+  })
+
   it('throws RangeError for fromGrade = 0', () => {
     expect(() => upgradeMaterialCost('FARM', 0)).toThrow(RangeError)
   })

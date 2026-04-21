@@ -95,7 +95,7 @@ export const upgradeCost = upgradeMoneyCost
 /**
  * 등급 N → N+1 업그레이드에 필요한 원료 비용.
  *
- * 공식: `amount = upgradeMaterialBase.amount × 2^N`. N ∈ [1..9].
+ * 공식: `amount = upgradeMaterialBase.amount × 2^(N-1)`. N ∈ [1..9].
  * 근거: `docs/design/03-factories.md` §업그레이드 비용.
  *
  * @param type 공장 종류
@@ -111,7 +111,7 @@ export function upgradeMaterialCost(
   const base = FACTORY_CATALOG[type].upgradeMaterialBase
   return {
     material: base.material,
-    amount: base.amount * bigintPow(2n, fromGrade),
+    amount: base.amount * bigintPow(2n, fromGrade - 1),
   }
 }
 

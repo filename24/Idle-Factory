@@ -33,9 +33,18 @@ export interface FactoryCatalogEntry {
   readonly buildCost: bigint
   /**
    * 업그레이드 시 요구되는 원료의 기준값.
-   * 실제 등급 N→N+1 비용은 `amount × 2^N` (`upgradeMaterialCost` 참조).
+   * 실제 등급 N→N+1 비용은 `amount × 2^(N-1)` (`upgradeMaterialCost` 참조).
+   * Tier 기준값 — T1: 20, T2: 10, T3: 5.
    */
   readonly upgradeMaterialBase: {
+    readonly material: MaterialType
+    readonly amount: bigint
+  }
+  /**
+   * 신규 건설 시 화폐 비용과 함께 추가로 소모되는 원료 (T2/T3에만 존재).
+   * 근거: `docs/design/03-factories.md` §건설 비용 — T2는 원료 ×100, T3은 원료 ×50.
+   */
+  readonly buildMaterialCost?: {
     readonly material: MaterialType
     readonly amount: bigint
   }
@@ -69,7 +78,7 @@ export const FACTORY_CATALOG: Readonly<Record<FactoryType, FactoryCatalogEntry>>
     recipe: [],
     secondaryOutputs: [],
     buildCost: T1_BUILD,
-    upgradeMaterialBase: { material: 'GRAIN', amount: 10n },
+    upgradeMaterialBase: { material: 'GRAIN', amount: 20n },
     unlockLevel: 1,
     mvp: true,
   },
@@ -83,7 +92,7 @@ export const FACTORY_CATALOG: Readonly<Record<FactoryType, FactoryCatalogEntry>>
     recipe: [],
     secondaryOutputs: [],
     buildCost: T1_BUILD,
-    upgradeMaterialBase: { material: 'ORE', amount: 10n },
+    upgradeMaterialBase: { material: 'ORE', amount: 20n },
     unlockLevel: 1,
     mvp: true,
   },
@@ -97,7 +106,7 @@ export const FACTORY_CATALOG: Readonly<Record<FactoryType, FactoryCatalogEntry>>
     recipe: [],
     secondaryOutputs: [],
     buildCost: T1_BUILD,
-    upgradeMaterialBase: { material: 'WOOD', amount: 10n },
+    upgradeMaterialBase: { material: 'WOOD', amount: 20n },
     unlockLevel: 1,
     mvp: true,
   },
@@ -111,7 +120,7 @@ export const FACTORY_CATALOG: Readonly<Record<FactoryType, FactoryCatalogEntry>>
     recipe: [],
     secondaryOutputs: [],
     buildCost: T1_BUILD,
-    upgradeMaterialBase: { material: 'CRUDE_OIL', amount: 10n },
+    upgradeMaterialBase: { material: 'CRUDE_OIL', amount: 20n },
     unlockLevel: 9999,
     mvp: false,
   },
@@ -125,8 +134,9 @@ export const FACTORY_CATALOG: Readonly<Record<FactoryType, FactoryCatalogEntry>>
     recipe: [{ material: 'ORE', amount: 3n }],
     secondaryOutputs: [],
     buildCost: T2_BUILD,
-    upgradeMaterialBase: { material: 'ORE', amount: 100n },
-    unlockLevel: 10,
+    upgradeMaterialBase: { material: 'ORE', amount: 10n },
+    buildMaterialCost: { material: 'ORE', amount: 100n },
+    unlockLevel: 5,
     mvp: true,
   },
   REFINERY: {
@@ -139,7 +149,8 @@ export const FACTORY_CATALOG: Readonly<Record<FactoryType, FactoryCatalogEntry>>
     recipe: [{ material: 'CRUDE_OIL', amount: 2n }],
     secondaryOutputs: [{ material: 'PLASTIC', amount: 1n }],
     buildCost: T2_BUILD,
-    upgradeMaterialBase: { material: 'CRUDE_OIL', amount: 100n },
+    upgradeMaterialBase: { material: 'CRUDE_OIL', amount: 10n },
+    buildMaterialCost: { material: 'CRUDE_OIL', amount: 100n },
     unlockLevel: 9999,
     mvp: false,
   },
@@ -153,8 +164,9 @@ export const FACTORY_CATALOG: Readonly<Record<FactoryType, FactoryCatalogEntry>>
     recipe: [{ material: 'GRAIN', amount: 5n }],
     secondaryOutputs: [],
     buildCost: T2_BUILD,
-    upgradeMaterialBase: { material: 'GRAIN', amount: 100n },
-    unlockLevel: 10,
+    upgradeMaterialBase: { material: 'GRAIN', amount: 10n },
+    buildMaterialCost: { material: 'GRAIN', amount: 100n },
+    unlockLevel: 5,
     mvp: true,
   },
   FURNITURE_FACTORY: {
@@ -167,7 +179,8 @@ export const FACTORY_CATALOG: Readonly<Record<FactoryType, FactoryCatalogEntry>>
     recipe: [{ material: 'WOOD', amount: 4n }],
     secondaryOutputs: [],
     buildCost: T2_BUILD,
-    upgradeMaterialBase: { material: 'WOOD', amount: 100n },
+    upgradeMaterialBase: { material: 'WOOD', amount: 10n },
+    buildMaterialCost: { material: 'WOOD', amount: 100n },
     unlockLevel: 9999,
     mvp: false,
   },
@@ -184,8 +197,9 @@ export const FACTORY_CATALOG: Readonly<Record<FactoryType, FactoryCatalogEntry>>
     ],
     secondaryOutputs: [],
     buildCost: T3_BUILD,
-    upgradeMaterialBase: { material: 'STEEL', amount: 50n },
-    unlockLevel: 25,
+    upgradeMaterialBase: { material: 'STEEL', amount: 5n },
+    buildMaterialCost: { material: 'STEEL', amount: 50n },
+    unlockLevel: 10,
     mvp: true,
   },
   ELECTRONICS_FACTORY: {
@@ -201,7 +215,8 @@ export const FACTORY_CATALOG: Readonly<Record<FactoryType, FactoryCatalogEntry>>
     ],
     secondaryOutputs: [],
     buildCost: T3_BUILD,
-    upgradeMaterialBase: { material: 'STEEL', amount: 50n },
+    upgradeMaterialBase: { material: 'STEEL', amount: 5n },
+    buildMaterialCost: { material: 'PLASTIC', amount: 50n },
     unlockLevel: 9999,
     mvp: false,
   },
@@ -218,7 +233,8 @@ export const FACTORY_CATALOG: Readonly<Record<FactoryType, FactoryCatalogEntry>>
     ],
     secondaryOutputs: [],
     buildCost: T3_BUILD,
-    upgradeMaterialBase: { material: 'PROCESSED_FOOD', amount: 50n },
+    upgradeMaterialBase: { material: 'PROCESSED_FOOD', amount: 5n },
+    buildMaterialCost: { material: 'PROCESSED_FOOD', amount: 50n },
     unlockLevel: 9999,
     mvp: false,
   },
