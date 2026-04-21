@@ -11,6 +11,8 @@ export interface EnsureUserInput {
 const LAND_WIDTH = 3
 const LAND_HEIGHT = 3
 const DEFAULT_WAREHOUSE_GRADE = 1
+/** 신규 유저 초기 자금 (docs/design/00-onboarding.md) */
+const STARTER_MONEY = 1_000n
 
 async function createLandWithSlots(tx: Tx, userId: string): Promise<void> {
   const land = await tx.land.create({
@@ -78,6 +80,7 @@ export const UserService = {
         await tx.user.create({
           data: {
             id: discordId,
+            money: STARTER_MONEY,
             ...(nickname !== undefined ? { nickname } : {}),
             ...(lang !== undefined ? { lang } : {})
           }

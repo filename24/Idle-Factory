@@ -252,11 +252,29 @@ export class FactoryCommand extends Command {
           required: '-',
           have: '-'
         })
-      case 'INSUFFICIENT_MATERIAL':
+      case 'INSUFFICIENT_MATERIAL': {
+        const details = (err.details ?? {}) as {
+          material?: string
+          amount?: bigint | string
+        }
+        const materialCode = details.material ?? '-'
+        const materialLabel =
+          materialCode !== '-'
+            ? t(`game:material.${materialCode}`, { defaultValue: materialCode })
+            : '-'
+        const amount =
+          details.amount !== undefined ? String(details.amount) : '-'
+        if (surface === 'build') {
+          return t('game:factory.build.error.insufficientMaterial', {
+            amount,
+            material: materialLabel
+          })
+        }
         return t('game:factory.upgrade.error.insufficientMaterial', {
-          amount: '-',
-          material: '-'
+          amount,
+          material: materialLabel
         })
+      }
       case 'LEVEL_LOCKED': {
         const typeOpt = interaction.options.getString('type')
         const level =

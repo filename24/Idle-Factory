@@ -4,6 +4,7 @@
       "success": "{{emoji}} {{type}} 공장을 ({{x}}, {{y}})에 건설했어요!",
       "error": {
         "insufficientMoney": "돈이 부족해요. 필요: {{required}} 💰 / 보유: {{have}} 💰",
+        "insufficientMaterial": "재료가 부족해요. 필요: {{amount}} {{material}}",
         "levelLocked": "이 공장은 레벨 {{level}}부터 해금돼요.",
         "slotOccupied": "해당 슬롯에는 이미 다른 공장이 있어요.",
         "slotLocked": "아직 확장되지 않은 슬롯이에요.",

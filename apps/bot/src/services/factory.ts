@@ -117,6 +117,37 @@ export const FactoryService = {
         }
       }
 
+      if (entry.buildMaterialCost) {
+        const { material, amount } = entry.buildMaterialCost
+        const warehouse = await tx.warehouse.findUnique({
+          where: { userId }
+        })
+        if (!warehouse) {
+          throw new ServiceError('INSUFFICIENT_MATERIAL', undefined, {
+            material,
+            amount
+          })
+        }
+        const stack = await tx.warehouseStack.findUnique({
+          where: {
+            warehouseId_material: {
+              warehouseId: warehouse.id,
+              material
+            }
+          }
+        })
+        if (!stack || stack.count < amount) {
+          throw new ServiceError('INSUFFICIENT_MATERIAL', undefined, {
+            material,
+            amount
+          })
+        }
+        await tx.warehouseStack.update({
+          where: { id: stack.id },
+          data: { count: { decrement: amount } }
+        })
+      }
+
       await tx.user.update({
         where: { id: userId },
         data: { money: { decrement: cost } }

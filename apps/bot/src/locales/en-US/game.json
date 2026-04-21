@@ -4,6 +4,7 @@
       "success": "Built a {{type}} {{emoji}} factory at ({{x}}, {{y}})!",
       "error": {
         "insufficientMoney": "Not enough money. Required: {{required}} 💰 / Have: {{have}} 💰",
+        "insufficientMaterial": "Not enough material. Required: {{amount}} {{material}}",
         "levelLocked": "This factory unlocks at level {{level}}.",
         "slotOccupied": "That slot is already occupied by another factory.",
         "slotLocked": "That slot is still locked (not yet expanded).",
