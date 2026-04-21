@@ -12,9 +12,9 @@ interface SeedOpts {
 }
 
 /**
- * Seed a user + 3x3 NORMAL-only land + warehouse. We create slots manually
- * (bypassing UserService) so every slot is NORMAL — keeping factory yield
- * deterministic with no special-slot bonus.
+ * Seed a user + 4×4 NORMAL-only starter land (index=1) + warehouse.
+ * Creates slots manually (bypassing UserService) so every slot is NORMAL —
+ * keeping factory yield deterministic with no special-slot bonus.
  */
 async function seedBase(opts: SeedOpts) {
   const { discordId, warehouseGrade = 1, stacks = {} } = opts
@@ -24,12 +24,12 @@ async function seedBase(opts: SeedOpts) {
   })
 
   const land = await testPrisma.land.create({
-    data: { userId: discordId, width: 3, height: 3 }
+    data: { userId: discordId, index: 1, width: 4, height: 4 }
   })
 
   const slotRows = []
-  for (let y = 0; y < 3; y++) {
-    for (let x = 0; x < 3; x++) {
+  for (let y = 0; y < 4; y++) {
+    for (let x = 0; x < 4; x++) {
       slotRows.push({ landId: land.id, x, y, type: 'NORMAL' as const })
     }
   }
@@ -233,11 +233,11 @@ describe('HarvestService.harvestAll', () => {
     const discordId = 'harvest-clamp-001'
     const thirtyMinAgo = new Date(Date.now() - THIRTY_MIN_MS)
 
-    // Grade-1 capacity = 1000. Pre-fill 955 → free = 45.
+    // Grade-1 capacity = 3000. Pre-fill 2955 → free = 45.
     // FARM = 30/tick. 3 ticks → 90, clamped to floor(45/30) = 1 tick → 30.
     const { land } = await seedBase({
       discordId,
-      stacks: { GRAIN: 955n }
+      stacks: { GRAIN: 2_955n }
     })
     const factory = await placeFactory({
       userId: discordId,
@@ -259,7 +259,7 @@ describe('HarvestService.harvestAll', () => {
     const grain = await testPrisma.warehouseStack.findFirst({
       where: { warehouse: { userId: discordId }, material: 'GRAIN' }
     })
-    expect(grain?.count).toBe(985n)
+    expect(grain?.count).toBe(2_985n)
 
     const after = await testPrisma.factory.findUniqueOrThrow({
       where: { id: factory.id }

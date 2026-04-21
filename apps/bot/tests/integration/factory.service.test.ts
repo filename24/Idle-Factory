@@ -65,7 +65,7 @@ describe('FactoryService', () => {
       expect(after.money).toBe(4_000n)
 
       const land = await testPrisma.land.findUniqueOrThrow({
-        where: { userId: user.id },
+        where: { userId_index: { userId: user.id, index: 1 } },
         include: { slots: true }
       })
       const occupied = land.slots.filter((s) => s.factoryId === factory.id)
@@ -123,10 +123,11 @@ describe('FactoryService', () => {
     })
 
     it('builds CAR_FACTORY (2x2) updating 4 slot.factoryId', async () => {
-      const { user } = await seedUser('u-build-5', {
+      const { user, warehouse } = await seedUser('u-build-5', {
         money: 1_000_000n,
         level: 25
       })
+      await ensureMaterial(warehouse.id, 'STEEL', 100n)
 
       const factory = await FactoryService.build(testPrisma, {
         userId: user.id,
@@ -136,7 +137,7 @@ describe('FactoryService', () => {
       })
 
       const land = await testPrisma.land.findUniqueOrThrow({
-        where: { userId: user.id },
+        where: { userId_index: { userId: user.id, index: 1 } },
         include: { slots: true }
       })
       const occupied = land.slots.filter((s) => s.factoryId === factory.id)
