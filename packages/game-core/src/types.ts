@@ -108,8 +108,6 @@ export interface SlotState {
   readonly y: number
   /** 슬롯 타입 (`NORMAL` 또는 특수 슬롯) */
   readonly type: SlotType
-  /** 확장 전 잠긴 슬롯 여부. true면 공장 배치 불가. */
-  readonly locked: boolean
   /** 이 셀을 점유 중인 공장 ID. 없으면 null. */
   readonly factoryId: string | null
 }
