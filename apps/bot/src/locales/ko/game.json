@@ -7,7 +7,6 @@
         "insufficientMaterial": "재료가 부족해요. 필요: {{amount}} {{material}}",
         "levelLocked": "이 공장은 레벨 {{level}}부터 해금돼요.",
         "slotOccupied": "해당 슬롯에는 이미 다른 공장이 있어요.",
-        "slotLocked": "아직 확장되지 않은 슬롯이에요.",
         "outOfBounds": "토지 경계를 벗어났어요."
       }
     },
@@ -68,7 +67,7 @@
   "land": {
     "view": {
       "title": "🗺️ 내 토지",
-      "legend": "⬜ 빈 슬롯 · ⬛ 잠김 · 🌱 비옥 · 🌳 숲 · 🛢️ 유전 · 🪨 광맥 · 💧 수원"
+      "legend": "⬜ 빈 슬롯 · 🌱 비옥 · 🌳 숲 · 🛢️ 유전 · 🪨 광맥 · 💧 수원"
     }
   },
   "profile": {

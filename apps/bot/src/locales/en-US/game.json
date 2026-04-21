@@ -7,7 +7,6 @@
         "insufficientMaterial": "Not enough material. Required: {{amount}} {{material}}",
         "levelLocked": "This factory unlocks at level {{level}}.",
         "slotOccupied": "That slot is already occupied by another factory.",
-        "slotLocked": "That slot is still locked (not yet expanded).",
         "outOfBounds": "That position is outside the land bounds."
       }
     },
@@ -68,7 +67,7 @@
   "land": {
     "view": {
       "title": "🗺️ Your land",
-      "legend": "⬜ Empty · ⬛ Locked · 🌱 Fertile · 🌳 Forest · 🛢️ Oil · 🪨 Ore · 💧 Water"
+      "legend": "⬜ Empty · 🌱 Fertile · 🌳 Forest · 🛢️ Oil · 🪨 Ore · 💧 Water"
     }
   },
   "profile": {
