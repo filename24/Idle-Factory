@@ -114,7 +114,9 @@ export const FactoryService = {
       const user = await tx.user.findUnique({ where: { id: userId } })
       if (!user) throw new ServiceError('USER_NOT_FOUND')
       if (user.level < entry.unlockLevel) {
-        throw new ServiceError('LEVEL_LOCKED')
+        throw new ServiceError('LEVEL_LOCKED', undefined, {
+          level: entry.unlockLevel
+        })
       }
       if (user.money < cost) {
         throw new ServiceError('INSUFFICIENT_MONEY')

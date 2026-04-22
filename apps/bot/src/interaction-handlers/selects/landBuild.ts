@@ -124,8 +124,12 @@ function resolveBuildErrorBody(
       return t('game:common.error.userNotFound')
     case 'LAND_NOT_FOUND':
       return t('game:factory.build.error.landNotFound')
-    case 'LEVEL_LOCKED':
-      return t('game:factory.build.error.levelLocked', { level: '?' })
+    case 'LEVEL_LOCKED': {
+      const d = (err.details ?? {}) as { level?: number }
+      return t('game:factory.build.error.levelLocked', {
+        level: d.level ?? '?'
+      })
+    }
     case 'INSUFFICIENT_MONEY':
       return t('game:factory.build.error.insufficientMoney', {
         required: '-',
