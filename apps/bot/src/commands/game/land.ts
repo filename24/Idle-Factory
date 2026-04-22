@@ -29,6 +29,12 @@ import {
   type RenderedCell,
   type SlotDTO
 } from '@structures/renderers'
+import { FACTORY_CATALOG, buildCost, type FactoryType } from '@idle/game-core'
+import {
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder
+} from 'discord.js'
+import { MVP_FACTORY_CHOICES } from './factory'
 import { UserService } from '../../services/user'
 import {
   LandService,
@@ -48,6 +54,12 @@ export const LAND_VIEW_BUTTON_PREFIX = 'land:view:'
 
 /** 셀 버튼 customId prefix — `land:cell:<landIdx>:<x>:<y>` 형태로 사용한다. */
 export const LAND_CELL_BUTTON_PREFIX = 'land:cell:'
+
+/** 건설 타입 Select customId prefix — `land:build:<landIdx>:<x>:<y>` 형태. */
+export const LAND_BUILD_SELECT_PREFIX = 'land:build:'
+
+/** 건설 Select의 "취소" 옵션 값. 공장 타입 enum과 겹치지 않는 sentinel. */
+export const LAND_BUILD_CANCEL_VALUE = '__cancel__'
 
 /** `/land view` 페이로드 빌더 결과 (reply/update 양쪽 호환). */
 export interface LandViewPayload {
@@ -398,4 +410,122 @@ function buildCellButton(cell: RenderedCell, landIndex: number): ButtonBuilder {
     .setStyle(style)
     .setEmoji(cell.emoji)
     .setDisabled(disabled)
+}
+
+/** `buildBuildTypeSelectPayload` 입력. */
+export interface BuildBuildTypeSelectInput {
+  readonly userLevel: number
+  readonly landIndex: number
+  readonly x: number
+  readonly y: number
+  readonly t: TFunction
+}
+
+/**
+ * 빈/특수 셀 클릭 시 건설할 공장 타입을 고르게 하는 StringSelect 포함 페이로드.
+ *
+ * - 옵션: `MVP_FACTORY_CHOICES` 중 `user.level >= unlockLevel`인 공장 + 취소
+ * - 라벨: `{emoji} {TYPE} ({buildCost}💰, Lv{unlockLevel})`
+ * - customId: `land:build:<landIdx>:<x>:<y>` — `LandBuildTypeSelectHandler`가 파싱
+ *
+ * 서버는 select 제출 시 다시 유효성(소유/빈 셀/자금/재료)을 검증한다.
+ */
+export function buildBuildTypeSelectPayload(
+  input: BuildBuildTypeSelectInput
+): LandViewPayload {
+  const { userLevel, landIndex, x, y, t } = input
+
+  const container = simpleContainer(
+    V2_ACCENT.info,
+    t('game:land.build.selectTitle', { index: landIndex, x, y })
+  )
+
+  const optionBuilders: StringSelectMenuOptionBuilder[] = []
+  for (const type of MVP_FACTORY_CHOICES) {
+    const entry = FACTORY_CATALOG[type]
+    const label = t('game:land.build.selectOption', {
+      emoji: entry.emoji,
+      type,
+      cost: formatBigInt(buildCost(type)),
+      unlock: entry.unlockLevel
+    })
+    const opt = new StringSelectMenuOptionBuilder()
+      .setLabel(label.slice(0, 100))
+      .setValue(type)
+    if (userLevel < entry.unlockLevel) {
+      opt.setDescription(`Lv${entry.unlockLevel} 필요`)
+    }
+    optionBuilders.push(opt)
+  }
+  optionBuilders.push(
+    new StringSelectMenuOptionBuilder()
+      .setLabel(t('game:land.build.selectCancel'))
+      .setValue(LAND_BUILD_CANCEL_VALUE)
+  )
+
+  const select = new StringSelectMenuBuilder()
+    .setCustomId(`${LAND_BUILD_SELECT_PREFIX}${landIndex}:${x}:${y}`)
+    .setPlaceholder(t('game:land.build.selectPlaceholder'))
+    .addOptions(...optionBuilders)
+
+  container.addActionRowComponents(
+    new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select)
+  )
+
+  return {
+    components: [container],
+    flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral
+  }
+}
+
+/** 셀 클릭 시 DB에서 해당 셀의 분류(빈/특수/공장-앵커 등)를 결정한다. */
+export interface ResolvedLandCell {
+  readonly land: { readonly id: string; readonly index: number }
+  readonly cell: RenderedCell
+}
+
+/**
+ * 주어진 `(userId, landIndex, x, y)`에 해당하는 셀 정보를 DB에서 권위있게 읽어 반환한다.
+ *
+ * 클라이언트 상태를 신뢰하지 않고 서버에서 다시 계산해 race/변조에 방어한다.
+ * 토지를 보유하지 않거나 셀 좌표가 범위를 벗어나면 `null`.
+ */
+export async function resolveLandCell(
+  db: DatabaseClient,
+  userId: string,
+  landIndex: number,
+  x: number,
+  y: number
+): Promise<ResolvedLandCell | null> {
+  const land = await db.land.findUnique({
+    where: { userId_index: { userId, index: landIndex } },
+    include: { slots: true }
+  })
+  if (!land) return null
+  if (x < 0 || x >= land.width || y < 0 || y >= land.height) return null
+
+  const factories = await db.factory.findMany({
+    where: { userId, landId: land.id },
+    select: { type: true, grade: true, anchorX: true, anchorY: true }
+  })
+  const slotDTOs: SlotDTO[] = land.slots.map((s) => ({
+    x: s.x,
+    y: s.y,
+    type: s.type
+  }))
+  const factoryDTOs: FactoryDTO[] = factories.map((f) => ({
+    type: f.type as FactoryType,
+    grade: f.grade,
+    anchorX: f.anchorX,
+    anchorY: f.anchorY
+  }))
+
+  const cells = renderCells(
+    { width: land.width, height: land.height },
+    factoryDTOs,
+    slotDTOs
+  )
+  const cell = cells.find((c) => c.x === x && c.y === y)
+  if (!cell) return null
+  return { land: { id: land.id, index: land.index }, cell }
 }

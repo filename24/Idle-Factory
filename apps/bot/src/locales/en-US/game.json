@@ -71,10 +71,19 @@
       "legend": "⬜ Empty · 🌱 Fertile · 🌳 Forest · 🛢️ Oil · 🪨 Ore · 💧 Water",
       "buttonPrev": "◀ Prev",
       "buttonNext": "Next ▶",
-      "cellComingSoon": "Cell actions are coming soon. For now please use `/factory build`, `/factory harvest`, and `/factory upgrade`.",
+      "cellComingSoon": "Cell actions are coming soon.",
       "error": {
-        "notOwned": "You don't own a land with that number yet."
+        "notOwned": "You don't own a land with that number yet.",
+        "cellNotEmpty": "That cell is already occupied.",
+        "cellNotFound": "Cell information could not be found."
       }
+    },
+    "build": {
+      "selectTitle": "🏗️ Land #{{index}} ({{x}}, {{y}}) — choose a factory",
+      "selectPlaceholder": "Pick a factory type",
+      "selectOption": "{{emoji}} {{type}} ({{cost}} 💰, Lv{{unlock}})",
+      "selectCancel": "❌ Cancel",
+      "cancelled": "Build cancelled."
     },
     "buy": {
       "success": "Purchased land #{{index}}! (-{{cost}} 💰, balance {{remaining}} 💰, owned {{total}})",

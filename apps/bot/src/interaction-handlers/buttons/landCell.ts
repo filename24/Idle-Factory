@@ -1,10 +1,12 @@
 /**
- * `/land view` 4×4 셀 그리드 버튼 핸들러 (Phase 2 step 3 플레이스홀더).
+ * `/land view` 4×4 셀 그리드 버튼 핸들러.
  *
  * customId 포맷: `land:cell:<landIndex>:<x>:<y>`.
  *
- * 현재는 "곧 지원" ephemeral 응답만 반환한다. Phase 2 step 4에서
- * 빈 셀 → build modal, 공장 셀 → harvest/upgrade/destroy 라우팅으로 확장한다.
+ * 동작:
+ * - 빈 셀(`empty`/`special`) → 건설할 공장 타입 StringSelect 로 같은 메시지 update (4b)
+ * - 공장 앵커(`factory-anchor`) → info/harvest/upgrade/destroy 액션 메뉴 (4c)
+ * - 공장 비앵커(`factory-body`) → 정상 경로로는 도달 불가 (버튼 disabled). 방어적으로 정보 응답
  *
  * 참조: `docs/design/11-land.md`.
  */
@@ -15,8 +17,12 @@ import {
 } from '@sapphire/framework'
 import { fetchT } from '@sapphire/plugin-i18next'
 import { simpleContainer, V2_ACCENT, v2Flags } from '@utils/ComponentsV2'
-import type { ButtonInteraction } from 'discord.js'
-import { LAND_CELL_BUTTON_PREFIX } from '../../commands/game/land'
+import type { ButtonInteraction, InteractionUpdateOptions } from 'discord.js'
+import {
+  LAND_CELL_BUTTON_PREFIX,
+  buildBuildTypeSelectPayload,
+  resolveLandCell
+} from '../../commands/game/land'
 
 export class LandCellButtonHandler extends InteractionHandler {
   public constructor(
@@ -48,8 +54,53 @@ export class LandCellButtonHandler extends InteractionHandler {
     return this.some({ landIndex, x, y })
   }
 
-  public async run(interaction: ButtonInteraction): Promise<void> {
+  public async run(
+    interaction: ButtonInteraction,
+    data: { landIndex: number; x: number; y: number }
+  ): Promise<void> {
+    const { db } = this.container
     const t = await fetchT(interaction)
+
+    const resolved = await resolveLandCell(
+      db,
+      interaction.user.id,
+      data.landIndex,
+      data.x,
+      data.y
+    )
+    if (!resolved) {
+      await interaction.reply({
+        components: [
+          simpleContainer(
+            V2_ACCENT.error,
+            undefined,
+            t('game:land.view.error.cellNotFound')
+          )
+        ],
+        flags: v2Flags(true)
+      })
+      return
+    }
+
+    const { cell } = resolved
+
+    if (cell.kind === 'empty' || cell.kind === 'special') {
+      const user = await db.user.findUnique({
+        where: { id: interaction.user.id },
+        select: { level: true }
+      })
+      const payload = buildBuildTypeSelectPayload({
+        userLevel: user?.level ?? 1,
+        landIndex: data.landIndex,
+        x: data.x,
+        y: data.y,
+        t
+      })
+      await interaction.update(payload as InteractionUpdateOptions)
+      return
+    }
+
+    // factory-anchor / factory-body — step 4c에서 확장. 현재는 플레이스홀더.
     await interaction.reply({
       components: [
         simpleContainer(

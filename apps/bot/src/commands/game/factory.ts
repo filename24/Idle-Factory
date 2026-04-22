@@ -28,7 +28,7 @@ import { ServiceError } from '../../services/base'
  */
 
 /** `/factory build` 서브커맨드의 `type` 선택지로 사용할 MVP 공장 목록. */
-const MVP_FACTORY_CHOICES: readonly FactoryType[] = [
+export const MVP_FACTORY_CHOICES: readonly FactoryType[] = [
   'FARM',
   'MINE',
   'LUMBER',
