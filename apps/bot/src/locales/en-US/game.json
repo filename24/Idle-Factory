@@ -85,6 +85,17 @@
       "selectCancel": "❌ Cancel",
       "cancelled": "Build cancelled."
     },
+    "factory": {
+      "menuTitle": "{{emoji}} **{{type}}** · G{{grade}} — Land #{{landIndex}} ({{x}}, {{y}})",
+      "actionInfo": "Info",
+      "actionHarvest": "Harvest",
+      "actionUpgrade": "Upgrade",
+      "actionDestroy": "Destroy",
+      "actionBack": "◀ Back to Land",
+      "harvestSuccess": "✅ Harvested {{ticks}} ticks, +{{xp}} XP",
+      "harvestEmpty": "No ticks ready to harvest yet.",
+      "upgradeSuccess": "✅ Upgraded to G{{grade}}."
+    },
     "buy": {
       "success": "Purchased land #{{index}}! (-{{cost}} 💰, balance {{remaining}} 💰, owned {{total}})",
       "error": {

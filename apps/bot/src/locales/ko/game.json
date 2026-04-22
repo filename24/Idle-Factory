@@ -85,6 +85,17 @@
       "selectCancel": "❌ 취소",
       "cancelled": "건설을 취소했어요."
     },
+    "factory": {
+      "menuTitle": "{{emoji}} **{{type}}** · G{{grade}} — {{landIndex}}번째 토지 ({{x}}, {{y}})",
+      "actionInfo": "정보",
+      "actionHarvest": "수확",
+      "actionUpgrade": "업그레이드",
+      "actionDestroy": "철거",
+      "actionBack": "◀ 토지로 돌아가기",
+      "harvestSuccess": "✅ {{ticks}} tick 수확, +{{xp}} XP",
+      "harvestEmpty": "아직 수확할 tick이 없어요.",
+      "upgradeSuccess": "✅ G{{grade}}(으)로 업그레이드했어요."
+    },
     "buy": {
       "success": "{{index}}번째 토지를 구매했어요! (-{{cost}} 💰, 잔액 {{remaining}} 💰, 보유 {{total}}개)",
       "error": {

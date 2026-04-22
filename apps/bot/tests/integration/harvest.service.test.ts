@@ -300,3 +300,79 @@ describe('HarvestService.harvestAll', () => {
     expect(result.leveledUp).toBe(false)
   })
 })
+
+describe('HarvestService.harvestOne', () => {
+  beforeEach(async () => {
+    await resetDb()
+  })
+
+  afterAll(async () => {
+    await closeDb()
+  })
+
+  it('harvests only the target factory, leaves siblings untouched', async () => {
+    const discordId = 'harvest-one-001'
+    const thirtyMinAgo = new Date(Date.now() - THIRTY_MIN_MS)
+    const { land } = await seedBase({ discordId })
+
+    const target = await placeFactory({
+      userId: discordId,
+      landId: land.id,
+      type: 'FARM',
+      tier: 'T1',
+      anchorX: 0,
+      anchorY: 0,
+      lastHarvestAt: thirtyMinAgo
+    })
+    const sibling = await placeFactory({
+      userId: discordId,
+      landId: land.id,
+      type: 'FARM',
+      tier: 'T1',
+      anchorX: 1,
+      anchorY: 0,
+      lastHarvestAt: thirtyMinAgo
+    })
+
+    const result = await HarvestService.harvestOne(testPrisma, {
+      userId: discordId,
+      factoryId: target.id
+    })
+    expect(result.factories).toHaveLength(1)
+    expect(result.factories[0]!.factoryId).toBe(target.id)
+
+    // Sibling's lastHarvestAt must NOT have moved.
+    const siblingAfter = await testPrisma.factory.findUniqueOrThrow({
+      where: { id: sibling.id }
+    })
+    expect(siblingAfter.lastHarvestAt.getTime()).toBe(thirtyMinAgo.getTime())
+  })
+
+  it('throws FACTORY_NOT_FOUND for a factory the user does not own', async () => {
+    const ownerA = 'harvest-one-a'
+    const ownerB = 'harvest-one-b'
+    const thirtyMinAgo = new Date(Date.now() - THIRTY_MIN_MS)
+    const { land: landA } = await seedBase({ discordId: ownerA })
+    await seedBase({ discordId: ownerB })
+
+    const foreign = await placeFactory({
+      userId: ownerA,
+      landId: landA.id,
+      type: 'FARM',
+      tier: 'T1',
+      anchorX: 0,
+      anchorY: 0,
+      lastHarvestAt: thirtyMinAgo
+    })
+
+    await expect(
+      HarvestService.harvestOne(testPrisma, {
+        userId: ownerB,
+        factoryId: foreign.id
+      })
+    ).rejects.toMatchObject({
+      name: 'ServiceError',
+      code: 'FACTORY_NOT_FOUND'
+    })
+  })
+})

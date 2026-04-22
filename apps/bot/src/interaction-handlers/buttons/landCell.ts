@@ -21,6 +21,7 @@ import type { ButtonInteraction, InteractionUpdateOptions } from 'discord.js'
 import {
   LAND_CELL_BUTTON_PREFIX,
   buildBuildTypeSelectPayload,
+  buildFactoryActionMenuPayload,
   resolveLandCell
 } from '../../commands/game/land'
 
@@ -100,7 +101,50 @@ export class LandCellButtonHandler extends InteractionHandler {
       return
     }
 
-    // factory-anchor / factory-body — step 4c에서 확장. 현재는 플레이스홀더.
+    if (cell.kind === 'factory-anchor' && cell.factory) {
+      // 앵커 셀을 점유한 공장 row를 찾아 id 해석.
+      const factoryRow = await db.factory.findFirst({
+        where: {
+          userId: interaction.user.id,
+          landId: resolved.land.id,
+          anchorX: data.x,
+          anchorY: data.y
+        },
+        select: {
+          id: true,
+          type: true,
+          grade: true,
+          anchorX: true,
+          anchorY: true
+        }
+      })
+      if (!factoryRow) {
+        await interaction.reply({
+          components: [
+            simpleContainer(
+              V2_ACCENT.error,
+              undefined,
+              t('game:common.error.factoryNotFound')
+            )
+          ],
+          flags: v2Flags(true)
+        })
+        return
+      }
+      const payload = buildFactoryActionMenuPayload({
+        factoryId: factoryRow.id,
+        landIndex: data.landIndex,
+        factoryType: factoryRow.type,
+        grade: factoryRow.grade,
+        anchorX: factoryRow.anchorX,
+        anchorY: factoryRow.anchorY,
+        t
+      })
+      await interaction.update(payload as InteractionUpdateOptions)
+      return
+    }
+
+    // factory-body는 버튼 disabled로 도달 불가 — 방어적 기본 응답.
     await interaction.reply({
       components: [
         simpleContainer(

@@ -61,6 +61,9 @@ export const LAND_BUILD_SELECT_PREFIX = 'land:build:'
 /** 건설 Select의 "취소" 옵션 값. 공장 타입 enum과 겹치지 않는 sentinel. */
 export const LAND_BUILD_CANCEL_VALUE = '__cancel__'
 
+/** 공장 액션 메뉴 customId prefix — `factory:action:<factoryId>:<verb>` 형태. */
+export const FACTORY_ACTION_BUTTON_PREFIX = 'factory:action:'
+
 /** `/land view` 페이로드 빌더 결과 (reply/update 양쪽 호환). */
 export interface LandViewPayload {
   readonly components: InteractionReplyOptions['components']
@@ -490,6 +493,83 @@ export interface ResolvedLandCell {
  * 클라이언트 상태를 신뢰하지 않고 서버에서 다시 계산해 race/변조에 방어한다.
  * 토지를 보유하지 않거나 셀 좌표가 범위를 벗어나면 `null`.
  */
+/** `buildFactoryActionMenuPayload` 입력. */
+export interface BuildFactoryActionMenuInput {
+  readonly factoryId: string
+  readonly landIndex: number
+  readonly factoryType: FactoryType
+  readonly grade: number
+  readonly anchorX: number
+  readonly anchorY: number
+  readonly t: TFunction
+}
+
+/**
+ * 공장 앵커 셀 클릭 시 뜨는 액션 메뉴 페이로드.
+ *
+ * 버튼: [정보] [수확] [업그레이드] [철거(Danger)] + 2번째 ActionRow [돌아가기].
+ *
+ * customId:
+ * - `factory:action:<factoryId>:info|harvest|upgrade|destroy` — 액션 버튼
+ * - `land:view:<landIndex>` — 돌아가기 (기존 land view 핸들러 재사용)
+ */
+export function buildFactoryActionMenuPayload(
+  input: BuildFactoryActionMenuInput
+): LandViewPayload {
+  const { factoryId, landIndex, factoryType, grade, anchorX, anchorY, t } =
+    input
+  const emoji = FACTORY_CATALOG[factoryType].emoji
+  const container = simpleContainer(
+    V2_ACCENT.info,
+    t('game:land.factory.menuTitle', {
+      emoji,
+      type: factoryType,
+      grade,
+      landIndex,
+      x: anchorX,
+      y: anchorY
+    })
+  )
+
+  const infoBtn = new ButtonBuilder()
+    .setCustomId(`${FACTORY_ACTION_BUTTON_PREFIX}${factoryId}:info`)
+    .setLabel(t('game:land.factory.actionInfo'))
+    .setStyle(ButtonStyle.Secondary)
+  const harvestBtn = new ButtonBuilder()
+    .setCustomId(`${FACTORY_ACTION_BUTTON_PREFIX}${factoryId}:harvest`)
+    .setLabel(t('game:land.factory.actionHarvest'))
+    .setStyle(ButtonStyle.Success)
+  const upgradeBtn = new ButtonBuilder()
+    .setCustomId(`${FACTORY_ACTION_BUTTON_PREFIX}${factoryId}:upgrade`)
+    .setLabel(t('game:land.factory.actionUpgrade'))
+    .setStyle(ButtonStyle.Primary)
+  const destroyBtn = new ButtonBuilder()
+    .setCustomId(`${FACTORY_ACTION_BUTTON_PREFIX}${factoryId}:destroy`)
+    .setLabel(t('game:land.factory.actionDestroy'))
+    .setStyle(ButtonStyle.Danger)
+  const backBtn = new ButtonBuilder()
+    .setCustomId(`${LAND_VIEW_BUTTON_PREFIX}${landIndex}`)
+    .setLabel(t('game:land.factory.actionBack'))
+    .setStyle(ButtonStyle.Secondary)
+
+  container.addActionRowComponents(
+    new ActionRowBuilder<ButtonBuilder>().addComponents(
+      infoBtn,
+      harvestBtn,
+      upgradeBtn,
+      destroyBtn
+    )
+  )
+  container.addActionRowComponents(
+    new ActionRowBuilder<ButtonBuilder>().addComponents(backBtn)
+  )
+
+  return {
+    components: [container],
+    flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral
+  }
+}
+
 export async function resolveLandCell(
   db: DatabaseClient,
   userId: string,
