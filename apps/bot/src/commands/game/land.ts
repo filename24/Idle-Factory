@@ -31,6 +31,7 @@ import {
 } from '@structures/renderers'
 import { FACTORY_CATALOG, buildCost, type FactoryType } from '@idle/game-core'
 import {
+  ComponentType,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder
 } from 'discord.js'
@@ -372,6 +373,8 @@ export async function buildLandViewPayload(
       )
     )
   }
+
+  container.addSeparatorComponents({ type: ComponentType.Separator })
 
   // Prev/Next: 소유한 index 기준 양 옆. 없으면 disable + customId는 현재 index로.
   const prevIndex = prevOwnedIndex(ownedIndices, targetIndex)
