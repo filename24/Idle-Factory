@@ -8,7 +8,8 @@ import {
 import type { ShortageMode } from '@idle/database'
 import { simpleV2Payload, V2_ACCENT } from '@utils/ComponentsV2'
 import { formatBigInt, renderFactoryInfo } from '@structures/renderers'
-import { FactoryService } from '../../services/factory'
+import { DEFAULT_LAND_INDEX, FactoryService } from '../../services/factory'
+import { MAX_BUYABLE_INDEX } from '../../services/land'
 import { UserService } from '../../services/user'
 import { ServiceError } from '../../services/base'
 
@@ -76,11 +77,14 @@ export class FactoryCommand extends Command {
     const type = interaction.options.getString('type', true) as FactoryType
     const x = interaction.options.getInteger('x', true)
     const y = interaction.options.getInteger('y', true)
+    const landIndex =
+      interaction.options.getInteger('land_index') ?? DEFAULT_LAND_INDEX
 
     try {
       await UserService.ensure(db, { discordId: interaction.user.id })
       const factory = await FactoryService.build(db, {
         userId: interaction.user.id,
+        landIndex,
         type,
         anchorX: x,
         anchorY: y
@@ -289,6 +293,8 @@ export class FactoryCommand extends Command {
         return t('game:factory.build.error.outOfBounds')
       case 'MAX_GRADE':
         return t('game:factory.upgrade.error.maxGrade')
+      case 'LAND_NOT_FOUND':
+        return t('game:factory.build.error.landNotFound')
       default:
         return t('game:common.error.unknown')
     }
@@ -359,22 +365,35 @@ export class FactoryCommand extends Command {
             .addIntegerOption((o) =>
               o
                 .setName('x')
-                .setDescription('Anchor X (0-9)')
+                .setDescription('Anchor X (0-3)')
                 .setNameLocalization('ko', 'x좌표')
-                .setDescriptionLocalization('ko', '앵커 X 좌표 (0-9)')
+                .setDescriptionLocalization('ko', '앵커 X 좌표 (0-3)')
                 .setRequired(true)
                 .setMinValue(0)
-                .setMaxValue(9)
+                .setMaxValue(3)
             )
             .addIntegerOption((o) =>
               o
                 .setName('y')
-                .setDescription('Anchor Y (0-9)')
+                .setDescription('Anchor Y (0-3)')
                 .setNameLocalization('ko', 'y좌표')
-                .setDescriptionLocalization('ko', '앵커 Y 좌표 (0-9)')
+                .setDescriptionLocalization('ko', '앵커 Y 좌표 (0-3)')
                 .setRequired(true)
                 .setMinValue(0)
-                .setMaxValue(9)
+                .setMaxValue(3)
+            )
+            .addIntegerOption((o) =>
+              o
+                .setName('land_index')
+                .setDescription('Land number (1-5, default 1)')
+                .setNameLocalization('ko', '토지번호')
+                .setDescriptionLocalization(
+                  'ko',
+                  '건설할 토지 번호 (1~5, 기본 1)'
+                )
+                .setRequired(false)
+                .setMinValue(1)
+                .setMaxValue(MAX_BUYABLE_INDEX)
             )
         )
         .addSubcommand((sub) =>

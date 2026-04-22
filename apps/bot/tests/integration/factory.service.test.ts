@@ -1,11 +1,12 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 import { FactoryService } from '../../src/services/factory'
 import { ServiceError } from '../../src/services/base'
+import { createLandWithSlots } from '../../src/services/user'
 import { closeDb, resetDb, testPrisma } from './setup'
 
 async function seedUser(
   id: string,
-  opts: { money?: bigint; level?: number } = {}
+  opts: { money?: bigint; level?: number; extraLandIndices?: number[] } = {}
 ) {
   const user = await testPrisma.user.create({
     data: {
@@ -16,6 +17,14 @@ async function seedUser(
   })
   const warehouse = await testPrisma.warehouse.create({
     data: { userId: user.id }
+  })
+  // Starter land (index 1) is normally created by UserService.ensure; tests that
+  // bypass UserService must seed it here since FactoryService no longer auto-creates.
+  await testPrisma.$transaction(async (tx) => {
+    await createLandWithSlots(tx, user.id, 1)
+    for (const idx of opts.extraLandIndices ?? []) {
+      await createLandWithSlots(tx, user.id, idx)
+    }
   })
   return { user, warehouse }
 }
@@ -49,6 +58,7 @@ describe('FactoryService', () => {
 
       const factory = await FactoryService.build(testPrisma, {
         userId: user.id,
+        landIndex: 1,
         type: 'FARM',
         anchorX: 0,
         anchorY: 0
@@ -79,6 +89,7 @@ describe('FactoryService', () => {
       await expect(
         FactoryService.build(testPrisma, {
           userId: user.id,
+          landIndex: 1,
           type: 'FARM',
           anchorX: 0,
           anchorY: 0
@@ -95,6 +106,7 @@ describe('FactoryService', () => {
       await expect(
         FactoryService.build(testPrisma, {
           userId: user.id,
+          landIndex: 1,
           type: 'STEEL_MILL',
           anchorX: 0,
           anchorY: 0
@@ -107,6 +119,7 @@ describe('FactoryService', () => {
 
       await FactoryService.build(testPrisma, {
         userId: user.id,
+        landIndex: 1,
         type: 'FARM',
         anchorX: 1,
         anchorY: 1
@@ -115,6 +128,7 @@ describe('FactoryService', () => {
       await expect(
         FactoryService.build(testPrisma, {
           userId: user.id,
+          landIndex: 1,
           type: 'MINE',
           anchorX: 1,
           anchorY: 1
@@ -131,6 +145,7 @@ describe('FactoryService', () => {
 
       const factory = await FactoryService.build(testPrisma, {
         userId: user.id,
+        landIndex: 1,
         type: 'CAR_FACTORY',
         anchorX: 0,
         anchorY: 0
@@ -150,6 +165,63 @@ describe('FactoryService', () => {
       })
       expect(after.money).toBe(1_000_000n - 100_000n)
     })
+
+    it('throws LAND_NOT_FOUND when building on a land the user does not own', async () => {
+      const { user } = await seedUser('u-build-noland', { money: 10_000n })
+
+      await expect(
+        FactoryService.build(testPrisma, {
+          userId: user.id,
+          landIndex: 3,
+          type: 'FARM',
+          anchorX: 0,
+          anchorY: 0
+        })
+      ).rejects.toMatchObject({ code: 'LAND_NOT_FOUND' })
+    })
+
+    it('builds on land 2 without affecting land 1 (isolation by landId)', async () => {
+      const { user } = await seedUser('u-build-multi', {
+        money: 10_000n,
+        extraLandIndices: [2]
+      })
+
+      // Build FARM at (0,0) on land 2.
+      const factory = await FactoryService.build(testPrisma, {
+        userId: user.id,
+        landIndex: 2,
+        type: 'FARM',
+        anchorX: 0,
+        anchorY: 0
+      })
+      expect(factory.landId).toBeDefined()
+
+      // Land 2 (0,0) now occupied.
+      const land2 = await testPrisma.land.findUniqueOrThrow({
+        where: { userId_index: { userId: user.id, index: 2 } },
+        include: { slots: true }
+      })
+      const occ2 = land2.slots.filter((s) => s.factoryId === factory.id)
+      expect(occ2).toHaveLength(1)
+      expect(occ2[0]).toMatchObject({ x: 0, y: 0 })
+
+      // Land 1 (0,0) must still be free.
+      const land1 = await testPrisma.land.findUniqueOrThrow({
+        where: { userId_index: { userId: user.id, index: 1 } },
+        include: { slots: true }
+      })
+      const land1Cell = land1.slots.find((s) => s.x === 0 && s.y === 0)
+      expect(land1Cell?.factoryId).toBeNull()
+
+      // Building on land 1 same coordinates is still allowed.
+      await FactoryService.build(testPrisma, {
+        userId: user.id,
+        landIndex: 1,
+        type: 'FARM',
+        anchorX: 0,
+        anchorY: 0
+      })
+    })
   })
 
   describe('upgrade', () => {
@@ -161,6 +233,7 @@ describe('FactoryService', () => {
 
       const factory = await FactoryService.build(testPrisma, {
         userId: user.id,
+        landIndex: 1,
         type: 'FARM',
         anchorX: 0,
         anchorY: 0
@@ -201,6 +274,7 @@ describe('FactoryService', () => {
 
       const factory = await FactoryService.build(testPrisma, {
         userId: user.id,
+        landIndex: 1,
         type: 'FARM',
         anchorX: 0,
         anchorY: 0
@@ -230,6 +304,7 @@ describe('FactoryService', () => {
       const { user } = await seedUser('u-mode-1', { money: 5_000n })
       const factory = await FactoryService.build(testPrisma, {
         userId: user.id,
+        landIndex: 1,
         type: 'FARM',
         anchorX: 0,
         anchorY: 0
@@ -249,6 +324,7 @@ describe('FactoryService', () => {
       const { user } = await seedUser('u-info-1', { money: 5_000n })
       const factory = await FactoryService.build(testPrisma, {
         userId: user.id,
+        landIndex: 1,
         type: 'FARM',
         anchorX: 0,
         anchorY: 0

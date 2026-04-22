@@ -7,7 +7,8 @@
         "insufficientMaterial": "재료가 부족해요. 필요: {{amount}} {{material}}",
         "levelLocked": "이 공장은 레벨 {{level}}부터 해금돼요.",
         "slotOccupied": "해당 슬롯에는 이미 다른 공장이 있어요.",
-        "outOfBounds": "토지 경계를 벗어났어요."
+        "outOfBounds": "토지 경계를 벗어났어요.",
+        "landNotFound": "해당 번호의 토지를 보유하고 있지 않아요. `/land buy` 로 먼저 구매해주세요."
       }
     },
     "upgrade": {

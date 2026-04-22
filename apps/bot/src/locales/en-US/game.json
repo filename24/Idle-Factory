@@ -7,7 +7,8 @@
         "insufficientMaterial": "Not enough material. Required: {{amount}} {{material}}",
         "levelLocked": "This factory unlocks at level {{level}}.",
         "slotOccupied": "That slot is already occupied by another factory.",
-        "outOfBounds": "That position is outside the land bounds."
+        "outOfBounds": "That position is outside the land bounds.",
+        "landNotFound": "You don't own a land with that number. Use `/land buy` first."
       }
     },
     "upgrade": {

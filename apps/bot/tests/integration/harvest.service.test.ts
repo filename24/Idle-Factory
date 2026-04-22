@@ -65,6 +65,7 @@ async function placeFactory(params: {
   const factory = await testPrisma.factory.create({
     data: {
       userId: params.userId,
+      landId: params.landId,
       type: params.type,
       tier: params.tier,
       grade: 1,

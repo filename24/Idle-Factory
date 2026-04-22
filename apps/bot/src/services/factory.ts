@@ -3,7 +3,6 @@ import {
   FACTORY_CATALOG,
   buildCost,
   canPlace,
-  generateSlotTypes,
   getOccupiedCells,
   upgradeMaterialCost,
   upgradeMoneyCost,
@@ -14,12 +13,23 @@ import { PrismaClient } from '@idle/database'
 import { ServiceError, Tx, runInTx } from './base'
 
 const MAX_GRADE = 10
-const STARTER_LAND_INDEX = 1
-const LAND_WIDTH = 4
-const LAND_HEIGHT = 4
 
+/**
+ * `/factory build` 기본 토지 번호. 커맨드/핸들러 호출자가 명시하지 않으면
+ * 하위호환을 위해 시작 토지(1번)로 해석한다.
+ */
+export const DEFAULT_LAND_INDEX = 1
+
+/**
+ * `FactoryService.build` 입력.
+ *
+ * `landIndex`는 필수이며, 유저가 보유하지 않은 토지 번호이면 `LAND_NOT_FOUND`를
+ * 던진다(서비스는 토지를 암묵적으로 생성하지 않는다 — 토지 생성은
+ * `UserService.ensure`(1번) 또는 `LandService.buy`(2~5번)가 담당).
+ */
 export interface BuildParams {
   readonly userId: string
+  readonly landIndex: number
   readonly type: FactoryType
   readonly anchorX: number
   readonly anchorY: number
@@ -52,35 +62,29 @@ export interface FactoryInfoDTO {
   readonly unlockLevel: number
 }
 
-async function ensureLandWithSlots(tx: Tx, userId: string) {
+/**
+ * 유저가 소유한 `landIndex` 번 토지를 슬롯 포함으로 로드한다.
+ *
+ * 서비스는 토지를 암묵적으로 생성하지 않는다. 없으면 `LAND_NOT_FOUND` 에러.
+ * (토지 생성 책임은 `UserService.ensure`(1번) 또는 `LandService.buy`(2~5번).)
+ */
+async function loadLandOrThrow(tx: Tx, userId: string, landIndex: number) {
   const land = await tx.land.findUnique({
-    where: { userId_index: { userId, index: STARTER_LAND_INDEX } },
+    where: { userId_index: { userId, index: landIndex } },
     include: { slots: true }
   })
-  if (land) return land
-  const created = await tx.land.create({
-    data: {
-      userId,
-      index: STARTER_LAND_INDEX,
-      width: LAND_WIDTH,
-      height: LAND_HEIGHT
-    }
-  })
-  const grid = generateSlotTypes({ width: LAND_WIDTH, height: LAND_HEIGHT })
-  const slotsData = grid.flatMap((row, y) =>
-    row.map((type, x) => ({ landId: created.id, x, y, type }))
-  )
-  await tx.slot.createMany({ data: slotsData })
-  const reread = await tx.land.findUniqueOrThrow({
-    where: { userId_index: { userId, index: STARTER_LAND_INDEX } },
-    include: { slots: true }
-  })
-  return reread
+  if (!land) {
+    throw new ServiceError(
+      'LAND_NOT_FOUND',
+      `user ${userId} does not own land index ${landIndex}`
+    )
+  }
+  return land
 }
 
 export const FactoryService = {
   async build(prisma: PrismaClient, params: BuildParams) {
-    const { userId, type, anchorX, anchorY } = params
+    const { userId, landIndex, type, anchorX, anchorY } = params
     const entry = FACTORY_CATALOG[type]
     const cost = buildCost(type)
 
@@ -94,7 +98,7 @@ export const FactoryService = {
         throw new ServiceError('INSUFFICIENT_MONEY')
       }
 
-      const land = await ensureLandWithSlots(tx, userId)
+      const land = await loadLandOrThrow(tx, userId, landIndex)
       const slotStates: SlotState[] = land.slots.map((s) => ({
         x: s.x,
         y: s.y,
@@ -167,6 +171,7 @@ export const FactoryService = {
       const factory = await tx.factory.create({
         data: {
           userId,
+          landId: land.id,
           type,
           tier: entry.tier,
           grade: 1,

@@ -20,6 +20,7 @@ export type ServiceErrorCode =
   | 'MAX_LANDS'
   | 'LAND_ALREADY_EXISTS'
   | 'INVALID_LAND_INDEX'
+  | 'LAND_NOT_FOUND'
 
 export class ServiceError extends Error {
   public readonly code: ServiceErrorCode
