@@ -32,6 +32,14 @@
     },
     "setMode": {
       "success": "Factory mode changed to `{{mode}}`."
+    },
+    "destroy": {
+      "confirmTitle": "⚠️ Destroy {{emoji}} {{type}} factory?",
+      "confirmBody": "You will receive `{{refund}} 💰` back (50% of build cost). Materials, upgrade boosters, and raw boosters are **not** refunded.",
+      "confirmYes": "Destroy",
+      "confirmCancel": "Cancel",
+      "success": "🧨 Destroyed {{emoji}} {{type}} factory. (+{{refund}} 💰, balance {{remaining}} 💰)",
+      "cancelled": "Destroy cancelled."
     }
   },
   "harvest": {

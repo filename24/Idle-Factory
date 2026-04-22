@@ -58,6 +58,8 @@ export class FactoryCommand extends Command {
         return this.handleInfo(interaction)
       case 'setmode':
         return this.handleSetMode(interaction)
+      case 'destroy':
+        return this.handleDestroy(interaction)
       default:
         return this.replyError(interaction, 'game:common.error.unknown')
     }
@@ -213,6 +215,38 @@ export class FactoryCommand extends Command {
     }
   }
 
+  /** `/factory destroy` 처리 — 확인 없이 즉시 철거한다 (UI 버튼 플로우에는 2단계 확인 있음). */
+  private async handleDestroy(
+    interaction: Command.ChatInputCommandInteraction
+  ) {
+    const { db } = this.container
+    const t = await fetchT(interaction)
+    const factoryId = interaction.options.getString('factory_id', true)
+
+    try {
+      await UserService.ensure(db, { discordId: interaction.user.id })
+      const result = await FactoryService.destroy(db, {
+        userId: interaction.user.id,
+        factoryId
+      })
+      const entry = FACTORY_CATALOG[result.type]
+      return interaction.reply(
+        simpleV2Payload({
+          accent: V2_ACCENT.success,
+          body: t('game:factory.destroy.success', {
+            emoji: entry.emoji,
+            type: result.type,
+            refund: formatBigInt(result.refund),
+            remaining: formatBigInt(result.remainingMoney)
+          }),
+          ephemeral: true
+        })
+      )
+    } catch (err) {
+      return this.replyFromError(interaction, err, 'destroy')
+    }
+  }
+
   /**
    * `ServiceError`를 i18n 경고 Embed로 변환해 응답한다.
    *
@@ -221,7 +255,7 @@ export class FactoryCommand extends Command {
   private async replyFromError(
     interaction: Command.ChatInputCommandInteraction,
     err: unknown,
-    surface: 'build' | 'upgrade' | 'info' | 'setmode'
+    surface: 'build' | 'upgrade' | 'info' | 'setmode' | 'destroy'
   ) {
     if (!(err instanceof ServiceError)) {
       this.container.logger.error(err)
@@ -235,7 +269,7 @@ export class FactoryCommand extends Command {
   /** `ServiceError.code`와 서브커맨드 컨텍스트에 따라 i18n 키와 상호작용 파라미터를 결정한다. */
   private resolveErrorKey(
     err: ServiceError,
-    surface: 'build' | 'upgrade' | 'info' | 'setmode',
+    surface: 'build' | 'upgrade' | 'info' | 'setmode' | 'destroy',
     t: TFunction,
     interaction: Command.ChatInputCommandInteraction
   ): string {
@@ -456,6 +490,24 @@ export class FactoryCommand extends Command {
                 .addChoices(
                   ...SHORTAGE_MODES.map((m) => ({ name: m, value: m }))
                 )
+            )
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName('destroy')
+            .setDescription('Destroy a factory (50% money refund).')
+            .setNameLocalization('ko', '철거')
+            .setDescriptionLocalization(
+              'ko',
+              '공장을 철거합니다 (건설 비용 50% 환불).'
+            )
+            .addStringOption((o) =>
+              o
+                .setName('factory_id')
+                .setDescription('Factory ID')
+                .setNameLocalization('ko', '공장id')
+                .setDescriptionLocalization('ko', '공장 ID')
+                .setRequired(true)
             )
         )
     )

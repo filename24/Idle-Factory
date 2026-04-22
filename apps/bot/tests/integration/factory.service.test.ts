@@ -340,4 +340,99 @@ describe('FactoryService', () => {
       expect(info.unlockLevel).toBe(1)
     })
   })
+
+  describe('destroy', () => {
+    it('refunds 50% of build cost, frees slots, deletes factory', async () => {
+      const { user } = await seedUser('u-destroy-1', { money: 5_000n })
+      const factory = await FactoryService.build(testPrisma, {
+        userId: user.id,
+        landIndex: 1,
+        type: 'FARM',
+        anchorX: 0,
+        anchorY: 0
+      })
+      const afterBuild = await testPrisma.user.findUniqueOrThrow({
+        where: { id: user.id }
+      })
+      expect(afterBuild.money).toBe(4_000n)
+
+      const result = await FactoryService.destroy(testPrisma, {
+        userId: user.id,
+        factoryId: factory.id
+      })
+      // FARM buildCost = 1_000n → refund 500n.
+      expect(result.refund).toBe(500n)
+      expect(result.remainingMoney).toBe(4_500n)
+      expect(result.landIndex).toBe(1)
+
+      const gone = await testPrisma.factory.findUnique({
+        where: { id: factory.id }
+      })
+      expect(gone).toBeNull()
+
+      // Slot at (0,0) freed → can rebuild.
+      const land = await testPrisma.land.findUniqueOrThrow({
+        where: { userId_index: { userId: user.id, index: 1 } },
+        include: { slots: true }
+      })
+      const cell = land.slots.find((s) => s.x === 0 && s.y === 0)
+      expect(cell?.factoryId).toBeNull()
+    })
+
+    it('frees all 4 slots of a 2x2 factory', async () => {
+      const { user, warehouse } = await seedUser('u-destroy-2', {
+        money: 1_000_000n,
+        level: 25
+      })
+      await ensureMaterial(warehouse.id, 'STEEL', 100n)
+      const factory = await FactoryService.build(testPrisma, {
+        userId: user.id,
+        landIndex: 1,
+        type: 'CAR_FACTORY',
+        anchorX: 0,
+        anchorY: 0
+      })
+
+      await FactoryService.destroy(testPrisma, {
+        userId: user.id,
+        factoryId: factory.id
+      })
+
+      const land = await testPrisma.land.findUniqueOrThrow({
+        where: { userId_index: { userId: user.id, index: 1 } },
+        include: { slots: true }
+      })
+      for (const [x, y] of [
+        [0, 0],
+        [1, 0],
+        [0, 1],
+        [1, 1]
+      ] as const) {
+        const slot = land.slots.find((s) => s.x === x && s.y === y)
+        expect(slot?.factoryId).toBeNull()
+      }
+    })
+
+    it('throws FACTORY_NOT_FOUND for a factory owned by another user', async () => {
+      const { user: a } = await seedUser('u-destroy-a', { money: 5_000n })
+      await seedUser('u-destroy-b', { money: 5_000n })
+      const factory = await FactoryService.build(testPrisma, {
+        userId: a.id,
+        landIndex: 1,
+        type: 'FARM',
+        anchorX: 0,
+        anchorY: 0
+      })
+
+      await expect(
+        FactoryService.destroy(testPrisma, {
+          userId: 'u-destroy-b',
+          factoryId: factory.id
+        })
+      ).rejects.toMatchObject({
+        name: 'ServiceError',
+        code: 'FACTORY_NOT_FOUND'
+      })
+    })
+  })
 })

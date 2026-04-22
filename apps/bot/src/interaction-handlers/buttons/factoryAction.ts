@@ -13,7 +13,7 @@ import {
   InteractionHandlerTypes
 } from '@sapphire/framework'
 import { fetchT, type TFunction } from '@sapphire/plugin-i18next'
-import { FACTORY_CATALOG, type MaterialType } from '@idle/game-core'
+import { FACTORY_CATALOG, buildCost, type MaterialType } from '@idle/game-core'
 import { simpleContainer, V2_ACCENT, v2Flags } from '@utils/ComponentsV2'
 import {
   ActionRowBuilder,
@@ -27,6 +27,7 @@ import { formatBigInt, renderFactoryInfo } from '@structures/renderers'
 import {
   FACTORY_ACTION_BUTTON_PREFIX,
   LAND_VIEW_BUTTON_PREFIX,
+  buildDestroyConfirmPayload,
   buildLandViewPayload
 } from '../../commands/game/land'
 import { FactoryService } from '../../services/factory'
@@ -80,18 +81,7 @@ export class FactoryActionButtonHandler extends InteractionHandler {
       case 'upgrade':
         return this.handleUpgrade(interaction, data.factoryId, t)
       case 'destroy':
-        // Phase 2 step 4d에서 2단계 확인 UX 추가 예정.
-        await interaction.reply({
-          components: [
-            simpleContainer(
-              V2_ACCENT.warn,
-              undefined,
-              t('game:land.view.cellComingSoon')
-            )
-          ],
-          flags: v2Flags(true)
-        })
-        return
+        return this.handleDestroyPrompt(interaction, data.factoryId, t)
       default:
         void db
     }
@@ -220,6 +210,29 @@ export class FactoryActionButtonHandler extends InteractionHandler {
         resolveFactoryErrorBody(err, t, this.container.logger)
       )
     }
+  }
+
+  /** 공장 철거 2단계 확인 UX 렌더. 실제 삭제는 `factoryDestroy.ts` 핸들러가 처리. */
+  private async handleDestroyPrompt(
+    interaction: ButtonInteraction,
+    factoryId: string,
+    t: TFunction
+  ): Promise<void> {
+    const factoryRow = await this.container.db.factory.findUnique({
+      where: { id: factoryId },
+      select: { userId: true, type: true }
+    })
+    if (!factoryRow || factoryRow.userId !== interaction.user.id) {
+      await this.replyWarn(interaction, t('game:common.error.factoryNotFound'))
+      return
+    }
+    const payload = buildDestroyConfirmPayload({
+      factoryId,
+      factoryType: factoryRow.type,
+      refund: buildCost(factoryRow.type) / 2n,
+      t
+    })
+    await interaction.update(payload as InteractionUpdateOptions)
   }
 
   /** factoryId → 해당 공장의 소속 토지 index. 실패 시 1로 폴백. */

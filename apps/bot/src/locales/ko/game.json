@@ -32,6 +32,14 @@
     },
     "setMode": {
       "success": "공장 모드를 `{{mode}}`(으)로 변경했어요."
+    },
+    "destroy": {
+      "confirmTitle": "⚠️ {{emoji}} {{type}} 공장을 철거할까요?",
+      "confirmBody": "`{{refund}} 💰`가 환불됩니다 (빌드 비용의 50%). 재료·업그레이드·원자재 부스터는 환불되지 않고 사라져요.",
+      "confirmYes": "철거",
+      "confirmCancel": "취소",
+      "success": "🧨 {{emoji}} {{type}} 공장을 철거했어요. (+{{refund}} 💰, 잔액 {{remaining}} 💰)",
+      "cancelled": "철거를 취소했어요."
     }
   },
   "harvest": {

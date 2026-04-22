@@ -64,6 +64,9 @@ export const LAND_BUILD_CANCEL_VALUE = '__cancel__'
 /** 공장 액션 메뉴 customId prefix — `factory:action:<factoryId>:<verb>` 형태. */
 export const FACTORY_ACTION_BUTTON_PREFIX = 'factory:action:'
 
+/** 공장 철거 확인 버튼 customId prefix — `factory:destroy:<factoryId>:<yes|cancel>` 형태. */
+export const FACTORY_DESTROY_BUTTON_PREFIX = 'factory:destroy:'
+
 /** `/land view` 페이로드 빌더 결과 (reply/update 양쪽 호환). */
 export interface LandViewPayload {
   readonly components: InteractionReplyOptions['components']
@@ -564,6 +567,48 @@ export function buildFactoryActionMenuPayload(
     new ActionRowBuilder<ButtonBuilder>().addComponents(backBtn)
   )
 
+  return {
+    components: [container],
+    flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral
+  }
+}
+
+/** `buildDestroyConfirmPayload` 입력. */
+export interface BuildDestroyConfirmInput {
+  readonly factoryId: string
+  readonly factoryType: FactoryType
+  readonly refund: bigint
+  readonly t: TFunction
+}
+
+/**
+ * 공장 철거 2단계 확인 페이로드.
+ *
+ * 경고 accent + 환불 금액 안내 + [철거(Danger)] [취소(Secondary)] 버튼 1줄.
+ * customId: `factory:destroy:<factoryId>:yes` / `:cancel`
+ */
+export function buildDestroyConfirmPayload(
+  input: BuildDestroyConfirmInput
+): LandViewPayload {
+  const { factoryId, factoryType, refund, t } = input
+  const emoji = FACTORY_CATALOG[factoryType].emoji
+  const container = simpleContainer(
+    V2_ACCENT.warn,
+    t('game:factory.destroy.confirmTitle', { emoji, type: factoryType }),
+    t('game:factory.destroy.confirmBody', { refund: formatBigInt(refund) })
+  )
+  container.addActionRowComponents(
+    new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`${FACTORY_DESTROY_BUTTON_PREFIX}${factoryId}:yes`)
+        .setLabel(t('game:factory.destroy.confirmYes'))
+        .setStyle(ButtonStyle.Danger),
+      new ButtonBuilder()
+        .setCustomId(`${FACTORY_DESTROY_BUTTON_PREFIX}${factoryId}:cancel`)
+        .setLabel(t('game:factory.destroy.confirmCancel'))
+        .setStyle(ButtonStyle.Secondary)
+    )
+  )
   return {
     components: [container],
     flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral

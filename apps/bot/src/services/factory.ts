@@ -46,6 +46,28 @@ export interface SetModeParams {
   readonly mode: ShortageMode
 }
 
+/** `FactoryService.destroy` 입력. */
+export interface DestroyParams {
+  readonly userId: string
+  readonly factoryId: string
+}
+
+/**
+ * `FactoryService.destroy` 결과.
+ *
+ * 환불 정책 (docs/design/11-land.md §철거): `buildCost(type) / 2` (BigInt floor)만큼
+ * money 환불, 재료/upgrade booster/raw booster는 환불 없음.
+ */
+export interface DestroyResult {
+  readonly factoryId: string
+  readonly type: FactoryType
+  readonly landIndex: number
+  readonly anchorX: number
+  readonly anchorY: number
+  readonly refund: bigint
+  readonly remainingMoney: bigint
+}
+
 export interface FactoryInfoDTO {
   readonly id: string
   readonly type: FactoryType
@@ -290,6 +312,55 @@ export const FactoryService = {
         where: { id: factoryId },
         data: { shortageMode: mode }
       })
+    })
+  },
+
+  /**
+   * 공장 철거. 환불 정책은 `docs/design/11-land.md §철거`:
+   * - money 환불: `buildCost(type) / 2n` (BigInt floor)
+   * - 재료 환불: 없음
+   * - upgrade booster / raw booster: 상실 (factory row와 함께 삭제)
+   *
+   * 슬롯은 `factoryId: null`로 해제되어 재건설 가능. Factory row는 삭제되며,
+   * Worker의 `factoryId`는 schema의 `onDelete: SetNull`에 의해 null 처리된다.
+   */
+  async destroy(
+    prisma: PrismaClient,
+    params: DestroyParams
+  ): Promise<DestroyResult> {
+    const { userId, factoryId } = params
+    return runInTx(prisma, async (tx) => {
+      const factory = await tx.factory.findUnique({
+        where: { id: factoryId },
+        include: { land: { select: { index: true } } }
+      })
+      if (!factory || factory.userId !== userId) {
+        throw new ServiceError('FACTORY_NOT_FOUND')
+      }
+
+      const refund = buildCost(factory.type) / 2n
+
+      await tx.slot.updateMany({
+        where: { factoryId },
+        data: { factoryId: null }
+      })
+      await tx.factory.delete({ where: { id: factoryId } })
+
+      const updated = await tx.user.update({
+        where: { id: userId },
+        data: { money: { increment: refund } },
+        select: { money: true }
+      })
+
+      return {
+        factoryId,
+        type: factory.type,
+        landIndex: factory.land.index,
+        anchorX: factory.anchorX,
+        anchorY: factory.anchorY,
+        refund,
+        remainingMoney: updated.money
+      }
     })
   }
 }
