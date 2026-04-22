@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { nextOwnedIndex, prevOwnedIndex } from '../../src/commands/game/landNav'
+import { nextOwnedIndex, prevOwnedIndex } from '../../src/utils/landNav'
 
 describe('LandView nav helpers', () => {
   describe('prevOwnedIndex', () => {

@@ -43,7 +43,7 @@ import {
 } from '../../services/land'
 import { ServiceError } from '../../services/base'
 import type { DatabaseClient } from '@idle/database'
-import { nextOwnedIndex, prevOwnedIndex } from './landNav'
+import { nextOwnedIndex, prevOwnedIndex } from '@utils/landNav'
 
 /** 서브커맨드 이름 상수. */
 const SUB_VIEW = 'view'
@@ -377,13 +377,16 @@ export async function buildLandViewPayload(
   const prevIndex = prevOwnedIndex(ownedIndices, targetIndex)
   const nextIndex = nextOwnedIndex(ownedIndices, targetIndex)
 
+  // customId에 `:prev` / `:next` suffix — prev/next가 둘 다 disabled일 때(1개 토지만 보유)
+  // 같은 targetIndex로 폴백해도 customId가 겹치지 않도록 방향 discriminator를 붙인다.
+  // `LandViewButtonHandler`는 `parseInt`로 index만 추출하므로 파싱에 영향 없음.
   const prevButton = new ButtonBuilder()
-    .setCustomId(`${LAND_VIEW_BUTTON_PREFIX}${prevIndex ?? targetIndex}`)
+    .setCustomId(`${LAND_VIEW_BUTTON_PREFIX}${prevIndex ?? targetIndex}:prev`)
     .setStyle(ButtonStyle.Secondary)
     .setLabel(t('game:land.view.buttonPrev'))
     .setDisabled(prevIndex === null)
   const nextButton = new ButtonBuilder()
-    .setCustomId(`${LAND_VIEW_BUTTON_PREFIX}${nextIndex ?? targetIndex}`)
+    .setCustomId(`${LAND_VIEW_BUTTON_PREFIX}${nextIndex ?? targetIndex}:next`)
     .setStyle(ButtonStyle.Secondary)
     .setLabel(t('game:land.view.buttonNext'))
     .setDisabled(nextIndex === null)
