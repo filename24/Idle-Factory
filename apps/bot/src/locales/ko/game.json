@@ -4,10 +4,11 @@
       "success": "{{emoji}} {{type}} 공장을 ({{x}}, {{y}})에 건설했어요!",
       "error": {
         "insufficientMoney": "돈이 부족해요. 필요: {{required}} 💰 / 보유: {{have}} 💰",
+        "insufficientMaterial": "재료가 부족해요. 필요: {{amount}} {{material}}",
         "levelLocked": "이 공장은 레벨 {{level}}부터 해금돼요.",
         "slotOccupied": "해당 슬롯에는 이미 다른 공장이 있어요.",
-        "slotLocked": "아직 확장되지 않은 슬롯이에요.",
-        "outOfBounds": "토지 경계를 벗어났어요."
+        "outOfBounds": "토지 경계를 벗어났어요.",
+        "landNotFound": "해당 번호의 토지를 보유하고 있지 않아요. `/land buy` 로 먼저 구매해주세요."
       }
     },
     "upgrade": {
@@ -31,6 +32,14 @@
     },
     "setMode": {
       "success": "공장 모드를 `{{mode}}`(으)로 변경했어요."
+    },
+    "destroy": {
+      "confirmTitle": "⚠️ {{emoji}} {{type}} 공장을 철거할까요?",
+      "confirmBody": "`{{refund}} 💰`가 환불됩니다 (빌드 비용의 50%). 재료·업그레이드·원자재 부스터는 환불되지 않고 사라져요.",
+      "confirmYes": "철거",
+      "confirmCancel": "취소",
+      "success": "🧨 {{emoji}} {{type}} 공장을 철거했어요. (+{{refund}} 💰, 잔액 {{remaining}} 💰)",
+      "cancelled": "철거를 취소했어요."
     }
   },
   "harvest": {
@@ -66,8 +75,43 @@
   },
   "land": {
     "view": {
-      "title": "🗺️ 내 토지",
-      "legend": "⬜ 빈 슬롯 · ⬛ 잠김 · 🌱 비옥 · 🌳 숲 · 🛢️ 유전 · 🪨 광맥 · 💧 수원"
+      "title": "🗺️ {{index}}번째 토지 ({{index}}/{{total}})",
+      "legend": "⬜ 빈 슬롯 · 🌱 비옥 · 🌳 숲 · 🛢️ 유전 · 🪨 광맥 · 💧 수원",
+      "buttonPrev": "◀ 이전",
+      "buttonNext": "다음 ▶",
+      "cellComingSoon": "셀 액션은 곧 지원됩니다.",
+      "error": {
+        "notOwned": "해당 번호의 토지를 아직 보유하고 있지 않아요.",
+        "cellNotEmpty": "해당 셀은 이미 점유 중이에요.",
+        "cellNotFound": "해당 셀 정보를 찾을 수 없어요."
+      }
+    },
+    "build": {
+      "selectTitle": "🏗️ {{index}}번째 토지 ({{x}}, {{y}}) — 건설할 공장 선택",
+      "selectPlaceholder": "공장 종류를 고르세요",
+      "selectOption": "{{emoji}} {{type}} ({{cost}} 💰, Lv{{unlock}})",
+      "selectCancel": "❌ 취소",
+      "cancelled": "건설을 취소했어요."
+    },
+    "factory": {
+      "menuTitle": "{{emoji}} **{{type}}** · G{{grade}} — {{landIndex}}번째 토지 ({{x}}, {{y}})",
+      "actionInfo": "정보",
+      "actionHarvest": "수확",
+      "actionUpgrade": "업그레이드",
+      "actionDestroy": "철거",
+      "actionBack": "◀ 토지로 돌아가기",
+      "harvestSuccess": "✅ {{ticks}} tick 수확, +{{xp}} XP",
+      "harvestEmpty": "아직 수확할 tick이 없어요.",
+      "upgradeSuccess": "✅ G{{grade}}(으)로 업그레이드했어요."
+    },
+    "buy": {
+      "success": "{{index}}번째 토지를 구매했어요! (-{{cost}} 💰, 잔액 {{remaining}} 💰, 보유 {{total}}개)",
+      "error": {
+        "maxLands": "이미 최대 {{max}}개의 토지를 보유 중이에요.",
+        "alreadyExists": "해당 번호의 토지는 이미 존재해요.",
+        "invalidIndex": "구매할 수 있는 토지 번호는 {{min}}~{{max}}이에요. 이전 토지부터 순서대로 구매해주세요.",
+        "insufficientMoney": "토지를 구매할 자금이 부족해요."
+      }
     }
   },
   "profile": {

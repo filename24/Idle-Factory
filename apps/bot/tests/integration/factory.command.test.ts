@@ -40,6 +40,7 @@ describe('FactoryCommand (service chain)', () => {
 
     const factory = await FactoryService.build(testPrisma, {
       userId: discordId,
+      landIndex: 1,
       type: 'FARM',
       anchorX: 0,
       anchorY: 0
@@ -74,6 +75,7 @@ describe('FactoryCommand (service chain)', () => {
 
     const factory = await FactoryService.build(testPrisma, {
       userId: discordId,
+      landIndex: 1,
       type: 'FARM',
       anchorX: 0,
       anchorY: 0

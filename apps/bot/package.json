@@ -6,7 +6,7 @@
   "main": "build/index.js",
   "scripts": {
     "start": "node build/index.js",
-    "dev": "tsx --tsconfig tsconfig.json src/index.ts",
+    "dev": "tsx watch --tsconfig tsconfig.json src/index.ts",
     "generate": "prisma generate",
     "build": "tsup && cp -R src/locales build/locales",
     "typecheck": "tsc --noEmit",

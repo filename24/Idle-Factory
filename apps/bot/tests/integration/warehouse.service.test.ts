@@ -46,15 +46,15 @@ describe('WarehouseService', () => {
   })
 
   describe('view', () => {
-    it('returns grade 1 with capacity 1000 and empty stacks for new user', async () => {
+    it('returns grade 1 with capacity 3000 and empty stacks for new user', async () => {
       const userId = await seedUserWithWarehouse()
 
       const view = await WarehouseService.view(testPrisma, userId)
 
       expect(view.grade).toBe(1)
-      expect(view.capacity).toBe(1_000n)
+      expect(view.capacity).toBe(3_000n)
       expect(view.used).toBe(0n)
-      expect(view.free).toBe(1_000n)
+      expect(view.free).toBe(3_000n)
       expect(view.stacks).toEqual([])
     })
 
@@ -66,7 +66,7 @@ describe('WarehouseService', () => {
       const view = await WarehouseService.view(testPrisma, userId)
 
       expect(view.used).toBe(150n)
-      expect(view.free).toBe(850n)
+      expect(view.free).toBe(2_850n)
       expect(view.stacks).toHaveLength(2)
       const byMat = Object.fromEntries(
         view.stacks.map((s) => [s.material, s.count])
@@ -86,7 +86,7 @@ describe('WarehouseService', () => {
       const view = await WarehouseService.upgrade(testPrisma, userId)
 
       expect(view.grade).toBe(2)
-      expect(view.capacity).toBe(3_000n)
+      expect(view.capacity).toBe(9_000n)
 
       const user = await testPrisma.user.findUniqueOrThrow({
         where: { id: userId }

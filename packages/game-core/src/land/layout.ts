@@ -10,11 +10,10 @@ import type { FactoryType, SlotState, SlotType } from '../types'
 /**
  * 배치 실패 사유.
  * - `OUT_OF_BOUNDS`: 토지 경계를 벗어남
- * - `LOCKED_SLOT`: 아직 확장되지 않은 잠긴 슬롯 포함
  * - `OCCUPIED`: 이미 다른 공장이 있음
  * - `OVERLAP`: (예약) 동일 배치 안에서 겹침
  */
-export type PlacementFailureReason = 'OUT_OF_BOUNDS' | 'LOCKED_SLOT' | 'OCCUPIED' | 'OVERLAP'
+export type PlacementFailureReason = 'OUT_OF_BOUNDS' | 'OCCUPIED' | 'OVERLAP'
 
 /**
  * 배치 가능 여부 검사 결과.
@@ -36,7 +35,7 @@ export interface CanPlaceParams {
   readonly landWidth: number
   /** 토지 세로 크기 */
   readonly landHeight: number
-  /** 현재 슬롯 상태 배열(점유/잠김 정보 포함) */
+  /** 현재 슬롯 상태 배열(점유 정보 포함) */
   readonly slots: readonly SlotState[]
   /** 배치할 공장 종류 */
   readonly type: FactoryType
@@ -75,8 +74,7 @@ export function getOccupiedCells(
  *
  * 순서대로 검사:
  *  1. 경계 밖이면 `OUT_OF_BOUNDS`
- *  2. 점유 셀 중 하나라도 잠겨 있으면 `LOCKED_SLOT`
- *  3. 점유 셀 중 하나라도 다른 공장이 있으면 `OCCUPIED`
+ *  2. 점유 셀 중 하나라도 다른 공장이 있으면 `OCCUPIED`
  *
  * @param params 입력 파라미터
  * @returns 배치 가능 여부와 실패 사유
@@ -93,13 +91,6 @@ export function canPlace(params: CanPlaceParams): PlacementCheckResult {
   for (const cell of cells) {
     const slot = slots.find((s) => s.x === cell.x && s.y === cell.y)
     if (slot === undefined) continue
-    if (slot.locked) {
-      return {
-        ok: false,
-        reason: 'LOCKED_SLOT',
-        blockingSlot: { x: slot.x, y: slot.y },
-      }
-    }
     if (slot.factoryId !== null) {
       return {
         ok: false,

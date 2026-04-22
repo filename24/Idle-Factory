@@ -12,7 +12,6 @@ const slot = (x: number, y: number, overrides: Partial<SlotState> = {}): SlotSta
   x,
   y,
   type: 'NORMAL',
-  locked: false,
   factoryId: null,
   ...overrides,
 })
@@ -66,20 +65,6 @@ describe('canPlace', () => {
       anchorY: 0,
     })
     expect(result.ok).toBe(true)
-  })
-
-  it('rejects CAR_FACTORY at (0,0) when (1,1) is locked', () => {
-    const result = canPlace({
-      landWidth: 3,
-      landHeight: 3,
-      slots: [slot(1, 1, { locked: true })],
-      type: 'CAR_FACTORY',
-      anchorX: 0,
-      anchorY: 0,
-    })
-    expect(result.ok).toBe(false)
-    expect(result.reason).toBe('LOCKED_SLOT')
-    expect(result.blockingSlot).toEqual({ x: 1, y: 1 })
   })
 
   it('rejects FARM at (1,1) when that slot is occupied', () => {

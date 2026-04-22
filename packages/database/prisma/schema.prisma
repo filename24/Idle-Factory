@@ -128,7 +128,7 @@ model User {
   dailyBoughtResetAt DateTime @default(now())
   createdAt          DateTime @default(now())
 
-  land        Land?
+  lands       Land[]
   warehouse   Warehouse?
   factories   Factory[]
   listings    MarketListing[]
@@ -162,15 +162,20 @@ model Guild {
 // 토지 / 슬롯
 // ──────────────────────────────────────────────────────────────
 
-/// 유저당 1개 (docs/11). 기본 3×3, 확장으로 최대 10×10.
+/// 유저당 최대 5개 (docs/11). 기본 4×4 고정. index 1 이 시작 토지.
 model Land {
   id     String @id @default(cuid())
-  userId String @unique
-  width  Int    @default(3)
-  height Int    @default(3)
+  userId String
+  index  Int    @default(1) // 1..5, 구매 순서
+  width  Int    @default(4)
+  height Int    @default(4)
 
-  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  slots Slot[]
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slots     Slot[]
+  factories Factory[]
+
+  @@unique([userId, index])
+  @@index([userId])
 }
 
 /// 토지 내 개별 슬롯. T3 공장(2×2)은 4개 슬롯이 같은 factoryId 를 공유.
@@ -180,7 +185,6 @@ model Slot {
   x         Int
   y         Int
   type      SlotType @default(NORMAL)
-  locked    Boolean  @default(false) // 확장 전 잠김
   factoryId String? // 비어있으면 null
 
   land    Land     @relation(fields: [landId], references: [id], onDelete: Cascade)
@@ -199,6 +203,7 @@ model Slot {
 model Factory {
   id             String          @id @default(cuid())
   userId         String
+  landId         String // 소속 토지 (다중 토지 지원 — docs/11-land.md)
   guildId        String? // 소속 서버 (게임 맥락)
   type           FactoryType
   tier           FactoryTier
@@ -216,12 +221,14 @@ model Factory {
   createdAt      DateTime        @default(now())
 
   owner   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  land    Land     @relation(fields: [landId], references: [id], onDelete: Cascade)
   guild   Guild?   @relation(fields: [guildId], references: [id], onDelete: SetNull)
   workers Worker[]
   slots   Slot[]
   stock   Stock?
 
   @@index([userId])
+  @@index([landId])
   @@index([guildId])
 }
 

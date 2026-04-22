@@ -14,8 +14,22 @@ import { ServiceError, Tx, runInTx } from './base'
 
 const MAX_GRADE = 10
 
+/**
+ * `/factory build` 기본 토지 번호. 커맨드/핸들러 호출자가 명시하지 않으면
+ * 하위호환을 위해 시작 토지(1번)로 해석한다.
+ */
+export const DEFAULT_LAND_INDEX = 1
+
+/**
+ * `FactoryService.build` 입력.
+ *
+ * `landIndex`는 필수이며, 유저가 보유하지 않은 토지 번호이면 `LAND_NOT_FOUND`를
+ * 던진다(서비스는 토지를 암묵적으로 생성하지 않는다 — 토지 생성은
+ * `UserService.ensure`(1번) 또는 `LandService.buy`(2~5번)가 담당).
+ */
 export interface BuildParams {
   readonly userId: string
+  readonly landIndex: number
   readonly type: FactoryType
   readonly anchorX: number
   readonly anchorY: number
@@ -30,6 +44,28 @@ export interface SetModeParams {
   readonly userId: string
   readonly factoryId: string
   readonly mode: ShortageMode
+}
+
+/** `FactoryService.destroy` 입력. */
+export interface DestroyParams {
+  readonly userId: string
+  readonly factoryId: string
+}
+
+/**
+ * `FactoryService.destroy` 결과.
+ *
+ * 환불 정책 (docs/design/11-land.md §철거): `buildCost(type) / 2` (BigInt floor)만큼
+ * money 환불, 재료/upgrade booster/raw booster는 환불 없음.
+ */
+export interface DestroyResult {
+  readonly factoryId: string
+  readonly type: FactoryType
+  readonly landIndex: number
+  readonly anchorX: number
+  readonly anchorY: number
+  readonly refund: bigint
+  readonly remainingMoney: bigint
 }
 
 export interface FactoryInfoDTO {
@@ -48,32 +84,29 @@ export interface FactoryInfoDTO {
   readonly unlockLevel: number
 }
 
-async function ensureLandWithSlots(tx: Tx, userId: string) {
+/**
+ * 유저가 소유한 `landIndex` 번 토지를 슬롯 포함으로 로드한다.
+ *
+ * 서비스는 토지를 암묵적으로 생성하지 않는다. 없으면 `LAND_NOT_FOUND` 에러.
+ * (토지 생성 책임은 `UserService.ensure`(1번) 또는 `LandService.buy`(2~5번).)
+ */
+async function loadLandOrThrow(tx: Tx, userId: string, landIndex: number) {
   const land = await tx.land.findUnique({
-    where: { userId },
+    where: { userId_index: { userId, index: landIndex } },
     include: { slots: true }
   })
-  if (land) return land
-  const created = await tx.land.create({
-    data: { userId }
-  })
-  const slotsData: Array<{ landId: string; x: number; y: number }> = []
-  for (let y = 0; y < created.height; y++) {
-    for (let x = 0; x < created.width; x++) {
-      slotsData.push({ landId: created.id, x, y })
-    }
+  if (!land) {
+    throw new ServiceError(
+      'LAND_NOT_FOUND',
+      `user ${userId} does not own land index ${landIndex}`
+    )
   }
-  await tx.slot.createMany({ data: slotsData })
-  const reread = await tx.land.findUniqueOrThrow({
-    where: { userId },
-    include: { slots: true }
-  })
-  return reread
+  return land
 }
 
 export const FactoryService = {
   async build(prisma: PrismaClient, params: BuildParams) {
-    const { userId, type, anchorX, anchorY } = params
+    const { userId, landIndex, type, anchorX, anchorY } = params
     const entry = FACTORY_CATALOG[type]
     const cost = buildCost(type)
 
@@ -81,18 +114,19 @@ export const FactoryService = {
       const user = await tx.user.findUnique({ where: { id: userId } })
       if (!user) throw new ServiceError('USER_NOT_FOUND')
       if (user.level < entry.unlockLevel) {
-        throw new ServiceError('LEVEL_LOCKED')
+        throw new ServiceError('LEVEL_LOCKED', undefined, {
+          level: entry.unlockLevel
+        })
       }
       if (user.money < cost) {
         throw new ServiceError('INSUFFICIENT_MONEY')
       }
 
-      const land = await ensureLandWithSlots(tx, userId)
+      const land = await loadLandOrThrow(tx, userId, landIndex)
       const slotStates: SlotState[] = land.slots.map((s) => ({
         x: s.x,
         y: s.y,
         type: s.type,
-        locked: s.locked,
         factoryId: s.factoryId
       }))
 
@@ -108,13 +142,42 @@ export const FactoryService = {
         switch (placement.reason) {
           case 'OUT_OF_BOUNDS':
             throw new ServiceError('OUT_OF_BOUNDS')
-          case 'LOCKED_SLOT':
-            throw new ServiceError('SLOT_LOCKED')
           case 'OCCUPIED':
           case 'OVERLAP':
           default:
             throw new ServiceError('SLOT_OCCUPIED')
         }
+      }
+
+      if (entry.buildMaterialCost) {
+        const { material, amount } = entry.buildMaterialCost
+        const warehouse = await tx.warehouse.findUnique({
+          where: { userId }
+        })
+        if (!warehouse) {
+          throw new ServiceError('INSUFFICIENT_MATERIAL', undefined, {
+            material,
+            amount
+          })
+        }
+        const stack = await tx.warehouseStack.findUnique({
+          where: {
+            warehouseId_material: {
+              warehouseId: warehouse.id,
+              material
+            }
+          }
+        })
+        if (!stack || stack.count < amount) {
+          throw new ServiceError('INSUFFICIENT_MATERIAL', undefined, {
+            material,
+            amount
+          })
+        }
+        await tx.warehouseStack.update({
+          where: { id: stack.id },
+          data: { count: { decrement: amount } }
+        })
       }
 
       await tx.user.update({
@@ -132,6 +195,7 @@ export const FactoryService = {
       const factory = await tx.factory.create({
         data: {
           userId,
+          landId: land.id,
           type,
           tier: entry.tier,
           grade: 1,
@@ -250,6 +314,55 @@ export const FactoryService = {
         where: { id: factoryId },
         data: { shortageMode: mode }
       })
+    })
+  },
+
+  /**
+   * 공장 철거. 환불 정책은 `docs/design/11-land.md §철거`:
+   * - money 환불: `buildCost(type) / 2n` (BigInt floor)
+   * - 재료 환불: 없음
+   * - upgrade booster / raw booster: 상실 (factory row와 함께 삭제)
+   *
+   * 슬롯은 `factoryId: null`로 해제되어 재건설 가능. Factory row는 삭제되며,
+   * Worker의 `factoryId`는 schema의 `onDelete: SetNull`에 의해 null 처리된다.
+   */
+  async destroy(
+    prisma: PrismaClient,
+    params: DestroyParams
+  ): Promise<DestroyResult> {
+    const { userId, factoryId } = params
+    return runInTx(prisma, async (tx) => {
+      const factory = await tx.factory.findUnique({
+        where: { id: factoryId },
+        include: { land: { select: { index: true } } }
+      })
+      if (!factory || factory.userId !== userId) {
+        throw new ServiceError('FACTORY_NOT_FOUND')
+      }
+
+      const refund = buildCost(factory.type) / 2n
+
+      await tx.slot.updateMany({
+        where: { factoryId },
+        data: { factoryId: null }
+      })
+      await tx.factory.delete({ where: { id: factoryId } })
+
+      const updated = await tx.user.update({
+        where: { id: userId },
+        data: { money: { increment: refund } },
+        select: { money: true }
+      })
+
+      return {
+        factoryId,
+        type: factory.type,
+        landIndex: factory.land.index,
+        anchorX: factory.anchorX,
+        anchorY: factory.anchorY,
+        refund,
+        remainingMoney: updated.money
+      }
     })
   }
 }

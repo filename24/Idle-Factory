@@ -4,10 +4,11 @@
       "success": "Built a {{type}} {{emoji}} factory at ({{x}}, {{y}})!",
       "error": {
         "insufficientMoney": "Not enough money. Required: {{required}} 💰 / Have: {{have}} 💰",
+        "insufficientMaterial": "Not enough material. Required: {{amount}} {{material}}",
         "levelLocked": "This factory unlocks at level {{level}}.",
         "slotOccupied": "That slot is already occupied by another factory.",
-        "slotLocked": "That slot is still locked (not yet expanded).",
-        "outOfBounds": "That position is outside the land bounds."
+        "outOfBounds": "That position is outside the land bounds.",
+        "landNotFound": "You don't own a land with that number. Use `/land buy` first."
       }
     },
     "upgrade": {
@@ -31,6 +32,14 @@
     },
     "setMode": {
       "success": "Factory mode changed to `{{mode}}`."
+    },
+    "destroy": {
+      "confirmTitle": "⚠️ Destroy {{emoji}} {{type}} factory?",
+      "confirmBody": "You will receive `{{refund}} 💰` back (50% of build cost). Materials, upgrade boosters, and raw boosters are **not** refunded.",
+      "confirmYes": "Destroy",
+      "confirmCancel": "Cancel",
+      "success": "🧨 Destroyed {{emoji}} {{type}} factory. (+{{refund}} 💰, balance {{remaining}} 💰)",
+      "cancelled": "Destroy cancelled."
     }
   },
   "harvest": {
@@ -66,8 +75,43 @@
   },
   "land": {
     "view": {
-      "title": "🗺️ Your land",
-      "legend": "⬜ Empty · ⬛ Locked · 🌱 Fertile · 🌳 Forest · 🛢️ Oil · 🪨 Ore · 💧 Water"
+      "title": "🗺️ Land #{{index}} ({{index}}/{{total}})",
+      "legend": "⬜ Empty · 🌱 Fertile · 🌳 Forest · 🛢️ Oil · 🪨 Ore · 💧 Water",
+      "buttonPrev": "◀ Prev",
+      "buttonNext": "Next ▶",
+      "cellComingSoon": "Cell actions are coming soon.",
+      "error": {
+        "notOwned": "You don't own a land with that number yet.",
+        "cellNotEmpty": "That cell is already occupied.",
+        "cellNotFound": "Cell information could not be found."
+      }
+    },
+    "build": {
+      "selectTitle": "🏗️ Land #{{index}} ({{x}}, {{y}}) — choose a factory",
+      "selectPlaceholder": "Pick a factory type",
+      "selectOption": "{{emoji}} {{type}} ({{cost}} 💰, Lv{{unlock}})",
+      "selectCancel": "❌ Cancel",
+      "cancelled": "Build cancelled."
+    },
+    "factory": {
+      "menuTitle": "{{emoji}} **{{type}}** · G{{grade}} — Land #{{landIndex}} ({{x}}, {{y}})",
+      "actionInfo": "Info",
+      "actionHarvest": "Harvest",
+      "actionUpgrade": "Upgrade",
+      "actionDestroy": "Destroy",
+      "actionBack": "◀ Back to Land",
+      "harvestSuccess": "✅ Harvested {{ticks}} ticks, +{{xp}} XP",
+      "harvestEmpty": "No ticks ready to harvest yet.",
+      "upgradeSuccess": "✅ Upgraded to G{{grade}}."
+    },
+    "buy": {
+      "success": "Purchased land #{{index}}! (-{{cost}} 💰, balance {{remaining}} 💰, owned {{total}})",
+      "error": {
+        "maxLands": "You already own the maximum of {{max}} lands.",
+        "alreadyExists": "A land with that number already exists.",
+        "invalidIndex": "Buyable land index must be between {{min}} and {{max}}. Purchase lands in order.",
+        "insufficientMoney": "Not enough money to buy this land."
+      }
     }
   },
   "profile": {
