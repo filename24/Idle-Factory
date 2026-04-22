@@ -8,7 +8,8 @@ import {
 import type { ShortageMode } from '@idle/database'
 import { simpleV2Payload, V2_ACCENT } from '@utils/ComponentsV2'
 import { formatBigInt, renderFactoryInfo } from '@structures/renderers'
-import { FactoryService } from '../../services/factory'
+import { DEFAULT_LAND_INDEX, FactoryService } from '../../services/factory'
+import { MAX_BUYABLE_INDEX } from '../../services/land'
 import { UserService } from '../../services/user'
 import { ServiceError } from '../../services/base'
 
@@ -27,7 +28,7 @@ import { ServiceError } from '../../services/base'
  */
 
 /** `/factory build` 서브커맨드의 `type` 선택지로 사용할 MVP 공장 목록. */
-const MVP_FACTORY_CHOICES: readonly FactoryType[] = [
+export const MVP_FACTORY_CHOICES: readonly FactoryType[] = [
   'FARM',
   'MINE',
   'LUMBER',
@@ -57,6 +58,8 @@ export class FactoryCommand extends Command {
         return this.handleInfo(interaction)
       case 'setmode':
         return this.handleSetMode(interaction)
+      case 'destroy':
+        return this.handleDestroy(interaction)
       default:
         return this.replyError(interaction, 'game:common.error.unknown')
     }
@@ -76,11 +79,14 @@ export class FactoryCommand extends Command {
     const type = interaction.options.getString('type', true) as FactoryType
     const x = interaction.options.getInteger('x', true)
     const y = interaction.options.getInteger('y', true)
+    const landIndex =
+      interaction.options.getInteger('land_index') ?? DEFAULT_LAND_INDEX
 
     try {
       await UserService.ensure(db, { discordId: interaction.user.id })
       const factory = await FactoryService.build(db, {
         userId: interaction.user.id,
+        landIndex,
         type,
         anchorX: x,
         anchorY: y
@@ -209,6 +215,38 @@ export class FactoryCommand extends Command {
     }
   }
 
+  /** `/factory destroy` 처리 — 확인 없이 즉시 철거한다 (UI 버튼 플로우에는 2단계 확인 있음). */
+  private async handleDestroy(
+    interaction: Command.ChatInputCommandInteraction
+  ) {
+    const { db } = this.container
+    const t = await fetchT(interaction)
+    const factoryId = interaction.options.getString('factory_id', true)
+
+    try {
+      await UserService.ensure(db, { discordId: interaction.user.id })
+      const result = await FactoryService.destroy(db, {
+        userId: interaction.user.id,
+        factoryId
+      })
+      const entry = FACTORY_CATALOG[result.type]
+      return interaction.reply(
+        simpleV2Payload({
+          accent: V2_ACCENT.success,
+          body: t('game:factory.destroy.success', {
+            emoji: entry.emoji,
+            type: result.type,
+            refund: formatBigInt(result.refund),
+            remaining: formatBigInt(result.remainingMoney)
+          }),
+          ephemeral: true
+        })
+      )
+    } catch (err) {
+      return this.replyFromError(interaction, err, 'destroy')
+    }
+  }
+
   /**
    * `ServiceError`를 i18n 경고 Embed로 변환해 응답한다.
    *
@@ -217,7 +255,7 @@ export class FactoryCommand extends Command {
   private async replyFromError(
     interaction: Command.ChatInputCommandInteraction,
     err: unknown,
-    surface: 'build' | 'upgrade' | 'info' | 'setmode'
+    surface: 'build' | 'upgrade' | 'info' | 'setmode' | 'destroy'
   ) {
     if (!(err instanceof ServiceError)) {
       this.container.logger.error(err)
@@ -231,7 +269,7 @@ export class FactoryCommand extends Command {
   /** `ServiceError.code`와 서브커맨드 컨텍스트에 따라 i18n 키와 상호작용 파라미터를 결정한다. */
   private resolveErrorKey(
     err: ServiceError,
-    surface: 'build' | 'upgrade' | 'info' | 'setmode',
+    surface: 'build' | 'upgrade' | 'info' | 'setmode' | 'destroy',
     t: TFunction,
     interaction: Command.ChatInputCommandInteraction
   ): string {
@@ -289,6 +327,8 @@ export class FactoryCommand extends Command {
         return t('game:factory.build.error.outOfBounds')
       case 'MAX_GRADE':
         return t('game:factory.upgrade.error.maxGrade')
+      case 'LAND_NOT_FOUND':
+        return t('game:factory.build.error.landNotFound')
       default:
         return t('game:common.error.unknown')
     }
@@ -359,22 +399,35 @@ export class FactoryCommand extends Command {
             .addIntegerOption((o) =>
               o
                 .setName('x')
-                .setDescription('Anchor X (0-9)')
+                .setDescription('Anchor X (0-3)')
                 .setNameLocalization('ko', 'x좌표')
-                .setDescriptionLocalization('ko', '앵커 X 좌표 (0-9)')
+                .setDescriptionLocalization('ko', '앵커 X 좌표 (0-3)')
                 .setRequired(true)
                 .setMinValue(0)
-                .setMaxValue(9)
+                .setMaxValue(3)
             )
             .addIntegerOption((o) =>
               o
                 .setName('y')
-                .setDescription('Anchor Y (0-9)')
+                .setDescription('Anchor Y (0-3)')
                 .setNameLocalization('ko', 'y좌표')
-                .setDescriptionLocalization('ko', '앵커 Y 좌표 (0-9)')
+                .setDescriptionLocalization('ko', '앵커 Y 좌표 (0-3)')
                 .setRequired(true)
                 .setMinValue(0)
-                .setMaxValue(9)
+                .setMaxValue(3)
+            )
+            .addIntegerOption((o) =>
+              o
+                .setName('land_index')
+                .setDescription('Land number (1-5, default 1)')
+                .setNameLocalization('ko', '토지번호')
+                .setDescriptionLocalization(
+                  'ko',
+                  '건설할 토지 번호 (1~5, 기본 1)'
+                )
+                .setRequired(false)
+                .setMinValue(1)
+                .setMaxValue(MAX_BUYABLE_INDEX)
             )
         )
         .addSubcommand((sub) =>
@@ -437,6 +490,24 @@ export class FactoryCommand extends Command {
                 .addChoices(
                   ...SHORTAGE_MODES.map((m) => ({ name: m, value: m }))
                 )
+            )
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName('destroy')
+            .setDescription('Destroy a factory (50% money refund).')
+            .setNameLocalization('ko', '철거')
+            .setDescriptionLocalization(
+              'ko',
+              '공장을 철거합니다 (건설 비용 50% 환불).'
+            )
+            .addStringOption((o) =>
+              o
+                .setName('factory_id')
+                .setDescription('Factory ID')
+                .setNameLocalization('ko', '공장id')
+                .setDescriptionLocalization('ko', '공장 ID')
+                .setRequired(true)
             )
         )
     )

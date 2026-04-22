@@ -71,6 +71,21 @@ GitHub Actions workflows live under `.github/workflows/`. CI installs via `pnpm/
 4. Add `eslint.config.js` re-exporting `eslint-config-idle`.
 5. Declare scripts (`build`, `lint`, `format`) so Turbo can pick them up.
 
+## Codemaps
+
+Token-lean architecture snapshots live in `docs/CODEMAPS/`. Start at [`docs/CODEMAPS/INDEX.md`](docs/CODEMAPS/INDEX.md) for navigation.
+
+| File              | Contents                                                 |
+| ----------------- | -------------------------------------------------------- |
+| `INDEX.md`        | Navigation hub — links to all codemaps                   |
+| `architecture.md` | 3-layer system design, service boundaries, data flow     |
+| `backend.md`      | Bot commands (18), services (5), handler mapping         |
+| `data.md`         | Prisma schema — 25 tables, 8 enums, relationships        |
+| `game-core.md`    | Factory specs, cost formulas, production calc, XP system |
+| `dependencies.md` | External services, build tools, package list             |
+
+Regenerate with `/update-codemaps` after major feature additions or refactoring sessions.
+
 ## Per-Package Docs
 
 Each workspace has its own `AGENTS.md` (with `CLAUDE.md` as a symlink) covering package-specific entry points, scripts, and conventions. Start there when working inside a single package.
