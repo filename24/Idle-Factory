@@ -66,8 +66,13 @@
   },
   "land": {
     "view": {
-      "title": "🗺️ 내 토지",
-      "legend": "⬜ 빈 슬롯 · 🌱 비옥 · 🌳 숲 · 🛢️ 유전 · 🪨 광맥 · 💧 수원"
+      "title": "🗺️ {{index}}번째 토지 ({{index}}/{{total}})",
+      "legend": "⬜ 빈 슬롯 · 🌱 비옥 · 🌳 숲 · 🛢️ 유전 · 🪨 광맥 · 💧 수원",
+      "buttonPrev": "◀ 이전",
+      "buttonNext": "다음 ▶",
+      "error": {
+        "notOwned": "해당 번호의 토지를 아직 보유하고 있지 않아요."
+      }
     },
     "buy": {
       "success": "{{index}}번째 토지를 구매했어요! (-{{cost}} 💰, 잔액 {{remaining}} 💰, 보유 {{total}}개)",

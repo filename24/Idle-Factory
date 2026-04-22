@@ -66,8 +66,13 @@
   },
   "land": {
     "view": {
-      "title": "🗺️ Your land",
-      "legend": "⬜ Empty · 🌱 Fertile · 🌳 Forest · 🛢️ Oil · 🪨 Ore · 💧 Water"
+      "title": "🗺️ Land #{{index}} ({{index}}/{{total}})",
+      "legend": "⬜ Empty · 🌱 Fertile · 🌳 Forest · 🛢️ Oil · 🪨 Ore · 💧 Water",
+      "buttonPrev": "◀ Prev",
+      "buttonNext": "Next ▶",
+      "error": {
+        "notOwned": "You don't own a land with that number yet."
+      }
     },
     "buy": {
       "success": "Purchased land #{{index}}! (-{{cost}} 💰, balance {{remaining}} 💰, owned {{total}})",

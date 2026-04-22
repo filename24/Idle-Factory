@@ -2,7 +2,8 @@
  * `/land` 커맨드.
  *
  * 서브커맨드:
- * - `view`: 호출자의 토지(4×4)를 이모지 그리드로 렌더링해서 ephemeral Embed로 응답.
+ * - `view`: 호출자의 토지(4×4)를 이모지 그리드로 렌더링해서 ephemeral 응답.
+ *   `index` 옵션 또는 Prev/Next 버튼으로 보유한 여러 토지를 순회할 수 있다.
  * - `buy`: N번째 토지(2~5)를 `1,000,000 × 10^(N-2)` 💰에 구매 (docs/design/11-land.md).
  *
  * DB 접근은 `this.container.db` (Prisma 기반 `DatabaseClient`)를 사용한다.
@@ -13,7 +14,14 @@
 
 import { Command } from '@sapphire/framework'
 import { fetchT, type TFunction } from '@sapphire/plugin-i18next'
-import { simpleV2Payload, V2_ACCENT } from '@utils/ComponentsV2'
+import { simpleContainer, V2_ACCENT, v2Flags } from '@utils/ComponentsV2'
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  type InteractionReplyOptions,
+  MessageFlags
+} from 'discord.js'
 import {
   formatBigInt,
   renderLand,
@@ -27,10 +35,21 @@ import {
   MIN_BUYABLE_INDEX
 } from '../../services/land'
 import { ServiceError } from '../../services/base'
+import type { DatabaseClient } from '@idle/database'
+import { nextOwnedIndex, prevOwnedIndex } from './landNav'
 
 /** 서브커맨드 이름 상수. */
 const SUB_VIEW = 'view'
 const SUB_BUY = 'buy'
+
+/** 버튼 customId prefix — `land:view:<index>` 형태로 사용한다. */
+export const LAND_VIEW_BUTTON_PREFIX = 'land:view:'
+
+/** `/land view` 페이로드 빌더 결과 (reply/update 양쪽 호환). */
+export interface LandViewPayload {
+  readonly components: InteractionReplyOptions['components']
+  readonly flags: number
+}
 
 export class LandCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -47,22 +66,19 @@ export class LandCommand extends Command {
     if (sub === SUB_BUY) {
       return this.handleBuy(interaction)
     }
-    return interaction.reply(
-      simpleV2Payload({
-        accent: V2_ACCENT.error,
-        body: 'Unknown subcommand.',
-        ephemeral: true
-      })
-    )
+    return interaction.reply({
+      components: [
+        simpleContainer(V2_ACCENT.error, undefined, 'Unknown subcommand.')
+      ],
+      flags: v2Flags(true)
+    })
   }
 
   /**
    * `/land view` 핸들러.
    *
-   * 1. `UserService.ensure`로 유저/토지/창고를 보장하고 hydrated 엔터티를 얻는다.
-   * 2. 해당 유저의 Factory 목록을 조회한다.
-   * 3. 슬롯/공장 DTO로 변환해 `renderLand`로 grid/legend를 생성한다.
-   * 4. Embed로 감싸 ephemeral 응답.
+   * `index` 옵션이 주어지면 해당 번호 토지를 보여주고, 없으면 최저 번호 토지를 보여준다.
+   * 유저가 해당 번호 토지를 보유하지 않으면 에러 응답.
    */
   private async handleView(
     interaction: Command.ChatInputCommandInteraction
@@ -76,51 +92,28 @@ export class LandCommand extends Command {
       lang: interaction.locale ?? undefined
     })
 
-    const land = hydrated.lands.find((l) => l.index === 1)
-    if (!land) {
-      return interaction.reply(
-        simpleV2Payload({
-          accent: V2_ACCENT.error,
-          body: t('game:common.error.userNotFound'),
-          ephemeral: true
-        })
-      )
+    if (hydrated.lands.length === 0) {
+      return interaction.reply({
+        components: [
+          simpleContainer(
+            V2_ACCENT.error,
+            undefined,
+            t('game:common.error.userNotFound')
+          )
+        ],
+        flags: v2Flags(true)
+      })
     }
 
-    const factories = await db.factory.findMany({
-      where: { userId: hydrated.id },
-      select: { type: true, grade: true, anchorX: true, anchorY: true }
+    const requested = interaction.options.getInteger('index') ?? undefined
+    const targetIndex = requested ?? minOwnedIndex(hydrated.lands)
+
+    const payload = await buildLandViewPayload(db, {
+      userId: hydrated.id,
+      targetIndex,
+      t
     })
-
-    const slotDTOs: SlotDTO[] = land.slots.map(
-      (s: (typeof land.slots)[number]) => ({
-        x: s.x,
-        y: s.y,
-        type: s.type
-      })
-    )
-
-    const factoryDTOs: FactoryDTO[] = factories.map((f) => ({
-      type: f.type,
-      grade: f.grade,
-      anchorX: f.anchorX,
-      anchorY: f.anchorY
-    }))
-
-    const { grid, legend } = renderLand(
-      { width: land.width, height: land.height },
-      factoryDTOs,
-      slotDTOs
-    )
-
-    return interaction.reply(
-      simpleV2Payload({
-        accent: V2_ACCENT.info,
-        title: t('game:land.view.title'),
-        body: `${grid}\n\n${legend}`,
-        ephemeral: true
-      })
-    )
+    return interaction.reply(payload as InteractionReplyOptions)
   }
 
   /**
@@ -147,18 +140,21 @@ export class LandCommand extends Command {
         userId: interaction.user.id,
         targetIndex
       })
-      return interaction.reply(
-        simpleV2Payload({
-          accent: V2_ACCENT.success,
-          body: t('game:land.buy.success', {
-            index: result.targetIndex,
-            cost: formatBigInt(result.cost),
-            remaining: formatBigInt(result.remainingMoney),
-            total: result.totalLands
-          }),
-          ephemeral: true
-        })
-      )
+      return interaction.reply({
+        components: [
+          simpleContainer(
+            V2_ACCENT.success,
+            undefined,
+            t('game:land.buy.success', {
+              index: result.targetIndex,
+              cost: formatBigInt(result.cost),
+              remaining: formatBigInt(result.remainingMoney),
+              total: result.totalLands
+            })
+          )
+        ],
+        flags: v2Flags(true)
+      })
     } catch (err) {
       return this.replyBuyError(interaction, err, t)
     }
@@ -199,11 +195,10 @@ export class LandCommand extends Command {
       this.container.logger.error(err)
       body = t('game:common.error.unknown')
     }
-    const payload = simpleV2Payload({
-      accent: V2_ACCENT.warn,
-      body,
-      ephemeral: true
-    })
+    const payload: InteractionReplyOptions = {
+      components: [simpleContainer(V2_ACCENT.warn, undefined, body)],
+      flags: v2Flags(true)
+    }
     if (interaction.replied || interaction.deferred) {
       return interaction.followUp(payload)
     }
@@ -226,17 +221,27 @@ export class LandCommand extends Command {
               'ko',
               '이모지 그리드로 내 토지를 봅니다.'
             )
+            .addIntegerOption((o) =>
+              o
+                .setName('index')
+                .setDescription('Land number to view (1-5).')
+                .setNameLocalization('ko', '번호')
+                .setDescriptionLocalization('ko', '볼 토지 번호 (1~5).')
+                .setRequired(false)
+                .setMinValue(1)
+                .setMaxValue(MAX_BUYABLE_INDEX)
+            )
         )
         .addSubcommand((sub) =>
           sub
             .setName(SUB_BUY)
-            .setDescription('Buy your next land (2nd–5th).')
+            .setDescription('Buy your next land (2nd-5th).')
             .setNameLocalization('ko', '구매')
             .setDescriptionLocalization('ko', '다음 토지를 구매합니다.')
             .addIntegerOption((o) =>
               o
                 .setName('index')
-                .setDescription('Land index (2–5).')
+                .setDescription('Land index (2-5).')
                 .setNameLocalization('ko', '번호')
                 .setDescriptionLocalization('ko', '구매할 토지 번호 (2~5).')
                 .setRequired(true)
@@ -245,5 +250,118 @@ export class LandCommand extends Command {
             )
         )
     )
+  }
+}
+
+/** 소유한 토지 중 최소 index를 반환한다. 입력 배열이 비어있지 않음을 호출자가 보장해야 한다. */
+function minOwnedIndex(
+  lands: ReadonlyArray<{ readonly index: number }>
+): number {
+  let min = lands[0]!.index
+  for (const l of lands) if (l.index < min) min = l.index
+  return min
+}
+
+/** `buildLandViewPayload` 입력. */
+export interface BuildLandViewInput {
+  readonly userId: string
+  readonly targetIndex: number
+  readonly t: TFunction
+}
+
+/**
+ * `/land view` 응답 및 버튼 인터랙션 `update`에 공통으로 쓰이는 페이로드 빌더.
+ *
+ * - 소유 토지 목록을 조회해 `targetIndex`가 실제로 보유한 번호인지 확인
+ * - `renderLand`로 이모지 그리드 생성
+ * - Prev/Next 버튼(customId: `land:view:<index>`)을 양옆 owned index로 연결
+ */
+export async function buildLandViewPayload(
+  db: DatabaseClient,
+  input: BuildLandViewInput
+): Promise<LandViewPayload> {
+  const { userId, targetIndex, t } = input
+
+  const lands = await db.land.findMany({
+    where: { userId },
+    orderBy: { index: 'asc' },
+    select: { index: true }
+  })
+  const ownedIndices = lands.map((l) => l.index)
+  const ownedSet = new Set(ownedIndices)
+
+  if (!ownedSet.has(targetIndex)) {
+    return {
+      components: [
+        simpleContainer(
+          V2_ACCENT.error,
+          undefined,
+          t('game:land.view.error.notOwned')
+        )
+      ],
+      flags: v2Flags(true)
+    }
+  }
+
+  const land = await db.land.findUniqueOrThrow({
+    where: { userId_index: { userId, index: targetIndex } },
+    include: { slots: true }
+  })
+
+  const factories = await db.factory.findMany({
+    where: { userId, landId: land.id },
+    select: { type: true, grade: true, anchorX: true, anchorY: true }
+  })
+
+  const slotDTOs: SlotDTO[] = land.slots.map((s) => ({
+    x: s.x,
+    y: s.y,
+    type: s.type
+  }))
+  const factoryDTOs: FactoryDTO[] = factories.map((f) => ({
+    type: f.type,
+    grade: f.grade,
+    anchorX: f.anchorX,
+    anchorY: f.anchorY
+  }))
+
+  const { grid, legend } = renderLand(
+    { width: land.width, height: land.height },
+    factoryDTOs,
+    slotDTOs
+  )
+
+  const title = t('game:land.view.title', {
+    index: targetIndex,
+    total: ownedIndices.length
+  })
+  const container = simpleContainer(
+    V2_ACCENT.info,
+    title,
+    `${grid}\n\n${legend}`
+  )
+
+  // Prev/Next: 소유한 index 기준 양 옆. 없으면 disable + customId는 현재 index로.
+  const prevIndex = prevOwnedIndex(ownedIndices, targetIndex)
+  const nextIndex = nextOwnedIndex(ownedIndices, targetIndex)
+
+  const prevButton = new ButtonBuilder()
+    .setCustomId(`${LAND_VIEW_BUTTON_PREFIX}${prevIndex ?? targetIndex}`)
+    .setStyle(ButtonStyle.Secondary)
+    .setLabel(t('game:land.view.buttonPrev'))
+    .setDisabled(prevIndex === null)
+  const nextButton = new ButtonBuilder()
+    .setCustomId(`${LAND_VIEW_BUTTON_PREFIX}${nextIndex ?? targetIndex}`)
+    .setStyle(ButtonStyle.Secondary)
+    .setLabel(t('game:land.view.buttonNext'))
+    .setDisabled(nextIndex === null)
+
+  container.addActionRowComponents(
+    new ActionRowBuilder<ButtonBuilder>().addComponents(prevButton, nextButton)
+  )
+
+  return {
+    components: [container],
+    flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral
   }
 }
