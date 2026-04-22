@@ -7,6 +7,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  renderCells,
   renderLand,
   toSuperscript,
   type FactoryDTO,
@@ -139,5 +140,85 @@ describe('renderLand - special slots', () => {
     }
     const { grid } = renderLand({ width: 1, height: 1 }, [factory], slots)
     expect(grid).toBe('🌾²')
+  })
+})
+
+describe('renderCells', () => {
+  it('returns y-major order with width*height entries', () => {
+    const cells = renderCells({ width: 2, height: 3 }, [], makeEmptySlots(2, 3))
+    expect(cells).toHaveLength(6)
+    expect(cells[0]).toMatchObject({ x: 0, y: 0 })
+    expect(cells[1]).toMatchObject({ x: 1, y: 0 })
+    expect(cells[2]).toMatchObject({ x: 0, y: 1 })
+    expect(cells[5]).toMatchObject({ x: 1, y: 2 })
+  })
+
+  it('marks empty NORMAL slots as kind=empty', () => {
+    const cells = renderCells(
+      { width: 1, height: 1 },
+      [],
+      [{ x: 0, y: 0, type: 'NORMAL' }]
+    )
+    expect(cells[0]).toMatchObject({
+      kind: 'empty',
+      emoji: '⬜',
+      text: '⬜'
+    })
+  })
+
+  it('marks special slots with slotType + kind=special', () => {
+    const cells = renderCells(
+      { width: 1, height: 1 },
+      [],
+      [{ x: 0, y: 0, type: 'FERTILE' }]
+    )
+    expect(cells[0]).toMatchObject({
+      kind: 'special',
+      emoji: '🌱',
+      slotType: 'FERTILE'
+    })
+  })
+
+  it('marks factory anchor with text including grade superscript', () => {
+    const cells = renderCells(
+      { width: 1, height: 1 },
+      [{ type: 'FARM', grade: 3, anchorX: 0, anchorY: 0 }],
+      makeEmptySlots(1, 1)
+    )
+    expect(cells[0]).toMatchObject({
+      kind: 'factory-anchor',
+      emoji: '🌾',
+      text: '🌾³'
+    })
+    expect(cells[0]?.factory).toMatchObject({ type: 'FARM', grade: 3 })
+  })
+
+  it('marks 2×2 factory body cells as factory-body without grade on text', () => {
+    const factory: FactoryDTO = {
+      type: 'CAR_FACTORY',
+      grade: 4,
+      anchorX: 0,
+      anchorY: 0
+    }
+    const cells = renderCells(
+      { width: 2, height: 2 },
+      [factory],
+      makeEmptySlots(2, 2)
+    )
+    // anchor (0,0) gets superscript; body cells show emoji only.
+    const byPos = (x: number, y: number) =>
+      cells.find((c) => c.x === x && c.y === y)!
+    expect(byPos(0, 0).kind).toBe('factory-anchor')
+    expect(byPos(0, 0).text).toMatch(/⁴$/)
+    for (const [x, y] of [
+      [1, 0],
+      [0, 1],
+      [1, 1]
+    ] as const) {
+      const cell = byPos(x, y)
+      expect(cell.kind).toBe('factory-body')
+      expect(cell.text).toBe(cell.emoji)
+      expect(cell.factory).toMatchObject({ type: 'CAR_FACTORY', grade: 4 })
+    }
   })
 })

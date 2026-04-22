@@ -24,8 +24,9 @@ import {
 } from 'discord.js'
 import {
   formatBigInt,
-  renderLand,
+  renderCells,
   type FactoryDTO,
+  type RenderedCell,
   type SlotDTO
 } from '@structures/renderers'
 import { UserService } from '../../services/user'
@@ -44,6 +45,9 @@ const SUB_BUY = 'buy'
 
 /** 버튼 customId prefix — `land:view:<index>` 형태로 사용한다. */
 export const LAND_VIEW_BUTTON_PREFIX = 'land:view:'
+
+/** 셀 버튼 customId prefix — `land:cell:<landIdx>:<x>:<y>` 형태로 사용한다. */
+export const LAND_CELL_BUTTON_PREFIX = 'land:cell:'
 
 /** `/land view` 페이로드 빌더 결과 (reply/update 양쪽 호환). */
 export interface LandViewPayload {
@@ -325,7 +329,7 @@ export async function buildLandViewPayload(
     anchorY: f.anchorY
   }))
 
-  const { grid, legend } = renderLand(
+  const cells = renderCells(
     { width: land.width, height: land.height },
     factoryDTOs,
     slotDTOs
@@ -338,8 +342,18 @@ export async function buildLandViewPayload(
   const container = simpleContainer(
     V2_ACCENT.info,
     title,
-    `${grid}\n\n${legend}`
+    t('game:land.view.legend')
   )
+
+  // 4×4 셀 그리드: y=0..3마다 ActionRow 1개 (각 4 버튼).
+  for (let y = 0; y < land.height; y++) {
+    const rowCells = cells.slice(y * land.width, (y + 1) * land.width)
+    container.addActionRowComponents(
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        ...rowCells.map((c) => buildCellButton(c, targetIndex))
+      )
+    )
+  }
 
   // Prev/Next: 소유한 index 기준 양 옆. 없으면 disable + customId는 현재 index로.
   const prevIndex = prevOwnedIndex(ownedIndices, targetIndex)
@@ -364,4 +378,24 @@ export async function buildLandViewPayload(
     components: [container],
     flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral
   }
+}
+
+/**
+ * 셀 한 개에 대응하는 Discord 버튼을 만든다.
+ *
+ * - `factory-anchor`: Primary 스타일, 클릭 가능 (등급 정보는 상세 모달에서)
+ * - `empty` / `special`: Secondary 스타일, 클릭 가능
+ * - `factory-body`: Secondary + disabled (2×2 공장의 비앵커 셀 — 시각 점유만 유지)
+ *
+ * customId는 `land:cell:<landIdx>:<x>:<y>` 포맷으로 `LandCellButtonHandler`가 파싱한다.
+ */
+function buildCellButton(cell: RenderedCell, landIndex: number): ButtonBuilder {
+  const style =
+    cell.kind === 'factory-anchor' ? ButtonStyle.Primary : ButtonStyle.Secondary
+  const disabled = cell.kind === 'factory-body'
+  return new ButtonBuilder()
+    .setCustomId(`${LAND_CELL_BUTTON_PREFIX}${landIndex}:${cell.x}:${cell.y}`)
+    .setStyle(style)
+    .setEmoji(cell.emoji)
+    .setDisabled(disabled)
 }

@@ -70,6 +70,7 @@
       "legend": "⬜ 빈 슬롯 · 🌱 비옥 · 🌳 숲 · 🛢️ 유전 · 🪨 광맥 · 💧 수원",
       "buttonPrev": "◀ 이전",
       "buttonNext": "다음 ▶",
+      "cellComingSoon": "셀 액션은 곧 지원됩니다. 현재는 `/factory build`, `/factory harvest`, `/factory upgrade` 커맨드를 사용해 주세요.",
       "error": {
         "notOwned": "해당 번호의 토지를 아직 보유하고 있지 않아요."
       }

@@ -70,6 +70,7 @@
       "legend": "⬜ Empty · 🌱 Fertile · 🌳 Forest · 🛢️ Oil · 🪨 Ore · 💧 Water",
       "buttonPrev": "◀ Prev",
       "buttonNext": "Next ▶",
+      "cellComingSoon": "Cell actions are coming soon. For now please use `/factory build`, `/factory harvest`, and `/factory upgrade`.",
       "error": {
         "notOwned": "You don't own a land with that number yet."
       }
