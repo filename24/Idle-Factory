@@ -14,6 +14,7 @@
     "lint": "eslint . --ext .ts",
     "lint:fix": "prettier --write '**/*.ts' && eslint . --ext .ts --fix",
     "test": "vitest run",
+    "test:unit": "vitest run --exclude 'tests/integration/**'",
     "test:integration": "vitest run tests/integration"
   },
   "dependencies": {

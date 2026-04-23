@@ -22,6 +22,7 @@
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:unit": "vitest run",
     "test:watch": "vitest"
   },
   "devDependencies": {

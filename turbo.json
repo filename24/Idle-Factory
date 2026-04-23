@@ -67,6 +67,10 @@
       "dependsOn": ["db:generate", "^build"],
       "cache": true
     },
+    "test:unit": {
+      "dependsOn": ["db:generate", "^build"],
+      "cache": true
+    },
     "db:generate": {
       "cache": false
     },

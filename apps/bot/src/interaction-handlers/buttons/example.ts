@@ -3,6 +3,7 @@ import {
   InteractionHandlerTypes
 } from '@sapphire/framework'
 import type { ButtonInteraction } from 'discord.js'
+import { simpleV2Payload, V2_ACCENT } from '@utils/ComponentsV2.js'
 
 export class ExampleButtonHandler extends InteractionHandler {
   public constructor(
@@ -21,6 +22,11 @@ export class ExampleButtonHandler extends InteractionHandler {
   }
 
   public async run(interaction: ButtonInteraction) {
-    await interaction.reply('You clicked the button!')
+    await interaction.reply(
+      simpleV2Payload({
+        accent: V2_ACCENT.info,
+        body: 'You clicked the button!'
+      })
+    )
   }
 }

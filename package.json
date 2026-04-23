@@ -7,6 +7,8 @@
     "lint": "turbo run lint",
     "format": "turbo run format",
     "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:unit": "turbo run test:unit",
     "dev": "turbo run dev",
     "db:dev:up": "docker compose -f docker-compose.dev.yml up -d",
     "db:dev:down": "docker compose -f docker-compose.dev.yml down",

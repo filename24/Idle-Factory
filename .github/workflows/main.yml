@@ -7,7 +7,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/stable' && github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
@@ -43,6 +43,104 @@ jobs:
 
       - name: Type check
         run: pnpm typecheck
+
+  prisma:
+    name: Prisma schema
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      HUSKY: '0'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        uses: ./.github/actions/pnpm-install
+        with:
+          cwd: '.'
+          enable-corepack: false
+
+      - name: Validate Prisma schema
+        run: pnpm --filter @idle/database run db:validate
+
+      - name: Check schema is formatted
+        run: |
+          pnpm --filter @idle/database exec prisma format
+          git diff --exit-code -- packages/database/prisma/schema.prisma \
+            || (echo "::error::schema.prisma is not formatted. Run 'pnpm --filter @idle/database db:format' locally." && exit 1)
+
+  test:
+    name: Test (unit)
+    runs-on: ubuntu-latest
+    needs: [quality]
+    permissions:
+      contents: read
+    env:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      # Prisma generate still needs *something* resolvable; tests never connect.
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      HUSKY: '0'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        uses: ./.github/actions/pnpm-install
+        with:
+          cwd: '.'
+          enable-corepack: false
+
+      # Integration tests (apps/bot/tests/integration) require a live Postgres
+      # and are intentionally excluded from CI. Run them locally against the
+      # dev docker stack via `pnpm --filter bot test:integration`.
+      - name: Run unit tests
+        run: pnpm test:unit
+
+  commitlint:
+    name: Commit messages
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    env:
+      HUSKY: '0'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        uses: ./.github/actions/pnpm-install
+        with:
+          cwd: '.'
+          enable-corepack: false
+
+      - name: Validate commits in PR
+        run: |
+          pnpm exec commitlint \
+            --from ${{ github.event.pull_request.base.sha }} \
+            --to ${{ github.event.pull_request.head.sha }} \
+            --verbose
 
   build:
     name: Build

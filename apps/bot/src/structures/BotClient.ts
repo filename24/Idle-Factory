@@ -28,8 +28,10 @@ export default class BotClient extends SapphireClient {
 
     this.dokdo = new Dokdo.Client(this, {
       prefix: config.bot.prefix,
-      noPerm: async (message: Message) =>
-        message.reply('You do not have permission to use this command.'),
+      noPerm: async (message: Message) => {
+        // eslint-disable-next-line discord-v2/no-discord-legacy-message -- Dokdo 서드파티 콜백: Message.reply()는 Components v2 미지원
+        return message.reply('You do not have permission to use this command.')
+      },
       owners: config.bot.owners?.length === 0 ? undefined : config.bot.owners
     })
   }

@@ -37,7 +37,7 @@ import {
   TextDisplayBuilder
 } from 'discord.js'
 import type { PrismaClient } from '@idle/database'
-import { FACTORY_CATALOG, buildCost } from '@idle/game-core'
+import { FACTORY_CATALOG, buildCost as _buildCost } from '@idle/game-core'
 import type { FactoryType, SlotType } from '@idle/game-core'
 
 // ──────────────────────────────────────────────────────────────
