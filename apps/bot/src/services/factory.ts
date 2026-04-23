@@ -3,7 +3,6 @@ import {
   FACTORY_CATALOG,
   buildCost,
   canPlace,
-  generateSlotTypes,
   getOccupiedCells,
   upgradeMaterialCost,
   upgradeMoneyCost,
@@ -14,15 +13,27 @@ import { PrismaClient } from '@idle/database'
 import { ServiceError, Tx, runInTx } from './base'
 
 const MAX_GRADE = 10
-const STARTER_LAND_INDEX = 1
-const LAND_WIDTH = 4
-const LAND_HEIGHT = 4
+
+export const DEFAULT_LAND_INDEX = 1
 
 export interface BuildParams {
   readonly userId: string
   readonly type: FactoryType
   readonly anchorX: number
   readonly anchorY: number
+  readonly landIndex?: number
+}
+
+export interface DestroyParams {
+  readonly userId: string
+  readonly factoryId: string
+}
+
+export interface DestroyResult {
+  readonly landIndex: number
+  readonly type: FactoryType
+  readonly refund: bigint
+  readonly remainingMoney: bigint
 }
 
 export interface UpgradeParams {
@@ -52,35 +63,24 @@ export interface FactoryInfoDTO {
   readonly unlockLevel: number
 }
 
-async function ensureLandWithSlots(tx: Tx, userId: string) {
+async function ensureLandWithSlots(tx: Tx, userId: string, landIndex: number) {
   const land = await tx.land.findUnique({
-    where: { userId_index: { userId, index: STARTER_LAND_INDEX } },
+    where: { userId_index: { userId, index: landIndex } },
     include: { slots: true }
   })
-  if (land) return land
-  const created = await tx.land.create({
-    data: {
-      userId,
-      index: STARTER_LAND_INDEX,
-      width: LAND_WIDTH,
-      height: LAND_HEIGHT
-    }
-  })
-  const grid = generateSlotTypes({ width: LAND_WIDTH, height: LAND_HEIGHT })
-  const slotsData = grid.flatMap((row, y) =>
-    row.map((type, x) => ({ landId: created.id, x, y, type }))
-  )
-  await tx.slot.createMany({ data: slotsData })
-  const reread = await tx.land.findUniqueOrThrow({
-    where: { userId_index: { userId, index: STARTER_LAND_INDEX } },
-    include: { slots: true }
-  })
-  return reread
+  if (!land) throw new ServiceError('LAND_NOT_FOUND')
+  return land
 }
 
 export const FactoryService = {
   async build(prisma: PrismaClient, params: BuildParams) {
-    const { userId, type, anchorX, anchorY } = params
+    const {
+      userId,
+      type,
+      anchorX,
+      anchorY,
+      landIndex = DEFAULT_LAND_INDEX
+    } = params
     const entry = FACTORY_CATALOG[type]
     const cost = buildCost(type)
 
@@ -94,7 +94,7 @@ export const FactoryService = {
         throw new ServiceError('INSUFFICIENT_MONEY')
       }
 
-      const land = await ensureLandWithSlots(tx, userId)
+      const land = await ensureLandWithSlots(tx, userId, landIndex)
       const slotStates: SlotState[] = land.slots.map((s) => ({
         x: s.x,
         y: s.y,
@@ -185,7 +185,44 @@ export const FactoryService = {
         data: { factoryId: factory.id }
       })
 
-      return factory
+      return { ...factory, landId: land.id }
+    })
+  },
+
+  async destroy(
+    prisma: PrismaClient,
+    params: DestroyParams
+  ): Promise<DestroyResult> {
+    const { userId, factoryId } = params
+    return runInTx(prisma, async (tx) => {
+      const factory = await tx.factory.findUnique({ where: { id: factoryId } })
+      if (!factory || factory.userId !== userId)
+        throw new ServiceError('FACTORY_NOT_FOUND')
+
+      const slot = await tx.slot.findFirst({
+        where: { factoryId },
+        select: { land: { select: { index: true } } }
+      })
+      const landIndex = slot?.land?.index ?? DEFAULT_LAND_INDEX
+
+      await tx.slot.updateMany({
+        where: { factoryId },
+        data: { factoryId: null }
+      })
+      await tx.factory.delete({ where: { id: factoryId } })
+
+      const refund = buildCost(factory.type) / 2n
+      const updated = await tx.user.update({
+        where: { id: userId },
+        data: { money: { increment: refund } }
+      })
+
+      return {
+        landIndex,
+        type: factory.type,
+        refund,
+        remainingMoney: updated.money
+      }
     })
   },
 

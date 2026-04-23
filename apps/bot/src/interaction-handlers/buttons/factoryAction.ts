@@ -237,11 +237,11 @@ export class FactoryActionButtonHandler extends InteractionHandler {
 
   /** factoryId → 해당 공장의 소속 토지 index. 실패 시 1로 폴백. */
   private async getLandIndex(factoryId: string): Promise<number> {
-    const row = await this.container.db.factory.findUnique({
-      where: { id: factoryId },
+    const slot = await this.container.db.slot.findFirst({
+      where: { factoryId },
       select: { land: { select: { index: true } } }
     })
-    return row?.land?.index ?? 1
+    return slot?.land?.index ?? 1
   }
 
   private async replyWarn(

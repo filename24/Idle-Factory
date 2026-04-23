@@ -15,11 +15,15 @@ const DEFAULT_WAREHOUSE_GRADE = 1
 /** 신규 유저 초기 자금 (docs/design/00-onboarding.md) */
 const STARTER_MONEY = 1_000n
 
-async function createLandWithSlots(tx: Tx, userId: string): Promise<void> {
+export async function createLandWithSlots(
+  tx: Tx,
+  userId: string,
+  landIndex = STARTER_LAND_INDEX
+): Promise<void> {
   const land = await tx.land.create({
     data: {
       userId,
-      index: STARTER_LAND_INDEX,
+      index: landIndex,
       width: LAND_WIDTH,
       height: LAND_HEIGHT
     }

@@ -115,11 +115,11 @@ export class FactoryDestroyButtonHandler extends InteractionHandler {
   }
 
   private async getLandIndex(factoryId: string): Promise<number> {
-    const row = await this.container.db.factory.findUnique({
-      where: { id: factoryId },
+    const slot = await this.container.db.slot.findFirst({
+      where: { factoryId },
       select: { land: { select: { index: true } } }
     })
-    return row?.land?.index ?? 1
+    return slot?.land?.index ?? 1
   }
 
   private async replyWarn(

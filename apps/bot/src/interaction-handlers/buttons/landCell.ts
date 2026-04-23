@@ -106,7 +106,7 @@ export class LandCellButtonHandler extends InteractionHandler {
       const factoryRow = await db.factory.findFirst({
         where: {
           userId: interaction.user.id,
-          landId: resolved.land.id,
+          slots: { some: { landId: resolved.land.id } },
           anchorX: data.x,
           anchorY: data.y
         },
