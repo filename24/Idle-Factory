@@ -1,6 +1,7 @@
 {
   "name": "tsconfig",
   "version": "0.0.1",
+  "private": true,
   "description": "",
   "engines": {
     "node": ">=16.9.0"

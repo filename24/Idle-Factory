@@ -1,5 +1,6 @@
 {
   "name": "bot",
+  "private": true,
   "type": "module",
   "repository": "https://github.com/InfiniteTeam/Idle-Factory",
   "author": "__filename",

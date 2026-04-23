@@ -1,5 +1,5 @@
 {
-  "name": "main",
+  "name": "idle-factory",
   "scripts": {
     "build": "turbo run build",
     "build:packages": "turbo run build --filter '!./apps/*'",
@@ -34,7 +34,7 @@
     "typescript": "^6.0.3"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20.19"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -44,7 +44,11 @@
       "prisma",
       "sharp",
       "unrs-resolver"
-    ]
+    ],
+    "overrides": {
+      "@types/react": "19.2.14",
+      "@types/react-dom": "19.2.3"
+    }
   },
   "private": true
 }
