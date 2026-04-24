@@ -2,7 +2,7 @@
  * `/land` 커맨드.
  *
  * 서브커맨드:
- * - `view`: 호출자의 토지(4×4)를 이모지 그리드로 렌더링해서 ephemeral Embed로 응답.
+ * - `view`: 호출자의 토지(4×4)를 이모지 그리드로 렌더링해서 공개 응답.
  *
  * DB 접근은 `this.container.db` (Prisma 기반 `DatabaseClient`)를 사용한다.
  * 렌더링 자체는 `@structures/renderers`의 순수 함수 `renderLand`에 위임한다.
@@ -21,8 +21,12 @@ import {
 import {
   toSuperscript,
   formatBigInt,
-  type FactoryDTO
+  renderFactoryInfo,
+  type FactoryDTO,
+  type FactoryInfoDTO,
+  type NextUpgradeCost
 } from '@structures/renderers'
+import { localizeFactoryType } from '@utils/enumLocale'
 import { prevOwnedIndex, nextOwnedIndex } from '@utils/landNav'
 import { UserService } from '../../services/user'
 import {
@@ -36,12 +40,21 @@ import {
   ButtonBuilder,
   ButtonStyle,
   ContainerBuilder,
+  SeparatorBuilder,
+  SeparatorSpacingSize,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
   TextDisplayBuilder
 } from 'discord.js'
 import type { PrismaClient } from '@idle/database'
-import { FACTORY_CATALOG, buildCost as _buildCost } from '@idle/game-core'
+import {
+  FACTORY_CATALOG,
+  LAND_MAX_HEIGHT,
+  LAND_MAX_WIDTH,
+  buildCost as _buildCost,
+  landExpansionCost,
+  landExpansionLevelRequirement
+} from '@idle/game-core'
 import type { FactoryType, SlotType } from '@idle/game-core'
 
 // ──────────────────────────────────────────────────────────────
@@ -60,6 +73,20 @@ export const FACTORY_DESTROY_BUTTON_PREFIX = 'factory:destroy:'
 export const LAND_BUILD_SELECT_PREFIX = 'land:build:'
 /** 건설 타입 Select의 취소 sentinel 값. */
 export const LAND_BUILD_CANCEL_VALUE = 'cancel'
+
+/**
+ * 컨트롤 Row 버튼 prefix — `land:ctrl:<ownerId>:<action>:<landIndex>`.
+ *
+ * action ∈ { refresh, build, move, destroy, expand }. (docs/11-land.md §컨트롤 Row)
+ */
+export const LAND_CONTROL_BUTTON_PREFIX = 'land:ctrl:'
+
+/** 빈 셀 Select — `land:pick-cell:<ownerId>:<landIndex>` (건설 시작용). value = `"x,y"`. */
+export const LAND_PICK_CELL_SELECT_PREFIX = 'land:pick-cell:'
+/** 잠긴 슬롯 Select — `land:pick-locked:<ownerId>:<landIndex>` (확장용). value = `"x,y"`. */
+export const LAND_PICK_LOCKED_SELECT_PREFIX = 'land:pick-locked:'
+/** 공장 Select — `land:pick-factory:<ownerId>:<landIndex>` (철거용). value = factoryId. */
+export const LAND_PICK_FACTORY_SELECT_PREFIX = 'land:pick-factory:'
 
 // ──────────────────────────────────────────────────────────────
 // 내부 유틸
@@ -91,6 +118,8 @@ export async function buildLandViewPayload(
   opts: { userId: string; targetIndex: number; t: TFunction }
 ): Promise<{ components: ContainerBuilder[]; flags: number }> {
   const { userId, targetIndex, t } = opts
+  // ownerId(=userId) 는 모든 버튼 customId에 박아넣어 다른 유저의 조작을 차단한다.
+  const ownerId = userId
 
   const lands = await db.land.findMany({
     where: { userId },
@@ -110,7 +139,7 @@ export async function buildLandViewPayload(
           t('game:land.view.error.landNotFound')
         )
       ],
-      flags: v2Flags(true)
+      flags: v2Flags(false)
     }
   }
 
@@ -152,80 +181,213 @@ export async function buildLandViewPayload(
     }
   }
 
-  const slotMap = new Map<string, { x: number; y: number; type: SlotType }>()
-  for (const s of land.slots) slotMap.set(`${s.x},${s.y}`, s)
+  const slotMap = new Map<
+    string,
+    { x: number; y: number; type: SlotType; locked: boolean }
+  >()
+  for (const s of land.slots)
+    slotMap.set(`${s.x},${s.y}`, {
+      x: s.x,
+      y: s.y,
+      type: s.type,
+      locked: s.locked
+    })
 
   const container = new ContainerBuilder().setAccentColor(V2_ACCENT.info)
   container.addTextDisplayComponents(
     new TextDisplayBuilder().setContent(
-      `# **${t('game:land.view.title')} [${targetIndex}]**`
+      `# **${t('game:land.view.title', {
+        index: targetIndex,
+        total: ownedIndices.length
+      })}**`
     )
   )
 
-  // 4×4 버튼 그리드 (y행 × x열)
-  for (let y = 0; y < land.height; y++) {
+  // 항상 4×4 물리 그리드 렌더. 잠긴 슬롯은 disabled 🟫 로 표시 (docs/11 §Discord 시각화).
+  for (let y = 0; y < LAND_MAX_HEIGHT; y++) {
     const row = new ActionRowBuilder<ButtonBuilder>()
-    for (let x = 0; x < land.width; x++) {
+    for (let x = 0; x < LAND_MAX_WIDTH; x++) {
       const key = `${x},${y}`
       const occ = occupancy.get(key)
       const slot = slotMap.get(key)
       const btn = new ButtonBuilder().setCustomId(
-        `${LAND_CELL_BUTTON_PREFIX}${targetIndex}:${x}:${y}`
+        `${LAND_CELL_BUTTON_PREFIX}${ownerId}:${targetIndex}:${x}:${y}`
       )
-      if (occ) {
+      if (slot?.locked) {
+        // 잠긴 슬롯: 구매 전이라 배치 불가 — 클릭은 /land expand 쪽에서 처리.
+        btn.setEmoji('🟫').setStyle(ButtonStyle.Secondary).setDisabled(true)
+      } else if (occ) {
         const entry = FACTORY_CATALOG[occ.type]
         if (occ.isAnchor) {
           btn
-            .setLabel(`${entry.emoji}${toSuperscript(occ.grade)}`)
+            .setEmoji(entry.emoji)
+            .setLabel(toSuperscript(occ.grade))
             .setStyle(ButtonStyle.Primary)
         } else {
           btn
-            .setLabel(entry.emoji)
+            .setEmoji(entry.emoji)
             .setStyle(ButtonStyle.Secondary)
             .setDisabled(true)
         }
       } else if (slot && slot.type !== 'NORMAL') {
         btn
-          .setLabel(
+          .setEmoji(
             SPECIAL_SLOT_EMOJI[slot.type as Exclude<SlotType, 'NORMAL'>]
           )
           .setStyle(ButtonStyle.Secondary)
       } else {
-        btn.setLabel('⬜').setStyle(ButtonStyle.Secondary)
+        btn.setEmoji('🟩').setStyle(ButtonStyle.Secondary)
       }
       row.addComponents(btn)
     }
     container.addActionRowComponents(row)
   }
 
-  // prev/next 네비게이션 행
+  // 범례: 슬롯 이모지의 의미를 한 줄로 안내.
+  container.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(`-# ${t('game:land.view.legend')}`)
+  )
+
+  // 그리드와 컨트롤 Row 사이 구분선 (docs/11 §Discord 시각화).
+  container.addSeparatorComponents(
+    new SeparatorBuilder()
+      .setDivider(true)
+      .setSpacing(SeparatorSpacingSize.Large)
+  )
+
+  // 컨트롤 Row (docs/11 §Discord 시각화).
+  // Discord 한도(5행 × 5버튼)상 그리드 4행 + separator + 컨트롤 1행 구성 — 단일/다중 토지에 따라 레이아웃 전환.
   const prev = prevOwnedIndex(ownedIndices, targetIndex)
   const next = nextOwnedIndex(ownedIndices, targetIndex)
-  container.addActionRowComponents(
-    new ActionRowBuilder<ButtonBuilder>().addComponents(
+  const hasMultiple = ownedIndices.length > 1
+  const controlRow = new ActionRowBuilder<ButtonBuilder>()
+
+  if (hasMultiple) {
+    // 다중 토지: [◀️] [🏗️ 건설] [🗑️ 철거] [🟩 확장] [▶️]
+    controlRow.addComponents(
       new ButtonBuilder()
         .setCustomId(
-          prev !== null
-            ? `${LAND_VIEW_BUTTON_PREFIX}${prev}`
-            : `${LAND_VIEW_BUTTON_PREFIX}prev:${targetIndex}`
+          `${LAND_VIEW_BUTTON_PREFIX}${ownerId}:${prev ?? `prev-${targetIndex}`}`
         )
-        .setLabel('◀')
+        .setEmoji('◀️')
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(prev === null),
+      controlButton(
+        ownerId,
+        'build',
+        targetIndex,
+        t,
+        '🏗️',
+        ButtonStyle.Primary
+      ),
+      controlButton(
+        ownerId,
+        'destroy',
+        targetIndex,
+        t,
+        '🗑️',
+        ButtonStyle.Danger
+      ),
+      controlButton(
+        ownerId,
+        'expand',
+        targetIndex,
+        t,
+        '🟩',
+        ButtonStyle.Success
+      ),
       new ButtonBuilder()
         .setCustomId(
-          next !== null
-            ? `${LAND_VIEW_BUTTON_PREFIX}${next}`
-            : `${LAND_VIEW_BUTTON_PREFIX}next:${targetIndex}`
+          `${LAND_VIEW_BUTTON_PREFIX}${ownerId}:${next ?? `next-${targetIndex}`}`
         )
-        .setLabel('▶')
+        .setEmoji('▶️')
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(next === null)
     )
-  )
+  } else {
+    // 단일 토지: [🔄 새로고침] [🏗️ 건설] [↔️ 이동] [🗑️ 철거] [🟩 확장]
+    controlRow.addComponents(
+      controlButton(
+        ownerId,
+        'refresh',
+        targetIndex,
+        t,
+        '🔄',
+        ButtonStyle.Secondary
+      ),
+      controlButton(
+        ownerId,
+        'build',
+        targetIndex,
+        t,
+        '🏗️',
+        ButtonStyle.Primary
+      ),
+      controlButton(
+        ownerId,
+        'move',
+        targetIndex,
+        t,
+        '↔️',
+        ButtonStyle.Secondary
+      ),
+      controlButton(
+        ownerId,
+        'destroy',
+        targetIndex,
+        t,
+        '🗑️',
+        ButtonStyle.Danger
+      ),
+      controlButton(
+        ownerId,
+        'expand',
+        targetIndex,
+        t,
+        '🟩',
+        ButtonStyle.Success
+      )
+    )
+  }
+  container.addActionRowComponents(controlRow)
 
-  return { components: [container], flags: v2Flags(true) }
+  return { components: [container], flags: v2Flags(false) }
 }
+
+/** 컨트롤 Row 의 단일 유틸 버튼 빌더. */
+function controlButton(
+  ownerId: string,
+  action: LandControlAction,
+  landIndex: number,
+  t: TFunction,
+  emoji: string,
+  style: ButtonStyle
+): ButtonBuilder {
+  return new ButtonBuilder()
+    .setCustomId(
+      `${LAND_CONTROL_BUTTON_PREFIX}${ownerId}:${action}:${landIndex}`
+    )
+    .setEmoji(emoji)
+    .setLabel(t(`game:land.control.${action}`))
+    .setStyle(style)
+}
+
+/** 컨트롤 Row 에서 허용되는 action. */
+export type LandControlAction =
+  | 'refresh'
+  | 'build'
+  | 'move'
+  | 'destroy'
+  | 'expand'
+
+/** `LandControlAction` 판별. */
+export const LAND_CONTROL_ACTIONS: readonly LandControlAction[] = [
+  'refresh',
+  'build',
+  'move',
+  'destroy',
+  'expand'
+]
 
 /**
  * 특정 (x, y) 셀의 종류를 판별해 반환한다.
@@ -291,34 +453,250 @@ export async function resolveLandCell(
  * cancel → `factory:destroy:<factoryId>:cancel`
  */
 export function buildDestroyConfirmPayload(opts: {
+  ownerId: string
   factoryId: string
   factoryType: FactoryType
   refund: bigint
   t: TFunction
 }): { components: ContainerBuilder[]; flags: number } {
-  const { factoryId, factoryType, refund, t } = opts
+  const { ownerId, factoryId, factoryType, refund, t } = opts
   const entry = FACTORY_CATALOG[factoryType]
   const container = simpleContainer(
     V2_ACCENT.warn,
     t('game:factory.destroy.confirmTitle', {
       emoji: entry.emoji,
-      type: factoryType
+      type: localizeFactoryType(t, factoryType)
     }),
     t('game:factory.destroy.confirmBody', { refund: formatBigInt(refund) })
+  )
+  container.addSeparatorComponents(
+    new SeparatorBuilder()
+      .setDivider(true)
+      .setSpacing(SeparatorSpacingSize.Small)
   )
   container.addActionRowComponents(
     new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
-        .setCustomId(`${FACTORY_DESTROY_BUTTON_PREFIX}${factoryId}:yes`)
+        .setCustomId(
+          `${FACTORY_DESTROY_BUTTON_PREFIX}${ownerId}:${factoryId}:yes`
+        )
         .setLabel(t('game:factory.destroy.confirmYes'))
         .setStyle(ButtonStyle.Danger),
       new ButtonBuilder()
-        .setCustomId(`${FACTORY_DESTROY_BUTTON_PREFIX}${factoryId}:cancel`)
+        .setCustomId(
+          `${FACTORY_DESTROY_BUTTON_PREFIX}${ownerId}:${factoryId}:cancel`
+        )
         .setLabel(t('game:factory.destroy.confirmCancel'))
         .setStyle(ButtonStyle.Secondary)
     )
   )
-  return { components: [container], flags: v2Flags(true) }
+  return { components: [container], flags: v2Flags(false) }
+}
+
+/** `(x, y)` 형식의 Select 값을 파싱. */
+export function parseXYValue(value: string): { x: number; y: number } | null {
+  const [xRaw, yRaw] = value.split(',')
+  const x = Number.parseInt(xRaw ?? '', 10)
+  const y = Number.parseInt(yRaw ?? '', 10)
+  if (!Number.isInteger(x) || !Number.isInteger(y)) return null
+  return { x, y }
+}
+
+/**
+ * 컨트롤 Row `[건설]` 클릭 시 노출되는 "빈 셀 선택" StringSelect.
+ *
+ * 활성(non-locked) 빈 셀을 전부 옵션으로 제시. 선택하면 `landBuild` select 로 전환되는
+ * 대신 곧바로 `LAND_CELL_BUTTON_PREFIX` 와 동일한 경로로 이어지도록,
+ * value 에 좌표 `"x,y"` 만 담고 핸들러에서 기존 build-type select 를 빌드한다.
+ */
+export function buildEmptyCellPickSelectPayload(opts: {
+  ownerId: string
+  landIndex: number
+  emptyCells: ReadonlyArray<{ x: number; y: number }>
+  t: TFunction
+}): { components: ContainerBuilder[]; flags: number } {
+  const { ownerId, landIndex, emptyCells, t } = opts
+  const container = simpleContainer(
+    V2_ACCENT.info,
+    t('game:land.control.buildPickTitle')
+  )
+  if (emptyCells.length === 0) {
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(t('game:land.control.buildPickEmpty'))
+    )
+    container.addSeparatorComponents(
+      new SeparatorBuilder()
+        .setDivider(true)
+        .setSpacing(SeparatorSpacingSize.Small)
+    )
+    container.addActionRowComponents(backToViewRow(ownerId, landIndex, t))
+    return { components: [container], flags: v2Flags(false) }
+  }
+
+  const options = emptyCells
+    .slice(0, 24)
+    .map((c) =>
+      new StringSelectMenuOptionBuilder()
+        .setValue(`${c.x},${c.y}`)
+        .setEmoji('🟩')
+        .setLabel(`(${c.x}, ${c.y})`)
+    )
+  const select = new StringSelectMenuBuilder()
+    .setCustomId(`${LAND_PICK_CELL_SELECT_PREFIX}${ownerId}:${landIndex}`)
+    .setPlaceholder(t('game:land.control.buildPickPlaceholder'))
+    .addOptions(options)
+  container.addSeparatorComponents(
+    new SeparatorBuilder()
+      .setDivider(true)
+      .setSpacing(SeparatorSpacingSize.Small)
+  )
+  container.addActionRowComponents(
+    new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select)
+  )
+  container.addActionRowComponents(backToViewRow(ownerId, landIndex, t))
+  return { components: [container], flags: v2Flags(false) }
+}
+
+/**
+ * 컨트롤 Row `[확장]` 클릭 시 노출되는 "잠긴 슬롯 선택" StringSelect.
+ *
+ * 각 잠긴 슬롯은 "(x,y) · k번째 확장 · 비용 · Lv요구" 형태로 표시. 선택 시
+ * `LandService.expandSlot` 을 호출한다.
+ */
+export function buildLockedSlotPickSelectPayload(opts: {
+  ownerId: string
+  landIndex: number
+  lockedSlots: ReadonlyArray<{ x: number; y: number }>
+  /** 다음 확장의 구매 순서(k, 1..7). 0개면 전부 해금 상태. */
+  nextOrder: number
+  userLevel: number
+  userMoney: bigint
+  t: TFunction
+}): { components: ContainerBuilder[]; flags: number } {
+  const { ownerId, landIndex, lockedSlots, nextOrder, t } = opts
+  const container = simpleContainer(
+    V2_ACCENT.info,
+    t('game:land.control.expandPickTitle')
+  )
+
+  if (lockedSlots.length === 0) {
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        t('game:land.control.expandPickAllUnlocked')
+      )
+    )
+    container.addSeparatorComponents(
+      new SeparatorBuilder()
+        .setDivider(true)
+        .setSpacing(SeparatorSpacingSize.Small)
+    )
+    container.addActionRowComponents(backToViewRow(ownerId, landIndex, t))
+    return { components: [container], flags: v2Flags(false) }
+  }
+
+  const cost = landExpansionCost(landIndex, nextOrder)
+  const levelReq = landExpansionLevelRequirement(landIndex, nextOrder)
+  const options = lockedSlots.slice(0, 24).map((c) =>
+    new StringSelectMenuOptionBuilder()
+      .setValue(`${c.x},${c.y}`)
+      .setEmoji('🟫')
+      .setLabel(`(${c.x}, ${c.y})`)
+      .setDescription(
+        t('game:land.control.expandOptionDesc', {
+          order: nextOrder,
+          cost: formatBigInt(cost),
+          level: levelReq
+        })
+      )
+  )
+  const select = new StringSelectMenuBuilder()
+    .setCustomId(`${LAND_PICK_LOCKED_SELECT_PREFIX}${ownerId}:${landIndex}`)
+    .setPlaceholder(t('game:land.control.expandPickPlaceholder'))
+    .addOptions(options)
+  container.addSeparatorComponents(
+    new SeparatorBuilder()
+      .setDivider(true)
+      .setSpacing(SeparatorSpacingSize.Small)
+  )
+  container.addActionRowComponents(
+    new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select)
+  )
+  container.addActionRowComponents(backToViewRow(ownerId, landIndex, t))
+  return { components: [container], flags: v2Flags(false) }
+}
+
+/**
+ * 컨트롤 Row `[철거]` 클릭 시 노출되는 "공장 선택" StringSelect.
+ *
+ * 해당 토지에 배치된 공장 목록. 선택 시 기존 `buildDestroyConfirmPayload` 로 전환.
+ */
+export function buildFactoryPickSelectPayload(opts: {
+  ownerId: string
+  landIndex: number
+  factories: ReadonlyArray<{
+    id: string
+    type: FactoryType
+    grade: number
+    anchorX: number
+    anchorY: number
+  }>
+  t: TFunction
+}): { components: ContainerBuilder[]; flags: number } {
+  const { ownerId, landIndex, factories, t } = opts
+  const container = simpleContainer(
+    V2_ACCENT.warn,
+    t('game:land.control.destroyPickTitle')
+  )
+  if (factories.length === 0) {
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        t('game:land.control.destroyPickEmpty')
+      )
+    )
+    container.addSeparatorComponents(
+      new SeparatorBuilder()
+        .setDivider(true)
+        .setSpacing(SeparatorSpacingSize.Small)
+    )
+    container.addActionRowComponents(backToViewRow(ownerId, landIndex, t))
+    return { components: [container], flags: v2Flags(false) }
+  }
+
+  const options = factories.slice(0, 25).map((f) =>
+    new StringSelectMenuOptionBuilder()
+      .setValue(f.id)
+      .setEmoji(FACTORY_CATALOG[f.type].emoji)
+      .setLabel(`${localizeFactoryType(t, f.type)} G${f.grade}`)
+      .setDescription(`(${f.anchorX}, ${f.anchorY})`)
+  )
+  const select = new StringSelectMenuBuilder()
+    .setCustomId(`${LAND_PICK_FACTORY_SELECT_PREFIX}${ownerId}:${landIndex}`)
+    .setPlaceholder(t('game:land.control.destroyPickPlaceholder'))
+    .addOptions(options)
+  container.addSeparatorComponents(
+    new SeparatorBuilder()
+      .setDivider(true)
+      .setSpacing(SeparatorSpacingSize.Small)
+  )
+  container.addActionRowComponents(
+    new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select)
+  )
+  container.addActionRowComponents(backToViewRow(ownerId, landIndex, t))
+  return { components: [container], flags: v2Flags(false) }
+}
+
+/** 그리드로 돌아가는 버튼 한 개짜리 Row. 모든 pick UI 하단에 공통으로 쓴다. */
+function backToViewRow(
+  ownerId: string,
+  landIndex: number,
+  t: TFunction
+): ActionRowBuilder<ButtonBuilder> {
+  return new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`${LAND_VIEW_BUTTON_PREFIX}${ownerId}:${landIndex}`)
+      .setLabel(t('game:land.factory.actionBack'))
+      .setStyle(ButtonStyle.Secondary)
+  )
 }
 
 /**
@@ -328,20 +706,22 @@ export function buildDestroyConfirmPayload(opts: {
  * customId: `land:build:<landIndex>:<x>:<y>`
  */
 export function buildBuildTypeSelectPayload(opts: {
+  ownerId: string
   userLevel: number
   landIndex: number
   x: number
   y: number
   t: TFunction
 }): { components: ContainerBuilder[]; flags: number } {
-  const { userLevel, landIndex, x, y, t } = opts
+  const { ownerId, userLevel, landIndex, x, y, t } = opts
   const available = Object.values(FACTORY_CATALOG).filter(
     (entry) => entry.unlockLevel <= userLevel
   )
   const options = available.map((entry) =>
     new StringSelectMenuOptionBuilder()
       .setValue(entry.type)
-      .setLabel(`${entry.emoji} ${entry.type}`)
+      .setEmoji(entry.emoji)
+      .setLabel(localizeFactoryType(t, entry.type))
       .setDescription(`Lv${entry.unlockLevel}`)
   )
   options.push(
@@ -350,70 +730,81 @@ export function buildBuildTypeSelectPayload(opts: {
       .setLabel(t('game:land.build.cancel'))
   )
   const select = new StringSelectMenuBuilder()
-    .setCustomId(`${LAND_BUILD_SELECT_PREFIX}${landIndex}:${x}:${y}`)
+    .setCustomId(`${LAND_BUILD_SELECT_PREFIX}${ownerId}:${landIndex}:${x}:${y}`)
     .setPlaceholder(t('game:land.build.placeholder'))
     .addOptions(options)
   const container = simpleContainer(V2_ACCENT.info, t('game:land.build.title'))
+  container.addSeparatorComponents(
+    new SeparatorBuilder()
+      .setDivider(true)
+      .setSpacing(SeparatorSpacingSize.Small)
+  )
   container.addActionRowComponents(
     new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select)
   )
-  return { components: [container], flags: v2Flags(true) }
+  return { components: [container], flags: v2Flags(false) }
 }
 
 /**
  * 공장 앵커 셀 클릭 시 노출되는 액션 메뉴 페이로드.
  *
- * info/harvest/upgrade/destroy 버튼 + 뒤로가기 버튼.
- * customId: `factory:action:<factoryId>:<verb>`
+ * 제목 + 공장 정보 본문(renderFactoryInfo)을 즉시 표시하고, 하단에
+ * 수확 / 업그레이드 / 철거 / 뒤로가기 버튼을 배치한다. (정보 버튼은 본문 인라인이라 제거)
+ *
+ * customId: `factory:action:<ownerId>:<factoryId>:<verb>` — verb ∈ { harvest, upgrade, destroy }
  */
 export function buildFactoryActionMenuPayload(opts: {
+  ownerId: string
   factoryId: string
   landIndex: number
-  factoryType: FactoryType
-  grade: number
-  anchorX: number
-  anchorY: number
+  info: FactoryInfoDTO
+  nextCost: NextUpgradeCost | null
+  catalogEntry: (typeof FACTORY_CATALOG)[FactoryType]
   t: TFunction
 }): { components: ContainerBuilder[]; flags: number } {
-  const { factoryId, landIndex, factoryType, grade, t } = opts
-  const entry = FACTORY_CATALOG[factoryType]
+  const { ownerId, factoryId, landIndex, info, nextCost, catalogEntry, t } =
+    opts
   const container = simpleContainer(
     V2_ACCENT.info,
     t('game:land.factory.actionTitle', {
-      emoji: entry.emoji,
-      type: factoryType,
-      grade
-    })
+      emoji: catalogEntry.emoji,
+      type: localizeFactoryType(t, info.type),
+      grade: info.grade
+    }),
+    renderFactoryInfo(info, catalogEntry, nextCost, t)
+  )
+  container.addSeparatorComponents(
+    new SeparatorBuilder()
+      .setDivider(true)
+      .setSpacing(SeparatorSpacingSize.Small)
   )
   container.addActionRowComponents(
     new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
-        .setCustomId(`${FACTORY_ACTION_BUTTON_PREFIX}${factoryId}:info`)
-        .setLabel(t('game:land.factory.actionInfo'))
-        .setStyle(ButtonStyle.Secondary),
-      new ButtonBuilder()
-        .setCustomId(`${FACTORY_ACTION_BUTTON_PREFIX}${factoryId}:harvest`)
+        .setCustomId(
+          `${FACTORY_ACTION_BUTTON_PREFIX}${ownerId}:${factoryId}:harvest`
+        )
         .setLabel(t('game:land.factory.actionHarvest'))
         .setStyle(ButtonStyle.Success),
       new ButtonBuilder()
-        .setCustomId(`${FACTORY_ACTION_BUTTON_PREFIX}${factoryId}:upgrade`)
+        .setCustomId(
+          `${FACTORY_ACTION_BUTTON_PREFIX}${ownerId}:${factoryId}:upgrade`
+        )
         .setLabel(t('game:land.factory.actionUpgrade'))
         .setStyle(ButtonStyle.Primary),
       new ButtonBuilder()
-        .setCustomId(`${FACTORY_ACTION_BUTTON_PREFIX}${factoryId}:destroy`)
+        .setCustomId(
+          `${FACTORY_ACTION_BUTTON_PREFIX}${ownerId}:${factoryId}:destroy`
+        )
         .setLabel(t('game:land.factory.actionDestroy'))
-        .setStyle(ButtonStyle.Danger)
-    )
-  )
-  container.addActionRowComponents(
-    new ActionRowBuilder<ButtonBuilder>().addComponents(
+        .setStyle(ButtonStyle.Danger),
       new ButtonBuilder()
-        .setCustomId(`${LAND_VIEW_BUTTON_PREFIX}${landIndex}`)
+        .setCustomId(`${LAND_VIEW_BUTTON_PREFIX}${ownerId}:${landIndex}`)
         .setLabel(t('game:land.factory.actionBack'))
         .setStyle(ButtonStyle.Secondary)
     )
   )
-  return { components: [container], flags: v2Flags(true) }
+  return { components: [container], flags: v2Flags(false) }
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -423,6 +814,7 @@ export function buildFactoryActionMenuPayload(opts: {
 /** 서브커맨드 이름 상수. */
 const SUB_VIEW = 'view'
 const SUB_BUY = 'buy'
+const SUB_EXPAND = 'expand'
 
 export class LandCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -439,11 +831,14 @@ export class LandCommand extends Command {
     if (sub === SUB_BUY) {
       return this.handleBuy(interaction)
     }
+    if (sub === SUB_EXPAND) {
+      return this.handleExpand(interaction)
+    }
     return interaction.reply(
       simpleV2Payload({
         accent: V2_ACCENT.error,
         body: 'Unknown subcommand.',
-        ephemeral: true
+        ephemeral: false
       })
     )
   }
@@ -453,12 +848,12 @@ export class LandCommand extends Command {
    *
    * 1. `UserService.ensure`로 유저/토지/창고를 보장한다.
    * 2. `buildLandViewPayload`로 4×4 버튼 그리드 페이로드를 빌드한다.
-   * 3. ephemeral 응답.
+   * 3. 공개 메시지로 응답.
    */
   private async handleView(
     interaction: Command.ChatInputCommandInteraction
   ): Promise<unknown> {
-    await interaction.deferReply({ ephemeral: true })
+    await interaction.deferReply()
     const { db } = this.container
     const t = await fetchT(interaction)
     const requestedIndex =
@@ -489,7 +884,7 @@ export class LandCommand extends Command {
   private async handleBuy(
     interaction: Command.ChatInputCommandInteraction
   ): Promise<unknown> {
-    await interaction.deferReply({ ephemeral: true })
+    await interaction.deferReply()
     const { db } = this.container
     const t = await fetchT(interaction)
     const targetIndex = interaction.options.getInteger('index', true)
@@ -522,6 +917,110 @@ export class LandCommand extends Command {
     } catch (err) {
       return this.replyBuyError(interaction, err, t)
     }
+  }
+
+  /**
+   * `/land expand <index?> <x> <y>` — 잠긴 슬롯 하나를 구매해 활성화.
+   *
+   * 레벨/골드 체크는 `LandService.expandSlot` 가 처리한다. 성공 시 해당 토지의
+   * 갱신된 뷰로 응답을 덮어쓰고, 별도로 성공 요약을 followUp으로 공개 전송한다.
+   */
+  private async handleExpand(
+    interaction: Command.ChatInputCommandInteraction
+  ): Promise<unknown> {
+    await interaction.deferReply()
+    const { db } = this.container
+    const t = await fetchT(interaction)
+    const landIndex = interaction.options.getInteger('index', false) ?? 1
+    const x = interaction.options.getInteger('x', true)
+    const y = interaction.options.getInteger('y', true)
+
+    await UserService.ensure(db, {
+      discordId: interaction.user.id,
+      nickname: interaction.user.username,
+      lang: interaction.locale ?? undefined
+    })
+
+    try {
+      const result = await LandService.expandSlot(db, {
+        userId: interaction.user.id,
+        landIndex,
+        x,
+        y
+      })
+      const viewPayload = await buildLandViewPayload(db, {
+        userId: interaction.user.id,
+        targetIndex: landIndex,
+        t
+      })
+      await interaction.editReply(
+        viewPayload as Parameters<typeof interaction.editReply>[0]
+      )
+      return interaction.followUp({
+        components: [
+          simpleContainer(
+            V2_ACCENT.success,
+            undefined,
+            t('game:land.expand.success', {
+              index: landIndex,
+              x,
+              y,
+              order: result.order,
+              cost: formatBigInt(result.cost),
+              remaining: formatBigInt(result.remainingMoney)
+            })
+          )
+        ],
+        flags: v2Flags(false)
+      })
+    } catch (err) {
+      return this.replyExpandError(interaction, err, t)
+    }
+  }
+
+  private async replyExpandError(
+    interaction: Command.ChatInputCommandInteraction,
+    err: unknown,
+    t: TFunction
+  ): Promise<unknown> {
+    let body: string
+    if (err instanceof ServiceError) {
+      switch (err.code) {
+        case 'LAND_NOT_FOUND':
+          body = t('game:factory.build.error.landNotFound')
+          break
+        case 'OUT_OF_BOUNDS':
+          body = t('game:factory.build.error.outOfBounds')
+          break
+        case 'SLOT_ALREADY_UNLOCKED':
+          body = t('game:land.expand.error.alreadyUnlocked')
+          break
+        case 'LEVEL_LOCKED': {
+          const d = (err.details ?? {}) as { level?: number }
+          body = t('game:land.expand.error.levelLocked', {
+            level: d.level ?? '?'
+          })
+          break
+        }
+        case 'INSUFFICIENT_MONEY': {
+          const d = (err.details ?? {}) as { required?: string }
+          body = t('game:land.expand.error.insufficientMoney', {
+            required: d.required ?? '-'
+          })
+          break
+        }
+        case 'USER_NOT_FOUND':
+          body = t('game:common.error.userNotFound')
+          break
+        default:
+          body = t('game:common.error.unknown')
+      }
+    } else {
+      body = t('game:common.error.unknown')
+    }
+    return interaction.editReply({
+      components: [simpleContainer(V2_ACCENT.warn, undefined, body)]
+    })
   }
 
   private async replyBuyError(
@@ -602,6 +1101,42 @@ export class LandCommand extends Command {
                 .setDescriptionLocalization('ko', '구매할 토지 번호 (2~5).')
                 .setRequired(true)
                 .setMinValue(MIN_BUYABLE_INDEX)
+                .setMaxValue(MAX_BUYABLE_INDEX)
+            )
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName(SUB_EXPAND)
+            .setDescription('Unlock a single locked slot in a land.')
+            .setNameLocalization('ko', '확장')
+            .setDescriptionLocalization(
+              'ko',
+              '잠긴 슬롯을 하나 구매해 확장합니다.'
+            )
+            .addIntegerOption((o) =>
+              o
+                .setName('x')
+                .setDescription('Slot X coordinate (0-3).')
+                .setRequired(true)
+                .setMinValue(0)
+                .setMaxValue(3)
+            )
+            .addIntegerOption((o) =>
+              o
+                .setName('y')
+                .setDescription('Slot Y coordinate (0-3).')
+                .setRequired(true)
+                .setMinValue(0)
+                .setMaxValue(3)
+            )
+            .addIntegerOption((o) =>
+              o
+                .setName('index')
+                .setDescription('Land number (1-5). Defaults to 1.')
+                .setNameLocalization('ko', '번호')
+                .setDescriptionLocalization('ko', '대상 토지 번호 (기본 1).')
+                .setRequired(false)
+                .setMinValue(1)
                 .setMaxValue(MAX_BUYABLE_INDEX)
             )
         )

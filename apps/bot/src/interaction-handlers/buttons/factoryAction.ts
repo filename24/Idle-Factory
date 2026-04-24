@@ -1,11 +1,10 @@
 /**
  * 공장 앵커 셀 클릭 이후 노출되는 액션 버튼 라우터 (Phase 2 step 4c/4d).
  *
- * customId 포맷: `factory:action:<factoryId>:<verb>`
- *   verb ∈ {info, harvest, upgrade, destroy}
+ * customId 포맷: `factory:action:<ownerId>:<factoryId>:<verb>`
+ *   verb ∈ { harvest, upgrade, destroy } — info 는 액션 메뉴 본문에 즉시 표시되어 제거됨.
  *
  * 각 verb는 해당 서비스를 호출하고 결과를 같은 메시지에 update 로 반영한다.
- * destroy 는 Phase 2 step 4d에서 2단계 확인 UX로 확장된다.
  */
 
 import {
@@ -13,29 +12,26 @@ import {
   InteractionHandlerTypes
 } from '@sapphire/framework'
 import { fetchT, type TFunction } from '@sapphire/plugin-i18next'
-import { FACTORY_CATALOG, buildCost, type MaterialType } from '@idle/game-core'
+import { buildCost } from '@idle/game-core'
 import { simpleContainer, V2_ACCENT, v2Flags } from '@utils/ComponentsV2'
-import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  MessageFlags,
-  type ButtonInteraction
-} from 'discord.js'
-import { formatBigInt, renderFactoryInfo } from '@structures/renderers'
+import type { ButtonInteraction } from 'discord.js'
+import { formatBigInt } from '@structures/renderers'
 import {
   FACTORY_ACTION_BUTTON_PREFIX,
-  LAND_VIEW_BUTTON_PREFIX,
   buildDestroyConfirmPayload,
   buildLandViewPayload
 } from '../../commands/game/land'
 import { FactoryService } from '../../services/factory'
 import { HarvestService } from '../../services/harvest'
 import { ServiceError } from '../../services/base'
+import {
+  assertInteractionOwner,
+  parseOwnerPrefixedCustomId
+} from '../../utils/interactionOwner'
 
-type Verb = 'info' | 'harvest' | 'upgrade' | 'destroy'
+type Verb = 'harvest' | 'upgrade' | 'destroy'
 
-const VERBS: readonly Verb[] = ['info', 'harvest', 'upgrade', 'destroy']
+const VERBS: readonly Verb[] = ['harvest', 'upgrade', 'destroy']
 
 function isVerb(value: string): value is Verb {
   return (VERBS as readonly string[]).includes(value)
@@ -53,29 +49,29 @@ export class FactoryActionButtonHandler extends InteractionHandler {
   }
 
   public override parse(interaction: ButtonInteraction) {
-    if (!interaction.customId.startsWith(FACTORY_ACTION_BUTTON_PREFIX)) {
-      return this.none()
-    }
-    const rest = interaction.customId.slice(FACTORY_ACTION_BUTTON_PREFIX.length)
-    const lastColon = rest.lastIndexOf(':')
+    const parsed = parseOwnerPrefixedCustomId(
+      interaction.customId,
+      FACTORY_ACTION_BUTTON_PREFIX
+    )
+    if (!parsed) return this.none()
+    const lastColon = parsed.rest.lastIndexOf(':')
     if (lastColon <= 0) return this.none()
-    const factoryId = rest.slice(0, lastColon)
-    const verb = rest.slice(lastColon + 1)
+    const factoryId = parsed.rest.slice(0, lastColon)
+    const verb = parsed.rest.slice(lastColon + 1)
     if (!isVerb(verb)) return this.none()
-    return this.some({ factoryId, verb })
+    return this.some({ ownerId: parsed.ownerId, factoryId, verb })
   }
 
   public async run(
     interaction: ButtonInteraction,
-    data: { factoryId: string; verb: Verb }
+    data: { ownerId: string; factoryId: string; verb: Verb }
   ): Promise<void> {
+    if (!(await assertInteractionOwner(interaction, data.ownerId))) return
     await interaction.deferUpdate()
     const { db } = this.container
     const t = await fetchT(interaction)
 
     switch (data.verb) {
-      case 'info':
-        return this.handleInfo(interaction, data.factoryId, t)
       case 'harvest':
         return this.handleHarvest(interaction, data.factoryId, t)
       case 'upgrade':
@@ -84,55 +80,6 @@ export class FactoryActionButtonHandler extends InteractionHandler {
         return this.handleDestroyPrompt(interaction, data.factoryId, t)
       default:
         void db
-    }
-  }
-
-  /** 공장 info 응답 + "돌아가기" 버튼. */
-  private async handleInfo(
-    interaction: ButtonInteraction,
-    factoryId: string,
-    t: TFunction
-  ): Promise<void> {
-    const { db } = this.container
-    try {
-      const info = await FactoryService.info(db, factoryId)
-      const entry = FACTORY_CATALOG[info.type]
-      const nextCost =
-        info.nextUpgradeCost.money !== null &&
-        info.nextUpgradeCost.material !== null
-          ? {
-              money: info.nextUpgradeCost.money,
-              material: info.nextUpgradeCost.material.material as MaterialType,
-              amount: info.nextUpgradeCost.material.amount
-            }
-          : null
-      const landIndex = await this.getLandIndex(factoryId)
-      const container = simpleContainer(
-        V2_ACCENT.info,
-        t('game:factory.info.title', {
-          emoji: entry.emoji,
-          type: info.type,
-          grade: info.grade
-        }),
-        renderFactoryInfo(info, entry, nextCost)
-      )
-      container.addActionRowComponents(
-        new ActionRowBuilder<ButtonBuilder>().addComponents(
-          new ButtonBuilder()
-            .setCustomId(`${LAND_VIEW_BUTTON_PREFIX}${landIndex}`)
-            .setLabel(t('game:land.factory.actionBack'))
-            .setStyle(ButtonStyle.Secondary)
-        )
-      )
-      await interaction.editReply({
-        components: [container],
-        flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral
-      } as Parameters<typeof interaction.editReply>[0])
-    } catch (err) {
-      await this.replyWarn(
-        interaction,
-        resolveFactoryErrorBody(err, t, this.container.logger)
-      )
     }
   }
 
@@ -167,7 +114,7 @@ export class FactoryActionButtonHandler extends InteractionHandler {
           : t('game:land.factory.harvestEmpty')
       await interaction.followUp({
         components: [simpleContainer(V2_ACCENT.success, undefined, body)],
-        flags: v2Flags(true)
+        flags: v2Flags(false)
       })
     } catch (err) {
       await this.replyWarn(
@@ -206,7 +153,7 @@ export class FactoryActionButtonHandler extends InteractionHandler {
             t('game:land.factory.upgradeSuccess', { grade: updated.grade })
           )
         ],
-        flags: v2Flags(true)
+        flags: v2Flags(false)
       })
     } catch (err) {
       await this.replyWarn(
@@ -231,6 +178,7 @@ export class FactoryActionButtonHandler extends InteractionHandler {
       return
     }
     const payload = buildDestroyConfirmPayload({
+      ownerId: interaction.user.id,
       factoryId,
       factoryType: factoryRow.type,
       refund: buildCost(factoryRow.type) / 2n,

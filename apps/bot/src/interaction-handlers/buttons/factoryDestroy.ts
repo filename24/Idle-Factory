@@ -22,6 +22,11 @@ import {
 } from '../../commands/game/land'
 import { FactoryService } from '../../services/factory'
 import { ServiceError } from '../../services/base'
+import {
+  assertInteractionOwner,
+  parseOwnerPrefixedCustomId
+} from '../../utils/interactionOwner'
+import { localizeFactoryType } from '../../utils/enumLocale'
 
 type Decision = 'yes' | 'cancel'
 
@@ -37,24 +42,28 @@ export class FactoryDestroyButtonHandler extends InteractionHandler {
   }
 
   public override parse(interaction: ButtonInteraction) {
-    if (!interaction.customId.startsWith(FACTORY_DESTROY_BUTTON_PREFIX)) {
-      return this.none()
-    }
-    const rest = interaction.customId.slice(
-      FACTORY_DESTROY_BUTTON_PREFIX.length
+    const parsed = parseOwnerPrefixedCustomId(
+      interaction.customId,
+      FACTORY_DESTROY_BUTTON_PREFIX
     )
-    const lastColon = rest.lastIndexOf(':')
+    if (!parsed) return this.none()
+    const lastColon = parsed.rest.lastIndexOf(':')
     if (lastColon <= 0) return this.none()
-    const factoryId = rest.slice(0, lastColon)
-    const decision = rest.slice(lastColon + 1)
+    const factoryId = parsed.rest.slice(0, lastColon)
+    const decision = parsed.rest.slice(lastColon + 1)
     if (decision !== 'yes' && decision !== 'cancel') return this.none()
-    return this.some({ factoryId, decision: decision as Decision })
+    return this.some({
+      ownerId: parsed.ownerId,
+      factoryId,
+      decision: decision as Decision
+    })
   }
 
   public async run(
     interaction: ButtonInteraction,
-    data: { factoryId: string; decision: Decision }
+    data: { ownerId: string; factoryId: string; decision: Decision }
   ): Promise<void> {
+    if (!(await assertInteractionOwner(interaction, data.ownerId))) return
     await interaction.deferUpdate()
     const { db } = this.container
     const t = await fetchT(interaction)
@@ -77,7 +86,7 @@ export class FactoryDestroyButtonHandler extends InteractionHandler {
             t('game:factory.destroy.cancelled')
           )
         ],
-        flags: v2Flags(true)
+        flags: v2Flags(false)
       })
       return
     }
@@ -103,13 +112,13 @@ export class FactoryDestroyButtonHandler extends InteractionHandler {
             undefined,
             t('game:factory.destroy.success', {
               emoji: entry.emoji,
-              type: result.type,
+              type: localizeFactoryType(t, result.type),
               refund: formatBigInt(result.refund),
               remaining: formatBigInt(result.remainingMoney)
             })
           )
         ],
-        flags: v2Flags(true)
+        flags: v2Flags(false)
       })
     } catch (err) {
       await this.replyWarn(

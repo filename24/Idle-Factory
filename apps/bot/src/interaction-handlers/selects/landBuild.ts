@@ -27,6 +27,10 @@ import {
 } from '../../commands/game/land'
 import { FactoryService } from '../../services/factory'
 import { ServiceError } from '../../services/base'
+import {
+  assertInteractionOwner,
+  parseOwnerPrefixedCustomId
+} from '../../utils/interactionOwner'
 
 export class LandBuildTypeSelectHandler extends InteractionHandler {
   public constructor(
@@ -40,11 +44,12 @@ export class LandBuildTypeSelectHandler extends InteractionHandler {
   }
 
   public override parse(interaction: StringSelectMenuInteraction) {
-    if (!interaction.customId.startsWith(LAND_BUILD_SELECT_PREFIX)) {
-      return this.none()
-    }
-    const rest = interaction.customId.slice(LAND_BUILD_SELECT_PREFIX.length)
-    const [landRaw, xRaw, yRaw] = rest.split(':')
+    const parsed = parseOwnerPrefixedCustomId(
+      interaction.customId,
+      LAND_BUILD_SELECT_PREFIX
+    )
+    if (!parsed) return this.none()
+    const [landRaw, xRaw, yRaw] = parsed.rest.split(':')
     const landIndex = Number.parseInt(landRaw ?? '', 10)
     const x = Number.parseInt(xRaw ?? '', 10)
     const y = Number.parseInt(yRaw ?? '', 10)
@@ -57,13 +62,20 @@ export class LandBuildTypeSelectHandler extends InteractionHandler {
     ) {
       return this.none()
     }
-    return this.some({ landIndex, x, y, value })
+    return this.some({ ownerId: parsed.ownerId, landIndex, x, y, value })
   }
 
   public async run(
     interaction: StringSelectMenuInteraction,
-    data: { landIndex: number; x: number; y: number; value: string }
+    data: {
+      ownerId: string
+      landIndex: number
+      x: number
+      y: number
+      value: string
+    }
   ): Promise<void> {
+    if (!(await assertInteractionOwner(interaction, data.ownerId))) return
     await interaction.deferUpdate()
     const { db } = this.container
     const t = await fetchT(interaction)
@@ -87,7 +99,7 @@ export class LandBuildTypeSelectHandler extends InteractionHandler {
       const body = resolveBuildErrorBody(err, t, this.container.logger)
       await interaction.followUp({
         components: [simpleContainer(V2_ACCENT.warn, undefined, body)],
-        flags: v2Flags(true)
+        flags: v2Flags(false)
       })
     }
   }
@@ -153,6 +165,8 @@ function resolveBuildErrorBody(
     }
     case 'SLOT_OCCUPIED':
       return t('game:factory.build.error.slotOccupied')
+    case 'SLOT_LOCKED':
+      return t('game:factory.build.error.slotLocked')
     case 'OUT_OF_BOUNDS':
       return t('game:factory.build.error.outOfBounds')
     default:

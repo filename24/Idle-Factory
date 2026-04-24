@@ -1,9 +1,10 @@
 /**
  * `/land view` 4×4 셀 그리드 버튼 핸들러.
  *
- * customId 포맷: `land:cell:<landIndex>:<x>:<y>`.
+ * customId 포맷: `land:cell:<ownerId>:<landIndex>:<x>:<y>`.
  *
  * 동작:
+ * - 호출자(interaction.user.id) != ownerId → ephemeral 경고 후 종료
  * - 빈 셀(`empty`/`special`) → 건설할 공장 타입 StringSelect 로 같은 메시지 update (4b)
  * - 공장 앵커(`factory-anchor`) → info/harvest/upgrade/destroy 액션 메뉴 (4c)
  * - 공장 비앵커(`factory-body`) → 정상 경로로는 도달 불가 (버튼 disabled). 방어적으로 정보 응답
@@ -16,7 +17,8 @@ import {
   InteractionHandlerTypes
 } from '@sapphire/framework'
 import { fetchT } from '@sapphire/plugin-i18next'
-import { simpleContainer, V2_ACCENT, v2Flags } from '@utils/ComponentsV2'
+import { simpleContainer, V2_ACCENT } from '@utils/ComponentsV2'
+import { FACTORY_CATALOG, type MaterialType } from '@idle/game-core'
 import type { ButtonInteraction } from 'discord.js'
 import {
   LAND_CELL_BUTTON_PREFIX,
@@ -24,6 +26,11 @@ import {
   buildFactoryActionMenuPayload,
   resolveLandCell
 } from '../../commands/game/land'
+import { FactoryService } from '../../services/factory'
+import {
+  assertInteractionOwner,
+  parseOwnerPrefixedCustomId
+} from '../../utils/interactionOwner'
 
 export class LandCellButtonHandler extends InteractionHandler {
   public constructor(
@@ -37,11 +44,12 @@ export class LandCellButtonHandler extends InteractionHandler {
   }
 
   public override parse(interaction: ButtonInteraction) {
-    if (!interaction.customId.startsWith(LAND_CELL_BUTTON_PREFIX)) {
-      return this.none()
-    }
-    const rest = interaction.customId.slice(LAND_CELL_BUTTON_PREFIX.length)
-    const [landRaw, xRaw, yRaw] = rest.split(':')
+    const parsed = parseOwnerPrefixedCustomId(
+      interaction.customId,
+      LAND_CELL_BUTTON_PREFIX
+    )
+    if (!parsed) return this.none()
+    const [landRaw, xRaw, yRaw] = parsed.rest.split(':')
     const landIndex = Number.parseInt(landRaw ?? '', 10)
     const x = Number.parseInt(xRaw ?? '', 10)
     const y = Number.parseInt(yRaw ?? '', 10)
@@ -52,13 +60,15 @@ export class LandCellButtonHandler extends InteractionHandler {
     ) {
       return this.none()
     }
-    return this.some({ landIndex, x, y })
+    return this.some({ ownerId: parsed.ownerId, landIndex, x, y })
   }
 
   public async run(
     interaction: ButtonInteraction,
-    data: { landIndex: number; x: number; y: number }
+    data: { ownerId: string; landIndex: number; x: number; y: number }
   ): Promise<void> {
+    if (!(await assertInteractionOwner(interaction, data.ownerId))) return
+
     await interaction.deferUpdate()
     const { db } = this.container
     const t = await fetchT(interaction)
@@ -91,6 +101,7 @@ export class LandCellButtonHandler extends InteractionHandler {
         select: { level: true }
       })
       const payload = buildBuildTypeSelectPayload({
+        ownerId: interaction.user.id,
         userLevel: user?.level ?? 1,
         landIndex: data.landIndex,
         x: data.x,
@@ -132,13 +143,23 @@ export class LandCellButtonHandler extends InteractionHandler {
         })
         return
       }
+      const info = await FactoryService.info(db, factoryRow.id)
+      const nextCost =
+        info.nextUpgradeCost.money !== null &&
+        info.nextUpgradeCost.material !== null
+          ? {
+              money: info.nextUpgradeCost.money,
+              material: info.nextUpgradeCost.material.material as MaterialType,
+              amount: info.nextUpgradeCost.material.amount
+            }
+          : null
       const payload = buildFactoryActionMenuPayload({
+        ownerId: interaction.user.id,
         factoryId: factoryRow.id,
         landIndex: data.landIndex,
-        factoryType: factoryRow.type,
-        grade: factoryRow.grade,
-        anchorX: factoryRow.anchorX,
-        anchorY: factoryRow.anchorY,
+        info,
+        nextCost,
+        catalogEntry: FACTORY_CATALOG[factoryRow.type],
         t
       })
       await interaction.editReply(
