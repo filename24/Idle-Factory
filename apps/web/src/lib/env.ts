@@ -1,13 +1,22 @@
-/** 환경변수 필수 검증 — 누락 시 즉시 에러 */
 function requireEnv(key: string): string {
   const value = process.env[key]
-  if (!value) throw new Error(`Missing required environment variable: ${key}`)
+  if (!value) {
+    // Next.js 프로덕션 빌드 페이즈에서는 env vars 없어도 빌드 통과
+    if (process.env.NEXT_PHASE === 'phase-production-build') return ''
+    throw new Error(`Missing required environment variable: ${key}`)
+  }
   return value
 }
 
-/** 서버 전용 환경변수 (빌드 타임 검증) */
+/** 서버 전용 환경변수 — 런타임에만 실제 값 보장 */
 export const env = {
-  BETTER_AUTH_SECRET: requireEnv('BETTER_AUTH_SECRET'),
-  DISCORD_CLIENT_ID: requireEnv('DISCORD_CLIENT_ID'),
-  DISCORD_CLIENT_SECRET: requireEnv('DISCORD_CLIENT_SECRET'),
-} as const
+  get BETTER_AUTH_SECRET() {
+    return requireEnv('BETTER_AUTH_SECRET')
+  },
+  get DISCORD_CLIENT_ID() {
+    return requireEnv('DISCORD_CLIENT_ID')
+  },
+  get DISCORD_CLIENT_SECRET() {
+    return requireEnv('DISCORD_CLIENT_SECRET')
+  },
+}
