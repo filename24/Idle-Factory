@@ -1,29 +1,66 @@
 @import 'tailwindcss';
 
 @theme {
-  --background-image-gradient-radial: radial-gradient(var(--tw-gradient-stops));
-  --background-image-gradient-conic: conic-gradient(
-    from 180deg at 50% 50%,
-    var(--tw-gradient-stops)
-  );
+  /* ── 배경 계층 ── */
+  --color-canvas: oklch(9% 0.01 260);
+  --color-surface: oklch(14% 0.01 260);
+  --color-elevated: oklch(18% 0.015 260);
+  --color-border: oklch(24% 0.02 260);
+
+  /* ── 골드 포인트 (용광로 / 황금) ── */
+  --color-gold: oklch(72% 0.18 55);
+  --color-gold-dim: oklch(55% 0.13 55);
+  --color-gold-subtle: oklch(72% 0.18 55 / 0.12);
+
+  /* ── 텍스트 ── */
+  --color-foreground: oklch(93% 0 0);
+  --color-muted: oklch(52% 0.01 260);
+
+  /* ── 상태 색상 ── */
+  --color-success: oklch(65% 0.18 145);
+  --color-warning: oklch(75% 0.18 80);
+  --color-danger: oklch(62% 0.22 25);
+
+  /* ── 타이포그래피 ── */
+  --font-sans: 'Pretendard Variable', ui-sans-serif, system-ui, sans-serif;
+
+  /* ── 라디우스 ── */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
 }
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(to bottom, transparent, rgb(var(--background-end-rgb)))
-    rgb(var(--background-start-rgb));
+  background-color: var(--color-canvas);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100dvh;
+}
+
+/* 스크롤바 스타일 (webkit) */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-canvas);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted);
 }
