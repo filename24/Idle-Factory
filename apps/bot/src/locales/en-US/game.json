@@ -7,7 +7,8 @@
         "insufficientMaterial": "Not enough material. Required: {{amount}} {{material}}",
         "levelLocked": "This factory unlocks at level {{level}}.",
         "slotOccupied": "That slot is already occupied by another factory.",
-        "outOfBounds": "That position is outside the land bounds."
+        "outOfBounds": "That position is outside the land bounds.",
+        "landNotFound": "Land not found."
       }
     },
     "upgrade": {
@@ -31,6 +32,14 @@
     },
     "setMode": {
       "success": "Factory mode changed to `{{mode}}`."
+    },
+    "destroy": {
+      "confirmTitle": "Destroy {{emoji}} {{type}} factory?",
+      "confirmBody": "You will receive a 50% refund of {{refund}} 💰.",
+      "confirmYes": "Destroy",
+      "confirmCancel": "Cancel",
+      "success": "Factory destroyed. Refunded {{refund}} 💰.",
+      "cancelled": "Destruction cancelled."
     }
   },
   "harvest": {
@@ -67,7 +76,28 @@
   "land": {
     "view": {
       "title": "🗺️ Your land",
-      "legend": "⬜ Empty · 🌱 Fertile · 🌳 Forest · 🛢️ Oil · 🪨 Ore · 💧 Water"
+      "legend": "⬜ Empty · 🌱 Fertile · 🌳 Forest · 🛢️ Oil · 🪨 Ore · 💧 Water",
+      "cellComingSoon": "This cell is not available yet.",
+      "error": {
+        "landNotFound": "Land not found.",
+        "cellNotFound": "Cell not found."
+      }
+    },
+    "build": {
+      "title": "🏗️ Build Factory",
+      "placeholder": "Select a factory type to build",
+      "cancel": "Cancel"
+    },
+    "factory": {
+      "actionTitle": "{{emoji}} {{type}} · G{{grade}}",
+      "actionInfo": "Info",
+      "actionHarvest": "Harvest",
+      "actionUpgrade": "Upgrade",
+      "actionDestroy": "Destroy",
+      "actionBack": "Back",
+      "harvestSuccess": "Harvested {{ticks}} ticks! +{{xp}} XP",
+      "harvestEmpty": "Nothing to harvest.",
+      "upgradeSuccess": "Upgraded to G{{grade}}!"
     }
   },
   "profile": {
