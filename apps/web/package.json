@@ -10,6 +10,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@idle/database": "workspace:^",
+    "@idle/game-core": "workspace:^",
     "next": "16.2.4",
     "react": "19.2.5",
     "react-dom": "19.2.5"

@@ -127,6 +127,12 @@ importers:
 
   apps/web:
     dependencies:
+      '@idle/database':
+        specifier: workspace:^
+        version: link:../../packages/database
+      '@idle/game-core':
+        specifier: workspace:^
+        version: link:../../packages/game-core
       next:
         specifier: 16.2.4
         version: 16.2.4(@babel/core@7.29.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
