@@ -14,7 +14,7 @@ import {
 import { fetchT, type TFunction } from '@sapphire/plugin-i18next'
 import { FACTORY_CATALOG } from '@idle/game-core'
 import { simpleContainer, V2_ACCENT, v2Flags } from '@utils/ComponentsV2'
-import type { ButtonInteraction, InteractionUpdateOptions } from 'discord.js'
+import type { ButtonInteraction } from 'discord.js'
 import { formatBigInt } from '@structures/renderers'
 import {
   FACTORY_DESTROY_BUTTON_PREFIX,
@@ -55,6 +55,7 @@ export class FactoryDestroyButtonHandler extends InteractionHandler {
     interaction: ButtonInteraction,
     data: { factoryId: string; decision: Decision }
   ): Promise<void> {
+    await interaction.deferUpdate()
     const { db } = this.container
     const t = await fetchT(interaction)
 
@@ -65,7 +66,9 @@ export class FactoryDestroyButtonHandler extends InteractionHandler {
         targetIndex: landIndex,
         t
       })
-      await interaction.update(payload as InteractionUpdateOptions)
+      await interaction.editReply(
+        payload as Parameters<typeof interaction.editReply>[0]
+      )
       await interaction.followUp({
         components: [
           simpleContainer(
@@ -89,7 +92,9 @@ export class FactoryDestroyButtonHandler extends InteractionHandler {
         targetIndex: result.landIndex,
         t
       })
-      await interaction.update(payload as InteractionUpdateOptions)
+      await interaction.editReply(
+        payload as Parameters<typeof interaction.editReply>[0]
+      )
       const entry = FACTORY_CATALOG[result.type]
       await interaction.followUp({
         components: [
@@ -126,15 +131,9 @@ export class FactoryDestroyButtonHandler extends InteractionHandler {
     interaction: ButtonInteraction,
     body: string
   ): Promise<void> {
-    const payload = {
-      components: [simpleContainer(V2_ACCENT.warn, undefined, body)],
-      flags: v2Flags(true)
-    }
-    if (interaction.replied || interaction.deferred) {
-      await interaction.followUp(payload)
-    } else {
-      await interaction.reply(payload)
-    }
+    await interaction.editReply({
+      components: [simpleContainer(V2_ACCENT.warn, undefined, body)]
+    })
   }
 }
 

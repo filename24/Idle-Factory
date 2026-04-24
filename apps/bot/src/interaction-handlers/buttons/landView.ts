@@ -16,7 +16,7 @@ import {
   InteractionHandlerTypes
 } from '@sapphire/framework'
 import { fetchT } from '@sapphire/plugin-i18next'
-import type { ButtonInteraction, InteractionUpdateOptions } from 'discord.js'
+import type { ButtonInteraction } from 'discord.js'
 import {
   buildLandViewPayload,
   LAND_VIEW_BUTTON_PREFIX
@@ -47,6 +47,7 @@ export class LandViewButtonHandler extends InteractionHandler {
     interaction: ButtonInteraction,
     data: { index: number }
   ): Promise<void> {
+    await interaction.deferUpdate()
     const { db } = this.container
     const t = await fetchT(interaction)
 
@@ -55,6 +56,8 @@ export class LandViewButtonHandler extends InteractionHandler {
       targetIndex: data.index,
       t
     })
-    await interaction.update(payload as InteractionUpdateOptions)
+    await interaction.editReply(
+      payload as Parameters<typeof interaction.editReply>[0]
+    )
   }
 }

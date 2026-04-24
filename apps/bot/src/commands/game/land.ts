@@ -26,6 +26,12 @@ import {
 import { prevOwnedIndex, nextOwnedIndex } from '@utils/landNav'
 import { UserService } from '../../services/user'
 import {
+  LandService,
+  MAX_BUYABLE_INDEX,
+  MIN_BUYABLE_INDEX
+} from '../../services/land'
+import { ServiceError } from '../../services/base'
+import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
@@ -416,6 +422,7 @@ export function buildFactoryActionMenuPayload(opts: {
 
 /** 서브커맨드 이름 상수. */
 const SUB_VIEW = 'view'
+const SUB_BUY = 'buy'
 
 export class LandCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -428,6 +435,9 @@ export class LandCommand extends Command {
     const sub = interaction.options.getSubcommand(true)
     if (sub === SUB_VIEW) {
       return this.handleView(interaction)
+    }
+    if (sub === SUB_BUY) {
+      return this.handleBuy(interaction)
     }
     return interaction.reply(
       simpleV2Payload({
@@ -451,6 +461,8 @@ export class LandCommand extends Command {
     await interaction.deferReply({ ephemeral: true })
     const { db } = this.container
     const t = await fetchT(interaction)
+    const requestedIndex =
+      interaction.options.getInteger('index', false) ?? null
 
     const hydrated = await UserService.ensure(db, {
       discordId: interaction.user.id,
@@ -458,9 +470,13 @@ export class LandCommand extends Command {
       lang: interaction.locale ?? undefined
     })
 
+    const targetIndex =
+      requestedIndex ??
+      (hydrated.lands.length > 0 ? hydrated.lands[0]!.index : 1)
+
     const payload = await buildLandViewPayload(db, {
       userId: hydrated.id,
-      targetIndex: 1,
+      targetIndex,
       t
     })
 
@@ -469,21 +485,124 @@ export class LandCommand extends Command {
     )
   }
 
+  /** `/land buy` 핸들러. */
+  private async handleBuy(
+    interaction: Command.ChatInputCommandInteraction
+  ): Promise<unknown> {
+    await interaction.deferReply({ ephemeral: true })
+    const { db } = this.container
+    const t = await fetchT(interaction)
+    const targetIndex = interaction.options.getInteger('index', true)
+
+    await UserService.ensure(db, {
+      discordId: interaction.user.id,
+      nickname: interaction.user.username,
+      lang: interaction.locale ?? undefined
+    })
+
+    try {
+      const result = await LandService.buy(db, {
+        userId: interaction.user.id,
+        targetIndex
+      })
+      return interaction.editReply({
+        components: [
+          simpleContainer(
+            V2_ACCENT.success,
+            undefined,
+            t('game:land.buy.success', {
+              index: result.targetIndex,
+              cost: formatBigInt(result.cost),
+              remaining: formatBigInt(result.remainingMoney),
+              total: result.totalLands
+            })
+          )
+        ]
+      })
+    } catch (err) {
+      return this.replyBuyError(interaction, err, t)
+    }
+  }
+
+  private async replyBuyError(
+    interaction: Command.ChatInputCommandInteraction,
+    err: unknown,
+    t: TFunction
+  ): Promise<unknown> {
+    let body: string
+    if (err instanceof ServiceError) {
+      switch (err.code) {
+        case 'MAX_LANDS':
+          body = t('game:land.buy.error.maxLands', { max: MAX_BUYABLE_INDEX })
+          break
+        case 'LAND_ALREADY_EXISTS':
+          body = t('game:land.buy.error.alreadyExists')
+          break
+        case 'INVALID_LAND_INDEX':
+          body = t('game:land.buy.error.invalidIndex', {
+            min: MIN_BUYABLE_INDEX,
+            max: MAX_BUYABLE_INDEX
+          })
+          break
+        case 'INSUFFICIENT_MONEY':
+          body = t('game:land.buy.error.insufficientMoney')
+          break
+        case 'USER_NOT_FOUND':
+          body = t('game:common.error.userNotFound')
+          break
+        default:
+          body = t('game:common.error.unknown')
+      }
+    } else {
+      body = t('game:common.error.unknown')
+    }
+    return interaction.editReply({
+      components: [simpleContainer(V2_ACCENT.warn, undefined, body)]
+    })
+  }
+
   public override registerApplicationCommands(registry: Command.Registry) {
     registry.registerChatInputCommand((builder) =>
       builder
         .setName('land')
-        .setDescription('View your land grid.')
+        .setDescription('View or expand your lands.')
         .setNameLocalization('ko', '토지')
-        .setDescriptionLocalization('ko', '내 토지를 확인합니다.')
+        .setDescriptionLocalization('ko', '내 토지를 확인하거나 확장합니다.')
         .addSubcommand((sub) =>
           sub
             .setName(SUB_VIEW)
-            .setDescription('Show your land as an emoji grid.')
+            .setDescription('Show your land as an interactive button grid.')
             .setNameLocalization('ko', '보기')
             .setDescriptionLocalization(
               'ko',
               '이모지 그리드로 내 토지를 봅니다.'
+            )
+            .addIntegerOption((o) =>
+              o
+                .setName('index')
+                .setDescription('Land number to view (1-5).')
+                .setNameLocalization('ko', '번호')
+                .setDescriptionLocalization('ko', '볼 토지 번호 (1~5).')
+                .setRequired(false)
+                .setMinValue(1)
+                .setMaxValue(MAX_BUYABLE_INDEX)
+            )
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName(SUB_BUY)
+            .setDescription('Buy your next land (2nd-5th).')
+            .setNameLocalization('ko', '구매')
+            .setDescriptionLocalization('ko', '다음 토지를 구매합니다.')
+            .addIntegerOption((o) =>
+              o
+                .setName('index')
+                .setDescription('Land index (2-5).')
+                .setNameLocalization('ko', '번호')
+                .setDescriptionLocalization('ko', '구매할 토지 번호 (2~5).')
+                .setRequired(true)
+                .setMinValue(MIN_BUYABLE_INDEX)
+                .setMaxValue(MAX_BUYABLE_INDEX)
             )
         )
     )

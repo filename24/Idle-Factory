@@ -18,10 +18,7 @@ import {
 } from '@sapphire/framework'
 import { fetchT, type TFunction } from '@sapphire/plugin-i18next'
 import { simpleContainer, V2_ACCENT, v2Flags } from '@utils/ComponentsV2'
-import type {
-  InteractionUpdateOptions,
-  StringSelectMenuInteraction
-} from 'discord.js'
+import type { StringSelectMenuInteraction } from 'discord.js'
 import type { FactoryType } from '@idle/game-core'
 import {
   LAND_BUILD_CANCEL_VALUE,
@@ -67,6 +64,7 @@ export class LandBuildTypeSelectHandler extends InteractionHandler {
     interaction: StringSelectMenuInteraction,
     data: { landIndex: number; x: number; y: number; value: string }
   ): Promise<void> {
+    await interaction.deferUpdate()
     const { db } = this.container
     const t = await fetchT(interaction)
 
@@ -105,7 +103,9 @@ export class LandBuildTypeSelectHandler extends InteractionHandler {
       targetIndex: landIndex,
       t
     })
-    await interaction.update(payload as InteractionUpdateOptions)
+    await interaction.editReply(
+      payload as Parameters<typeof interaction.editReply>[0]
+    )
   }
 }
 
