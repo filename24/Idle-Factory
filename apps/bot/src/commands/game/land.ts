@@ -19,11 +19,9 @@ import {
   v2Flags
 } from '@utils/ComponentsV2'
 import {
-  renderLand,
   toSuperscript,
   formatBigInt,
-  type FactoryDTO,
-  type SlotDTO
+  type FactoryDTO
 } from '@structures/renderers'
 import { prevOwnedIndex, nextOwnedIndex } from '@utils/landNav'
 import { UserService } from '../../services/user'
@@ -435,10 +433,9 @@ export class LandCommand extends Command {
   /**
    * `/land view` 핸들러.
    *
-   * 1. `UserService.ensure`로 유저/토지/창고를 보장하고 hydrated 엔터티를 얻는다.
-   * 2. 해당 유저의 Factory 목록을 조회한다.
-   * 3. 슬롯/공장 DTO로 변환해 `renderLand`로 grid/legend를 생성한다.
-   * 4. Embed로 감싸 ephemeral 응답.
+   * 1. `UserService.ensure`로 유저/토지/창고를 보장한다.
+   * 2. `buildLandViewPayload`로 4×4 버튼 그리드 페이로드를 빌드한다.
+   * 3. ephemeral 응답.
    */
   private async handleView(
     interaction: Command.ChatInputCommandInteraction
@@ -452,51 +449,13 @@ export class LandCommand extends Command {
       lang: interaction.locale ?? undefined
     })
 
-    const land = hydrated.lands.find((l) => l.index === 1)
-    if (!land) {
-      return interaction.reply(
-        simpleV2Payload({
-          accent: V2_ACCENT.error,
-          body: t('game:common.error.userNotFound'),
-          ephemeral: true
-        })
-      )
-    }
-
-    const factories = await db.factory.findMany({
-      where: { userId: hydrated.id },
-      select: { type: true, grade: true, anchorX: true, anchorY: true }
+    const payload = await buildLandViewPayload(db, {
+      userId: hydrated.id,
+      targetIndex: 1,
+      t
     })
 
-    const slotDTOs: SlotDTO[] = land.slots.map(
-      (s: (typeof land.slots)[number]) => ({
-        x: s.x,
-        y: s.y,
-        type: s.type
-      })
-    )
-
-    const factoryDTOs: FactoryDTO[] = factories.map((f) => ({
-      type: f.type,
-      grade: f.grade,
-      anchorX: f.anchorX,
-      anchorY: f.anchorY
-    }))
-
-    const { grid, legend } = renderLand(
-      { width: land.width, height: land.height },
-      factoryDTOs,
-      slotDTOs
-    )
-
-    return interaction.reply(
-      simpleV2Payload({
-        accent: V2_ACCENT.info,
-        title: t('game:land.view.title'),
-        body: `${grid}\n\n${legend}`,
-        ephemeral: true
-      })
-    )
+    return interaction.reply(payload as Parameters<typeof interaction.reply>[0])
   }
 
   public override registerApplicationCommands(registry: Command.Registry) {
