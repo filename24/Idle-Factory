@@ -20,8 +20,7 @@ import {
   ButtonBuilder,
   ButtonStyle,
   MessageFlags,
-  type ButtonInteraction,
-  type InteractionUpdateOptions
+  type ButtonInteraction
 } from 'discord.js'
 import { formatBigInt, renderFactoryInfo } from '@structures/renderers'
 import {
@@ -70,6 +69,7 @@ export class FactoryActionButtonHandler extends InteractionHandler {
     interaction: ButtonInteraction,
     data: { factoryId: string; verb: Verb }
   ): Promise<void> {
+    await interaction.deferUpdate()
     const { db } = this.container
     const t = await fetchT(interaction)
 
@@ -124,10 +124,10 @@ export class FactoryActionButtonHandler extends InteractionHandler {
             .setStyle(ButtonStyle.Secondary)
         )
       )
-      await interaction.update({
+      await interaction.editReply({
         components: [container],
         flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral
-      } as InteractionUpdateOptions)
+      } as Parameters<typeof interaction.editReply>[0])
     } catch (err) {
       await this.replyWarn(
         interaction,
@@ -154,7 +154,9 @@ export class FactoryActionButtonHandler extends InteractionHandler {
         targetIndex: landIndex,
         t
       })
-      await interaction.update(payload as InteractionUpdateOptions)
+      await interaction.editReply(
+        payload as Parameters<typeof interaction.editReply>[0]
+      )
       const ticks = result.factories.reduce((acc, f) => acc + f.ticks, 0)
       const body =
         ticks > 0
@@ -193,7 +195,9 @@ export class FactoryActionButtonHandler extends InteractionHandler {
         targetIndex: landIndex,
         t
       })
-      await interaction.update(payload as InteractionUpdateOptions)
+      await interaction.editReply(
+        payload as Parameters<typeof interaction.editReply>[0]
+      )
       await interaction.followUp({
         components: [
           simpleContainer(
@@ -232,7 +236,9 @@ export class FactoryActionButtonHandler extends InteractionHandler {
       refund: buildCost(factoryRow.type) / 2n,
       t
     })
-    await interaction.update(payload as InteractionUpdateOptions)
+    await interaction.editReply(
+      payload as Parameters<typeof interaction.editReply>[0]
+    )
   }
 
   /** factoryId → 해당 공장의 소속 토지 index. 실패 시 1로 폴백. */
@@ -248,15 +254,9 @@ export class FactoryActionButtonHandler extends InteractionHandler {
     interaction: ButtonInteraction,
     body: string
   ): Promise<void> {
-    const payload = {
-      components: [simpleContainer(V2_ACCENT.warn, undefined, body)],
-      flags: v2Flags(true)
-    }
-    if (interaction.replied || interaction.deferred) {
-      await interaction.followUp(payload)
-    } else {
-      await interaction.reply(payload)
-    }
+    await interaction.editReply({
+      components: [simpleContainer(V2_ACCENT.warn, undefined, body)]
+    })
   }
 }
 

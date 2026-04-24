@@ -17,7 +17,7 @@ import {
 } from '@sapphire/framework'
 import { fetchT } from '@sapphire/plugin-i18next'
 import { simpleContainer, V2_ACCENT, v2Flags } from '@utils/ComponentsV2'
-import type { ButtonInteraction, InteractionUpdateOptions } from 'discord.js'
+import type { ButtonInteraction } from 'discord.js'
 import {
   LAND_CELL_BUTTON_PREFIX,
   buildBuildTypeSelectPayload,
@@ -59,6 +59,7 @@ export class LandCellButtonHandler extends InteractionHandler {
     interaction: ButtonInteraction,
     data: { landIndex: number; x: number; y: number }
   ): Promise<void> {
+    await interaction.deferUpdate()
     const { db } = this.container
     const t = await fetchT(interaction)
 
@@ -70,15 +71,14 @@ export class LandCellButtonHandler extends InteractionHandler {
       data.y
     )
     if (!resolved) {
-      await interaction.reply({
+      await interaction.editReply({
         components: [
           simpleContainer(
             V2_ACCENT.error,
             undefined,
             t('game:land.view.error.cellNotFound')
           )
-        ],
-        flags: v2Flags(true)
+        ]
       })
       return
     }
@@ -97,7 +97,9 @@ export class LandCellButtonHandler extends InteractionHandler {
         y: data.y,
         t
       })
-      await interaction.update(payload as InteractionUpdateOptions)
+      await interaction.editReply(
+        payload as Parameters<typeof interaction.editReply>[0]
+      )
       return
     }
 
@@ -119,15 +121,14 @@ export class LandCellButtonHandler extends InteractionHandler {
         }
       })
       if (!factoryRow) {
-        await interaction.reply({
+        await interaction.editReply({
           components: [
             simpleContainer(
               V2_ACCENT.error,
               undefined,
               t('game:common.error.factoryNotFound')
             )
-          ],
-          flags: v2Flags(true)
+          ]
         })
         return
       }
@@ -140,20 +141,21 @@ export class LandCellButtonHandler extends InteractionHandler {
         anchorY: factoryRow.anchorY,
         t
       })
-      await interaction.update(payload as InteractionUpdateOptions)
+      await interaction.editReply(
+        payload as Parameters<typeof interaction.editReply>[0]
+      )
       return
     }
 
     // factory-body는 버튼 disabled로 도달 불가 — 방어적 기본 응답.
-    await interaction.reply({
+    await interaction.editReply({
       components: [
         simpleContainer(
           V2_ACCENT.info,
           undefined,
           t('game:land.view.cellComingSoon')
         )
-      ],
-      flags: v2Flags(true)
+      ]
     })
   }
 }

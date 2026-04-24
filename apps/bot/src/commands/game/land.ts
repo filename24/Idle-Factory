@@ -448,6 +448,7 @@ export class LandCommand extends Command {
   private async handleView(
     interaction: Command.ChatInputCommandInteraction
   ): Promise<unknown> {
+    await interaction.deferReply({ ephemeral: true })
     const { db } = this.container
     const t = await fetchT(interaction)
 
@@ -463,7 +464,9 @@ export class LandCommand extends Command {
       t
     })
 
-    return interaction.reply(payload as Parameters<typeof interaction.reply>[0])
+    return interaction.editReply(
+      payload as Parameters<typeof interaction.editReply>[0]
+    )
   }
 
   public override registerApplicationCommands(registry: Command.Registry) {
