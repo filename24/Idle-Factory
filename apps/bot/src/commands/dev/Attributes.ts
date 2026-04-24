@@ -111,7 +111,7 @@ export class AttributesCommand extends Command {
           simpleV2Payload({
             accent: V2_ACCENT.success,
             body: '성공적으로 해당 직원을 공장에 지원했습니다!',
-            ephemeral: true
+            ephemeral: false
           })
         )
       }

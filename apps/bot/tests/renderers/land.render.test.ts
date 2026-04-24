@@ -47,19 +47,19 @@ describe('toSuperscript', () => {
 })
 
 describe('renderLand - empty land', () => {
-  it('renders 4×4 empty NORMAL land as sixteen ⬜', () => {
+  it('renders 4×4 empty NORMAL land as sixteen 🟩', () => {
     const { grid, legend } = renderLand(
       { width: 4, height: 4 },
       [],
       makeEmptySlots(4, 4)
     )
-    expect(grid).toBe('⬜⬜⬜⬜\n⬜⬜⬜⬜\n⬜⬜⬜⬜\n⬜⬜⬜⬜')
-    expect(legend).toContain('⬜')
+    expect(grid).toBe('🟩🟩🟩🟩\n🟩🟩🟩🟩\n🟩🟩🟩🟩\n🟩🟩🟩🟩')
+    expect(legend).toContain('🟩')
   })
 
   it('renders empty with no slot entries (defaults to empty cell)', () => {
     const { grid } = renderLand({ width: 2, height: 1 }, [], [])
-    expect(grid).toBe('⬜⬜')
+    expect(grid).toBe('🟩🟩')
   })
 })
 
@@ -77,9 +77,9 @@ describe('renderLand - factories', () => {
       makeEmptySlots(3, 3)
     )
     const rows = grid.split('\n')
-    expect(rows[0]).toBe('⬜⬜⬜')
-    expect(rows[1]).toBe('⬜🌾¹⬜')
-    expect(rows[2]).toBe('⬜⬜⬜')
+    expect(rows[0]).toBe('🟩🟩🟩')
+    expect(rows[1]).toBe('🟩🌾¹🟩')
+    expect(rows[2]).toBe('🟩🟩🟩')
   })
 
   it('renders a 2×2 CAR_FACTORY with emoji on all 4 cells, grade only on anchor', () => {
@@ -95,9 +95,9 @@ describe('renderLand - factories', () => {
       makeEmptySlots(3, 3)
     )
     const rows = grid.split('\n')
-    expect(rows[0]).toBe('🚗³🚗⬜')
-    expect(rows[1]).toBe('🚗🚗⬜')
-    expect(rows[2]).toBe('⬜⬜⬜')
+    expect(rows[0]).toBe('🚗³🚗🟩')
+    expect(rows[1]).toBe('🚗🚗🟩')
+    expect(rows[2]).toBe('🟩🟩🟩')
   })
 
   it('renders a G10 factory with ¹⁰ superscript', () => {

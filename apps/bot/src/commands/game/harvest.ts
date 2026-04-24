@@ -1,25 +1,36 @@
 /**
  * `/harvest` 슬래시 커맨드.
  *
- * 유저의 모든 공장을 일괄 수확하고 결과를 Embed로 요약한다.
+ * 유저의 모든 공장을 일괄 수확하고 결과를 Components v2 컨테이너로 요약한다.
  * - `UserService.ensure`로 유저/토지/창고 레코드를 보장
  * - `HarvestService.harvestAll`로 생산/소비/XP를 트랜잭션 처리
- * - 결과는 ephemeral Embed로 응답
+ * - 결과는 공개 메시지로 응답
  */
 
 import { Command } from '@sapphire/framework'
-import { fetchT } from '@sapphire/plugin-i18next'
-import { getFactoryEntry, type MaterialBag } from '@idle/game-core'
+import { fetchT, type TFunction } from '@sapphire/plugin-i18next'
+import {
+  getFactoryEntry,
+  type MaterialBag,
+  type MaterialType
+} from '@idle/game-core'
 import { simpleV2Payload, V2_ACCENT } from '@utils/ComponentsV2'
 import { UserService } from '../../services/user'
 import { HarvestService } from '../../services/harvest'
 import { formatBigInt } from '../../structures/renderers/FactoryRenderer'
+import { localizeFactoryType, localizeMaterial } from '@utils/enumLocale'
 
-function formatMaterialBag(bag: MaterialBag, emptyLabel: string): string {
+function formatMaterialBag(
+  bag: MaterialBag,
+  emptyLabel: string,
+  t: TFunction
+): string {
   const parts: string[] = []
   for (const [mat, amt] of Object.entries(bag)) {
     if (!amt || amt <= 0n) continue
-    parts.push(`${formatBigInt(amt)} ${mat}`)
+    parts.push(
+      `${formatBigInt(amt)} ${localizeMaterial(t, mat as MaterialType)}`
+    )
   }
   if (parts.length === 0) return emptyLabel
   return parts.join(', ')
@@ -50,7 +61,7 @@ export class HarvestCommand extends Command {
           accent: V2_ACCENT.warn,
           title: t('game:harvest.result.title'),
           body: t('game:harvest.result.none'),
-          ephemeral: true
+          ephemeral: false
         })
       )
     }
@@ -62,11 +73,14 @@ export class HarvestCommand extends Command {
       const entry = getFactoryEntry(
         f.type as Parameters<typeof getFactoryEntry>[0]
       )
-      const produced = formatMaterialBag(f.produced, noneProduced)
-      const consumed = formatMaterialBag(f.consumed, noneConsumed)
+      const produced = formatMaterialBag(f.produced, noneProduced, t)
+      const consumed = formatMaterialBag(f.consumed, noneConsumed, t)
       return t('game:harvest.result.line', {
         emoji: entry.emoji,
-        type: f.type,
+        type: localizeFactoryType(
+          t,
+          f.type as Parameters<typeof getFactoryEntry>[0]
+        ),
         produced,
         consumed,
         ticks: f.ticks
@@ -83,7 +97,7 @@ export class HarvestCommand extends Command {
         accent: V2_ACCENT.success,
         title: t('game:harvest.result.title'),
         body: [summary, '', ...lines].join('\n'),
-        ephemeral: true
+        ephemeral: false
       })
     )
   }

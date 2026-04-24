@@ -17,7 +17,7 @@ export class AnnouncementCommand extends Command {
         accent: V2_ACCENT.info,
         title: t('embeds:command.notice.title'),
         body: '-',
-        ephemeral: true
+        ephemeral: false
       })
     )
   }

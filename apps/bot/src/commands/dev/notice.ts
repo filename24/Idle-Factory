@@ -19,7 +19,7 @@ export class NoticeCommand extends Command {
           simpleV2Payload({
             accent: V2_ACCENT.error,
             body: '삭제 옵션을 사용하려면 ID를 입력해야 합니다.',
-            ephemeral: true
+            ephemeral: false
           })
         )
       }
@@ -30,7 +30,7 @@ export class NoticeCommand extends Command {
           simpleV2Payload({
             accent: V2_ACCENT.error,
             body: '해당 ID의 공지를 찾을 수 없습니다.',
-            ephemeral: true
+            ephemeral: false
           })
         )
       }
@@ -40,7 +40,7 @@ export class NoticeCommand extends Command {
         simpleV2Payload({
           accent: V2_ACCENT.success,
           body: `공지 \`${existing.title}\` 을(를) 삭제했습니다.`,
-          ephemeral: true
+          ephemeral: false
         })
       )
     }
@@ -49,7 +49,7 @@ export class NoticeCommand extends Command {
       simpleV2Payload({
         accent: V2_ACCENT.warn,
         body: '공지 전송 기능은 아직 구현되지 않았습니다.',
-        ephemeral: true
+        ephemeral: false
       })
     )
   }

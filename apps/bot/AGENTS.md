@@ -90,3 +90,22 @@ Current default (see `config.ts`): `GuildMessages` + `Guilds` only. Add intents 
 - The skill checklist allows an "intentional flat layout without a Container root". Dropping the Container wrapper is permitted as a compositional choice within Components v2 — it is NOT permission to fall back to legacy Embed / plain `content`.
 
 Violations block PR review. See `.claude/skills/componentsv2-builder/SKILL.md` for the full guide.
+
+### Separator before interactive buttons (mandatory)
+
+Any `ContainerBuilder` payload that contains both text content (`TextDisplayBuilder`) and at least one interactive `ActionRowBuilder` (buttons or select menus) **MUST** include a `SeparatorBuilder` between the last `TextDisplayBuilder` and the first `ActionRowBuilder`. Use `SeparatorSpacingSize.Small` as the default spacing.
+
+```ts
+// WRONG: text directly followed by buttons
+container.addTextDisplayComponents(new TextDisplayBuilder().setContent(body))
+container.addActionRowComponents(row)
+
+// CORRECT: separator between text and buttons
+container.addTextDisplayComponents(new TextDisplayBuilder().setContent(body))
+container.addSeparatorComponents(
+  new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small)
+)
+container.addActionRowComponents(row)
+```
+
+This applies to every builder function that produces an interactive payload — slash command replies, button update responses, and select menu responses included. `SeparatorSpacingSize.Large` is reserved for the land-view grid/control divider.

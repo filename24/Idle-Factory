@@ -38,7 +38,7 @@ export default class ErrorManager {
     if (options?.isSend && executer) {
       const payload = {
         components: [errorContainer],
-        flags: v2Flags(true)
+        flags: v2Flags(false)
       }
       if ('author' in executer) {
         await executer.reply(payload).catch(() => null)

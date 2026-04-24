@@ -1,7 +1,7 @@
 /**
  * `/profile` 커맨드.
  *
- * 호출자의 프로필(레벨/XP/돈/창고 등급/공장 수)을 ephemeral Embed로 보여준다.
+ * 호출자의 프로필(레벨/XP/돈/창고 등급/공장 수)을 Components v2 컨테이너로 보여준다.
  *
  * XP 표시는 `xp / xpRequiredForLevel(level + 1)` 포맷(현재 누적 XP / 다음 레벨 요구량).
  * BigInt 필드는 `formatBigInt`로 천단위 구분 포맷팅한다.
@@ -58,7 +58,7 @@ export class ProfileCommand extends Command {
         accent: V2_ACCENT.info,
         title: t('game:profile.title', { nickname: displayName }),
         body,
-        ephemeral: true
+        ephemeral: false
       })
     )
   }

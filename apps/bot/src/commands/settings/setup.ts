@@ -25,7 +25,7 @@ export class SetupCommand extends Command {
             factoryName: guildData.name
           }),
           body: t('embeds:command.setup.available.description'),
-          ephemeral: true
+          ephemeral: false
         })
       )
     }
@@ -36,7 +36,7 @@ export class SetupCommand extends Command {
         simpleV2Payload({
           accent: V2_ACCENT.error,
           body: '길드 정보를 가져올 수 없습니다.',
-          ephemeral: true
+          ephemeral: false
         })
       )
     }
@@ -56,7 +56,7 @@ export class SetupCommand extends Command {
           factoryName: created.name
         }),
         body: t('embeds:command.setup.success.description'),
-        ephemeral: true
+        ephemeral: false
       })
     )
   }

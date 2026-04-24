@@ -12,6 +12,10 @@ import { DEFAULT_LAND_INDEX, FactoryService } from '../../services/factory'
 import { MAX_BUYABLE_INDEX } from '../../services/land'
 import { UserService } from '../../services/user'
 import { ServiceError } from '../../services/base'
+import {
+  localizeFactoryType,
+  localizeShortageMode
+} from '../../utils/enumLocale'
 
 /**
  * `/factory` 슬래시 커맨드 그룹.
@@ -22,7 +26,7 @@ import { ServiceError } from '../../services/base'
  * - `info`: 공장 현재 상태를 조회한다.
  * - `setmode`: 원료 부족 시 동작 모드를 변경한다.
  *
- * 모든 응답은 개인 UI 용도로 ephemeral로 전송된다.
+ * 모든 응답은 공개 메시지로 전송된다.
  *
  * 참조: `docs/design/03-factories.md`.
  */
@@ -108,13 +112,13 @@ export class FactoryCommand extends Command {
         simpleV2Payload({
           accent: V2_ACCENT.success,
           title: t('game:factory.build.success', {
-            type: factory.type,
+            type: localizeFactoryType(t, factory.type),
             emoji: entry.emoji,
             x: factory.anchorX,
             y: factory.anchorY
           }),
-          body: renderFactoryInfo(info, entry, nextCost),
-          ephemeral: true
+          body: renderFactoryInfo(info, entry, nextCost, t),
+          ephemeral: false
         })
       )
     } catch (err) {
@@ -140,10 +144,10 @@ export class FactoryCommand extends Command {
         simpleV2Payload({
           accent: V2_ACCENT.success,
           title: t('game:factory.upgrade.success', {
-            type: factory.type,
+            type: localizeFactoryType(t, factory.type),
             grade: factory.grade
           }),
-          ephemeral: true
+          ephemeral: false
         })
       )
     } catch (err) {
@@ -175,11 +179,11 @@ export class FactoryCommand extends Command {
           accent: V2_ACCENT.info,
           title: t('game:factory.info.title', {
             emoji: entry.emoji,
-            type: info.type,
+            type: localizeFactoryType(t, info.type),
             grade: info.grade
           }),
-          body: renderFactoryInfo(info, entry, nextCost),
-          ephemeral: true
+          body: renderFactoryInfo(info, entry, nextCost, t),
+          ephemeral: false
         })
       )
     } catch (err) {
@@ -206,8 +210,10 @@ export class FactoryCommand extends Command {
       return interaction.reply(
         simpleV2Payload({
           accent: V2_ACCENT.success,
-          title: t('game:factory.setMode.success', { mode }),
-          ephemeral: true
+          title: t('game:factory.setMode.success', {
+            mode: localizeShortageMode(t, mode)
+          }),
+          ephemeral: false
         })
       )
     } catch (err) {
@@ -235,11 +241,11 @@ export class FactoryCommand extends Command {
           accent: V2_ACCENT.success,
           body: t('game:factory.destroy.success', {
             emoji: entry.emoji,
-            type: result.type,
+            type: localizeFactoryType(t, result.type),
             refund: formatBigInt(result.refund),
             remaining: formatBigInt(result.remainingMoney)
           }),
-          ephemeral: true
+          ephemeral: false
         })
       )
     } catch (err) {
@@ -342,7 +348,7 @@ export class FactoryCommand extends Command {
     const payload = simpleV2Payload({
       accent: V2_ACCENT.warn,
       body: message,
-      ephemeral: true
+      ephemeral: false
     })
     if (interaction.replied || interaction.deferred) {
       return interaction.followUp(payload)

@@ -54,6 +54,5 @@
   "engines": {
     "node": ">=20.19"
   },
-  "packageManager": "pnpm@10.9.0",
-  "private": true
+  "packageManager": "pnpm@10.9.0"
 }
