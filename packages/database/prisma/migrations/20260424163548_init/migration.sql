@@ -62,8 +62,9 @@ CREATE TABLE "Guild" (
 CREATE TABLE "Land" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "width" INTEGER NOT NULL DEFAULT 3,
-    "height" INTEGER NOT NULL DEFAULT 3,
+    "index" INTEGER NOT NULL DEFAULT 1,
+    "width" INTEGER NOT NULL DEFAULT 4,
+    "height" INTEGER NOT NULL DEFAULT 4,
 
     CONSTRAINT "Land_pkey" PRIMARY KEY ("id")
 );
@@ -85,6 +86,7 @@ CREATE TABLE "Slot" (
 CREATE TABLE "Factory" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
+    "landId" TEXT NOT NULL,
     "guildId" TEXT,
     "type" "FactoryType" NOT NULL,
     "tier" "FactoryTier" NOT NULL,
@@ -261,7 +263,10 @@ CREATE TABLE "Notice" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Land_userId_key" ON "Land"("userId");
+CREATE INDEX "Land_userId_idx" ON "Land"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Land_userId_index_key" ON "Land"("userId", "index");
 
 -- CreateIndex
 CREATE INDEX "Slot_factoryId_idx" ON "Slot"("factoryId");
@@ -271,6 +276,9 @@ CREATE UNIQUE INDEX "Slot_landId_x_y_key" ON "Slot"("landId", "x", "y");
 
 -- CreateIndex
 CREATE INDEX "Factory_userId_idx" ON "Factory"("userId");
+
+-- CreateIndex
+CREATE INDEX "Factory_landId_idx" ON "Factory"("landId");
 
 -- CreateIndex
 CREATE INDEX "Factory_guildId_idx" ON "Factory"("guildId");
@@ -346,6 +354,9 @@ ALTER TABLE "Slot" ADD CONSTRAINT "Slot_factoryId_fkey" FOREIGN KEY ("factoryId"
 
 -- AddForeignKey
 ALTER TABLE "Factory" ADD CONSTRAINT "Factory_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Factory" ADD CONSTRAINT "Factory_landId_fkey" FOREIGN KEY ("landId") REFERENCES "Land"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Factory" ADD CONSTRAINT "Factory_guildId_fkey" FOREIGN KEY ("guildId") REFERENCES "Guild"("id") ON DELETE SET NULL ON UPDATE CASCADE;
