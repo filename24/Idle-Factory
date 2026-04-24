@@ -110,4 +110,6 @@ export interface SlotState {
   readonly type: SlotType
   /** 이 셀을 점유 중인 공장 ID. 없으면 null. */
   readonly factoryId: string | null
+  /** 아직 구매되지 않은 확장 슬롯인지 여부. true 면 배치 불가. (docs/11-land.md §슬롯 확장) */
+  readonly locked: boolean
 }

@@ -11,9 +11,10 @@ import type { FactoryType, SlotState, SlotType } from '../types'
  * 배치 실패 사유.
  * - `OUT_OF_BOUNDS`: 토지 경계를 벗어남
  * - `OCCUPIED`: 이미 다른 공장이 있음
+ * - `LOCKED`: 해당 셀이 아직 구매되지 않은 잠금 슬롯 (docs/11-land.md §슬롯 확장)
  * - `OVERLAP`: (예약) 동일 배치 안에서 겹침
  */
-export type PlacementFailureReason = 'OUT_OF_BOUNDS' | 'OCCUPIED' | 'OVERLAP'
+export type PlacementFailureReason = 'OUT_OF_BOUNDS' | 'OCCUPIED' | 'LOCKED' | 'OVERLAP'
 
 /**
  * 배치 가능 여부 검사 결과.
@@ -91,6 +92,13 @@ export function canPlace(params: CanPlaceParams): PlacementCheckResult {
   for (const cell of cells) {
     const slot = slots.find((s) => s.x === cell.x && s.y === cell.y)
     if (slot === undefined) continue
+    if (slot.locked) {
+      return {
+        ok: false,
+        reason: 'LOCKED',
+        blockingSlot: { x: slot.x, y: slot.y },
+      }
+    }
     if (slot.factoryId !== null) {
       return {
         ok: false,

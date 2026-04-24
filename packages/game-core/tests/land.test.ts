@@ -13,6 +13,7 @@ const slot = (x: number, y: number, overrides: Partial<SlotState> = {}): SlotSta
   y,
   type: 'NORMAL',
   factoryId: null,
+  locked: false,
   ...overrides,
 })
 
@@ -79,6 +80,40 @@ describe('canPlace', () => {
     expect(result.ok).toBe(false)
     expect(result.reason).toBe('OCCUPIED')
     expect(result.blockingSlot).toEqual({ x: 1, y: 1 })
+  })
+
+  it('rejects FARM on a locked slot as LOCKED (takes precedence over OCCUPIED)', () => {
+    const result = canPlace({
+      landWidth: 4,
+      landHeight: 4,
+      slots: [slot(3, 0, { locked: true })],
+      type: 'FARM',
+      anchorX: 3,
+      anchorY: 0,
+    })
+    expect(result.ok).toBe(false)
+    expect(result.reason).toBe('LOCKED')
+    expect(result.blockingSlot).toEqual({ x: 3, y: 0 })
+  })
+
+  it('rejects T3 2x2 placement when any corner overlaps a locked slot', () => {
+    // 3x3 active + 7 locked (4x4). Anchor at (2,2) — bottom-right 2x2 covers (3,2), (2,3), (3,3) which are all locked.
+    const lockedSlots: SlotState[] = []
+    for (let y = 0; y < 4; y++) {
+      for (let x = 0; x < 4; x++) {
+        if (x >= 3 || y >= 3) lockedSlots.push(slot(x, y, { locked: true }))
+      }
+    }
+    const result = canPlace({
+      landWidth: 4,
+      landHeight: 4,
+      slots: lockedSlots,
+      type: 'CAR_FACTORY',
+      anchorX: 2,
+      anchorY: 2,
+    })
+    expect(result.ok).toBe(false)
+    expect(result.reason).toBe('LOCKED')
   })
 })
 

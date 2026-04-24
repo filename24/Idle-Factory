@@ -16,11 +16,6 @@ const MAX_GRADE = 10
 const MIN_FROM_GRADE = 1
 /** 업그레이드 출발 등급 최대값: 9에서 10으로 올리는 것이 마지막 */
 const MAX_FROM_GRADE = 9
-/** 최초 확장 슬롯 번호(기본 3×3=9 이후 10번째 슬롯부터 확장). */
-const MIN_EXPANSION_SLOT = 10
-/** 10번째 슬롯 확장의 기준 비용 (화폐). */
-const BASE_EXPANSION_COST = 1_000_000
-
 /** 이동 비용 비율 (건설비의 25%). */
 const MOVE_COST_NUM = 25n
 /** 철거 환급 비율 (건설비의 50%). */
@@ -159,24 +154,5 @@ export function destroyRefund(type: FactoryType): bigint {
   return (buildCost(type) * DESTROY_REFUND_NUM) / PERCENT_DEN
 }
 
-/**
- * 토지 N번째 슬롯 확장 비용.
- *
- * 공식: `cost = 1_000_000 × 1.5^(slotNumber - 10)` (내림).
- * slotNumber는 10 이상 (기본 3×3 = 9슬롯 이후가 첫 확장).
- * 근거: `docs/design/11-land.md` §토지 확장.
- *
- * @param slotNumber 확장하려는 슬롯 번호 (>= 10)
- * @returns 확장 비용 (bigint)
- * @throws {RangeError} slotNumber가 10 미만이거나 정수가 아닌 경우
- */
-export function expansionSlotCost(slotNumber: number): bigint {
-  if (!Number.isInteger(slotNumber) || slotNumber < MIN_EXPANSION_SLOT) {
-    throw new RangeError(
-      `slotNumber must be an integer >= ${MIN_EXPANSION_SLOT}, got ${slotNumber}`,
-    )
-  }
-  const exponent = slotNumber - MIN_EXPANSION_SLOT
-  const raw = BASE_EXPANSION_COST * Math.pow(1.5, exponent)
-  return BigInt(Math.floor(raw))
-}
+// 슬롯 확장 비용은 `land/expansion.ts` 의 `landExpansionCost(landIndex, order)` 로 이전됨.
+// (docs/11-land.md 에서 구역별·구매순서별로 공식이 나뉘어 cost.ts 단일 함수로 표현 불가)
