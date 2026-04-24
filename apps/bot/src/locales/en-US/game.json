@@ -7,6 +7,7 @@
         "insufficientMaterial": "Not enough material. Required: {{amount}} {{material}}",
         "levelLocked": "This factory unlocks at level {{level}}.",
         "slotOccupied": "That slot is already occupied by another factory.",
+        "slotLocked": "That slot is still locked. Run `/land expand` first.",
         "outOfBounds": "That position is outside the land bounds.",
         "landNotFound": "You don't own that land yet. Buy it first with `/land buy`."
       }
@@ -21,6 +22,7 @@
     },
     "info": {
       "title": "{{emoji}} {{type}} · G{{grade}}",
+      "unlockHidden": "Not yet revealed",
       "fields": {
         "type": "Type",
         "grade": "Grade",
@@ -76,7 +78,7 @@
   "land": {
     "view": {
       "title": "🗺️ Land #{{index}} ({{index}}/{{total}})",
-      "legend": "⬜ Empty · 🌱 Fertile · 🌳 Forest · 🛢️ Oil · 🪨 Ore · 💧 Water",
+      "legend": "🟩 Empty · 🟫 Locked · 🌱 Fertile · 🌳 Forest · 🛢️ Oil · 🪨 Ore · 💧 Water",
       "buttonPrev": "◀ Prev",
       "buttonNext": "Next ▶",
       "cellComingSoon": "Cell actions coming soon.",
@@ -93,6 +95,24 @@
       "cancel": "❌ Cancel",
       "cancelled": "Build cancelled."
     },
+    "control": {
+      "refresh": "Refresh",
+      "build": "Build",
+      "move": "Move",
+      "destroy": "Destroy",
+      "expand": "Expand",
+      "moveNotImplemented": "↔️ Factory move is not yet implemented (docs/11-land.md §Move · Destroy).",
+      "buildPickTitle": "🏗️ Pick an empty cell to build on",
+      "buildPickPlaceholder": "Choose an empty cell",
+      "buildPickEmpty": "No empty cells in active area. Try `/land expand` to unlock more slots.",
+      "expandPickTitle": "🟩 Pick a locked slot to unlock",
+      "expandPickPlaceholder": "Choose a locked slot",
+      "expandPickAllUnlocked": "Every slot on this land is already unlocked.",
+      "expandOptionDesc": "Expansion #{{order}} · {{cost}} 💰 · Lv.{{level}} required",
+      "destroyPickTitle": "🗑️ Pick a factory to destroy",
+      "destroyPickPlaceholder": "Choose a factory",
+      "destroyPickEmpty": "No factories placed on this land."
+    },
     "factory": {
       "actionTitle": "{{emoji}} **{{type}}** · G{{grade}}",
       "actionInfo": "Info",
@@ -103,6 +123,14 @@
       "harvestSuccess": "✅ Harvested {{ticks}} ticks! +{{xp}} XP",
       "harvestEmpty": "Nothing to harvest yet.",
       "upgradeSuccess": "✅ Upgraded to G{{grade}}!"
+    },
+    "expand": {
+      "success": "🟩 Unlocked slot ({{x}}, {{y}}) on land #{{index}}! (order {{order}}/7, -{{cost}} 💰, balance {{remaining}} 💰)",
+      "error": {
+        "alreadyUnlocked": "This slot is already unlocked.",
+        "levelLocked": "This slot requires level {{level}} to expand.",
+        "insufficientMoney": "Not enough money to expand this slot. Need: {{required}} 💰"
+      }
     },
     "buy": {
       "success": "Bought land #{{index}}! (-{{cost}} 💰, balance {{remaining}} 💰, total {{total}} lands)",
@@ -129,8 +157,27 @@
       "userNotFound": "User data not found. Please run `/start` first.",
       "factoryNotFound": "That factory could not be found.",
       "warehouseFull": "Warehouse is full. Upgrade it or sell some materials.",
+      "notYourInteraction": "This isn't your interaction. Please run the command yourself.",
       "unknown": "An unknown error occurred. Please try again in a moment."
     }
+  },
+  "factoryType": {
+    "FARM": "Farm",
+    "MINE": "Mine",
+    "LUMBER": "Lumber Mill",
+    "OIL_WELL": "Oil Well",
+    "STEEL_MILL": "Steel Mill",
+    "REFINERY": "Refinery",
+    "FLOUR_MILL": "Flour Mill",
+    "FURNITURE_FACTORY": "Furniture Factory",
+    "CAR_FACTORY": "Car Factory",
+    "ELECTRONICS_FACTORY": "Electronics Factory",
+    "FOOD_FACTORY": "Food Factory"
+  },
+  "shortageMode": {
+    "PAUSE": "Paused",
+    "AUTO_BUY": "Auto-buy",
+    "PARTIAL": "Partial"
   },
   "material": {
     "GRAIN": "Grain",

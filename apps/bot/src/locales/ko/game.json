@@ -7,6 +7,7 @@
         "insufficientMaterial": "재료가 부족해요. 필요: {{amount}} {{material}}",
         "levelLocked": "이 공장은 레벨 {{level}}부터 해금돼요.",
         "slotOccupied": "해당 슬롯에는 이미 다른 공장이 있어요.",
+        "slotLocked": "해당 슬롯은 아직 잠겨 있어요. `/land expand` 로 먼저 확장해주세요.",
         "outOfBounds": "토지 경계를 벗어났어요.",
         "landNotFound": "해당 번호의 토지를 보유하고 있지 않아요. `/land buy` 로 먼저 구매해주세요."
       }
@@ -21,6 +22,7 @@
     },
     "info": {
       "title": "{{emoji}} {{type}} · G{{grade}}",
+      "unlockHidden": "미공개",
       "fields": {
         "type": "종류",
         "grade": "등급",
@@ -76,7 +78,7 @@
   "land": {
     "view": {
       "title": "🗺️ {{index}}번째 토지 ({{index}}/{{total}})",
-      "legend": "⬜ 빈 슬롯 · 🌱 비옥 · 🌳 숲 · 🛢️ 유전 · 🪨 광맥 · 💧 수원",
+      "legend": "🟩 빈 슬롯 · 🟫 잠금 · 🌱 비옥 · 🌳 숲 · 🛢️ 유전 · 🪨 광맥 · 💧 수원",
       "buttonPrev": "◀ 이전",
       "buttonNext": "다음 ▶",
       "cellComingSoon": "셀 액션은 곧 지원됩니다.",
@@ -92,6 +94,24 @@
       "placeholder": "공장 종류를 고르세요",
       "cancel": "❌ 취소",
       "cancelled": "건설을 취소했어요."
+    },
+    "control": {
+      "refresh": "새로고침",
+      "build": "건설",
+      "move": "이동",
+      "destroy": "철거",
+      "expand": "확장",
+      "moveNotImplemented": "↔️ 공장 이동은 준비 중이에요 (docs/11-land.md §공장 이동 · 철거).",
+      "buildPickTitle": "🏗️ 건설할 빈 셀을 선택하세요",
+      "buildPickPlaceholder": "빈 셀 좌표 선택",
+      "buildPickEmpty": "현재 활성 영역에 비어있는 셀이 없어요. `/land expand` 로 슬롯을 확장해보세요.",
+      "expandPickTitle": "🟩 확장할 잠긴 슬롯을 선택하세요",
+      "expandPickPlaceholder": "잠긴 슬롯 좌표 선택",
+      "expandPickAllUnlocked": "이 토지의 모든 슬롯이 이미 활성화되어 있어요.",
+      "expandOptionDesc": "{{order}}번째 확장 · {{cost}} 💰 · Lv.{{level}} 필요",
+      "destroyPickTitle": "🗑️ 철거할 공장을 선택하세요",
+      "destroyPickPlaceholder": "공장 선택",
+      "destroyPickEmpty": "이 토지에 설치된 공장이 없어요."
     },
     "factory": {
       "actionTitle": "{{emoji}} **{{type}}** · G{{grade}}",
@@ -112,6 +132,14 @@
         "invalidIndex": "구매할 수 있는 토지 번호는 {{min}}~{{max}}이에요. 이전 토지부터 순서대로 구매해주세요.",
         "insufficientMoney": "토지를 구매할 자금이 부족해요."
       }
+    },
+    "expand": {
+      "success": "🟩 {{index}}번째 토지의 ({{x}}, {{y}}) 슬롯을 확장했어요! (구매 순서 {{order}}/7, -{{cost}} 💰, 잔액 {{remaining}} 💰)",
+      "error": {
+        "alreadyUnlocked": "이미 활성화된 슬롯이에요.",
+        "levelLocked": "이 슬롯은 레벨 {{level}}부터 확장할 수 있어요.",
+        "insufficientMoney": "슬롯 확장에 필요한 자금이 부족해요. 필요: {{required}} 💰"
+      }
     }
   },
   "profile": {
@@ -129,8 +157,27 @@
       "userNotFound": "유저 정보를 찾을 수 없어요. `/start`로 먼저 시작해주세요.",
       "factoryNotFound": "해당 공장을 찾을 수 없어요.",
       "warehouseFull": "창고가 가득 찼어요. 창고를 확장하거나 자원을 판매해주세요.",
+      "notYourInteraction": "본인이 시작한 인터랙션이 아니에요. 직접 명령어를 사용해주세요.",
       "unknown": "알 수 없는 오류가 발생했어요. 잠시 후 다시 시도해주세요."
     }
+  },
+  "factoryType": {
+    "FARM": "농장",
+    "MINE": "광산",
+    "LUMBER": "목재소",
+    "OIL_WELL": "유전",
+    "STEEL_MILL": "제철소",
+    "REFINERY": "정유소",
+    "FLOUR_MILL": "제분소",
+    "FURNITURE_FACTORY": "가구 공장",
+    "CAR_FACTORY": "자동차 공장",
+    "ELECTRONICS_FACTORY": "전자 공장",
+    "FOOD_FACTORY": "식품 공장"
+  },
+  "shortageMode": {
+    "PAUSE": "일시 정지",
+    "AUTO_BUY": "자동 구매",
+    "PARTIAL": "부분 생산"
   },
   "material": {
     "GRAIN": "곡물",

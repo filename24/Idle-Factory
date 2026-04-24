@@ -2,7 +2,10 @@
   "event": {
     "guildCreate": {
       "title": "Thanks for inviting Idle Factory!",
-      "description": "Click the button below for additional setup."
+      "description": "Click the button below for additional setup.",
+      "default": {
+        "tax": "Default tax rate"
+      }
     }
   },
   "command": {
@@ -23,6 +26,10 @@
       "available": {
         "title": "I know this {{factoryName}}!",
         "description": "Registered factories cannot be re-registered!"
+      },
+      "success": {
+        "title": "{{factoryName}} registered!",
+        "description": "Idle Factory is ready to use. Check the commands and get started."
       }
     },
     "notice": {
