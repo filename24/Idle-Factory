@@ -10,9 +10,19 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@better-fetch/fetch": "1.1.21",
+    "@idle/database": "workspace:^",
+    "@idle/game-core": "workspace:^",
+    "better-auth": "1.6.9",
+    "clsx": "2.1.1",
+    "fumadocs-core": "16.8.3",
+    "fumadocs-mdx": "14.3.1",
+    "fumadocs-ui": "16.8.3",
+    "lucide-react": "1.11.0",
     "next": "16.2.4",
     "react": "19.2.5",
-    "react-dom": "19.2.5"
+    "react-dom": "19.2.5",
+    "tailwind-merge": "3.5.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.2",

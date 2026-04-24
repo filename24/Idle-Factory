@@ -440,3 +440,70 @@ model Notice {
   @@index([title])
   @@index([postedAt])
 }
+
+// ──────────────────────────────────────────────────────────────
+// better-auth 전용 테이블 (웹 인증)
+// 게임 User 모델과 이름 충돌을 피하기 위해 Auth* prefix + @@map("auth_*") 사용
+// ──────────────────────────────────────────────────────────────
+
+/// better-auth 웹 인증 유저 (게임 User와 별개)
+model AuthUser {
+  id            String        @id
+  name          String
+  email         String        @unique
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime
+  updatedAt     DateTime
+  sessions      AuthSession[]
+  accounts      AuthAccount[]
+
+  @@map("auth_user")
+}
+
+/// better-auth 세션
+model AuthSession {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      AuthUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("auth_session")
+}
+
+/// better-auth OAuth 계정 연결 (accountId = Discord snowflake)
+model AuthAccount {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  AuthUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?   @db.Text
+  refreshToken          String?   @db.Text
+  idToken               String?   @db.Text
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("auth_account")
+}
+
+/// better-auth 이메일 인증 토큰
+model AuthVerification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("auth_verification")
+}
