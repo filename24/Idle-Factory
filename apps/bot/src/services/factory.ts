@@ -99,7 +99,8 @@ export const FactoryService = {
         x: s.x,
         y: s.y,
         type: s.type,
-        factoryId: s.factoryId
+        factoryId: s.factoryId,
+        locked: s.locked
       }))
 
       const placement = canPlace({
@@ -114,6 +115,8 @@ export const FactoryService = {
         switch (placement.reason) {
           case 'OUT_OF_BOUNDS':
             throw new ServiceError('OUT_OF_BOUNDS')
+          case 'LOCKED':
+            throw new ServiceError('SLOT_LOCKED')
           case 'OCCUPIED':
           case 'OVERLAP':
           default:
@@ -167,6 +170,7 @@ export const FactoryService = {
       const factory = await tx.factory.create({
         data: {
           userId,
+          landId: land.id,
           type,
           tier: entry.tier,
           grade: 1,
@@ -185,7 +189,7 @@ export const FactoryService = {
         data: { factoryId: factory.id }
       })
 
-      return { ...factory, landId: land.id }
+      return factory
     })
   },
 

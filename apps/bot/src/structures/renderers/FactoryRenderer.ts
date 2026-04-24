@@ -7,6 +7,7 @@
  * 참조: `docs/design/03-factories.md` §공장 정보.
  */
 
+import type { TFunction } from '@sapphire/plugin-i18next'
 import type { FactoryCatalogEntry } from '@idle/game-core'
 import type { FactoryType, MaterialType, ShortageMode } from '@idle/game-core'
 
@@ -46,34 +47,54 @@ export interface NextUpgradeCost {
  * 공장 정보를 Components v2 TextDisplay 본문 문자열로 변환한다.
  *
  * 각 라인은 `**라벨:** 값` 형태의 마크다운이며, 마지막에 (있으면) 다음
- * 업그레이드 비용 라인이 추가된다.
+ * 업그레이드 비용 라인이 추가된다. 라벨·공장 종류·재료·모드는 전부 i18n 으로 해석.
  *
  * @param factory 공장 런타임 DTO
  * @param catalogEntry 해당 공장 종류의 카탈로그 정의
  * @param nextCost 다음 등급 비용 (최대 등급이면 `null`)
+ * @param t i18n TFunction (없으면 영문 enum 그대로 노출)
  * @returns TextDisplay 에 바로 넣을 수 있는 멀티라인 문자열
  */
 export function renderFactoryInfo(
   factory: FactoryInfoDTO,
   catalogEntry: FactoryCatalogEntry,
-  nextCost: NextUpgradeCost | null
+  nextCost: NextUpgradeCost | null,
+  t?: TFunction
 ): string {
+  const typeLabel = t
+    ? t(`game:factoryType.${factory.type}`, { defaultValue: factory.type })
+    : factory.type
+  const modeLabel = t
+    ? t(`game:shortageMode.${factory.shortageMode}`, {
+        defaultValue: factory.shortageMode
+      })
+    : factory.shortageMode
+  const materialLabel = (m: MaterialType): string =>
+    t ? t(`game:material.${m}`, { defaultValue: m }) : m
+
+  const fieldLabel = (key: string, fallback: string): string =>
+    t
+      ? t(`game:factory.info.fields.${key}`, { defaultValue: fallback })
+      : fallback
+
   const unlockValue =
     catalogEntry.unlockLevel >= 9999
-      ? '미공개'
+      ? t
+        ? t('game:factory.info.unlockHidden', { defaultValue: '미공개' })
+        : '미공개'
       : `Lv.${catalogEntry.unlockLevel}`
 
   const lines = [
-    `**종류:** ${catalogEntry.emoji} ${factory.type} (${catalogEntry.tier})`,
-    `**등급:** G${factory.grade}`,
-    `**좌표:** (${factory.anchorX}, ${factory.anchorY})`,
-    `**모드:** ${factory.shortageMode}`,
-    `**해금 레벨:** ${unlockValue}`
+    `**${fieldLabel('type', '종류')}:** ${catalogEntry.emoji} ${typeLabel} (${catalogEntry.tier})`,
+    `**${fieldLabel('grade', '등급')}:** G${factory.grade}`,
+    `**${fieldLabel('position', '좌표')}:** (${factory.anchorX}, ${factory.anchorY})`,
+    `**${fieldLabel('mode', '모드')}:** ${modeLabel}`,
+    `**${fieldLabel('unlock', '해금 레벨')}:** ${unlockValue}`
   ]
 
   if (nextCost !== null) {
     lines.push(
-      `**다음 업그레이드:** ${formatBigInt(nextCost.money)} 💰 · ${formatBigInt(nextCost.amount)} ${nextCost.material}`
+      `**${fieldLabel('nextCost', '다음 업그레이드')}:** ${formatBigInt(nextCost.money)} 💰 · ${formatBigInt(nextCost.amount)} ${materialLabel(nextCost.material)}`
     )
   }
 

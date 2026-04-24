@@ -11,7 +11,9 @@ import { FACTORY_CATALOG } from '@idle/game-core'
 import type { FactoryType, SlotType } from '@idle/game-core'
 
 /** 빈(배치 가능) 슬롯 이모지. */
-const EMPTY_CELL = '⬜'
+const EMPTY_CELL = '🟩'
+/** 아직 구매되지 않은 잠긴 슬롯 이모지 (docs/11 §Discord 시각화). */
+const LOCKED_CELL = '🟫'
 
 /**
  * 특수 슬롯 타입 → 렌더 이모지 매핑.
@@ -80,6 +82,8 @@ export interface SlotDTO {
   readonly y: number
   /** 슬롯 타입 */
   readonly type: SlotType
+  /** 아직 구매되지 않은 확장 슬롯 여부 (docs/11 §슬롯 확장). */
+  readonly locked?: boolean
 }
 
 /**
@@ -109,7 +113,7 @@ export interface RenderedLand {
 /**
  * 토지를 이모지 그리드 문자열로 렌더한다.
  *
- * - 빈 `NORMAL` 슬롯: `⬜`
+ * - 빈 `NORMAL` 슬롯: `🟩`
  * - 특수 슬롯(`FERTILE/FOREST/OIL/ORE/WATER`): 해당 이모지
  * - 공장: `FACTORY_CATALOG[type].emoji` + 등급 위첨자(앵커 셀에만)
  * - T3 2×2 공장: 4셀 모두 같은 이모지, 등급 표기는 앵커만
@@ -174,13 +178,16 @@ function renderCell(
   occupancy: Map<string, { factory: FactoryDTO; isAnchor: boolean }>
 ): string {
   const key = cellKey(x, y)
+  const slot = slotMap.get(key)
+  // 잠긴 슬롯은 공장/특수 타입 표시보다 우선 (구매 전까지 비활성).
+  if (slot?.locked) return LOCKED_CELL
+
   const occ = occupancy.get(key)
   if (occ !== undefined) {
     const emoji = FACTORY_CATALOG[occ.factory.type].emoji
     return occ.isAnchor ? `${emoji}${toSuperscript(occ.factory.grade)}` : emoji
   }
 
-  const slot = slotMap.get(key)
   if (slot !== undefined && slot.type !== 'NORMAL') {
     return SPECIAL_SLOT_EMOJI[slot.type]
   }
@@ -196,6 +203,7 @@ function cellKey(x: number, y: number): string {
 function buildLegend(): string {
   const parts = [
     `${EMPTY_CELL} 빈 슬롯`,
+    `${LOCKED_CELL} 잠금`,
     `${SPECIAL_SLOT_EMOJI.FERTILE} 비옥`,
     `${SPECIAL_SLOT_EMOJI.FOREST} 숲`,
     `${SPECIAL_SLOT_EMOJI.OIL} 유전`,

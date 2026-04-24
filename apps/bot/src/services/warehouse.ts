@@ -89,7 +89,8 @@ export const WarehouseService = {
       if (user.money < cost.money) {
         throw new ServiceError(
           'INSUFFICIENT_MONEY',
-          `need ${cost.money} money to upgrade to grade ${nextGrade}`
+          `need ${cost.money} money to upgrade to grade ${nextGrade}`,
+          { required: String(cost.money) }
         )
       }
 
@@ -105,7 +106,8 @@ export const WarehouseService = {
       if (owned < cost.amount) {
         throw new ServiceError(
           'INSUFFICIENT_MATERIAL',
-          `need ${cost.amount} ${cost.material} to upgrade to grade ${nextGrade}`
+          `need ${cost.amount} ${cost.material} to upgrade to grade ${nextGrade}`,
+          { material: cost.material, amount: String(cost.amount) }
         )
       }
 

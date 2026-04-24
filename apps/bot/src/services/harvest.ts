@@ -4,13 +4,18 @@ import {
   computeElapsedTicks,
   computeFactoryYield,
   computeFree,
+  computeLandSynergies,
   getSpecialSlotBonus,
+  getSynergyMultiplier,
   TICK_MS,
   xpForEvent,
   type FactoryState,
   type MaterialBag,
   type MaterialType,
-  type SlotType
+  type SlotType,
+  type SynergyBonusMap,
+  type SynergyFactoryInput,
+  type SynergySlotInput
 } from '@idle/game-core'
 import { runInTx, ServiceError, type Tx } from './base'
 
@@ -57,6 +62,63 @@ async function applyMaterialDelta(
       data: { warehouseId, material, count: next }
     })
   }
+}
+
+/**
+ * 수확 대상 공장들이 속한 모든 토지의 시너지 맵을 미리 계산한다.
+ *
+ * 같은 토지에 있는 다른 공장(수확 대상이 아니어도 provider 가 될 수 있음) + 슬롯 상태까지
+ * 전부 모아 `computeLandSynergies` 를 호출한다. 결과는 `landId → SynergyBonusMap`.
+ */
+async function buildSynergyMapsForFactories(
+  tx: Tx,
+  harvestTargets: ReadonlyArray<{ landId: string }>
+): Promise<Map<string, SynergyBonusMap>> {
+  const result = new Map<string, SynergyBonusMap>()
+  const landIds = [...new Set(harvestTargets.map((f) => f.landId))]
+  if (landIds.length === 0) return result
+
+  const lands = await tx.land.findMany({
+    where: { id: { in: landIds } },
+    include: {
+      factories: {
+        select: {
+          id: true,
+          type: true,
+          anchorX: true,
+          anchorY: true,
+          width: true,
+          height: true
+        }
+      },
+      slots: {
+        select: { x: true, y: true, type: true, locked: true }
+      }
+    }
+  })
+
+  for (const land of lands) {
+    const factoriesInput: SynergyFactoryInput[] = land.factories.map((f) => ({
+      id: f.id,
+      type: f.type as SynergyFactoryInput['type'],
+      anchorX: f.anchorX,
+      anchorY: f.anchorY,
+      width: f.width,
+      height: f.height
+    }))
+    const slotsInput: SynergySlotInput[] = land.slots.map((s) => ({
+      x: s.x,
+      y: s.y,
+      type: s.type as SynergySlotInput['type'],
+      locked: s.locked
+    }))
+    result.set(
+      land.id,
+      computeLandSynergies({ factories: factoriesInput, slots: slotsInput })
+    )
+  }
+
+  return result
 }
 
 export class HarvestService {
@@ -129,6 +191,11 @@ async function harvestWhere(
       include: { slots: true }
     })
 
+    // 같은 토지에 있는 공장끼리의 인접 시너지(docs/11 §인접 시너지) 선계산.
+    // 수확 대상 공장이 걸쳐 있는 모든 landId 를 모아, 각 토지의 **전체** 공장/슬롯
+    // (수확 대상 밖 공장도 provider 가 될 수 있어 전부 포함) 으로 시너지 맵을 만든다.
+    const synergyByLand = await buildSynergyMapsForFactories(tx, factories)
+
     // Running warehouse balance (working copy; DB mutations happen inline).
     const balance: MaterialBag = {}
     for (const s of warehouse.stacks) {
@@ -143,14 +210,22 @@ async function harvestWhere(
       if (elapsedTicks <= 0) continue
 
       // Pick best special-slot bonus across occupied slots.
+      // docs/11-land.md: 잠긴 슬롯의 특수 타입은 구매 전까지 보너스 미적용.
+      // canPlace 가 LOCKED 를 차단하므로 실제로 도달할 일은 없지만, 데이터 드리프트 방어용으로 skip.
       let slotBonus = 1.0
       for (const slot of factory.slots) {
+        if (slot.locked) continue
         const b = getSpecialSlotBonus(
           slot.type as SlotType,
           factory.type as FactoryState['type']
         )
         if (b > slotBonus) slotBonus = b
       }
+
+      const synergyMap = synergyByLand.get(factory.landId)
+      const synergyBonus = synergyMap
+        ? getSynergyMultiplier(synergyMap, factory.id)
+        : 1.0
 
       const state: FactoryState = {
         type: factory.type as FactoryState['type'],
@@ -169,7 +244,8 @@ async function harvestWhere(
         availableMaterials: { ...balance },
         warehouseFree,
         elapsedTicks,
-        slotBonus
+        slotBonus,
+        synergyBonus
       })
 
       if (result.ticksRealized <= 0) continue

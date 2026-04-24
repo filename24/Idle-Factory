@@ -1,4 +1,10 @@
 import type { PrismaClient } from '@idle/database'
+import {
+  LAND_MAX_HEIGHT,
+  LAND_MAX_WIDTH,
+  landExpansionCost,
+  landExpansionLevelRequirement
+} from '@idle/game-core'
 import { runInTx, ServiceError, type Tx } from './base'
 import { createLandWithSlots } from './user'
 
@@ -127,5 +133,146 @@ export const LandService = {
         totalLands: existingCount + 1
       }
     })
+  },
+
+  /**
+   * 잠긴 슬롯 `(x, y)` 하나를 구매해 활성화한다 (docs/11-land.md §슬롯 확장).
+   *
+   * 검증 순서:
+   *  1. 좌표가 4×4 물리 범위 내인지
+   *  2. 해당 토지 존재 + 호출자 소유
+   *  3. 해당 슬롯이 `locked=true` 인지 (이미 풀린 슬롯 재구매 방어)
+   *  4. 현재 구역의 k번째 구매가 7 이하인지
+   *  5. 유저 레벨이 `expansionLevelRequirement(landIndex, k)` 이상인지
+   *  6. 자금이 `expansionCost(landIndex, k)` 이상인지
+   *
+   * 성공 시:
+   *  - 유저 자금 차감
+   *  - 슬롯 `locked=false`
+   *  - 활성 영역이 커진 만큼 `Land.width/height` 갱신 (bounding box)
+   *
+   * @returns 구매 결과 요약
+   */
+  async expandSlot(
+    prisma: PrismaClient,
+    input: ExpandSlotInput
+  ): Promise<ExpandSlotResult> {
+    const { userId, landIndex, x, y } = input
+
+    if (
+      !Number.isInteger(x) ||
+      !Number.isInteger(y) ||
+      x < 0 ||
+      y < 0 ||
+      x >= LAND_MAX_WIDTH ||
+      y >= LAND_MAX_HEIGHT
+    ) {
+      throw new ServiceError(
+        'OUT_OF_BOUNDS',
+        `slot (${x}, ${y}) outside ${LAND_MAX_WIDTH}×${LAND_MAX_HEIGHT} grid`
+      )
+    }
+
+    return runInTx(prisma, async (tx) => {
+      const land = await tx.land.findUnique({
+        where: { userId_index: { userId, index: landIndex } },
+        include: { slots: true }
+      })
+      if (!land) {
+        throw new ServiceError('LAND_NOT_FOUND')
+      }
+
+      const slot = land.slots.find((s) => s.x === x && s.y === y)
+      if (!slot) {
+        throw new ServiceError('OUT_OF_BOUNDS')
+      }
+      if (!slot.locked) {
+        throw new ServiceError('SLOT_ALREADY_UNLOCKED')
+      }
+
+      // 현재 구역에서 이미 풀린 확장 슬롯 수(= k-1) → 이번이 k번째.
+      // "확장 슬롯"은 초기 3×3 영역 밖(x=3 또는 y=3)에서 locked=false 인 슬롯 수로 센다.
+      const alreadyExpanded = land.slots.filter(
+        (s) => (s.x >= 3 || s.y >= 3) && !s.locked
+      ).length
+      const order = alreadyExpanded + 1
+      if (order < 1 || order > 7) {
+        throw new ServiceError('INVALID_LAND_INDEX')
+      }
+
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        select: { level: true, money: true }
+      })
+      if (!user) throw new ServiceError('USER_NOT_FOUND')
+
+      const requiredLevel = landExpansionLevelRequirement(landIndex, order)
+      if (user.level < requiredLevel) {
+        throw new ServiceError('LEVEL_LOCKED', undefined, {
+          level: requiredLevel
+        })
+      }
+
+      const cost = landExpansionCost(landIndex, order)
+      if (user.money < cost) {
+        throw new ServiceError('INSUFFICIENT_MONEY', undefined, {
+          required: cost.toString(),
+          have: user.money.toString()
+        })
+      }
+
+      await tx.user.update({
+        where: { id: userId },
+        data: { money: { decrement: cost } }
+      })
+      await tx.slot.update({
+        where: { id: slot.id },
+        data: { locked: false }
+      })
+
+      // 언락된 모든 슬롯의 bounding box 로 Land.width/height 갱신.
+      const unlockedSlots = land.slots
+        .map((s) =>
+          s.id === slot.id
+            ? { ...s, locked: false }
+            : { ...s, locked: s.locked }
+        )
+        .filter((s) => !s.locked)
+      const newWidth = Math.max(...unlockedSlots.map((s) => s.x)) + 1
+      const newHeight = Math.max(...unlockedSlots.map((s) => s.y)) + 1
+      if (newWidth !== land.width || newHeight !== land.height) {
+        await tx.land.update({
+          where: { id: land.id },
+          data: { width: newWidth, height: newHeight }
+        })
+      }
+
+      return {
+        landIndex,
+        x,
+        y,
+        order,
+        cost,
+        remainingMoney: user.money - cost
+      }
+    })
   }
 } as const
+
+/** `/land expand` 입력. */
+export interface ExpandSlotInput {
+  readonly userId: string
+  readonly landIndex: number
+  readonly x: number
+  readonly y: number
+}
+
+/** `/land expand` 성공 결과. */
+export interface ExpandSlotResult {
+  readonly landIndex: number
+  readonly x: number
+  readonly y: number
+  readonly order: number
+  readonly cost: bigint
+  readonly remainingMoney: bigint
+}
