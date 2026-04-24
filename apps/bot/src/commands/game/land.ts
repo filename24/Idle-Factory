@@ -198,12 +198,20 @@ export async function buildLandViewPayload(
   container.addActionRowComponents(
     new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
-        .setCustomId(`${LAND_VIEW_BUTTON_PREFIX}${prev ?? targetIndex}`)
+        .setCustomId(
+          prev !== null
+            ? `${LAND_VIEW_BUTTON_PREFIX}${prev}`
+            : `${LAND_VIEW_BUTTON_PREFIX}prev:${targetIndex}`
+        )
         .setLabel('◀')
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(prev === null),
       new ButtonBuilder()
-        .setCustomId(`${LAND_VIEW_BUTTON_PREFIX}${next ?? targetIndex}`)
+        .setCustomId(
+          next !== null
+            ? `${LAND_VIEW_BUTTON_PREFIX}${next}`
+            : `${LAND_VIEW_BUTTON_PREFIX}next:${targetIndex}`
+        )
         .setLabel('▶')
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(next === null)
