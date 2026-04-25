@@ -20,6 +20,7 @@
       "outputLogs": "errors-only"
     },
     "web#build": {
+      "dependsOn": ["^build", "db:generate"],
       "inputs": ["public/**", "src/**/*.tsx", "src/**/*.ts", "src/**/*.css", "next.config.js"],
       "outputs": [".next/**", "!.next/cache/**"],
       "outputLogs": "full"
