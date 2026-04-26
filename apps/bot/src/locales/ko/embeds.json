@@ -3,6 +3,7 @@
     "guildCreate": {
       "title": "Idle Factory 를 초대해주셔서 감사합니다!",
       "description": "추가적인 세팅을 원할경우 아래 버튼을 눌러주세요.",
+      "openSettings": "⚙️ 서버 설정",
       "default": {
         "tax": "기본 세율"
       }
@@ -34,6 +35,15 @@
     },
     "notice": {
       "title": "공지사항"
+    }
+  },
+  "guildSettings": {
+    "title": "⚙️ 서버 설정",
+    "body": "현재 설정값:\n· 언어: **{{lang}}**\n· 세율: **{{tax}}%**\n\n아래 메뉴에서 변경할 항목을 선택하세요.",
+    "langPlaceholder": "언어 선택",
+    "taxPlaceholder": "세율 선택 (0~20%)",
+    "error": {
+      "notAdmin": "이 설정은 서버 관리자(`서버 관리` 권한)만 변경할 수 있어요."
     }
   }
 }

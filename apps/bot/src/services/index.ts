@@ -1,5 +1,6 @@
 export * from './base'
 export * from './factory'
+export * from './guild'
 export * from './harvest'
 export * from './land'
 export * from './market'

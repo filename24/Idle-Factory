@@ -3,6 +3,7 @@
     "guildCreate": {
       "title": "Thanks for inviting Idle Factory!",
       "description": "Click the button below for additional setup.",
+      "openSettings": "⚙️ Server Settings",
       "default": {
         "tax": "Default tax rate"
       }
@@ -34,6 +35,15 @@
     },
     "notice": {
       "title": "Notice"
+    }
+  },
+  "guildSettings": {
+    "title": "⚙️ Server Settings",
+    "body": "Current settings:\n· Language: **{{lang}}**\n· Tax surcharge: **{{tax}}%**\n\nUse the menus below to change a setting.",
+    "langPlaceholder": "Select language",
+    "taxPlaceholder": "Select tax rate (0–20%)",
+    "error": {
+      "notAdmin": "Only members with the `Manage Server` permission can change these settings."
     }
   }
 }

@@ -6,4 +6,5 @@
 
 export * from './LandRenderer'
 export * from './FactoryRenderer'
+export * from './GuildSettingsRenderer'
 export * from './QuestRenderer'

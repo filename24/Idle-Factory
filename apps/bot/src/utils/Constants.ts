@@ -51,3 +51,16 @@ export const ONBOARDING_DECLINE_PREFIX = 'onboard:decline:'
 
 /** 동의 페이로드 스키마 버전 — UI 변경 시 bump 해 옛 메시지 클릭을 무력화. */
 export const ONBOARDING_PROMPT_VERSION = 'v1'
+
+/**
+ * 길드 설정 인터랙션 customId prefix.
+ *
+ * - `guild:settings:open:<guildId>` — guildCreate 메시지의 [⚙️ 서버 설정] 버튼.
+ * - `guild:settings:lang:<guildId>` — 언어 select.
+ * - `guild:settings:tax:<guildId>`  — 세율 select.
+ *
+ * 클릭 시 `ManageGuild` 권한 검증 후 처리.
+ */
+export const GUILD_SETTINGS_OPEN_PREFIX = 'guild:settings:open:'
+export const GUILD_SETTINGS_LANG_PREFIX = 'guild:settings:lang:'
+export const GUILD_SETTINGS_TAX_PREFIX = 'guild:settings:tax:'
