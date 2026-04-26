@@ -32,7 +32,7 @@ function SidebarNode({ node, currentPath }: { node: PageTreeNode; currentPath: s
         {node.index ? (
           <SidebarLink href={node.index.url} label={String(node.name)} currentPath={currentPath} />
         ) : (
-          <div className="mb-1 px-2 py-1 text-xs font-semibold text-[var(--color-muted)]">
+          <div className="mb-1 px-2 py-1 text-xs font-semibold text-[var(--color-muted-foreground)]">
             {node.name}
           </div>
         )}
@@ -70,7 +70,7 @@ function SidebarLink({
         'mb-0.5 block rounded-[var(--radius-md)] px-2 py-1.5 text-sm transition-colors duration-100',
         isActive
           ? 'bg-[var(--color-gold-subtle)] font-medium text-[var(--color-gold)]'
-          : 'text-[var(--color-muted)] hover:bg-[var(--color-elevated)] hover:text-[var(--color-foreground)]',
+          : 'text-[var(--color-muted-foreground)] hover:bg-[var(--color-elevated)] hover:text-[var(--color-foreground)]',
       ].join(' ')}
     >
       {label}

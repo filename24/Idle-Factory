@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react'
 import { headers } from 'next/headers'
 import { DocsSidebar } from '@/components/docs/DocsSidebar'
+import { DocsSearch } from '@/components/docs/DocsSearch'
 import { source } from '@/lib/source'
 
 export const runtime = 'nodejs'
@@ -19,6 +20,9 @@ export default async function DocsLayout({ children }: Props) {
       {/* 사이드바 */}
       <aside className="hidden w-56 shrink-0 border-r border-[var(--color-border)] lg:block">
         <div className="sticky top-14 max-h-[calc(100dvh-3.5rem)] overflow-y-auto">
+          <div className="p-3">
+            <DocsSearch />
+          </div>
           <DocsSidebar tree={source.pageTree} currentPath={pathname} />
         </div>
       </aside>
