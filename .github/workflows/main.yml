@@ -7,10 +7,21 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/stable' && github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
+
+env:
+  # Remote cache credentials (used by every job that runs `turbo run`).
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM || secrets.TURBO_TEAM }}
+  # Cleaner interleaved logs in CI.
+  TURBO_LOG_ORDER: grouped
+  # Prisma generate runs in the build DAG; provide a dummy URL so the
+  # generator never tries to reach a real database during CI.
+  DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+  HUSKY: '0'
 
 jobs:
   quality:
@@ -18,14 +29,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    env:
-      # Prisma generate runs in the build DAG; provide a dummy URL so the
-      # generator never tries to reach a real database during CI.
-      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
-      HUSKY: '0'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Minimum depth so `turbo run --affected` can locate the merge base.
+          fetch-depth: 2
 
       - name: Install Node.js
         uses: actions/setup-node@v4
@@ -39,10 +48,102 @@ jobs:
           enable-corepack: false
 
       - name: Lint (ESLint + Prettier check)
-        run: pnpm lint
+        run: pnpm exec turbo run lint ${{ github.event_name == 'pull_request' && '--affected' || '' }}
 
       - name: Type check
-        run: pnpm typecheck
+        run: pnpm exec turbo run typecheck ${{ github.event_name == 'pull_request' && '--affected' || '' }}
+
+  prisma:
+    name: Prisma schema
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        uses: ./.github/actions/pnpm-install
+        with:
+          cwd: '.'
+          enable-corepack: false
+
+      - name: Validate Prisma schema
+        run: pnpm --filter @idle/database run db:validate
+
+      - name: Check schema is formatted
+        run: |
+          pnpm --filter @idle/database exec prisma format
+          git diff --exit-code -- packages/database/prisma/schema.prisma \
+            || (echo "::error::schema.prisma is not formatted. Run 'pnpm --filter @idle/database db:format' locally." && exit 1)
+
+  test:
+    name: Test (unit)
+    runs-on: ubuntu-latest
+    needs: [quality]
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        uses: ./.github/actions/pnpm-install
+        with:
+          cwd: '.'
+          enable-corepack: false
+
+      # Integration tests (apps/bot/tests/integration) require a live Postgres
+      # and are intentionally excluded from CI. Run them locally against the
+      # dev docker stack via `pnpm --filter bot test:integration`.
+      - name: Run unit tests
+        run: pnpm exec turbo run test:unit ${{ github.event_name == 'pull_request' && '--affected' || '' }}
+
+  commitlint:
+    name: Commit messages
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Full history so commitlint can walk the PR's commit range.
+          fetch-depth: 0
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        uses: ./.github/actions/pnpm-install
+        with:
+          cwd: '.'
+          enable-corepack: false
+
+      - name: Validate commits in PR
+        run: |
+          pnpm exec commitlint \
+            --from ${{ github.event.pull_request.base.sha }} \
+            --to ${{ github.event.pull_request.head.sha }} \
+            --verbose
 
   build:
     name: Build
@@ -50,14 +151,11 @@ jobs:
     needs: [quality]
     permissions:
       contents: read
-    env:
-      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
-      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
-      HUSKY: '0'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Install Node.js
         uses: actions/setup-node@v4
@@ -71,7 +169,7 @@ jobs:
           enable-corepack: false
 
       - name: Build
-        run: pnpm build --summarize
+        run: pnpm exec turbo run build --summarize ${{ github.event_name == 'pull_request' && '--affected' || '' }}
 
       - name: Summarize Turborepo output
         uses: ./.github/actions/turboSummary

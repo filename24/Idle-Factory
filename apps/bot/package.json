@@ -1,21 +1,26 @@
 {
   "name": "bot",
+  "private": true,
   "type": "module",
   "repository": "https://github.com/InfiniteTeam/Idle-Factory",
   "author": "__filename",
   "main": "build/index.js",
   "scripts": {
     "start": "node build/index.js",
-    "dev": "tsx --tsconfig tsconfig.json src/index.ts",
+    "dev": "tsx watch --tsconfig tsconfig.json src/index.ts",
     "generate": "prisma generate",
     "build": "tsup && cp -R src/locales build/locales",
     "typecheck": "tsc --noEmit",
     "update": "pnpm update -i",
     "lint": "eslint . --ext .ts",
-    "lint:fix": "prettier --write '**/*.ts' && eslint . --ext .ts --fix"
+    "lint:fix": "prettier --write '**/*.ts' && eslint . --ext .ts --fix",
+    "test": "vitest run",
+    "test:unit": "vitest run --exclude 'tests/integration/**'",
+    "test:integration": "vitest run tests/integration"
   },
   "dependencies": {
     "@idle/database": "workspace:^",
+    "@idle/game-core": "workspace:^",
     "@sapphire/framework": "^5.3.7",
     "@sapphire/pieces": "^4.3.9",
     "@sapphire/plugin-i18next": "8.0.0",
@@ -37,7 +42,8 @@
     "tsconfig": "workspace:*",
     "tsup": "^8.5.1",
     "tsx": "^4.19.4",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^2.1.8"
   },
   "eslintIgnore": [
     "node_modules",
@@ -48,6 +54,5 @@
   "engines": {
     "node": ">=20.19"
   },
-  "packageManager": "pnpm@10.9.0",
-  "private": true
+  "packageManager": "pnpm@10.9.0"
 }

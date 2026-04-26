@@ -109,26 +109,48 @@ enum TradeKind {
   DIVIDEND
 }
 
+/// 퀘스트 종류 — 도메인별 만료/리셋/시퀀싱 정책 분기점.
+/// (docs/design/00-onboarding.md §튜토리얼 퀘스트 체인)
+enum QuestKind {
+  TUTORIAL // 순차 체인, 1회성, 영구 보존
+  DAILY // UTC 자정 리셋 — 인프라 자리만 (미사용)
+  ACHIEVEMENT // 1회성, 영구 보존, 누적형
+  EVENT // 기간 한정 — 인프라 자리만 (미사용)
+}
+
+/// UserQuest 라이프사이클. IN_PROGRESS → COMPLETED → CLAIMED.
+enum QuestStatus {
+  IN_PROGRESS
+  COMPLETED
+  CLAIMED
+}
+
 // ──────────────────────────────────────────────────────────────
 // 유저 / 서버
 // ──────────────────────────────────────────────────────────────
 
 /// Discord 유저. id 는 Discord snowflake.
 model User {
-  id                 String   @id
-  nickname           String?
-  lang               String   @default("ko")
-  money              BigInt   @default(0) // 💰 지갑
-  xp                 BigInt   @default(0)
-  level              Int      @default(1)
-  flag               BigInt   @default(1) // 비트 플래그
-  lastActiveAt       DateTime @default(now())
+  id                   String    @id
+  nickname             String?
+  lang                 String    @default("ko")
+  money                BigInt    @default(0) // 💰 지갑
+  xp                   BigInt    @default(0)
+  level                Int       @default(1)
+  flag                 BigInt    @default(1) // 비트 플래그
+  lastActiveAt         DateTime  @default(now())
   // 자재 직구매 일일 한도 캐시 (docs/04, 레벨 구간별 100/500/2000/10000)
-  dailyBought        Int      @default(0)
-  dailyBoughtResetAt DateTime @default(now())
-  createdAt          DateTime @default(now())
+  dailyBought          Int       @default(0)
+  dailyBoughtResetAt   DateTime  @default(now())
+  createdAt            DateTime  @default(now())
+  // 약관·개인정보 동의 감사 (docs/design/00-onboarding.md §온보딩 동의)
+  // 두 컬럼이 모두 not-null 인 유저만 게임 명령을 사용할 수 있다.
+  agreedTermsAt        DateTime?
+  agreedPrivacyAt      DateTime?
+  agreedTermsVersion   String?
+  agreedPrivacyVersion String?
 
-  land        Land?
+  lands       Land[]
   warehouse   Warehouse?
   factories   Factory[]
   listings    MarketListing[]
@@ -137,6 +159,9 @@ model User {
   settlements WeeklySettlement[]
   tradesFrom  TradeLog[]         @relation("TradeFrom")
   tradesTo    TradeLog[]         @relation("TradeTo")
+  userQuests  UserQuest[]
+
+  @@index([agreedTermsAt])
 }
 
 /// Discord 서버. id 는 snowflake. 퇴장 추적을 위해 leftAt 유지.
@@ -162,25 +187,31 @@ model Guild {
 // 토지 / 슬롯
 // ──────────────────────────────────────────────────────────────
 
-/// 유저당 1개 (docs/11). 기본 3×3, 확장으로 최대 10×10.
+/// 유저당 최대 5개 (docs/11). 기본 4×4 고정. index 1 이 시작 토지.
 model Land {
   id     String @id @default(cuid())
-  userId String @unique
-  width  Int    @default(3)
-  height Int    @default(3)
+  userId String
+  index  Int    @default(1) // 1..5, 구매 순서
+  width  Int    @default(4)
+  height Int    @default(4)
 
-  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  slots Slot[]
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slots     Slot[]
+  factories Factory[]
+
+  @@unique([userId, index])
+  @@index([userId])
 }
 
 /// 토지 내 개별 슬롯. T3 공장(2×2)은 4개 슬롯이 같은 factoryId 를 공유.
+/// `locked=true` 는 아직 구매되지 않은 확장 슬롯 — UI에서 disabled 🟩 버튼으로 렌더됨. (docs/11-land.md §슬롯 확장)
 model Slot {
   id        String   @id @default(cuid())
   landId    String
   x         Int
   y         Int
   type      SlotType @default(NORMAL)
-  locked    Boolean  @default(false) // 확장 전 잠김
+  locked    Boolean  @default(false)
   factoryId String? // 비어있으면 null
 
   land    Land     @relation(fields: [landId], references: [id], onDelete: Cascade)
@@ -199,6 +230,7 @@ model Slot {
 model Factory {
   id             String          @id @default(cuid())
   userId         String
+  landId         String // 소속 토지 (다중 토지 지원 — docs/11-land.md)
   guildId        String? // 소속 서버 (게임 맥락)
   type           FactoryType
   tier           FactoryTier
@@ -216,12 +248,14 @@ model Factory {
   createdAt      DateTime        @default(now())
 
   owner   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  land    Land     @relation(fields: [landId], references: [id], onDelete: Cascade)
   guild   Guild?   @relation(fields: [guildId], references: [id], onDelete: SetNull)
   workers Worker[]
   slots   Slot[]
   stock   Stock?
 
   @@index([userId])
+  @@index([landId])
   @@index([guildId])
 }
 
@@ -418,6 +452,36 @@ model InactiveServerPool {
 }
 
 // ──────────────────────────────────────────────────────────────
+// 퀘스트
+// ──────────────────────────────────────────────────────────────
+
+/// 한 유저의 한 퀘스트 인스턴스. 카탈로그(코드)와 questId 로 결합.
+/// target 과 rewardSnapshot 은 시드 시점의 카탈로그를 박아 정의 변경에 면역.
+/// (docs/design/00-onboarding.md §튜토리얼 퀘스트 체인)
+model UserQuest {
+  id             String      @id @default(cuid())
+  userId         String
+  questId        String // 카탈로그 키 (예: "tutorial.1")
+  kind           QuestKind
+  status         QuestStatus @default(IN_PROGRESS)
+  progress       BigInt      @default(0) // 진행도 (BigInt — 누적형 확장 대비)
+  target         BigInt // 카탈로그 정의 스냅샷
+  rewardSnapshot Json // Reward[] 스냅샷 — 클레임 결정성 보장
+  completedAt    DateTime?
+  claimedAt      DateTime?
+  expiresAt      DateTime? // EVENT/DAILY 만료 자리 (미사용)
+  resetAt        DateTime? // DAILY 다음 리셋 자리 (미사용)
+  createdAt      DateTime    @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, questId])
+  @@index([userId, status])
+  @@index([userId, kind])
+  @@index([userId, status, kind])
+}
+
+// ──────────────────────────────────────────────────────────────
 // 공지
 // ──────────────────────────────────────────────────────────────
 
@@ -430,4 +494,71 @@ model Notice {
 
   @@index([title])
   @@index([postedAt])
+}
+
+// ──────────────────────────────────────────────────────────────
+// better-auth 전용 테이블 (웹 인증)
+// 게임 User 모델과 이름 충돌을 피하기 위해 Auth* prefix + @@map("auth_*") 사용
+// ──────────────────────────────────────────────────────────────
+
+/// better-auth 웹 인증 유저 (게임 User와 별개)
+model AuthUser {
+  id            String        @id
+  name          String
+  email         String        @unique
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime
+  updatedAt     DateTime
+  sessions      AuthSession[]
+  accounts      AuthAccount[]
+
+  @@map("auth_user")
+}
+
+/// better-auth 세션
+model AuthSession {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      AuthUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("auth_session")
+}
+
+/// better-auth OAuth 계정 연결 (accountId = Discord snowflake)
+model AuthAccount {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  AuthUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?   @db.Text
+  refreshToken          String?   @db.Text
+  idToken               String?   @db.Text
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("auth_account")
+}
+
+/// better-auth 이메일 인증 토큰
+model AuthVerification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("auth_verification")
 }

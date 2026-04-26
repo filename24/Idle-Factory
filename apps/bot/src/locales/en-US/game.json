@@ -1,0 +1,260 @@
+{
+  "factory": {
+    "build": {
+      "success": "Built a {{type}} {{emoji}} factory at ({{x}}, {{y}})!",
+      "error": {
+        "insufficientMoney": "Not enough money. Required: {{required}} 💰 / Have: {{have}} 💰",
+        "insufficientMaterial": "Not enough material. Required: {{amount}} {{material}}",
+        "levelLocked": "This factory unlocks at level {{level}}.",
+        "slotOccupied": "That slot is already occupied by another factory.",
+        "slotLocked": "That slot is still locked. Run `/land expand` first.",
+        "outOfBounds": "That position is outside the land bounds.",
+        "landNotFound": "You don't own that land yet. Buy it first with `/land buy`."
+      }
+    },
+    "upgrade": {
+      "success": "Upgraded the {{type}} factory to G{{grade}}!",
+      "error": {
+        "insufficientMoney": "Not enough money. Required: {{required}} 💰",
+        "insufficientMaterial": "Not enough material. Required: {{amount}} {{material}}",
+        "maxGrade": "Already at max grade."
+      }
+    },
+    "info": {
+      "title": "{{emoji}} {{type}} · G{{grade}}",
+      "unlockHidden": "Not yet revealed",
+      "fields": {
+        "type": "Type",
+        "grade": "Grade",
+        "position": "Position",
+        "mode": "Mode",
+        "nextCost": "Next upgrade",
+        "unlock": "Unlock level"
+      }
+    },
+    "setMode": {
+      "success": "Factory mode changed to `{{mode}}`."
+    },
+    "destroy": {
+      "confirmTitle": "⚠️ Destroy {{emoji}} {{type}} factory?",
+      "confirmBody": "`{{refund}} 💰` will be refunded (50% of build cost). Materials, upgrades, and boosters are not refunded.",
+      "confirmYes": "Destroy",
+      "confirmCancel": "Cancel",
+      "success": "🧨 {{emoji}} {{type}} factory destroyed. (+{{refund}} 💰, balance {{remaining}} 💰)",
+      "cancelled": "Destruction cancelled."
+    }
+  },
+  "harvest": {
+    "result": {
+      "title": "🧺 Harvest result",
+      "summary": "+{{xp}} XP from {{count}} factories",
+      "emptyLine": "— Nothing harvested.",
+      "none": "You have no factories to harvest.",
+      "line": "{{emoji}} {{type}} +{{produced}} (-{{consumed}}) x{{ticks}}",
+      "noneProduced": "none",
+      "noneConsumed": "none"
+    }
+  },
+  "warehouse": {
+    "view": {
+      "title": "📦 Warehouse",
+      "fields": {
+        "grade": "Warehouse grade",
+        "capacity": "Total capacity",
+        "used": "Used",
+        "free": "Free",
+        "stacks": "Stored materials"
+      }
+    },
+    "upgrade": {
+      "success": "Warehouse upgraded to G{{grade}}!",
+      "error": {
+        "insufficientMoney": "Not enough money. Required: {{required}} 💰",
+        "insufficientMaterial": "Not enough material. Required: {{amount}} {{material}}",
+        "maxGrade": "Warehouse is already at max grade."
+      }
+    }
+  },
+  "land": {
+    "view": {
+      "title": "🗺️ Land #{{index}} ({{index}}/{{total}})",
+      "legend": "🟩 Empty · 🟫 Locked · 🌱 Fertile · 🌳 Forest · 🛢️ Oil · 🪨 Ore · 💧 Water",
+      "buttonPrev": "◀ Prev",
+      "buttonNext": "Next ▶",
+      "cellComingSoon": "Cell actions coming soon.",
+      "error": {
+        "landNotFound": "You don't own that land yet.",
+        "notOwned": "You don't own that land yet.",
+        "cellNotEmpty": "That cell is already occupied.",
+        "cellNotFound": "Cell data not found."
+      }
+    },
+    "build": {
+      "title": "🏗️ Build Factory",
+      "placeholder": "Select a factory type to build",
+      "cancel": "❌ Cancel",
+      "cancelled": "Build cancelled."
+    },
+    "control": {
+      "refresh": "Refresh",
+      "build": "Build",
+      "move": "Move",
+      "destroy": "Destroy",
+      "expand": "Expand",
+      "moveNotImplemented": "↔️ Factory move is not yet implemented (docs/11-land.md §Move · Destroy).",
+      "buildPickTitle": "🏗️ Pick an empty cell to build on",
+      "buildPickPlaceholder": "Choose an empty cell",
+      "buildPickEmpty": "No empty cells in active area. Try `/land expand` to unlock more slots.",
+      "expandPickTitle": "🟩 Pick a locked slot to unlock",
+      "expandPickPlaceholder": "Choose a locked slot",
+      "expandPickAllUnlocked": "Every slot on this land is already unlocked.",
+      "expandOptionDesc": "Expansion #{{order}} · {{cost}} 💰 · Lv.{{level}} required",
+      "destroyPickTitle": "🗑️ Pick a factory to destroy",
+      "destroyPickPlaceholder": "Choose a factory",
+      "destroyPickEmpty": "No factories placed on this land."
+    },
+    "factory": {
+      "actionTitle": "{{emoji}} **{{type}}** · G{{grade}}",
+      "actionInfo": "Info",
+      "actionHarvest": "Harvest",
+      "actionUpgrade": "Upgrade",
+      "actionDestroy": "Destroy",
+      "actionBack": "◀ Back to Land",
+      "harvestSuccess": "✅ Harvested {{ticks}} ticks! +{{xp}} XP",
+      "harvestEmpty": "Nothing to harvest yet.",
+      "upgradeSuccess": "✅ Upgraded to G{{grade}}!"
+    },
+    "expand": {
+      "success": "🟩 Unlocked slot ({{x}}, {{y}}) on land #{{index}}! (order {{order}}/7, -{{cost}} 💰, balance {{remaining}} 💰)",
+      "error": {
+        "alreadyUnlocked": "This slot is already unlocked.",
+        "levelLocked": "This slot requires level {{level}} to expand.",
+        "insufficientMoney": "Not enough money to expand this slot. Need: {{required}} 💰"
+      }
+    },
+    "buy": {
+      "success": "Bought land #{{index}}! (-{{cost}} 💰, balance {{remaining}} 💰, total {{total}} lands)",
+      "error": {
+        "maxLands": "You already own the maximum of {{max}} lands.",
+        "alreadyExists": "You already own that land.",
+        "invalidIndex": "Land index must be between {{min}} and {{max}}. Buy them in order.",
+        "insufficientMoney": "Not enough money to buy this land."
+      }
+    }
+  },
+  "profile": {
+    "title": "👤 {{nickname}}'s profile",
+    "fields": {
+      "level": "Level",
+      "xp": "XP",
+      "money": "Money",
+      "warehouseGrade": "Warehouse grade",
+      "factoryCount": "Factories"
+    }
+  },
+  "common": {
+    "error": {
+      "userNotFound": "User data not found. Please run `/start` first.",
+      "factoryNotFound": "That factory could not be found.",
+      "warehouseFull": "Warehouse is full. Upgrade it or sell some materials.",
+      "notYourInteraction": "This isn't your interaction. Please run the command yourself.",
+      "unknown": "An unknown error occurred. Please try again in a moment."
+    }
+  },
+  "factoryType": {
+    "FARM": "Farm",
+    "MINE": "Mine",
+    "LUMBER": "Lumber Mill",
+    "OIL_WELL": "Oil Well",
+    "STEEL_MILL": "Steel Mill",
+    "REFINERY": "Refinery",
+    "FLOUR_MILL": "Flour Mill",
+    "FURNITURE_FACTORY": "Furniture Factory",
+    "CAR_FACTORY": "Car Factory",
+    "ELECTRONICS_FACTORY": "Electronics Factory",
+    "FOOD_FACTORY": "Food Factory"
+  },
+  "shortageMode": {
+    "PAUSE": "Paused",
+    "AUTO_BUY": "Auto-buy",
+    "PARTIAL": "Partial"
+  },
+  "material": {
+    "GRAIN": "Grain",
+    "ORE": "Ore",
+    "WOOD": "Wood",
+    "CRUDE_OIL": "Crude Oil",
+    "STEEL": "Steel",
+    "FUEL": "Fuel",
+    "PLASTIC": "Plastic",
+    "PROCESSED_FOOD": "Processed Food",
+    "FURNITURE": "Furniture",
+    "CAR": "Car",
+    "ELECTRONIC": "Electronics",
+    "FINISHED_FOOD": "Finished Food",
+    "RAW_BOOSTER": "Raw Booster"
+  },
+  "quest": {
+    "title": "📜 Quests",
+    "tutorialChain": "Tutorial {{order}}/{{total}}",
+    "empty": {
+      "tutorialDone": "Tutorial complete! More quests are coming soon.",
+      "noVisible": "No active quests."
+    },
+    "progressLabel": "Progress: {{bar}} {{progress}}/{{target}}",
+    "rewardLabel": "Reward: {{rewards}}",
+    "completed": {
+      "title": "🎉 Quest Complete!",
+      "claimHint": "Open **`/quest`** and press [Claim] to receive your reward."
+    },
+    "claimed": {
+      "title": "✅ Reward Claimed",
+      "body": "Reward received for **{{title}}**.\n{{rewards}}"
+    },
+    "unlocked": {
+      "title": "🆕 New Quest Started",
+      "body": "**{{title}}** — {{description}}"
+    },
+    "claimButton": "Claim Reward",
+    "refreshButton": "Refresh",
+    "reward": {
+      "money": "+{{amount}}💰",
+      "xp": "+{{amount}} XP",
+      "material": "+{{amount}} {{material}}"
+    },
+    "tutorial": {
+      "1": {
+        "title": "Build your first factory",
+        "description": "Build one T1 factory."
+      },
+      "2": {
+        "title": "First harvest",
+        "description": "Harvest a factory once."
+      },
+      "3": {
+        "title": "Sell on market",
+        "description": "List at least one material on the market."
+      },
+      "4": {
+        "title": "Upgrade a factory",
+        "description": "Upgrade a factory to grade 2."
+      },
+      "5": {
+        "title": "Second factory",
+        "description": "Own two T1 factories."
+      }
+    }
+  },
+  "market": {
+    "list": {
+      "success": "🛒 Listed **{{material}}** ×{{quantity}} at {{price}} each on the market.",
+      "footer": "Tax {{tax}}%",
+      "error": {
+        "insufficientStock": "Not enough stock. Need: {{required}} / Have: {{have}}",
+        "invalidQuantity": "Quantity must be at least 1.",
+        "invalidPrice": "Price must be at least 1.",
+        "invalidDuration": "Duration must be 1–30 days."
+      }
+    }
+  }
+}

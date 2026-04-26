@@ -1,0 +1,4 @@
+{
+  "title": "시설 관리",
+  "pages": ["factories", "land-slots", "warehouse"]
+}

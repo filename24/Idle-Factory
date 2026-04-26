@@ -1,7 +1,17 @@
 {
   "$schema": "https://turborepo.org/schema.json",
   "globalDependencies": ["pnpm-lock.yaml", "**/tsconfig.json", "**/tsup.config.ts"],
-  "globalEnv": ["NODE_ENV", "DATABASE_URL", "REDIS_URL", "BOT_TOKEN"],
+  "globalEnv": [
+    "NODE_ENV",
+    "DATABASE_URL",
+    "REDIS_URL",
+    "BOT_TOKEN",
+    "BETTER_AUTH_SECRET",
+    "BETTER_AUTH_URL",
+    "DISCORD_CLIENT_ID",
+    "DISCORD_CLIENT_SECRET",
+    "NEXT_PUBLIC_APP_URL"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build", "db:generate"],
@@ -10,6 +20,7 @@
       "outputLogs": "errors-only"
     },
     "web#build": {
+      "dependsOn": ["^build", "db:generate"],
       "inputs": ["public/**", "src/**/*.tsx", "src/**/*.ts", "src/**/*.css", "next.config.js"],
       "outputs": [".next/**", "!.next/cache/**"],
       "outputLogs": "full"
@@ -64,6 +75,10 @@
       "persistent": true
     },
     "test": {
+      "dependsOn": ["db:generate", "^build"],
+      "cache": true
+    },
+    "test:unit": {
       "dependsOn": ["db:generate", "^build"],
       "cache": true
     },

@@ -1,13 +1,14 @@
 import { Command } from '@sapphire/framework'
 import {
   ActionRowBuilder,
-  type APIEmbedField,
   ButtonBuilder,
   ButtonStyle,
-  ComponentType
+  ComponentType,
+  ContainerBuilder,
+  TextDisplayBuilder
 } from 'discord.js'
 import { getRandomAttributes } from '@utils/Algorithms'
-import Embed from '@utils/Embed'
+import { simpleV2Payload, v2Flags, V2_ACCENT } from '@utils/ComponentsV2'
 
 export function getRandomKoreanFood(): string {
   const foods = [
@@ -33,19 +34,30 @@ export function getRandomKoreanFood(): string {
   return foods[Math.floor(Math.random() * foods.length)]
 }
 
-function buildAttributeFields(
+/** 특성 결과를 표시할 Components v2 Container 를 구성한다. */
+function buildAttributeContainer(
   name: string,
   attrs: ReturnType<typeof getRandomAttributes>
-): APIEmbedField[] {
-  return [
-    { name: '지원자', value: name, inline: true },
-    { name: '특성', value: '** **', inline: false },
-    { name: '힘', value: String(attrs.strength), inline: true },
-    { name: '달리기', value: String(attrs.athletics), inline: true },
-    { name: '작동', value: String(attrs.machinery), inline: true }
-  ]
+): ContainerBuilder {
+  const body = [
+    `**지원자:** ${name}`,
+    '',
+    '## 특성',
+    `**힘:** ${attrs.strength}`,
+    `**달리기:** ${attrs.athletics}`,
+    `**작동:** ${attrs.machinery}`
+  ].join('\n')
+
+  return new ContainerBuilder()
+    .setAccentColor(V2_ACCENT.info)
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent('# **공장 직원 특성**')
+    )
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(body))
+    .addActionRowComponents(buildRow())
 }
 
+/** 재뽑기 / 합격 버튼 행. */
 function buildRow() {
   return new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
@@ -69,13 +81,13 @@ export class AttributesCommand extends Command {
   public override async chatInputRun(
     interaction: Command.ChatInputCommandInteraction
   ) {
-    const { client } = this.container
     const attrs = getRandomAttributes()
-    const embed = new Embed(client, 'info')
-      .setTitle('공장 직원 특성')
-      .addFields(buildAttributeFields(getRandomKoreanFood(), attrs))
+    const container = buildAttributeContainer(getRandomKoreanFood(), attrs)
 
-    await interaction.reply({ embeds: [embed], components: [buildRow()] })
+    await interaction.reply({
+      components: [container],
+      flags: v2Flags()
+    })
 
     const collector = interaction.channel?.createMessageComponentCollector({
       idle: 60_000,
@@ -88,20 +100,20 @@ export class AttributesCommand extends Command {
     collector?.on('collect', async (i) => {
       if (i.customId === 'reroll') {
         const newAttrs = getRandomAttributes()
+        const next = buildAttributeContainer(getRandomKoreanFood(), newAttrs)
         await i.update({
-          embeds: [
-            new Embed(client, 'info')
-              .setTitle('공장 직원 특성')
-              .addFields(buildAttributeFields(getRandomKoreanFood(), newAttrs))
-          ],
-          components: [buildRow()]
+          components: [next],
+          flags: v2Flags()
         })
       } else if (i.customId === 'accept') {
         await i.deferUpdate()
-        await i.followUp({
-          content: '성공적으로 해당 직원을 공장에 지원했습니다!',
-          ephemeral: true
-        })
+        await i.followUp(
+          simpleV2Payload({
+            accent: V2_ACCENT.success,
+            body: '성공적으로 해당 직원을 공장에 지원했습니다!',
+            ephemeral: false
+          })
+        )
       }
     })
   }

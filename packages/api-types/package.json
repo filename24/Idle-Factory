@@ -1,7 +1,6 @@
 {
   "name": "@idle/api-types",
   "version": "1.0.0",
-  "packageManager": "pnpm@10.9.0",
   "license": "MIT",
   "author": {
     "email": "filename@inft.kr",

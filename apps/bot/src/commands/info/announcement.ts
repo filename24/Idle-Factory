@@ -1,6 +1,6 @@
 import { Command } from '@sapphire/framework'
 import { fetchT } from '@sapphire/plugin-i18next'
-import Embed from '@utils/Embed'
+import { simpleV2Payload, V2_ACCENT } from '@utils/ComponentsV2'
 
 export class AnnouncementCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -10,13 +10,16 @@ export class AnnouncementCommand extends Command {
   public override async chatInputRun(
     interaction: Command.ChatInputCommandInteraction
   ) {
-    const { client } = this.container
     const t = await fetchT(interaction)
 
-    const embed = new Embed(client, 'info').setTitle(
-      t('embeds:command.notice.title')
+    await interaction.reply(
+      simpleV2Payload({
+        accent: V2_ACCENT.info,
+        title: t('embeds:command.notice.title'),
+        body: '-',
+        ephemeral: false
+      })
     )
-    await interaction.reply({ ephemeral: true, embeds: [embed] })
   }
 
   public override registerApplicationCommands(registry: Command.Registry) {

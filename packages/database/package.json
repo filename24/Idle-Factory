@@ -1,6 +1,7 @@
 {
   "name": "@idle/database",
   "version": "0.0.1",
+  "private": true,
   "description": "",
   "scripts": {
     "build": "tsup",
@@ -9,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "studio": "prisma studio",
     "db:format": "prisma format",
+    "db:validate": "prisma validate",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
     "db:generate": "prisma generate",

@@ -1,0 +1,260 @@
+{
+  "factory": {
+    "build": {
+      "success": "{{emoji}} {{type}} 공장을 ({{x}}, {{y}})에 건설했어요!",
+      "error": {
+        "insufficientMoney": "돈이 부족해요. 필요: {{required}} 💰 / 보유: {{have}} 💰",
+        "insufficientMaterial": "재료가 부족해요. 필요: {{amount}} {{material}}",
+        "levelLocked": "이 공장은 레벨 {{level}}부터 해금돼요.",
+        "slotOccupied": "해당 슬롯에는 이미 다른 공장이 있어요.",
+        "slotLocked": "해당 슬롯은 아직 잠겨 있어요. `/land expand` 로 먼저 확장해주세요.",
+        "outOfBounds": "토지 경계를 벗어났어요.",
+        "landNotFound": "해당 번호의 토지를 보유하고 있지 않아요. `/land buy` 로 먼저 구매해주세요."
+      }
+    },
+    "upgrade": {
+      "success": "{{type}} 공장을 G{{grade}}(으)로 업그레이드했어요!",
+      "error": {
+        "insufficientMoney": "돈이 부족해요. 필요: {{required}} 💰",
+        "insufficientMaterial": "재료가 부족해요. 필요: {{amount}} {{material}}",
+        "maxGrade": "이미 최대 등급이에요."
+      }
+    },
+    "info": {
+      "title": "{{emoji}} {{type}} · G{{grade}}",
+      "unlockHidden": "미공개",
+      "fields": {
+        "type": "종류",
+        "grade": "등급",
+        "position": "좌표",
+        "mode": "모드",
+        "nextCost": "다음 업그레이드",
+        "unlock": "해금 레벨"
+      }
+    },
+    "setMode": {
+      "success": "공장 모드를 `{{mode}}`(으)로 변경했어요."
+    },
+    "destroy": {
+      "confirmTitle": "⚠️ {{emoji}} {{type}} 공장을 철거할까요?",
+      "confirmBody": "`{{refund}} 💰`가 환불됩니다 (빌드 비용의 50%). 재료·업그레이드·원자재 부스터는 환불되지 않고 사라져요.",
+      "confirmYes": "철거",
+      "confirmCancel": "취소",
+      "success": "🧨 {{emoji}} {{type}} 공장을 철거했어요. (+{{refund}} 💰, 잔액 {{remaining}} 💰)",
+      "cancelled": "철거를 취소했어요."
+    }
+  },
+  "harvest": {
+    "result": {
+      "title": "🧺 수확 결과",
+      "summary": "{{count}} 공장에서 +{{xp}} XP",
+      "emptyLine": "— 수확할 자원이 없었어요.",
+      "none": "수확할 공장이 없습니다.",
+      "line": "{{emoji}} {{type}} +{{produced}} (-{{consumed}}) x{{ticks}}",
+      "noneProduced": "없음",
+      "noneConsumed": "없음"
+    }
+  },
+  "warehouse": {
+    "view": {
+      "title": "📦 창고",
+      "fields": {
+        "grade": "창고 등급",
+        "capacity": "전체 용량",
+        "used": "사용 중",
+        "free": "여유",
+        "stacks": "보관 자원"
+      }
+    },
+    "upgrade": {
+      "success": "창고를 G{{grade}}(으)로 업그레이드했어요!",
+      "error": {
+        "insufficientMoney": "돈이 부족해요. 필요: {{required}} 💰",
+        "insufficientMaterial": "재료가 부족해요. 필요: {{amount}} {{material}}",
+        "maxGrade": "창고가 이미 최대 등급이에요."
+      }
+    }
+  },
+  "land": {
+    "view": {
+      "title": "🗺️ {{index}}번째 토지 ({{index}}/{{total}})",
+      "legend": "🟩 빈 슬롯 · 🟫 잠금 · 🌱 비옥 · 🌳 숲 · 🛢️ 유전 · 🪨 광맥 · 💧 수원",
+      "buttonPrev": "◀ 이전",
+      "buttonNext": "다음 ▶",
+      "cellComingSoon": "셀 액션은 곧 지원됩니다.",
+      "error": {
+        "landNotFound": "해당 번호의 토지를 아직 보유하고 있지 않아요.",
+        "notOwned": "해당 번호의 토지를 아직 보유하고 있지 않아요.",
+        "cellNotEmpty": "해당 셀은 이미 점유 중이에요.",
+        "cellNotFound": "해당 셀 정보를 찾을 수 없어요."
+      }
+    },
+    "build": {
+      "title": "🏗️ 건설할 공장 선택",
+      "placeholder": "공장 종류를 고르세요",
+      "cancel": "❌ 취소",
+      "cancelled": "건설을 취소했어요."
+    },
+    "control": {
+      "refresh": "새로고침",
+      "build": "건설",
+      "move": "이동",
+      "destroy": "철거",
+      "expand": "확장",
+      "moveNotImplemented": "↔️ 공장 이동은 준비 중이에요 (docs/11-land.md §공장 이동 · 철거).",
+      "buildPickTitle": "🏗️ 건설할 빈 셀을 선택하세요",
+      "buildPickPlaceholder": "빈 셀 좌표 선택",
+      "buildPickEmpty": "현재 활성 영역에 비어있는 셀이 없어요. `/land expand` 로 슬롯을 확장해보세요.",
+      "expandPickTitle": "🟩 확장할 잠긴 슬롯을 선택하세요",
+      "expandPickPlaceholder": "잠긴 슬롯 좌표 선택",
+      "expandPickAllUnlocked": "이 토지의 모든 슬롯이 이미 활성화되어 있어요.",
+      "expandOptionDesc": "{{order}}번째 확장 · {{cost}} 💰 · Lv.{{level}} 필요",
+      "destroyPickTitle": "🗑️ 철거할 공장을 선택하세요",
+      "destroyPickPlaceholder": "공장 선택",
+      "destroyPickEmpty": "이 토지에 설치된 공장이 없어요."
+    },
+    "factory": {
+      "actionTitle": "{{emoji}} **{{type}}** · G{{grade}}",
+      "actionInfo": "정보",
+      "actionHarvest": "수확",
+      "actionUpgrade": "업그레이드",
+      "actionDestroy": "철거",
+      "actionBack": "◀ 토지로 돌아가기",
+      "harvestSuccess": "✅ {{ticks}} tick 수확, +{{xp}} XP",
+      "harvestEmpty": "아직 수확할 tick이 없어요.",
+      "upgradeSuccess": "✅ G{{grade}}(으)로 업그레이드했어요."
+    },
+    "buy": {
+      "success": "{{index}}번째 토지를 구매했어요! (-{{cost}} 💰, 잔액 {{remaining}} 💰, 보유 {{total}}개)",
+      "error": {
+        "maxLands": "이미 최대 {{max}}개의 토지를 보유 중이에요.",
+        "alreadyExists": "해당 번호의 토지는 이미 존재해요.",
+        "invalidIndex": "구매할 수 있는 토지 번호는 {{min}}~{{max}}이에요. 이전 토지부터 순서대로 구매해주세요.",
+        "insufficientMoney": "토지를 구매할 자금이 부족해요."
+      }
+    },
+    "expand": {
+      "success": "🟩 {{index}}번째 토지의 ({{x}}, {{y}}) 슬롯을 확장했어요! (구매 순서 {{order}}/7, -{{cost}} 💰, 잔액 {{remaining}} 💰)",
+      "error": {
+        "alreadyUnlocked": "이미 활성화된 슬롯이에요.",
+        "levelLocked": "이 슬롯은 레벨 {{level}}부터 확장할 수 있어요.",
+        "insufficientMoney": "슬롯 확장에 필요한 자금이 부족해요. 필요: {{required}} 💰"
+      }
+    }
+  },
+  "profile": {
+    "title": "👤 {{nickname}} 님의 프로필",
+    "fields": {
+      "level": "레벨",
+      "xp": "경험치",
+      "money": "보유 자금",
+      "warehouseGrade": "창고 등급",
+      "factoryCount": "공장 수"
+    }
+  },
+  "common": {
+    "error": {
+      "userNotFound": "유저 정보를 찾을 수 없어요. `/start`로 먼저 시작해주세요.",
+      "factoryNotFound": "해당 공장을 찾을 수 없어요.",
+      "warehouseFull": "창고가 가득 찼어요. 창고를 확장하거나 자원을 판매해주세요.",
+      "notYourInteraction": "본인이 시작한 인터랙션이 아니에요. 직접 명령어를 사용해주세요.",
+      "unknown": "알 수 없는 오류가 발생했어요. 잠시 후 다시 시도해주세요."
+    }
+  },
+  "factoryType": {
+    "FARM": "농장",
+    "MINE": "광산",
+    "LUMBER": "목재소",
+    "OIL_WELL": "유전",
+    "STEEL_MILL": "제철소",
+    "REFINERY": "정유소",
+    "FLOUR_MILL": "제분소",
+    "FURNITURE_FACTORY": "가구 공장",
+    "CAR_FACTORY": "자동차 공장",
+    "ELECTRONICS_FACTORY": "전자 공장",
+    "FOOD_FACTORY": "식품 공장"
+  },
+  "shortageMode": {
+    "PAUSE": "일시 정지",
+    "AUTO_BUY": "자동 구매",
+    "PARTIAL": "부분 생산"
+  },
+  "material": {
+    "GRAIN": "곡물",
+    "ORE": "광석",
+    "WOOD": "목재",
+    "CRUDE_OIL": "원유",
+    "STEEL": "철강",
+    "FUEL": "연료",
+    "PLASTIC": "플라스틱",
+    "PROCESSED_FOOD": "가공식품",
+    "FURNITURE": "가구",
+    "CAR": "자동차",
+    "ELECTRONIC": "전자제품",
+    "FINISHED_FOOD": "완제 식품",
+    "RAW_BOOSTER": "원료 부스터"
+  },
+  "quest": {
+    "title": "📜 퀘스트",
+    "tutorialChain": "튜토리얼 {{order}}/{{total}}",
+    "empty": {
+      "tutorialDone": "튜토리얼 완료! 더 많은 퀘스트가 곧 추가될 예정이에요.",
+      "noVisible": "진행 중인 퀘스트가 없어요."
+    },
+    "progressLabel": "진행도: {{bar}} {{progress}}/{{target}}",
+    "rewardLabel": "보상: {{rewards}}",
+    "completed": {
+      "title": "🎉 퀘스트 완료!",
+      "claimHint": "**`/quest`** 에서 [보상 받기] 를 눌러 보상을 수령하세요."
+    },
+    "claimed": {
+      "title": "✅ 보상 수령 완료",
+      "body": "**{{title}}** 의 보상을 받았어요.\n{{rewards}}"
+    },
+    "unlocked": {
+      "title": "🆕 새 퀘스트가 시작됐어요",
+      "body": "**{{title}}** — {{description}}"
+    },
+    "claimButton": "보상 받기",
+    "refreshButton": "새로고침",
+    "reward": {
+      "money": "+{{amount}}원 💰",
+      "xp": "+{{amount}} XP",
+      "material": "+{{amount}} {{material}}"
+    },
+    "tutorial": {
+      "1": {
+        "title": "첫 공장 건설",
+        "description": "T1 공장을 1개 건설해보세요."
+      },
+      "2": {
+        "title": "첫 수확",
+        "description": "공장에서 자재를 1회 수확해보세요."
+      },
+      "3": {
+        "title": "자재 판매",
+        "description": "마켓에 자재를 1개 이상 등록해보세요."
+      },
+      "4": {
+        "title": "공장 업그레이드",
+        "description": "공장을 2등급으로 업그레이드해보세요."
+      },
+      "5": {
+        "title": "두 번째 공장",
+        "description": "T1 공장을 2개 보유하세요."
+      }
+    }
+  },
+  "market": {
+    "list": {
+      "success": "🛒 **{{material}}** {{quantity}}개를 개당 {{price}}원에 마켓에 등록했어요.",
+      "footer": "세율 {{tax}}%",
+      "error": {
+        "insufficientStock": "보유 자재가 부족해요. 필요: {{required}} / 보유: {{have}}",
+        "invalidQuantity": "수량은 1 이상이어야 해요.",
+        "invalidPrice": "가격은 1원 이상이어야 해요.",
+        "invalidDuration": "기간은 1~30일이어야 해요."
+      }
+    }
+  }
+}

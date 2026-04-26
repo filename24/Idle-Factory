@@ -28,14 +28,38 @@ The current `page.tsx` is an untouched `create-next-app` template — replace it
 
 ## Scripts
 
-| Command | Purpose |
-| --- | --- |
-| `pnpm dev` | `next dev`. |
-| `pnpm build` | `next build` (outputs `.next/`). |
-| `pnpm start` | `next start` (serves the built app). |
-| `pnpm lint` | `next lint` (wraps the flat ESLint config). |
+| Command      | Purpose                                     |
+| ------------ | ------------------------------------------- |
+| `pnpm dev`   | `next dev`.                                 |
+| `pnpm build` | `next build` (outputs `.next/`).            |
+| `pnpm start` | `next start` (serves the built app).        |
+| `pnpm lint`  | `next lint` (wraps the flat ESLint config). |
 
 Turbo overrides `web#build` inputs/outputs in the root `turbo.json` so Next's `.next/cache/**` is excluded from the cache artifact set.
+
+## shadcn/ui Components
+
+**Always install shadcn components via the CLI — never write them by hand (MANDATORY).**
+
+When a shadcn/ui component is needed, run the CLI from the `apps/web` directory:
+
+```bash
+pnpm dlx shadcn@latest add <component-name>
+```
+
+Examples:
+
+```bash
+pnpm dlx shadcn@latest add dropdown-menu
+pnpm dlx shadcn@latest add dialog tooltip select
+```
+
+Rules:
+
+- Do not manually create files under `src/components/ui/` for components that shadcn provides.
+- Use `--overwrite` if a component file already exists and needs to be refreshed.
+- After installation, all required peer dependencies (e.g. `@base-ui/react`, `class-variance-authority`) are automatically resolved — run `pnpm install` from the repo root if missing packages are reported.
+- The active style is `base-nova` (configured in `components.json`). Do not change the style without explicit instruction.
 
 ## Conventions
 

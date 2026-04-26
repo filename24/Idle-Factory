@@ -8,6 +8,10 @@
 
 # testing
 /coverage
+/playwright-report
+/playwright-results.xml
+/playwright-results.json
+/test-results
 
 # next.js
 /.next/
@@ -34,3 +38,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# fumadocs-mdx generated
+.source/
+
+# e2e screenshot artifacts
+/tests/e2e/screenshots/

@@ -1,6 +1,6 @@
 import { Command } from '@sapphire/framework'
 import { fetchT } from '@sapphire/plugin-i18next'
-import Embed from '@utils/Embed'
+import { simpleV2Payload, V2_ACCENT } from '@utils/ComponentsV2'
 
 export class SetupCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -10,7 +10,7 @@ export class SetupCommand extends Command {
   public override async chatInputRun(
     interaction: Command.ChatInputCommandInteraction
   ) {
-    const { client, db } = this.container
+    const { db } = this.container
     const t = await fetchT(interaction)
 
     const guildData = await db.guild.findFirst({
@@ -18,26 +18,27 @@ export class SetupCommand extends Command {
     })
 
     if (guildData) {
-      return interaction.reply({
-        ephemeral: true,
-        embeds: [
-          new Embed(client, 'error')
-            .setTitle(
-              t('embeds:command.setup.available.title', {
-                factoryName: guildData.name
-              })
-            )
-            .setDescription(t('embeds:command.setup.available.description'))
-        ]
-      })
+      return interaction.reply(
+        simpleV2Payload({
+          accent: V2_ACCENT.error,
+          title: t('embeds:command.setup.available.title', {
+            factoryName: guildData.name
+          }),
+          body: t('embeds:command.setup.available.description'),
+          ephemeral: false
+        })
+      )
     }
 
     const guild = interaction.guild
     if (!guild) {
-      return interaction.reply({
-        content: '길드 정보를 가져올 수 없습니다.',
-        ephemeral: true
-      })
+      return interaction.reply(
+        simpleV2Payload({
+          accent: V2_ACCENT.error,
+          body: '길드 정보를 가져올 수 없습니다.',
+          ephemeral: false
+        })
+      )
     }
 
     const created = await db.guild.create({
@@ -48,18 +49,16 @@ export class SetupCommand extends Command {
       }
     })
 
-    return interaction.reply({
-      ephemeral: true,
-      embeds: [
-        new Embed(client, 'success')
-          .setTitle(
-            t('embeds:command.setup.success.title', {
-              factoryName: created.name
-            })
-          )
-          .setDescription(t('embeds:command.setup.success.description'))
-      ]
-    })
+    return interaction.reply(
+      simpleV2Payload({
+        accent: V2_ACCENT.success,
+        title: t('embeds:command.setup.success.title', {
+          factoryName: created.name
+        }),
+        body: t('embeds:command.setup.success.description'),
+        ephemeral: false
+      })
+    )
   }
 
   public override registerApplicationCommands(registry: Command.Registry) {

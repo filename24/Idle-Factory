@@ -1,7 +1,7 @@
 import { SapphireClient, container } from '@sapphire/framework'
 import { DatabaseClient } from '@idle/database'
 import { type ClientOptions, type Message } from 'discord.js'
-import { Client as Dokdo } from 'dokdo'
+import Dokdo from 'dokdo'
 import { fileURLToPath } from 'url'
 
 import Logger from '@utils/Logger'
@@ -13,7 +13,7 @@ export default class BotClient extends SapphireClient {
   public readonly VERSION: string
   public readonly BUILD_NUMBER: string
   public readonly config = config
-  public readonly dokdo: InstanceType<typeof Dokdo>
+  public readonly dokdo: InstanceType<typeof Dokdo.Client>
 
   public constructor(options: ClientOptions) {
     super({
@@ -26,10 +26,12 @@ export default class BotClient extends SapphireClient {
     this.VERSION = config.BUILD_VERSION
     this.BUILD_NUMBER = config.BUILD_NUMBER
 
-    this.dokdo = new Dokdo(this, {
+    this.dokdo = new Dokdo.Client(this, {
       prefix: config.bot.prefix,
-      noPerm: async (message: Message) =>
-        message.reply('You do not have permission to use this command.'),
+      noPerm: async (message: Message) => {
+        // eslint-disable-next-line discord-v2/no-discord-legacy-message -- Dokdo 서드파티 콜백: Message.reply()는 Components v2 미지원
+        return message.reply('You do not have permission to use this command.')
+      },
       owners: config.bot.owners?.length === 0 ? undefined : config.bot.owners
     })
   }
