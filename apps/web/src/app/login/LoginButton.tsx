@@ -1,7 +1,7 @@
 'use client'
 
 import { signIn } from '@/lib/auth-client'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 
 interface Props {
   callbackUrl?: string
@@ -11,7 +11,7 @@ interface Props {
 export function LoginButton({ callbackUrl }: Props) {
   return (
     <Button
-      variant="primary"
+      variant="default"
       size="lg"
       className="w-full"
       onClick={() =>

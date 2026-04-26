@@ -19,7 +19,7 @@ export default async function LoginPage({ searchParams }: Props) {
         <div className="space-y-2">
           <div className="text-5xl">⚙️</div>
           <h1 className="text-2xl font-bold text-[var(--color-foreground)]">Idle Factory</h1>
-          <p className="text-sm text-[var(--color-muted)]">
+          <p className="text-sm text-[var(--color-muted-foreground)]">
             Discord 계정으로 로그인하여 공장을 관리하세요
           </p>
         </div>

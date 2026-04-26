@@ -19,7 +19,7 @@ export function Header() {
         <nav className="flex items-center gap-1">
           <Link
             href="/docs"
-            className="rounded-[var(--radius-md)] px-3 py-1.5 text-sm text-[var(--color-muted)] transition-colors hover:bg-[var(--color-elevated)] hover:text-[var(--color-foreground)]"
+            className="rounded-[var(--radius-md)] px-3 py-1.5 text-sm text-[var(--color-muted-foreground)] transition-colors hover:bg-[var(--color-elevated)] hover:text-[var(--color-foreground)]"
           >
             문서
           </Link>

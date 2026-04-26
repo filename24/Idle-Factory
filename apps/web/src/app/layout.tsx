@@ -1,7 +1,10 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import 'katex/dist/katex.css'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
+import { Agentation } from 'agentation'
+import { Providers } from '@/components/layout/Providers'
 
 export const metadata: Metadata = {
   title: 'Idle Factory',
@@ -11,7 +14,7 @@ export const metadata: Metadata = {
 /** 루트 레이아웃 — Pretendard Variable 폰트, 공통 Header/Footer 포함 */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko">
+    <html lang="ko" className="dark" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
         <link
@@ -20,9 +23,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <Header />
-        <main>{children}</main>
-        <Footer />
+        <Providers>
+          <Header />
+          <main>{children}</main>
+          <Footer />
+          {process.env.NODE_ENV === 'development' && <Agentation />}
+        </Providers>
       </body>
     </html>
   )

@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@plugin '@tailwindcss/typography';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -55,6 +56,16 @@
   --shadow-2xl: 0px 1px 0px 0px hsl(0 0% 0% / 0);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
+
+  /* ── 게임 커스텀 디자인 토큰 (라이트) ── */
+  --color-canvas: oklch(98.5% 0.004 80);
+  --color-surface: oklch(96% 0.006 75);
+  --color-elevated: oklch(92% 0.009 70);
+  --color-gold: oklch(68% 0.18 55);
+  --color-gold-dim: oklch(60% 0.16 55);
+  --color-gold-subtle: oklch(97% 0.04 65);
+  --color-success: oklch(56% 0.18 145);
+  --color-danger: oklch(54% 0.22 25);
 }
 
 .dark {
@@ -108,6 +119,16 @@
   --shadow-lg: 0px 1px 0px 0px hsl(0 0% 0% / 0), 0px 4px 6px -1px hsl(0 0% 0% / 0);
   --shadow-xl: 0px 1px 0px 0px hsl(0 0% 0% / 0), 0px 8px 10px -1px hsl(0 0% 0% / 0);
   --shadow-2xl: 0px 1px 0px 0px hsl(0 0% 0% / 0);
+
+  /* ── 게임 커스텀 디자인 토큰 (다크) ── */
+  --color-canvas: oklch(14.5% 0 0);
+  --color-surface: oklch(19% 0.005 60);
+  --color-elevated: oklch(25% 0.008 60);
+  --color-gold: oklch(72% 0.18 55);
+  --color-gold-dim: oklch(64% 0.16 55);
+  --color-gold-subtle: oklch(21% 0.06 55);
+  --color-success: oklch(62% 0.2 145);
+  --color-danger: oklch(58% 0.24 25);
 }
 
 @theme inline {
@@ -177,21 +198,21 @@
   color: var(--foreground);
   line-height: 1.75;
 }
-.docs-content h1,
-.docs-content h2,
-.docs-content h3,
-.docs-content h4 {
+.docs-content h1:not([data-card] *),
+.docs-content h2:not([data-card] *),
+.docs-content h3:not([data-card] *),
+.docs-content h4:not([data-card] *) {
   font-weight: 700;
   color: var(--foreground);
   margin-top: 2em;
   margin-bottom: 0.75em;
 }
-.docs-content h2 {
+.docs-content h2:not([data-card] *) {
   font-size: 1.5rem;
   border-bottom: 1px solid var(--border);
   padding-bottom: 0.5rem;
 }
-.docs-content h3 {
+.docs-content h3:not([data-card] *) {
   font-size: 1.25rem;
   color: var(--primary);
 }
@@ -267,6 +288,35 @@
   border: none;
   border-top: 1px solid var(--border);
   margin: 2em 0;
+}
+
+/* ── fumadocs 컴포넌트 재정의 ── */
+
+/* Callout: 내부 p 마진 초기화 — prose p 규칙의 margin-top/bottom이 callout 박스를 부풀림 */
+.docs-content div:has(> [role='none']) p,
+.docs-content .prose p:is(.font-medium),
+article.prose p:is(.font-medium) {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  color: inherit;
+}
+
+/* Callout description wrapper: prose-no-margin 유사 효과 */
+.docs-content div:has(> [role='none']) .text-fd-muted-foreground p {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  color: inherit;
+}
+
+/* Cards: 3열 그리드 + 컴팩트 패딩 (container query col-span-full 무력화) */
+.docs-content div:has(> [data-card]) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+}
+
+.docs-content [data-card] {
+  grid-column: span 1 !important;
+  padding: 0.625rem 0.875rem;
 }
 
 /* 스크롤바 */
