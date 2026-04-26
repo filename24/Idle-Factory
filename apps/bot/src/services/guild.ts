@@ -79,6 +79,74 @@ export const GuildService = {
     })
   },
 
+  /**
+   * 봇 ready 시점에 현재 보이는 길드 목록과 DB 상태를 동기화한다.
+   *
+   * 다운타임 중 발생한 가입/탈퇴 이벤트는 봇이 못 받았으므로 ready 시 재대조 필수.
+   *
+   * - **누락 row**: 현재 보이지만 DB 에 없음 → upsertOnJoin 으로 생성.
+   * - **재조인**: DB 에 있지만 `leftAt != null` → leftAt 클리어 + name 갱신.
+   * - **이름 변경만**: 기존 row 가 살아있고 이름만 바뀜 → name 만 갱신.
+   * - **퇴장 감지**: DB 에 leftAt=null 인데 현재 캐시에 없음 → markLeft.
+   *   `detectLeft: false` (sharding) 면 스킵 — 다른 샤드가 보유 중일 수 있으므로
+   *   섣불리 left 처리하면 안 됨.
+   */
+  async reconcileGuilds(
+    prisma: PrismaClient,
+    currentGuilds: ReadonlyArray<{ id: string; name: string }>,
+    options: { detectLeft: boolean }
+  ): Promise<{
+    created: number
+    rejoined: number
+    renamed: number
+    left: number
+  }> {
+    const counters = { created: 0, rejoined: 0, renamed: 0, left: 0 }
+    const dbGuilds = await prisma.guild.findMany({
+      select: { id: true, name: true, leftAt: true }
+    })
+    const dbById = new Map(dbGuilds.map((g) => [g.id, g]))
+
+    for (const current of currentGuilds) {
+      const row = dbById.get(current.id)
+      if (!row) {
+        await GuildService.upsertOnJoin(prisma, {
+          guildId: current.id,
+          name: current.name
+        })
+        counters.created += 1
+        continue
+      }
+      if (row.leftAt !== null) {
+        await prisma.guild.update({
+          where: { id: current.id },
+          data: { leftAt: null, name: current.name }
+        })
+        counters.rejoined += 1
+        continue
+      }
+      if (row.name !== current.name) {
+        await prisma.guild.update({
+          where: { id: current.id },
+          data: { name: current.name }
+        })
+        counters.renamed += 1
+      }
+    }
+
+    if (options.detectLeft) {
+      const visibleIds = new Set(currentGuilds.map((g) => g.id))
+      for (const row of dbGuilds) {
+        if (row.leftAt === null && !visibleIds.has(row.id)) {
+          await GuildService.markLeft(prisma, row.id)
+          counters.left += 1
+        }
+      }
+    }
+
+    return counters
+  },
+
   /** 어드민 액션 — 가산 세율 변경. 0~0.2 범위 강제. */
   async updateTaxSurcharge(
     prisma: PrismaClient,
