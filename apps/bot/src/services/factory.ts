@@ -11,6 +11,7 @@ import {
 } from '@idle/game-core'
 import { PrismaClient } from '@idle/database'
 import { ServiceError, Tx, runInTx } from './base'
+import { QuestService } from './quest'
 
 const MAX_GRADE = 10
 
@@ -189,7 +190,19 @@ export const FactoryService = {
         data: { factoryId: factory.id }
       })
 
-      return factory
+      // 빌드 완료 직후 같은 트랜잭션 안에서 퀘스트 진행도 갱신.
+      // ownedAfter 는 같은 tier 누적 보유 수 (Q5 minTotal 매칭에 사용).
+      const ownedAfter = await tx.factory.count({
+        where: { userId, tier: entry.tier }
+      })
+      const quest = await QuestService.progress(tx, userId, {
+        kind: 'FACTORY_BUILT',
+        tier: entry.tier,
+        type,
+        ownedAfter
+      })
+
+      return { factory, quest }
     })
   },
 
@@ -285,7 +298,13 @@ export const FactoryService = {
         where: { id: factoryId },
         data: { grade: { increment: 1 } }
       })
-      return updated
+      const quest = await QuestService.progress(tx, userId, {
+        kind: 'FACTORY_UPGRADED',
+        fromGrade: factory.grade,
+        toGrade: updated.grade,
+        type: factory.type
+      })
+      return { factory: updated, quest }
     })
   },
 

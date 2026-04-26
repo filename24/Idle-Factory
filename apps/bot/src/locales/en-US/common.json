@@ -16,5 +16,22 @@
       "title": "Oh no...",
       "description": "This feature is currently unavailable due to maintenance.\nSee `/notice` for details."
     }
+  },
+  "onboarding": {
+    "title": "Terms & Privacy Consent",
+    "body": "Before you start **Idle Factory**, please review the terms.\n\n· Use the buttons below to view the **Terms of Service** and **Privacy Policy**.\n· When you agree to both, press **`Agree & Start`** to create your account.\n· Account creation grants **1,000💰** seed money and your first land (3×3).\n\n-# Your consent timestamp is stored for audit purposes.",
+    "viewTerms": "View Terms",
+    "viewPrivacy": "View Privacy Policy",
+    "agree": "Agree & Start",
+    "decline": "Decline",
+    "declined": {
+      "title": "Consent Required",
+      "body": "You must agree to play. Run any command again to retry."
+    },
+    "welcome": {
+      "title": "Welcome!",
+      "body": "Account created. You received **1,000💰** and your first land.\nUse **`/quest`** to start the tutorial."
+    },
+    "expired": "This consent prompt expired. Please run the command again."
   }
 }

@@ -38,7 +38,7 @@ describe('FactoryCommand (service chain)', () => {
       data: { money: 10_000n }
     })
 
-    const factory = await FactoryService.build(testPrisma, {
+    const { factory } = await FactoryService.build(testPrisma, {
       userId: discordId,
       landIndex: 1,
       type: 'FARM',
@@ -73,7 +73,7 @@ describe('FactoryCommand (service chain)', () => {
       data: { money: 10_000n }
     })
 
-    const factory = await FactoryService.build(testPrisma, {
+    const { factory } = await FactoryService.build(testPrisma, {
       userId: discordId,
       landIndex: 1,
       type: 'FARM',

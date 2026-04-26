@@ -31,7 +31,8 @@ const TABLES = [
   'TradeLog',
   'WeeklySettlement',
   'InactiveServerPool',
-  'Notice'
+  'Notice',
+  'UserQuest'
 ] as const
 
 let client: DatabaseClient | null = null

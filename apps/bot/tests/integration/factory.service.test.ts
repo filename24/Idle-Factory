@@ -56,7 +56,7 @@ describe('FactoryService', () => {
     it('builds FARM at (0,0), debits 1000 money, sets slot.factoryId', async () => {
       const { user } = await seedUser('u-build-1', { money: 5_000n })
 
-      const factory = await FactoryService.build(testPrisma, {
+      const { factory } = await FactoryService.build(testPrisma, {
         userId: user.id,
         landIndex: 1,
         type: 'FARM',
@@ -143,7 +143,7 @@ describe('FactoryService', () => {
       })
       await ensureMaterial(warehouse.id, 'STEEL', 100n)
 
-      const factory = await FactoryService.build(testPrisma, {
+      const { factory } = await FactoryService.build(testPrisma, {
         userId: user.id,
         landIndex: 1,
         type: 'CAR_FACTORY',
@@ -187,7 +187,7 @@ describe('FactoryService', () => {
       })
 
       // Build FARM at (0,0) on land 2.
-      const factory = await FactoryService.build(testPrisma, {
+      const { factory } = await FactoryService.build(testPrisma, {
         userId: user.id,
         landIndex: 2,
         type: 'FARM',
@@ -231,7 +231,7 @@ describe('FactoryService', () => {
       })
       await ensureMaterial(warehouse.id, 'GRAIN', 100n)
 
-      const factory = await FactoryService.build(testPrisma, {
+      const { factory } = await FactoryService.build(testPrisma, {
         userId: user.id,
         landIndex: 1,
         type: 'FARM',
@@ -244,7 +244,7 @@ describe('FactoryService', () => {
       ).money
       expect(moneyAfterBuild).toBe(99_000n)
 
-      const upgraded = await FactoryService.upgrade(testPrisma, {
+      const { factory: upgraded } = await FactoryService.upgrade(testPrisma, {
         userId: user.id,
         factoryId: factory.id
       })
@@ -272,7 +272,7 @@ describe('FactoryService', () => {
       })
       await ensureMaterial(warehouse.id, 'GRAIN', 0n)
 
-      const factory = await FactoryService.build(testPrisma, {
+      const { factory } = await FactoryService.build(testPrisma, {
         userId: user.id,
         landIndex: 1,
         type: 'FARM',
@@ -302,7 +302,7 @@ describe('FactoryService', () => {
   describe('setMode', () => {
     it('changes shortageMode', async () => {
       const { user } = await seedUser('u-mode-1', { money: 5_000n })
-      const factory = await FactoryService.build(testPrisma, {
+      const { factory } = await FactoryService.build(testPrisma, {
         userId: user.id,
         landIndex: 1,
         type: 'FARM',
@@ -322,7 +322,7 @@ describe('FactoryService', () => {
   describe('info', () => {
     it('returns nextUpgradeCost for grade+1', async () => {
       const { user } = await seedUser('u-info-1', { money: 5_000n })
-      const factory = await FactoryService.build(testPrisma, {
+      const { factory } = await FactoryService.build(testPrisma, {
         userId: user.id,
         landIndex: 1,
         type: 'FARM',
@@ -344,7 +344,7 @@ describe('FactoryService', () => {
   describe('destroy', () => {
     it('refunds 50% of build cost, frees slots, deletes factory', async () => {
       const { user } = await seedUser('u-destroy-1', { money: 5_000n })
-      const factory = await FactoryService.build(testPrisma, {
+      const { factory } = await FactoryService.build(testPrisma, {
         userId: user.id,
         landIndex: 1,
         type: 'FARM',
@@ -385,7 +385,7 @@ describe('FactoryService', () => {
         level: 25
       })
       await ensureMaterial(warehouse.id, 'STEEL', 100n)
-      const factory = await FactoryService.build(testPrisma, {
+      const { factory } = await FactoryService.build(testPrisma, {
         userId: user.id,
         landIndex: 1,
         type: 'CAR_FACTORY',
@@ -416,7 +416,7 @@ describe('FactoryService', () => {
     it('throws FACTORY_NOT_FOUND for a factory owned by another user', async () => {
       const { user: a } = await seedUser('u-destroy-a', { money: 5_000n })
       await seedUser('u-destroy-b', { money: 5_000n })
-      const factory = await FactoryService.build(testPrisma, {
+      const { factory } = await FactoryService.build(testPrisma, {
         userId: a.id,
         landIndex: 1,
         type: 'FARM',

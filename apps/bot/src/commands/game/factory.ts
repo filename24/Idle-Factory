@@ -8,6 +8,7 @@ import {
 import type { ShortageMode } from '@idle/database'
 import { simpleV2Payload, V2_ACCENT } from '@utils/ComponentsV2'
 import { formatBigInt, renderFactoryInfo } from '@structures/renderers'
+import { appendQuestCompletions } from '@utils/questNotifier'
 import { DEFAULT_LAND_INDEX, FactoryService } from '../../services/factory'
 import { MAX_BUYABLE_INDEX } from '../../services/land'
 import { UserService } from '../../services/user'
@@ -88,7 +89,7 @@ export class FactoryCommand extends Command {
 
     try {
       await UserService.ensure(db, { discordId: interaction.user.id })
-      const factory = await FactoryService.build(db, {
+      const { factory, quest } = await FactoryService.build(db, {
         userId: interaction.user.id,
         landIndex,
         type,
@@ -108,19 +109,18 @@ export class FactoryCommand extends Command {
             }
           : null
 
-      return interaction.reply(
-        simpleV2Payload({
-          accent: V2_ACCENT.success,
-          title: t('game:factory.build.success', {
-            type: localizeFactoryType(t, factory.type),
-            emoji: entry.emoji,
-            x: factory.anchorX,
-            y: factory.anchorY
-          }),
-          body: renderFactoryInfo(info, entry, nextCost, t),
-          ephemeral: false
-        })
-      )
+      const base = simpleV2Payload({
+        accent: V2_ACCENT.success,
+        title: t('game:factory.build.success', {
+          type: localizeFactoryType(t, factory.type),
+          emoji: entry.emoji,
+          x: factory.anchorX,
+          y: factory.anchorY
+        }),
+        body: renderFactoryInfo(info, entry, nextCost, t),
+        ephemeral: false
+      })
+      return interaction.reply(appendQuestCompletions(base, quest, t))
     } catch (err) {
       return this.replyFromError(interaction, err, 'build')
     }
@@ -136,20 +136,19 @@ export class FactoryCommand extends Command {
 
     try {
       await UserService.ensure(db, { discordId: interaction.user.id })
-      const factory = await FactoryService.upgrade(db, {
+      const { factory, quest } = await FactoryService.upgrade(db, {
         userId: interaction.user.id,
         factoryId
       })
-      return interaction.reply(
-        simpleV2Payload({
-          accent: V2_ACCENT.success,
-          title: t('game:factory.upgrade.success', {
-            type: localizeFactoryType(t, factory.type),
-            grade: factory.grade
-          }),
-          ephemeral: false
-        })
-      )
+      const base = simpleV2Payload({
+        accent: V2_ACCENT.success,
+        title: t('game:factory.upgrade.success', {
+          type: localizeFactoryType(t, factory.type),
+          grade: factory.grade
+        }),
+        ephemeral: false
+      })
+      return interaction.reply(appendQuestCompletions(base, quest, t))
     } catch (err) {
       return this.replyFromError(interaction, err, 'upgrade')
     }

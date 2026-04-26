@@ -18,6 +18,7 @@ import {
   type SynergySlotInput
 } from '@idle/game-core'
 import { runInTx, ServiceError, type Tx } from './base'
+import { QuestService, type QuestProgressResult } from './quest'
 
 export interface FactoryHarvestSummary {
   readonly factoryId: string
@@ -32,6 +33,7 @@ export interface HarvestAllResult {
   readonly xpGained: bigint
   readonly newLevel: number
   readonly leveledUp: boolean
+  readonly quest: QuestProgressResult
 }
 
 async function applyMaterialDelta(
@@ -304,6 +306,16 @@ async function harvestWhere(
       })
     }
 
-    return { factories: summaries, xpGained, newLevel, leveledUp }
+    // 수확이 실제로 일어난 경우에만 퀘스트 이벤트 발화 (Q2 트리거).
+    let quest: QuestProgressResult = { newlyCompleted: [] }
+    if (totalTicks > 0 && summaries.length > 0) {
+      quest = await QuestService.progress(tx, userId, {
+        kind: 'FACTORY_HARVESTED',
+        factoryIds: summaries.map((s) => s.factoryId),
+        tickTotal: totalTicks
+      })
+    }
+
+    return { factories: summaries, xpGained, newLevel, leveledUp, quest }
   })
 }

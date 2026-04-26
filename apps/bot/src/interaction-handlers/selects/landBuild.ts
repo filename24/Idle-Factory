@@ -18,6 +18,7 @@ import {
 } from '@sapphire/framework'
 import { fetchT, type TFunction } from '@sapphire/plugin-i18next'
 import { simpleContainer, V2_ACCENT, v2Flags } from '@utils/ComponentsV2'
+import { appendQuestCompletions } from '@utils/questNotifier'
 import type { StringSelectMenuInteraction } from 'discord.js'
 import type { FactoryType } from '@idle/game-core'
 import {
@@ -86,7 +87,7 @@ export class LandBuildTypeSelectHandler extends InteractionHandler {
     }
 
     try {
-      await FactoryService.build(db, {
+      const { quest } = await FactoryService.build(db, {
         userId: interaction.user.id,
         landIndex: data.landIndex,
         type: data.value as FactoryType,
@@ -94,6 +95,13 @@ export class LandBuildTypeSelectHandler extends InteractionHandler {
         anchorY: data.y
       })
       await this.refreshGrid(interaction, data.landIndex, t)
+      if (quest.newlyCompleted.length > 0) {
+        const followBase = {
+          components: [],
+          flags: v2Flags(false)
+        }
+        await interaction.followUp(appendQuestCompletions(followBase, quest, t))
+      }
     } catch (err) {
       await this.refreshGrid(interaction, data.landIndex, t)
       const body = resolveBuildErrorBody(err, t, this.container.logger)

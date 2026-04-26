@@ -8,6 +8,7 @@ import {
   type MaterialType
 } from '@idle/game-core'
 import { runInTx, ServiceError, type Tx } from './base'
+import { QuestService, type QuestProgressResult } from './quest'
 
 const MAX_GRADE = 10
 
@@ -22,6 +23,10 @@ export interface WarehouseView {
   readonly used: bigint
   readonly free: bigint
   readonly stacks: readonly WarehouseStackView[]
+}
+
+export interface WarehouseUpgradeResult extends WarehouseView {
+  readonly quest: QuestProgressResult
 }
 
 async function loadWarehouse(tx: Tx, userId: string) {
@@ -64,7 +69,10 @@ export const WarehouseService = {
     })
   },
 
-  async upgrade(prisma: PrismaClient, userId: string): Promise<WarehouseView> {
+  async upgrade(
+    prisma: PrismaClient,
+    userId: string
+  ): Promise<WarehouseUpgradeResult> {
     return runInTx(prisma, async (tx) => {
       const wh = await loadWarehouse(tx, userId)
 
@@ -133,6 +141,12 @@ export const WarehouseService = {
 
       const refreshed = await loadWarehouse(tx, userId)
       const bag = stacksToBag(refreshed.stacks)
+
+      const quest = await QuestService.progress(tx, userId, {
+        kind: 'WAREHOUSE_UPGRADED',
+        toGrade: nextGrade
+      })
+
       return {
         grade: refreshed.grade,
         capacity: capacityOf(refreshed.grade),
@@ -141,7 +155,8 @@ export const WarehouseService = {
         stacks: refreshed.stacks.map((s) => ({
           material: s.material,
           count: s.count
-        }))
+        })),
+        quest
       }
     })
   }

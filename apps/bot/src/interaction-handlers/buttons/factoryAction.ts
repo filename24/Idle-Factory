@@ -14,6 +14,7 @@ import {
 import { fetchT, type TFunction } from '@sapphire/plugin-i18next'
 import { buildCost } from '@idle/game-core'
 import { simpleContainer, V2_ACCENT, v2Flags } from '@utils/ComponentsV2'
+import { appendQuestCompletions } from '@utils/questNotifier'
 import type { ButtonInteraction } from 'discord.js'
 import { formatBigInt } from '@structures/renderers'
 import {
@@ -132,7 +133,7 @@ export class FactoryActionButtonHandler extends InteractionHandler {
   ): Promise<void> {
     const { db } = this.container
     try {
-      const updated = await FactoryService.upgrade(db, {
+      const { factory: updated, quest } = await FactoryService.upgrade(db, {
         userId: interaction.user.id,
         factoryId
       })
@@ -145,7 +146,7 @@ export class FactoryActionButtonHandler extends InteractionHandler {
       await interaction.editReply(
         payload as Parameters<typeof interaction.editReply>[0]
       )
-      await interaction.followUp({
+      const followBase = {
         components: [
           simpleContainer(
             V2_ACCENT.success,
@@ -154,7 +155,8 @@ export class FactoryActionButtonHandler extends InteractionHandler {
           )
         ],
         flags: v2Flags(false)
-      })
+      }
+      await interaction.followUp(appendQuestCompletions(followBase, quest, t))
     } catch (err) {
       await this.replyWarn(
         interaction,

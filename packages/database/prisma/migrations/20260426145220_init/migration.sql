@@ -25,6 +25,12 @@ CREATE TYPE "StockMarket" AS ENUM ('SERVER', 'GLOBAL');
 -- CreateEnum
 CREATE TYPE "TradeKind" AS ENUM ('MARKET_SELL', 'USER_TRADE', 'DIRECT_BUY', 'STOCK_BUY', 'STOCK_SELL', 'DIVIDEND');
 
+-- CreateEnum
+CREATE TYPE "QuestKind" AS ENUM ('TUTORIAL', 'DAILY', 'ACHIEVEMENT', 'EVENT');
+
+-- CreateEnum
+CREATE TYPE "QuestStatus" AS ENUM ('IN_PROGRESS', 'COMPLETED', 'CLAIMED');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
@@ -38,6 +44,10 @@ CREATE TABLE "User" (
     "dailyBought" INTEGER NOT NULL DEFAULT 0,
     "dailyBoughtResetAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "agreedTermsAt" TIMESTAMP(3),
+    "agreedPrivacyAt" TIMESTAMP(3),
+    "agreedTermsVersion" TEXT,
+    "agreedPrivacyVersion" TEXT,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -252,6 +262,25 @@ CREATE TABLE "InactiveServerPool" (
 );
 
 -- CreateTable
+CREATE TABLE "UserQuest" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "questId" TEXT NOT NULL,
+    "kind" "QuestKind" NOT NULL,
+    "status" "QuestStatus" NOT NULL DEFAULT 'IN_PROGRESS',
+    "progress" BIGINT NOT NULL DEFAULT 0,
+    "target" BIGINT NOT NULL,
+    "rewardSnapshot" JSONB NOT NULL,
+    "completedAt" TIMESTAMP(3),
+    "claimedAt" TIMESTAMP(3),
+    "expiresAt" TIMESTAMP(3),
+    "resetAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "UserQuest_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Notice" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
@@ -261,6 +290,67 @@ CREATE TABLE "Notice" (
 
     CONSTRAINT "Notice_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateTable
+CREATE TABLE "auth_user" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "emailVerified" BOOLEAN NOT NULL,
+    "image" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "auth_user_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "auth_session" (
+    "id" TEXT NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "token" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "ipAddress" TEXT,
+    "userAgent" TEXT,
+    "userId" TEXT NOT NULL,
+
+    CONSTRAINT "auth_session_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "auth_account" (
+    "id" TEXT NOT NULL,
+    "accountId" TEXT NOT NULL,
+    "providerId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "accessToken" TEXT,
+    "refreshToken" TEXT,
+    "idToken" TEXT,
+    "accessTokenExpiresAt" TIMESTAMP(3),
+    "refreshTokenExpiresAt" TIMESTAMP(3),
+    "scope" TEXT,
+    "password" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "auth_account_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "auth_verification" (
+    "id" TEXT NOT NULL,
+    "identifier" TEXT NOT NULL,
+    "value" TEXT NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3),
+    "updatedAt" TIMESTAMP(3),
+
+    CONSTRAINT "auth_verification_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE INDEX "User_agreedTermsAt_idx" ON "User"("agreedTermsAt");
 
 -- CreateIndex
 CREATE INDEX "Land_userId_idx" ON "Land"("userId");
@@ -338,10 +428,28 @@ CREATE UNIQUE INDEX "WeeklySettlement_userId_weekStart_key" ON "WeeklySettlement
 CREATE UNIQUE INDEX "InactiveServerPool_guildId_key" ON "InactiveServerPool"("guildId");
 
 -- CreateIndex
+CREATE INDEX "UserQuest_userId_status_idx" ON "UserQuest"("userId", "status");
+
+-- CreateIndex
+CREATE INDEX "UserQuest_userId_kind_idx" ON "UserQuest"("userId", "kind");
+
+-- CreateIndex
+CREATE INDEX "UserQuest_userId_status_kind_idx" ON "UserQuest"("userId", "status", "kind");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserQuest_userId_questId_key" ON "UserQuest"("userId", "questId");
+
+-- CreateIndex
 CREATE INDEX "Notice_title_idx" ON "Notice"("title");
 
 -- CreateIndex
 CREATE INDEX "Notice_postedAt_idx" ON "Notice"("postedAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "auth_user_email_key" ON "auth_user"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "auth_session_token_key" ON "auth_session"("token");
 
 -- AddForeignKey
 ALTER TABLE "Land" ADD CONSTRAINT "Land_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -405,3 +513,12 @@ ALTER TABLE "WeeklySettlement" ADD CONSTRAINT "WeeklySettlement_guildId_fkey" FO
 
 -- AddForeignKey
 ALTER TABLE "InactiveServerPool" ADD CONSTRAINT "InactiveServerPool_guildId_fkey" FOREIGN KEY ("guildId") REFERENCES "Guild"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserQuest" ADD CONSTRAINT "UserQuest_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "auth_session" ADD CONSTRAINT "auth_session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "auth_user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "auth_account" ADD CONSTRAINT "auth_account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "auth_user"("id") ON DELETE CASCADE ON UPDATE CASCADE;

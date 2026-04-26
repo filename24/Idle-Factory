@@ -193,5 +193,68 @@
     "ELECTRONIC": "전자제품",
     "FINISHED_FOOD": "완제 식품",
     "RAW_BOOSTER": "원료 부스터"
+  },
+  "quest": {
+    "title": "📜 퀘스트",
+    "tutorialChain": "튜토리얼 {{order}}/{{total}}",
+    "empty": {
+      "tutorialDone": "튜토리얼 완료! 더 많은 퀘스트가 곧 추가될 예정이에요.",
+      "noVisible": "진행 중인 퀘스트가 없어요."
+    },
+    "progressLabel": "진행도: {{bar}} {{progress}}/{{target}}",
+    "rewardLabel": "보상: {{rewards}}",
+    "completed": {
+      "title": "🎉 퀘스트 완료!",
+      "claimHint": "**`/quest`** 에서 [보상 받기] 를 눌러 보상을 수령하세요."
+    },
+    "claimed": {
+      "title": "✅ 보상 수령 완료",
+      "body": "**{{title}}** 의 보상을 받았어요.\n{{rewards}}"
+    },
+    "unlocked": {
+      "title": "🆕 새 퀘스트가 시작됐어요",
+      "body": "**{{title}}** — {{description}}"
+    },
+    "claimButton": "보상 받기",
+    "refreshButton": "새로고침",
+    "reward": {
+      "money": "+{{amount}}원 💰",
+      "xp": "+{{amount}} XP",
+      "material": "+{{amount}} {{material}}"
+    },
+    "tutorial": {
+      "1": {
+        "title": "첫 공장 건설",
+        "description": "T1 공장을 1개 건설해보세요."
+      },
+      "2": {
+        "title": "첫 수확",
+        "description": "공장에서 자재를 1회 수확해보세요."
+      },
+      "3": {
+        "title": "자재 판매",
+        "description": "마켓에 자재를 1개 이상 등록해보세요."
+      },
+      "4": {
+        "title": "공장 업그레이드",
+        "description": "공장을 2등급으로 업그레이드해보세요."
+      },
+      "5": {
+        "title": "두 번째 공장",
+        "description": "T1 공장을 2개 보유하세요."
+      }
+    }
+  },
+  "market": {
+    "list": {
+      "success": "🛒 **{{material}}** {{quantity}}개를 개당 {{price}}원에 마켓에 등록했어요.",
+      "footer": "세율 {{tax}}%",
+      "error": {
+        "insufficientStock": "보유 자재가 부족해요. 필요: {{required}} / 보유: {{have}}",
+        "invalidQuantity": "수량은 1 이상이어야 해요.",
+        "invalidPrice": "가격은 1원 이상이어야 해요.",
+        "invalidDuration": "기간은 1~30일이어야 해요."
+      }
+    }
   }
 }

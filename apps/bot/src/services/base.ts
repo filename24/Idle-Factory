@@ -23,6 +23,14 @@ export type ServiceErrorCode =
   | 'LAND_ALREADY_EXISTS'
   | 'INVALID_LAND_INDEX'
   | 'LAND_NOT_FOUND'
+  // 퀘스트
+  | 'QUEST_NOT_FOUND'
+  | 'QUEST_NOT_COMPLETED'
+  | 'QUEST_ALREADY_CLAIMED'
+  // 마켓
+  | 'INVALID_QUANTITY'
+  | 'INVALID_PRICE'
+  | 'INVALID_DURATION'
 
 export class ServiceError extends Error {
   public readonly code: ServiceErrorCode

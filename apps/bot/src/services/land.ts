@@ -230,22 +230,8 @@ export const LandService = {
         data: { locked: false }
       })
 
-      // 언락된 모든 슬롯의 bounding box 로 Land.width/height 갱신.
-      const unlockedSlots = land.slots
-        .map((s) =>
-          s.id === slot.id
-            ? { ...s, locked: false }
-            : { ...s, locked: s.locked }
-        )
-        .filter((s) => !s.locked)
-      const newWidth = Math.max(...unlockedSlots.map((s) => s.x)) + 1
-      const newHeight = Math.max(...unlockedSlots.map((s) => s.y)) + 1
-      if (newWidth !== land.width || newHeight !== land.height) {
-        await tx.land.update({
-          where: { id: land.id },
-          data: { width: newWidth, height: newHeight }
-        })
-      }
+      // Land.width/height 는 4×4 구조 크기로 고정 — 활성 영역은 Slot.locked 가 결정.
+      // 이전 모델은 활성 bounding box 로 width 를 갱신했지만, 단순성을 위해 구조 크기로 통일.
 
       return {
         landIndex,
