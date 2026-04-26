@@ -3,5 +3,6 @@
     "MAX_THINKING_TOKENS": "10000"
   },
   "model": "sonnet",
-  "enabledPlugins": {}
+  "enabledPlugins": {},
+  "enabledMcpjsonServers": ["agentation"]
 }

@@ -49,6 +49,21 @@ Run from the repo root:
 - `web#build` overrides inputs/outputs for Next.js (`.next/**`, excludes cache).
 - `db:generate`, `db:migrate:deploy`, `db:push`, `db:seed` are defined but only implemented in `packages/database`.
 
+## Documentation Policy
+
+**Always consult Context7 before using any framework, library, or external tool (MANDATORY).**
+
+Before writing code that uses a specific framework or library — including but not limited to Next.js, Tailwind CSS, Prisma, Sapphire.js, discord.js, shadcn/ui, better-auth, or any npm package — you MUST first fetch the current official documentation via the Context7 MCP tool (`mcp__plugin_context7_context7__resolve-library-id` → `mcp__plugin_context7_context7__query-docs`). Do not rely on training data alone; APIs change across versions and training data may be stale.
+
+This applies to:
+
+- API usage, method signatures, and configuration options
+- Version-specific behavior (e.g. Next.js App Router vs Pages Router, Tailwind v3 vs v4)
+- CLI commands and setup instructions
+- Any integration between two libraries
+
+Skip Context7 only for pure language constructs (TypeScript syntax, standard Node.js built-ins) where no third-party API is involved.
+
 ## Conventions
 
 - **AGENTS.md language — English only (MANDATORY):** All `AGENTS.md` files (root and per-package) MUST be written entirely in English. This is the contract for both human contributors and AI agents reading docs. Write Korean JSDoc in source code, not in AGENTS.md. This rule applies to every workspace without exception.
