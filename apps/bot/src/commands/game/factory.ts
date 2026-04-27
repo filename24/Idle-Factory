@@ -285,16 +285,23 @@ export class FactoryCommand extends Command {
         return t('game:common.error.factoryNotFound')
       case 'WAREHOUSE_FULL':
         return t('game:common.error.warehouseFull')
-      case 'INSUFFICIENT_MONEY':
+      case 'INSUFFICIENT_MONEY': {
+        const det = (err.details ?? {}) as {
+          required?: string
+          have?: string
+        }
+        const required = det.required ?? '-'
+        const have = det.have ?? '-'
         if (surface === 'upgrade') {
           return t('game:factory.upgrade.error.insufficientMoney', {
-            required: '-'
+            required
           })
         }
         return t('game:factory.build.error.insufficientMoney', {
-          required: '-',
-          have: '-'
+          required,
+          have
         })
+      }
       case 'INSUFFICIENT_MATERIAL': {
         const details = (err.details ?? {}) as {
           material?: string

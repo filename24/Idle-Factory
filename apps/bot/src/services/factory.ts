@@ -92,7 +92,10 @@ export const FactoryService = {
         throw new ServiceError('LEVEL_LOCKED')
       }
       if (user.money < cost) {
-        throw new ServiceError('INSUFFICIENT_MONEY')
+        throw new ServiceError('INSUFFICIENT_MONEY', undefined, {
+          required: cost.toString(),
+          have: user.money.toString()
+        })
       }
 
       const land = await ensureLandWithSlots(tx, userId, landIndex)
@@ -260,7 +263,10 @@ export const FactoryService = {
       const user = await tx.user.findUnique({ where: { id: userId } })
       if (!user) throw new ServiceError('USER_NOT_FOUND')
       if (user.money < money) {
-        throw new ServiceError('INSUFFICIENT_MONEY')
+        throw new ServiceError('INSUFFICIENT_MONEY', undefined, {
+          required: money.toString(),
+          have: user.money.toString()
+        })
       }
 
       const warehouse = await tx.warehouse.findUnique({
