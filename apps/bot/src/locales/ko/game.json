@@ -248,13 +248,49 @@
   "market": {
     "list": {
       "success": "🛒 **{{material}}** {{quantity}}개를 개당 {{price}}원에 마켓에 등록했어요.",
-      "footer": "세율 {{tax}}%",
+      "footer": "세율 {{tax}}% · 매물 ID `{{id}}`",
+      "successButtons": {
+        "cancel": "취소"
+      },
       "error": {
         "insufficientStock": "보유 자재가 부족해요. 필요: {{required}} / 보유: {{have}}",
         "invalidQuantity": "수량은 1 이상이어야 해요.",
         "invalidPrice": "가격은 1원 이상이어야 해요.",
         "invalidDuration": "기간은 1~30일이어야 해요."
       }
+    },
+    "buy": {
+      "success": "💸 **{{material}}** {{quantity}}개를 구매했어요.",
+      "footer": "총 {{gross}}원 (세금 {{tax}}원, 판매자 수령 {{net}}원)",
+      "buttonLabel": "구매",
+      "error": {
+        "listingNotFound": "해당 매물을 찾을 수 없어요.",
+        "listingNotActive": "이미 판매됐거나 만료된 매물이에요.",
+        "selfPurchase": "본인 매물은 구매할 수 없어요.",
+        "insufficientMoney": "자금이 부족해요. 필요: {{required}}원 / 보유: {{have}}원"
+      }
+    },
+    "cancel": {
+      "success": "↩️ 매물을 취소했어요. 자재 **{{material}}** {{quantity}}개가 창고로 돌아갔어요.",
+      "buttonLabel": "취소",
+      "error": {
+        "listingNotFound": "해당 매물을 찾을 수 없어요.",
+        "notOwner": "본인이 등록한 매물만 취소할 수 있어요.",
+        "listingNotActive": "이미 판매됐거나 만료된 매물이에요."
+      }
+    },
+    "browse": {
+      "title": "🛒 마켓 매물 목록",
+      "empty": "표시할 매물이 없어요. `/market list` 로 첫 매물을 등록해보세요.",
+      "card": "**{{material}}** ×{{quantity}} · 개당 **{{price}}원** · 만료 <t:{{expiresUnix}}:R>\n매물 ID `{{id}}`",
+      "page": "페이지 {{page}} / {{totalPages}} · 총 {{total}}건",
+      "filter": "필터: {{material}}",
+      "filterAll": "전체",
+      "prev": "‹ 이전",
+      "next": "다음 ›"
+    },
+    "expire": {
+      "log": "expired {{count}} stale market listings"
     }
   }
 }

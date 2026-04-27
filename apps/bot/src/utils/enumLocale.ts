@@ -9,6 +9,7 @@
 
 import type { TFunction } from '@sapphire/plugin-i18next'
 import type { FactoryType, MaterialType, ShortageMode } from '@idle/game-core'
+import koGame from '../locales/ko/game.json'
 
 /** `FARM` → "농장" / "Farm". */
 export function localizeFactoryType(t: TFunction, type: FactoryType): string {
@@ -23,4 +24,28 @@ export function localizeMaterial(t: TFunction, material: MaterialType): string {
 /** `PAUSE` → "일시 정지" / "Paused". */
 export function localizeShortageMode(t: TFunction, mode: ShortageMode): string {
   return t(`game:shortageMode.${mode}`, { defaultValue: mode })
+}
+
+const KO_MATERIAL = koGame.material as Record<string, string | undefined>
+const KO_FACTORY_TYPE = koGame.factoryType as Record<string, string | undefined>
+
+/**
+ * 슬래시 커맨드 choice 의 `name_localizations` 에 끼워 넣을 한국어 매핑.
+ *
+ * `t()` 를 사용할 수 없는 `registerApplicationCommands` 시점용이라 JSON 을
+ * 직접 읽어 정적으로 매핑한다. ko 만 채우고 영어는 enum 그대로 노출한다.
+ */
+export function materialChoiceLocalizations(
+  material: MaterialType
+): { ko: string } | undefined {
+  const ko = KO_MATERIAL[material]
+  return ko ? { ko } : undefined
+}
+
+/** factoryType 슬래시 choice 한국어 라벨 매핑. */
+export function factoryTypeChoiceLocalizations(
+  type: FactoryType
+): { ko: string } | undefined {
+  const ko = KO_FACTORY_TYPE[type]
+  return ko ? { ko } : undefined
 }

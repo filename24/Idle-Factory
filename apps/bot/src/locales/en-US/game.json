@@ -248,13 +248,49 @@
   "market": {
     "list": {
       "success": "🛒 Listed **{{material}}** ×{{quantity}} at {{price}} each on the market.",
-      "footer": "Tax {{tax}}%",
+      "footer": "Tax {{tax}}% · Listing ID `{{id}}`",
+      "successButtons": {
+        "cancel": "Cancel"
+      },
       "error": {
         "insufficientStock": "Not enough stock. Need: {{required}} / Have: {{have}}",
         "invalidQuantity": "Quantity must be at least 1.",
         "invalidPrice": "Price must be at least 1.",
         "invalidDuration": "Duration must be 1–30 days."
       }
+    },
+    "buy": {
+      "success": "💸 Bought **{{material}}** ×{{quantity}}.",
+      "footer": "Total {{gross}} (tax {{tax}}, seller gets {{net}})",
+      "buttonLabel": "Buy",
+      "error": {
+        "listingNotFound": "Listing not found.",
+        "listingNotActive": "This listing is already sold or expired.",
+        "selfPurchase": "You can't buy your own listing.",
+        "insufficientMoney": "Not enough money. Need: {{required}} / Have: {{have}}"
+      }
+    },
+    "cancel": {
+      "success": "↩️ Listing cancelled. **{{material}}** ×{{quantity}} returned to your warehouse.",
+      "buttonLabel": "Cancel",
+      "error": {
+        "listingNotFound": "Listing not found.",
+        "notOwner": "You can only cancel your own listings.",
+        "listingNotActive": "This listing is already sold or expired."
+      }
+    },
+    "browse": {
+      "title": "🛒 Active Listings",
+      "empty": "No listings to show. Try `/market list` to post one.",
+      "card": "**{{material}}** ×{{quantity}} · **{{price}}** each · expires <t:{{expiresUnix}}:R>\nListing ID `{{id}}`",
+      "page": "Page {{page}} / {{totalPages}} · {{total}} listings",
+      "filter": "Filter: {{material}}",
+      "filterAll": "All",
+      "prev": "‹ Prev",
+      "next": "Next ›"
+    },
+    "expire": {
+      "log": "expired {{count}} stale market listings"
     }
   }
 }

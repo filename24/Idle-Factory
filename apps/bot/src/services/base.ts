@@ -31,6 +31,10 @@ export type ServiceErrorCode =
   | 'INVALID_QUANTITY'
   | 'INVALID_PRICE'
   | 'INVALID_DURATION'
+  | 'LISTING_NOT_FOUND'
+  | 'LISTING_NOT_ACTIVE'
+  | 'NOT_LISTING_OWNER'
+  | 'SELF_PURCHASE'
 
 export class ServiceError extends Error {
   public readonly code: ServiceErrorCode
