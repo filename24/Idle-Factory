@@ -2,7 +2,7 @@
  * `/market` 커맨드 그룹.
  *
  * 서브커맨드:
- *  - `list <material> <quantity> <price_per_unit> <duration>` — 마켓에 자재 등록.
+ *  - `list` — 자재 Select Menu → Modal UI 를 통해 마켓에 자재 등록.
  *  - `buy <listing_id>` — 매물 구매 (listing_id 자동완성 지원).
  *  - `cancel <listing_id>` — 본인 매물 취소 (listing_id 자동완성 지원).
  *  - `browse [material] [page]` — 활성 매물 목록 페이지네이션.
@@ -24,18 +24,14 @@ import {
   ContainerBuilder,
   SeparatorBuilder,
   SeparatorSpacingSize,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
   TextDisplayBuilder,
   type AutocompleteInteraction
 } from 'discord.js'
 import type { MaterialType } from '@idle/game-core'
-import {
-  simpleV2Payload,
-  V2_ACCENT,
-  v2Flags,
-  v2PayloadFromContainers
-} from '@utils/ComponentsV2'
+import { simpleV2Payload, V2_ACCENT, v2Flags } from '@utils/ComponentsV2'
 import { formatBigInt } from '@structures/renderers'
-import { appendQuestCompletions } from '@utils/questNotifier'
 import { resolveMarketErrorMessage } from '@utils/marketErrorKey'
 import {
   localizeMaterial,
@@ -44,7 +40,7 @@ import {
 import { MarketService } from '../../services/market'
 import { UserService } from '../../services/user'
 
-const MATERIAL_CHOICES: readonly MaterialType[] = [
+export const MATERIAL_CHOICES: readonly MaterialType[] = [
   'GRAIN',
   'ORE',
   'WOOD',
@@ -68,6 +64,8 @@ const AUTOCOMPLETE_NAME_MAX = 100
 export const MARKET_BUY_BUTTON_PREFIX = 'market:buy:'
 export const MARKET_CANCEL_BUTTON_PREFIX = 'market:cancel:'
 export const MARKET_BROWSE_BUTTON_PREFIX = 'market:browse:'
+/** `/market list` 자재 Select Menu customId prefix. Select 핸들러와 공유. */
+export const MARKET_LIST_MATERIAL_SELECT_PREFIX = 'market:list:mat:'
 
 export class MarketCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -112,56 +110,9 @@ export class MarketCommand extends Command {
   }
 
   private async handleList(interaction: Command.ChatInputCommandInteraction) {
-    const { db } = this.container
     const t = await fetchT(interaction)
-
-    const material = interaction.options.getString(
-      'material',
-      true
-    ) as MaterialType
-    const quantity = BigInt(interaction.options.getInteger('quantity', true))
-    const pricePerUnit = BigInt(
-      interaction.options.getInteger('price_per_unit', true)
-    )
-    const durationDays = interaction.options.getInteger('duration', true)
-
-    try {
-      await UserService.ensure(db, { discordId: interaction.user.id })
-      const result = await MarketService.list(db, {
-        userId: interaction.user.id,
-        material,
-        quantity,
-        pricePerUnit,
-        durationDays
-      })
-
-      const container = buildListingSuccessContainer({
-        listingId: result.listing.id,
-        material,
-        quantity,
-        pricePerUnit,
-        taxRate: result.listing.taxRate ?? 0,
-        cancelLabel: t('game:market.list.successButtons.cancel'),
-        title: t('game:market.list.success', {
-          material: localizeMaterial(t, material),
-          quantity: formatBigInt(quantity),
-          price: formatBigInt(pricePerUnit)
-        }),
-        footer: t('game:market.list.footer', {
-          tax: ((result.listing.taxRate ?? 0) * 100).toFixed(0),
-          id: result.listing.id
-        })
-      })
-
-      const enriched = appendQuestCompletions(
-        v2PayloadFromContainers([container]),
-        result.quest,
-        t
-      )
-      return interaction.reply(enriched)
-    } catch (err) {
-      return this.replyFromError(interaction, err, 'list')
-    }
+    const container = buildListMaterialSelectContainer(interaction.user.id, t)
+    return interaction.reply({ components: [container], flags: v2Flags(true) })
   }
 
   private async handleBuy(interaction: Command.ChatInputCommandInteraction) {
@@ -295,49 +246,6 @@ export class MarketCommand extends Command {
             .setNameLocalization('ko', '등록')
             .setDescription('List a material on the market.')
             .setDescriptionLocalization('ko', '자재를 마켓에 등록합니다.')
-            .addStringOption((opt) =>
-              opt
-                .setName('material')
-                .setNameLocalization('ko', '자재')
-                .setDescription('Material to sell')
-                .setDescriptionLocalization('ko', '판매할 자재')
-                .setRequired(true)
-                .addChoices(
-                  ...MATERIAL_CHOICES.map((m) => ({
-                    name: m,
-                    name_localizations: materialChoiceLocalizations(m),
-                    value: m
-                  }))
-                )
-            )
-            .addIntegerOption((opt) =>
-              opt
-                .setName('quantity')
-                .setNameLocalization('ko', '수량')
-                .setDescription('Quantity to list (>=1)')
-                .setDescriptionLocalization('ko', '등록 수량 (1 이상)')
-                .setMinValue(1)
-                .setRequired(true)
-            )
-            .addIntegerOption((opt) =>
-              opt
-                .setName('price_per_unit')
-                .setNameLocalization('ko', '단가')
-                .setDescription('Price per unit (>=1)')
-                .setDescriptionLocalization('ko', '개당 가격 (1 이상)')
-                .setMinValue(1)
-                .setRequired(true)
-            )
-            .addIntegerOption((opt) =>
-              opt
-                .setName('duration')
-                .setNameLocalization('ko', '기간')
-                .setDescription('Listing duration in days (1-30)')
-                .setDescriptionLocalization('ko', '등록 기간 (1~30일)')
-                .setMinValue(1)
-                .setMaxValue(30)
-                .setRequired(true)
-            )
         )
         .addSubcommand((sub) =>
           sub
@@ -406,12 +314,9 @@ export class MarketCommand extends Command {
   }
 }
 
-interface ListingSuccessParams {
+/** 등록 성공 컨테이너 빌더 파라미터. */
+export interface ListingSuccessParams {
   readonly listingId: string
-  readonly material: MaterialType
-  readonly quantity: bigint
-  readonly pricePerUnit: bigint
-  readonly taxRate: number
   readonly cancelLabel: string
   readonly title: string
   readonly footer: string
@@ -419,8 +324,10 @@ interface ListingSuccessParams {
 
 /**
  * 등록 성공 컨테이너 — 본문 + Separator + [취소] 버튼.
+ *
+ * Modal 핸들러(modals/marketListDetails.ts)에서도 재사용.
  */
-function buildListingSuccessContainer(
+export function buildListingSuccessContainer(
   p: ListingSuccessParams
 ): ContainerBuilder {
   const container = new ContainerBuilder().setAccentColor(V2_ACCENT.success)
@@ -568,6 +475,49 @@ function isKnownServiceError(err: unknown): boolean {
 
 function truncate(text: string, max: number): string {
   return text.length <= max ? text : `${text.slice(0, max - 1)}…`
+}
+
+/**
+ * `/market list` 자재 Select Menu 컨테이너.
+ *
+ * ephemeral 응답으로 표시되며, 선택 후 Select 핸들러가 Modal을 띄운다.
+ */
+function buildListMaterialSelectContainer(
+  ownerId: string,
+  t: TFunction
+): ContainerBuilder {
+  const container = new ContainerBuilder().setAccentColor(V2_ACCENT.info)
+  container.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(
+      `# **${t('game:market.list.selectMaterial.title')}**`
+    )
+  )
+  container.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(
+      t('game:market.list.selectMaterial.body')
+    )
+  )
+  container.addSeparatorComponents(
+    new SeparatorBuilder()
+      .setDivider(true)
+      .setSpacing(SeparatorSpacingSize.Small)
+  )
+  const select = new StringSelectMenuBuilder()
+    .setCustomId(`${MARKET_LIST_MATERIAL_SELECT_PREFIX}${ownerId}:_`)
+    .setPlaceholder(t('game:market.list.selectMaterial.placeholder'))
+    .setMinValues(1)
+    .setMaxValues(1)
+    .addOptions(
+      MATERIAL_CHOICES.map((m) =>
+        new StringSelectMenuOptionBuilder()
+          .setLabel(localizeMaterial(t, m))
+          .setValue(m)
+      )
+    )
+  container.addActionRowComponents(
+    new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select)
+  )
+  return container
 }
 
 /** browse 컨테이너 빌더 — 인터랙션 핸들러에서 페이지 갱신 시 재사용. */

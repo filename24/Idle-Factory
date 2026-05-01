@@ -257,6 +257,25 @@
         "invalidQuantity": "수량은 1 이상이어야 해요.",
         "invalidPrice": "가격은 1원 이상이어야 해요.",
         "invalidDuration": "기간은 1~30일이어야 해요."
+      },
+      "selectMaterial": {
+        "title": "마켓 등록",
+        "body": "판매할 자재를 선택하세요.",
+        "placeholder": "자재를 선택하세요..."
+      },
+      "modal": {
+        "title": "{{material}} 마켓 등록",
+        "quantityLabel": "수량",
+        "quantityPlaceholder": "예: 100",
+        "priceLabel": "개당 가격 (원)",
+        "pricePlaceholder": "예: 50",
+        "durationLabel": "등록 기간 (일, 1~30)",
+        "durationPlaceholder": "예: 7",
+        "error": {
+          "invalidQuantity": "수량은 1 이상의 정수여야 해요.",
+          "invalidPrice": "가격은 1원 이상의 정수여야 해요.",
+          "invalidDuration": "기간은 1~30 사이의 정수여야 해요."
+        }
       }
     },
     "buy": {

@@ -257,6 +257,25 @@
         "invalidQuantity": "Quantity must be at least 1.",
         "invalidPrice": "Price must be at least 1.",
         "invalidDuration": "Duration must be 1–30 days."
+      },
+      "selectMaterial": {
+        "title": "List on Market",
+        "body": "Choose a material to list for sale.",
+        "placeholder": "Select a material..."
+      },
+      "modal": {
+        "title": "List {{material}} on Market",
+        "quantityLabel": "Quantity",
+        "quantityPlaceholder": "e.g. 100",
+        "priceLabel": "Price per unit",
+        "pricePlaceholder": "e.g. 50",
+        "durationLabel": "Duration (days, 1–30)",
+        "durationPlaceholder": "e.g. 7",
+        "error": {
+          "invalidQuantity": "Quantity must be a whole number ≥ 1.",
+          "invalidPrice": "Price must be a whole number ≥ 1.",
+          "invalidDuration": "Duration must be between 1 and 30 days."
+        }
       }
     },
     "buy": {

@@ -13,6 +13,7 @@ import {
   MessageFlags,
   TextDisplayBuilder,
   type BaseMessageOptions,
+  type InteractionEditReplyOptions,
   type InteractionReplyOptions
 } from 'discord.js'
 
@@ -123,6 +124,21 @@ export function v2PayloadFromContainers(
   return {
     components: containers,
     flags: v2Flags(ephemeral)
+  }
+}
+
+/**
+ * `editReply` 용 Components v2 페이로드를 만든다.
+ *
+ * deferReply 이후 editReply 에서는 Ephemeral 플래그를 사용할 수 없으므로
+ * `InteractionEditReplyOptions` 타입으로 반환한다.
+ */
+export function v2EditPayload(
+  containers: ContainerBuilder[]
+): InteractionEditReplyOptions {
+  return {
+    components: containers,
+    flags: MessageFlags.IsComponentsV2
   }
 }
 
