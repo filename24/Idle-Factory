@@ -501,6 +501,26 @@ export const MarketService = {
       price: r.price,
       sellerId: r.sellerId
     }))
+  },
+
+  /**
+   * 특정 자재의 현재 최저 활성 매물 단가를 반환한다.
+   * 활성·미만료 매물이 없으면 null 을 반환한다.
+   */
+  async minActivePrice(
+    prisma: PrismaClient,
+    material: MaterialType
+  ): Promise<bigint | null> {
+    const listing = await prisma.marketListing.findFirst({
+      where: {
+        material,
+        status: 'ACTIVE',
+        expiresAt: { gt: new Date() }
+      },
+      orderBy: { price: 'asc' },
+      select: { price: true }
+    })
+    return listing?.price ?? null
   }
 } as const
 

@@ -36,7 +36,7 @@ import {
   MATERIAL_CHOICES,
   buildListingSuccessContainer
 } from '../../commands/game/market'
-import { MARKET_LIST_MODAL_PREFIX } from '../selects/marketListMaterial'
+import { MARKET_LIST_MODAL_PREFIX } from '../buttons/marketListDuration'
 
 const VALID_MATERIALS = new Set<string>(MATERIAL_CHOICES)
 
@@ -101,14 +101,40 @@ export class MarketListDetailsModalHandler extends InteractionHandler {
     if (!interaction.customId.startsWith(MARKET_LIST_MODAL_PREFIX)) {
       return this.none()
     }
-    const material = interaction.customId.slice(MARKET_LIST_MODAL_PREFIX.length)
+    // 포맷: market:list:details:<material>:<days>
+    // <days> = "3" | "7" | "14" | "30" | "custom"
+    const rest = interaction.customId.slice(MARKET_LIST_MODAL_PREFIX.length)
+    const lastColon = rest.lastIndexOf(':')
+    if (lastColon === -1) return this.none()
+    const material = rest.slice(0, lastColon)
+    const daysStr = rest.slice(lastColon + 1)
+
     if (!VALID_MATERIALS.has(material)) return this.none()
-    return this.some({ material: material as MaterialType })
+
+    if (daysStr === 'custom') {
+      return this.some({
+        material: material as MaterialType,
+        durationDays: null,
+        isCustomDuration: true
+      })
+    }
+
+    const days = Number.parseInt(daysStr, 10)
+    if (!Number.isInteger(days) || days < 1 || days > 30) return this.none()
+    return this.some({
+      material: material as MaterialType,
+      durationDays: days,
+      isCustomDuration: false
+    })
   }
 
   public async run(
     interaction: ModalSubmitInteraction,
-    data: { material: MaterialType }
+    data: {
+      material: MaterialType
+      durationDays: number | null
+      isCustomDuration: boolean
+    }
   ): Promise<void> {
     const { db } = this.container
     const t = await fetchT(interaction)
@@ -117,7 +143,9 @@ export class MarketListDetailsModalHandler extends InteractionHandler {
     const priceRaw = interaction.fields
       .getTextInputValue('price_per_unit')
       .trim()
-    const durationRaw = interaction.fields.getTextInputValue('duration').trim()
+    const durationRaw = data.isCustomDuration
+      ? interaction.fields.getTextInputValue('duration').trim()
+      : String(data.durationDays)
 
     const parsed = parseModalInputs(quantityRaw, priceRaw, durationRaw)
     if (!parsed.ok) {

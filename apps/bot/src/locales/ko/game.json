@@ -263,6 +263,17 @@
         "body": "판매할 자재를 선택하세요.",
         "placeholder": "자재를 선택하세요..."
       },
+      "durSelect": {
+        "title": "{{material}} 마켓 등록",
+        "priceInfo": "현재 최저 시세: **{{price}}원**",
+        "noPrice": "현재 등록된 활성 매물이 없어요.",
+        "taxInfo": "-# 세율: 3일 3% · 1주일 5% · 2주일 8% · 1달 18%",
+        "btn3d": "3일",
+        "btn7d": "1주일",
+        "btn14d": "2주일",
+        "btn30d": "1달",
+        "btnCustom": "직접 입력"
+      },
       "modal": {
         "title": "{{material}} 마켓 등록",
         "quantityLabel": "수량",

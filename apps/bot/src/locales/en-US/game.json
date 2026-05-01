@@ -263,6 +263,17 @@
         "body": "Choose a material to list for sale.",
         "placeholder": "Select a material..."
       },
+      "durSelect": {
+        "title": "List {{material}} on Market",
+        "priceInfo": "Current lowest price: **{{price}}**",
+        "noPrice": "No active listings for this material.",
+        "taxInfo": "-# Tax: 3d · 3% | 1wk · 5% | 2wk · 8% | 1mo · 18%",
+        "btn3d": "3 days",
+        "btn7d": "1 week",
+        "btn14d": "2 weeks",
+        "btn30d": "1 month",
+        "btnCustom": "Custom"
+      },
       "modal": {
         "title": "List {{material}} on Market",
         "quantityLabel": "Quantity",
