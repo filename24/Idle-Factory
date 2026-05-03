@@ -1,7 +1,6 @@
 import { DatabaseClient } from '@idle/database'
 
 declare global {
-  // eslint-disable-next-line no-var
   var _idleDb: InstanceType<typeof DatabaseClient> | undefined
 }
 

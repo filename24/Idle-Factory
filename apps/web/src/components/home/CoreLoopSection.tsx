@@ -5,7 +5,7 @@ export function CoreLoopSection() {
       <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
         {/* 섹션 헤더 — 좌정렬 */}
         <div className="mb-2 text-[10px] tracking-[0.25em] text-[var(--color-gold)] uppercase">
-          // 핵심 루프
+          {'// 핵심 루프'}
         </div>
         <h2 className="text-2xl font-bold text-[var(--color-foreground)] sm:text-3xl">
           간단한 3단계, 무한한 전략

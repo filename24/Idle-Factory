@@ -24,14 +24,16 @@ export default function DocsSearchDialog({ open, onOpenChange }: SharedProps) {
 
   useEffect(() => {
     if (open) {
-      setTimeout(() => inputRef.current?.focus(), 50)
+      setTimeout(() => {
+        inputRef.current?.focus()
+        setSelected(0)
+      }, 50)
       setSearch('')
-      setSelected(0)
     }
   }, [open, setSearch])
 
   useEffect(() => {
-    setSelected(0)
+    setTimeout(() => setSelected(0), 0)
   }, [results.length])
 
   useEffect(() => {
