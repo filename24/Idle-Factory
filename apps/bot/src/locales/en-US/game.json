@@ -282,12 +282,38 @@
         "pricePlaceholder": "e.g. 50",
         "durationLabel": "Duration (days, 1–30)",
         "durationPlaceholder": "e.g. 7",
+        "priceOnlyTitle": "{{material}} — Enter price per unit",
         "error": {
           "invalidQuantity": "Quantity must be a whole number ≥ 1.",
           "invalidPrice": "Price must be a whole number ≥ 1.",
           "invalidDuration": "Duration must be between 1 and 30 days."
         }
-      }
+      },
+      "qtySelect": {
+        "title": "{{material}} — Select quantity",
+        "summary": "-# Material: {{material}} · Duration: {{days}}d (tax {{tax}}%)",
+        "priceInfo": "Current lowest price: **{{price}}**",
+        "noPrice": "No active listings for this material.",
+        "placeholder": "Select the quantity to sell...",
+        "customOption": "Custom",
+        "customOptionDesc": "Enter quantity and price manually"
+      },
+      "prcSelect": {
+        "title": "{{material}} ×{{quantity}} — Select price",
+        "summary": "-# Material: {{material}} · Duration: {{days}}d (tax {{tax}}%) · Quantity: {{quantity}}",
+        "priceBase": "-# Reference price: {{price}}",
+        "noPrice": "No active listings. Enter a price manually below.",
+        "placeholder": "Select the price per unit...",
+        "customOption": "Custom",
+        "customOptionDesc": "Enter price per unit manually"
+      },
+      "confirm": {
+        "title": "Confirm listing {{material}}",
+        "detail": "Quantity **{{quantity}}** · **{{price}}** each · {{days}}d · tax **{{tax}}%**",
+        "okBtn": "List",
+        "cancelBtn": "Cancel"
+      },
+      "stepCancelled": "Listing cancelled."
     },
     "buy": {
       "success": "💸 Bought **{{material}}** ×{{quantity}}.",

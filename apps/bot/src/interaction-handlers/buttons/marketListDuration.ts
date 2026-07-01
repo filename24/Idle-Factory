@@ -147,12 +147,16 @@ export function buildQuantitySelectContainer(
   container.addTextDisplayComponents(
     new TextDisplayBuilder().setContent(
       [
+        t('game:market.list.qtySelect.summary', {
+          material: localizeMaterial(t, material),
+          days,
+          tax: taxPct
+        }),
         avgPrice !== null
           ? t('game:market.list.qtySelect.priceInfo', {
               price: formatBigInt(avgPrice)
             })
-          : t('game:market.list.qtySelect.noPrice'),
-        t('game:market.list.qtySelect.daysInfo', { days, tax: taxPct })
+          : t('game:market.list.qtySelect.noPrice')
       ].join('\n')
     )
   )

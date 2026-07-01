@@ -36,6 +36,7 @@ import {
   buildDetailsModal,
   MARKET_LIST_QTY_SELECT_PREFIX
 } from '../buttons/marketListDuration'
+import { taxRateForDuration } from '../../services/market'
 
 /** 가격 Select Menu customId prefix — selects/marketListPrice.ts 와 공유. */
 export const MARKET_LIST_PRC_SELECT_PREFIX = 'market:list:prc:'
@@ -64,6 +65,9 @@ export function buildPriceSelectContainer(
   t: TFunction
 ): ContainerBuilder {
   const avgPriceStr = avgPrice?.toString() ?? '0'
+  const taxPct = (taxRateForDuration(Number.parseInt(days, 10)) * 100).toFixed(
+    0
+  )
   const selectCustomId = `${MARKET_LIST_PRC_SELECT_PREFIX}${ownerId}:${material}:${days}:${quantity}:${avgPriceStr}`
 
   const container = new ContainerBuilder().setAccentColor(V2_ACCENT.info)
@@ -73,6 +77,16 @@ export function buildPriceSelectContainer(
         material: localizeMaterial(t, material),
         quantity: formatBigInt(BigInt(quantity))
       })}**`
+    )
+  )
+  container.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(
+      t('game:market.list.prcSelect.summary', {
+        material: localizeMaterial(t, material),
+        days,
+        tax: taxPct,
+        quantity: formatBigInt(BigInt(quantity))
+      })
     )
   )
 
