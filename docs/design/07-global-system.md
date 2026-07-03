@@ -178,9 +178,9 @@ flowchart LR
 
 참조: [`packages/database/prisma/schema.prisma`](https://github.com/filename24/Idle-Factory/blob/stable/packages/database/prisma/schema.prisma)
 
-- `Guild.credit` — 서버 신뢰도 (-1000 ~ 10000)
+- `Guild.credit` — 서버 신뢰도 (0 ~ 2000, 기본 1000 · 코드 현행)
 - `Guild.vault` — 서버 금고 (BigInt)
-- `Guild.taxSurcharge` — 서버별 추가 세율 (기본 0.1)
+- `Guild.taxSurcharge` — 서버별 추가 세율 (기본 0, 범위 0 ~ 0.20 · 코드 현행)
 - `Guild.weeklyDAU` — 주간 활성 유저 수 (신뢰도 증감 기준)
 - `WeeklySettlement` — 주 1회 세금 정산 기록 (`weekStart` unique per guild)
 - `InactiveServerPool` — 30일 비활성 서버 자산 재분배 풀

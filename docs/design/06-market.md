@@ -12,7 +12,7 @@
 ```mermaid
 flowchart TB
     subgraph Global[글로벌 마켓]
-        Algo[가격 변동 알고리즘] --> GPrice[원자재 가격]
+        Algo[가격 변동 알고리즘] --> GPrice[자재 가격]
     end
 
     subgraph Users[유저 상점]
@@ -48,7 +48,7 @@ noise         = Random(-0.20, +0.20)
 demandFactor  = (recentSales - avgSales) / avgSales × k   // k: 보정 계수 (예: 0.1)
 ```
 
-- **30분마다** 모든 원자재 가격 재계산
+- **30분마다** 모든 자재 가격 재계산
 - **거래량 보정**: 최근 30분 판매량이 평균보다 많으면 상승, 적으면 하락
 - **극단값 방지**: 하한 70%, 상한 200%로 clamp
 - **유저 직구매 가격** = `newPrice × 2` (04-economy.md 참고)
@@ -78,9 +78,11 @@ demandFactor  = (recentSales - avgSales) / avgSales × k   // k: 보정 계수 (
 공식:
 
 ```
-tax = basePrice × salePrice × rateByDuration(days)
+tax = salePrice × rateByDuration(days)   // salePrice = 총 판매액(수량 × 단가)
 netRevenue = salePrice - tax
 ```
+
+> **코드 기준**: `apps/bot/src/services/market.ts` 의 `calcTax(gross, taxRate)` 는 `gross = qty × price`(총 판매액)에 세율을 곱한다. 기존 `basePrice ×` 곱셈은 차원 오류였다.
 
 > **인플레 억제 의도**: 장기 등록은 공급 잠금 효과가 있어 시장 가격을 왜곡. 누진 세금으로 장기 매물 회전율을 유도.
 

@@ -231,7 +231,7 @@
 3. 유저가 슬롯 선택 → 골드 차감 → 슬롯 활성화
 4. 그리드 갱신 (disabled → 활성 슬롯)
 
-> 슬롯별 구매 비용 기준: **TBD**
+> 슬롯별 구매 비용은 §슬롯 확장 비용의 확정 공식(`5,000 × 10^(N−1) × 2^(k−1)`)을 따른다.
 
 ## 토지 구역 구매 — 새 필지 구매 (Phase 2)
 
@@ -352,6 +352,6 @@ interface Factory {
 
 - `Land` — 유저당 1~5개 토지 구역 (`userId + index` unique, `width`, `height`)
 - `Slot` — 토지 내 셀 (`landId + x + y` unique, `type`, `locked`)
-- `enum SlotType` — NORMAL / FERTILE / ORE_RICH / SUNNY / WINDY / WAREHOUSE_RESERVED 등
+- `enum SlotType` — NORMAL / ORE(광맥) / FERTILE(비옥한 땅) / FOREST(숲) / OIL(유전지) / WATER(수로) · 코드 현행. 위 §특수 슬롯 표의 5종이 모두 스키마·`specialSlots.ts` 에 구현돼 있다.
 - `Factory` 배치 필드 — `landId`, `anchorX`, `anchorY`, `width`, `height` (T3는 2×2)
 - `Warehouse` — 토지 위 1 슬롯 차지 (05-warehouse.md 참조)
