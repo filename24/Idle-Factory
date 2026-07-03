@@ -6,8 +6,11 @@
  *  - `buy <listing_id>` — 매물 구매 (listing_id 자동완성 지원).
  *  - `cancel <listing_id>` — 본인 매물 취소 (listing_id 자동완성 지원).
  *  - `browse [material] [page]` — 활성 매물 목록 페이지네이션.
+ *  - `sell` — 창고 자재를 글로벌 마켓에 즉시 판매 (현재 시세 100%, #15 U-3).
+ *  - `price` — 글로벌 마켓 자재 시세 보드 (현재가·기준가 대비 등락).
  *
- * 등록 즉시 `MARKET_LISTED` 이벤트가 발화돼 Q3 ("자재 판매") 트리거를 살린다.
+ * 등록·글로벌 판매 즉시 `MARKET_LISTED` 이벤트가 발화돼 Q3 ("자재 판매")
+ * 트리거를 살린다 — 글로벌 판매 덕에 1인 서버에서도 Q3 완주가 가능하다.
  *
  * 응답은 모두 Components v2 — list/buy/cancel 성공 응답과 browse 카드에는
  * 추가 액션 버튼을 부착하며, 텍스트와 버튼 사이에 `SeparatorBuilder` 를 둔다.
@@ -31,13 +34,19 @@ import {
 } from 'discord.js'
 import type { MaterialType } from '@idle/game-core'
 import { simpleV2Payload, V2_ACCENT, v2Flags } from '@utils/ComponentsV2'
-import { formatBigInt } from '@structures/renderers'
+import {
+  buildPriceBoardContainer,
+  buildSellMaterialSelectContainer,
+  formatBigInt
+} from '@structures/renderers'
 import { resolveMarketErrorMessage } from '@utils/marketErrorKey'
 import {
   localizeMaterial,
   materialChoiceLocalizations
 } from '../../utils/enumLocale'
 import { MarketService } from '../../services/market'
+import { MarketPriceService } from '../../services/marketPrice'
+import { MarketSellService } from '../../services/marketSell'
 import type {
   ActorTrustSignal,
   MarketActorInput
@@ -84,6 +93,8 @@ export class MarketCommand extends Command {
     if (sub === 'buy') return this.handleBuy(interaction)
     if (sub === 'cancel') return this.handleCancel(interaction)
     if (sub === 'browse') return this.handleBrowse(interaction)
+    if (sub === 'sell') return this.handleSell(interaction)
+    if (sub === 'price') return this.handlePrice(interaction)
     return this.replyUnknown(interaction)
   }
 
@@ -192,6 +203,64 @@ export class MarketCommand extends Command {
     } catch (err) {
       return this.replyFromError(interaction, err, 'cancel')
     }
+  }
+
+  /**
+   * `/market sell` — 창고 보유 자재의 글로벌 즉시 판매 1단계 (자재 Select).
+   *
+   * 창고에 판매 가능한 자재(count>0, RAW_BOOSTER 제외)가 없으면 안내만 응답.
+   * 이후 단계는 selects/marketSellMaterial → selects/marketSellQuantity →
+   * buttons/marketSellConfirm 핸들러 체인이 이어받는다.
+   */
+  private async handleSell(interaction: Command.ChatInputCommandInteraction) {
+    const { db } = this.container
+    const t = await fetchT(interaction)
+
+    await UserService.ensure(db, { discordId: interaction.user.id })
+    const stacks = await MarketSellService.listSellableStacks(
+      db,
+      interaction.user.id,
+      MATERIAL_CHOICES
+    )
+
+    if (stacks.length === 0) {
+      return interaction.reply(
+        simpleV2Payload({
+          accent: V2_ACCENT.warn,
+          body: t('game:market.sell.selectMaterial.empty'),
+          ephemeral: true
+        })
+      )
+    }
+
+    const container = buildSellMaterialSelectContainer(
+      interaction.user.id,
+      stacks,
+      t
+    )
+    return interaction.reply({ components: [container], flags: v2Flags(true) })
+  }
+
+  /**
+   * `/market price` — 글로벌 마켓 시세 보드 (자재 13종, 공개 응답).
+   */
+  private async handlePrice(interaction: Command.ChatInputCommandInteraction) {
+    const { db } = this.container
+    const t = await fetchT(interaction)
+
+    const views = await MarketPriceService.listPrices(db)
+    if (views.length === 0) {
+      return interaction.reply(
+        simpleV2Payload({
+          accent: V2_ACCENT.warn,
+          body: t('game:market.price.empty'),
+          ephemeral: true
+        })
+      )
+    }
+
+    const container = buildPriceBoardContainer(views, t)
+    return interaction.reply({ components: [container], flags: v2Flags(false) })
   }
 
   private async handleBrowse(interaction: Command.ChatInputCommandInteraction) {
@@ -326,6 +395,23 @@ export class MarketCommand extends Command {
                 .setMinValue(1)
                 .setRequired(false)
             )
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName('sell')
+            .setNameLocalization('ko', '판매')
+            .setDescription('Sell materials to the global market instantly.')
+            .setDescriptionLocalization(
+              'ko',
+              '자재를 글로벌 마켓에 즉시 판매합니다.'
+            )
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName('price')
+            .setNameLocalization('ko', '시세')
+            .setDescription('Show global market prices.')
+            .setDescriptionLocalization('ko', '글로벌 마켓 시세를 봅니다.')
         )
     )
   }

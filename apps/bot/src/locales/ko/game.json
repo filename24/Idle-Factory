@@ -278,7 +278,8 @@
         "insufficientStock": "보유 자재가 부족해요. 필요: {{required}} / 보유: {{have}}",
         "invalidQuantity": "수량은 1 이상이어야 해요.",
         "invalidPrice": "가격은 1원 이상이어야 해요.",
-        "invalidDuration": "기간은 1~30일이어야 해요."
+        "invalidDuration": "기간은 1~30일이어야 해요.",
+        "priceOutOfRange": "등록가는 글로벌 시세의 ±50% 범위여야 해요. 허용 범위: {{min}}~{{max}}원"
       },
       "selectMaterial": {
         "title": "마켓 등록",
@@ -345,7 +346,8 @@
         "listingNotFound": "해당 매물을 찾을 수 없어요.",
         "listingNotActive": "이미 판매됐거나 만료된 매물이에요.",
         "selfPurchase": "본인 매물은 구매할 수 없어요.",
-        "insufficientMoney": "자금이 부족해요. 필요: {{required}}원 / 보유: {{have}}원"
+        "insufficientMoney": "자금이 부족해요. 필요: {{required}}원 / 보유: {{have}}원",
+        "priceOutOfRange": "시세 변동으로 이 매물 가격이 허용 범위({{min}}~{{max}}원)를 벗어났어요. 지금은 구매할 수 없어요."
       }
     },
     "cancel": {
@@ -356,6 +358,58 @@
         "notOwner": "본인이 등록한 매물만 취소할 수 있어요.",
         "listingNotActive": "이미 판매됐거나 만료된 매물이에요."
       }
+    },
+    "sell": {
+      "selectMaterial": {
+        "title": "글로벌 마켓 판매",
+        "body": "창고에서 판매할 자재를 선택하세요. 현재 시세 100%로 즉시 판매돼요.",
+        "placeholder": "자재를 선택하세요...",
+        "holding": "보유 {{count}}개",
+        "empty": "판매할 수 있는 자재가 없어요. 공장에서 자재를 생산해보세요."
+      },
+      "qtySelect": {
+        "title": "{{material}} — 판매 수량 선택",
+        "summary": "현재 시세: 개당 **{{price}}원** · 보유 **{{holding}}개**",
+        "placeholder": "판매할 수량을 선택하세요...",
+        "presetOption": "{{count}}개",
+        "allOption": "전량 ({{count}}개)",
+        "customOption": "직접 입력",
+        "customOptionDesc": "판매 수량을 직접 입력"
+      },
+      "modal": {
+        "title": "{{material}} — 판매 수량 입력",
+        "quantityLabel": "수량",
+        "quantityPlaceholder": "예: 100",
+        "error": {
+          "invalidQuantity": "수량은 1 이상의 정수여야 해요."
+        }
+      },
+      "confirm": {
+        "title": "{{material}} 판매 확인",
+        "detail": "수량 **{{quantity}}개** × 개당 **{{price}}원** = **{{total}}원**",
+        "notice": "시세는 30분마다 변동돼요. 최종 정산은 체결 시점 가격으로 계산돼요.",
+        "okBtn": "판매",
+        "cancelBtn": "취소"
+      },
+      "success": "💰 **{{material}}** {{quantity}}개를 글로벌 마켓에 판매했어요.",
+      "footer": "개당 {{price}}원 · 총 {{total}}원 수령",
+      "stepCancelled": "판매를 취소했어요.",
+      "error": {
+        "invalidQuantity": "수량은 1 이상이어야 해요.",
+        "insufficientStock": "보유 자재가 부족해요. 필요: {{required}} / 보유: {{have}}",
+        "priceNotFound": "이 자재는 아직 글로벌 마켓 시세가 없어요."
+      }
+    },
+    "price": {
+      "title": "🌐 글로벌 마켓 시세",
+      "line": "{{trend}} **{{material}}** — {{price}}원 (기준가 {{base}}원, {{change}})",
+      "tierT1": "T1 원자재",
+      "tierT2": "T2 가공재",
+      "tierT3": "T3 완제품",
+      "tierSpecial": "특수",
+      "footer": "시세는 30분마다 변동돼요 · 직구매가 = 시세 ×2",
+      "updated": "마지막 갱신 <t:{{unix}}:R>",
+      "empty": "글로벌 마켓 시세 데이터가 없어요."
     },
     "browse": {
       "title": "🛒 마켓 매물 목록",

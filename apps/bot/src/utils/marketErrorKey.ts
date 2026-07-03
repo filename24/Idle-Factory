@@ -1,18 +1,19 @@
 /**
  * 마켓 ServiceError → i18n 키 매핑.
  *
- * 슬래시 커맨드 (`/market buy|cancel|browse|list`) 와 인터랙션 핸들러
- * (`market:buy:*`, `market:cancel:*`) 가 같은 에러 매핑을 공유한다.
+ * 슬래시 커맨드 (`/market buy|cancel|browse|list|sell`) 와 인터랙션 핸들러
+ * (`market:buy:*`, `market:cancel:*`, `market:sell:*`) 가 같은 에러 매핑을
+ * 공유한다.
  *
  * `surface` 인자로 어느 흐름에서 발생한 에러인지 구분해 동일 코드라도 다른
  * 사용자 메시지를 반환할 수 있게 한다 (예: `LISTING_NOT_ACTIVE` 가 buy/cancel
- * 양쪽에서 다 발생).
+ * 양쪽에서 다 발생, `PRICE_OUT_OF_RANGE` 가 list/buy 양쪽에서 다 발생).
  */
 
 import type { TFunction } from '@sapphire/plugin-i18next'
 import { ServiceError } from '../services/base'
 
-export type MarketSurface = 'list' | 'buy' | 'cancel'
+export type MarketSurface = 'list' | 'buy' | 'cancel' | 'sell'
 
 /**
  * 에러를 사람용 메시지로 변환한다. ServiceError 가 아니면 공용 unknown 키.
@@ -28,7 +29,9 @@ export function resolveMarketErrorMessage(
 
   switch (err.code) {
     case 'INVALID_QUANTITY':
-      return t('game:market.list.error.invalidQuantity')
+      return surface === 'sell'
+        ? t('game:market.sell.error.invalidQuantity')
+        : t('game:market.list.error.invalidQuantity')
     case 'INVALID_PRICE':
       return t('game:market.list.error.invalidPrice')
     case 'INVALID_DURATION':
@@ -38,11 +41,29 @@ export function resolveMarketErrorMessage(
         required?: string
         have?: string
       }
-      return t('game:market.list.error.insufficientStock', {
+      const key =
+        surface === 'sell'
+          ? 'game:market.sell.error.insufficientStock'
+          : 'game:market.list.error.insufficientStock'
+      return t(key, {
         required: det.required ?? '-',
         have: det.have ?? '-'
       })
     }
+    case 'PRICE_OUT_OF_RANGE': {
+      // 등록·구매 양쪽에서 발생 — 30분 변동으로 등록 후 밴드 이탈 가능 (#15).
+      const det = (err.details ?? {}) as { min?: string; max?: string }
+      const key =
+        surface === 'buy'
+          ? 'game:market.buy.error.priceOutOfRange'
+          : 'game:market.list.error.priceOutOfRange'
+      return t(key, {
+        min: det.min ?? '-',
+        max: det.max ?? '-'
+      })
+    }
+    case 'PRICE_NOT_FOUND':
+      return t('game:market.sell.error.priceNotFound')
     case 'LISTING_NOT_FOUND':
       return surface === 'cancel'
         ? t('game:market.cancel.error.listingNotFound')

@@ -11,6 +11,7 @@
 
 import type { ListingStatus, MarketListing, PrismaClient } from '@idle/database'
 import type { MaterialType } from '@idle/game-core'
+import { listingPriceBand } from '@idle/game-core'
 import { ServiceError, runInTx, type Tx } from './base'
 import { QuestService, type QuestProgressResult } from './quest'
 import {
@@ -139,6 +140,40 @@ export interface ExpireStaleResult {
 }
 
 /**
+ * 단가가 글로벌 현재가 ±50% 밴드 안인지 검증한다 — 위반 시 `PRICE_OUT_OF_RANGE`.
+ *
+ * 등록 시(`list`)와 구매 시(`buy`) 양쪽에서 호출한다 — 30분 가격 변동으로
+ * 등록 후 적법 범위를 이탈한 매물의 체결을 막기 위한 재검증 (#15 확정,
+ * docs/design/06-market.md §유저 상점 규칙 "가격 제한: 글로벌 가격의 ±50%").
+ *
+ * `GlobalMarketPrice` 행이 없으면 검증을 건너뛴다(허용) — 시드가 전 자재를
+ * 보장하므로(packages/database/prisma/seed.ts) 운영에서는 항상 검증되고,
+ * 참조가 없는 자재를 막는 것보다 열어 두는 편이 안전하다.
+ */
+async function assertWithinListingBand(
+  tx: Tx,
+  material: MaterialType,
+  pricePerUnit: bigint
+): Promise<void> {
+  const globalPrice = await tx.globalMarketPrice.findUnique({
+    where: { material },
+    select: { currentPrice: true }
+  })
+  if (!globalPrice) return
+
+  const band = listingPriceBand(globalPrice.currentPrice)
+  if (pricePerUnit < band.min || pricePerUnit > band.max) {
+    throw new ServiceError('PRICE_OUT_OF_RANGE', undefined, {
+      material,
+      price: pricePerUnit.toString(),
+      min: band.min.toString(),
+      max: band.max.toString(),
+      currentPrice: globalPrice.currentPrice.toString()
+    })
+  }
+}
+
+/**
  * 매물 회수(창고 반환 + 상태 갱신) 공통 로직.
  *
  * cancel/expireStale 가 공유한다. 호출 측에서 사전 검증(권한·상태)을 끝낸 뒤
@@ -186,12 +221,14 @@ export const MarketService = {
    * 자재를 마켓에 등록한다.
    *
    * 1. 입력 검증 (수량/가격/기간).
-   * 2. 창고 잔량 확인 후 차감.
-   * 3. `MarketListing.create` (status=ACTIVE, taxRate=`taxRateForDuration(days)`).
-   * 4. `QuestService.progress` 로 `MARKET_LISTED` 발화.
+   * 2. 글로벌 현재가 ±50% 밴드 검증 (docs/design/06-market.md §유저 상점 규칙).
+   * 3. 창고 잔량 확인 후 차감.
+   * 4. `MarketListing.create` (status=ACTIVE, taxRate=`taxRateForDuration(days)`).
+   * 5. `QuestService.progress` 로 `MARKET_LISTED` 발화.
    *
    * @throws {ServiceError}
    *  - `INVALID_QUANTITY`, `INVALID_PRICE`, `INVALID_DURATION` — 입력 위반
+   *  - `PRICE_OUT_OF_RANGE` — 단가가 글로벌 현재가 ±50% 밴드 밖
    *  - `USER_NOT_FOUND` — 유저 또는 창고 없음
    *  - `INSUFFICIENT_MATERIAL` — 창고 잔량 부족
    */
@@ -224,6 +261,9 @@ export const MarketService = {
         select: { id: true }
       })
       if (!user) throw new ServiceError('USER_NOT_FOUND')
+
+      // 등록 시점 ±50% 밴드 검증 — 구매 시점(buy)에도 같은 밴드로 재검증한다.
+      await assertWithinListingBand(tx, material, pricePerUnit)
 
       const warehouse = await tx.warehouse.findUnique({
         where: { userId },
@@ -296,11 +336,13 @@ export const MarketService = {
    *
    * 1. 매물/구매자 검증 (`LISTING_NOT_FOUND`, `LISTING_NOT_ACTIVE`, `SELF_PURCHASE`,
    *    `USER_NOT_FOUND`, `INSUFFICIENT_MONEY`).
-   * 2. 구매자 자금 차감.
-   * 3. 판매자에게 세후 대금(MONEY) + 판매 XP(반복 상대 감쇠 적용) 지급 —
+   * 2. 구매 시점 ±50% 밴드 재검증 (`PRICE_OUT_OF_RANGE`) — 30분 가격 변동으로
+   *    등록 후 밴드를 이탈한 매물의 체결을 차단한다 (#15 확정).
+   * 3. 구매자 자금 차감.
+   * 4. 판매자에게 세후 대금(MONEY) + 판매 XP(반복 상대 감쇠 적용) 지급 —
    *    `grantMarketSellReward` 경유로 레벨업까지 일관 처리.
-   * 4. 구매자 창고에 자재 입고 (upsert).
-   * 5. `TradeLog` 실판매 기록(from=판매자·to=구매자·price=총액) + `status = SOLD`.
+   * 5. 구매자 창고에 자재 입고 (upsert).
+   * 6. `TradeLog` 실판매 기록(from=판매자·to=구매자·price=총액) + `status = SOLD`.
    *
    * 세율은 등록 시점 `MarketListing.taxRate` 를 그대로 사용한다.
    * `actor` 가 주어지면 tx 바깥에서 신규 계정 시그널을 계산해 결과에 실어 반환한다.
@@ -330,6 +372,9 @@ export const MarketService = {
       if (listing.sellerId === buyerId) {
         throw new ServiceError('SELF_PURCHASE')
       }
+
+      // 구매 시점 밴드 재검증 — 등록 이후 가격 tick 으로 이탈했으면 차단.
+      await assertWithinListingBand(tx, listing.material, listing.price)
 
       const buyer = await tx.user.findUnique({
         where: { id: buyerId },

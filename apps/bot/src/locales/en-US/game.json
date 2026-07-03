@@ -278,7 +278,8 @@
         "insufficientStock": "Not enough stock. Need: {{required}} / Have: {{have}}",
         "invalidQuantity": "Quantity must be at least 1.",
         "invalidPrice": "Price must be at least 1.",
-        "invalidDuration": "Duration must be 1–30 days."
+        "invalidDuration": "Duration must be 1–30 days.",
+        "priceOutOfRange": "The listing price must be within ±50% of the global market price. Allowed range: {{min}}–{{max}}"
       },
       "selectMaterial": {
         "title": "List on Market",
@@ -345,7 +346,8 @@
         "listingNotFound": "Listing not found.",
         "listingNotActive": "This listing is already sold or expired.",
         "selfPurchase": "You can't buy your own listing.",
-        "insufficientMoney": "Not enough money. Need: {{required}} / Have: {{have}}"
+        "insufficientMoney": "Not enough money. Need: {{required}} / Have: {{have}}",
+        "priceOutOfRange": "Price fluctuations pushed this listing outside the allowed range ({{min}}–{{max}}). It can't be bought right now."
       }
     },
     "cancel": {
@@ -356,6 +358,58 @@
         "notOwner": "You can only cancel your own listings.",
         "listingNotActive": "This listing is already sold or expired."
       }
+    },
+    "sell": {
+      "selectMaterial": {
+        "title": "Sell to Global Market",
+        "body": "Choose a material from your warehouse. It sells instantly at 100% of the current market price.",
+        "placeholder": "Select a material...",
+        "holding": "Holding {{count}}",
+        "empty": "You have no materials to sell. Produce some in your factories first."
+      },
+      "qtySelect": {
+        "title": "{{material}} — Select quantity to sell",
+        "summary": "Current price: **{{price}}** each · Holding **{{holding}}**",
+        "placeholder": "Select the quantity to sell...",
+        "presetOption": "{{count}}",
+        "allOption": "All ({{count}})",
+        "customOption": "Custom",
+        "customOptionDesc": "Enter the quantity manually"
+      },
+      "modal": {
+        "title": "{{material}} — Enter quantity",
+        "quantityLabel": "Quantity",
+        "quantityPlaceholder": "e.g. 100",
+        "error": {
+          "invalidQuantity": "Quantity must be a whole number ≥ 1."
+        }
+      },
+      "confirm": {
+        "title": "Confirm selling {{material}}",
+        "detail": "**{{quantity}}** × **{{price}}** each = **{{total}}**",
+        "notice": "Prices change every 30 minutes. The final payout uses the price at execution time.",
+        "okBtn": "Sell",
+        "cancelBtn": "Cancel"
+      },
+      "success": "💰 Sold **{{material}}** ×{{quantity}} to the global market.",
+      "footer": "{{price}} each · {{total}} received",
+      "stepCancelled": "Sale cancelled.",
+      "error": {
+        "invalidQuantity": "Quantity must be at least 1.",
+        "insufficientStock": "Not enough stock. Need: {{required}} / Have: {{have}}",
+        "priceNotFound": "This material has no global market price yet."
+      }
+    },
+    "price": {
+      "title": "🌐 Global Market Prices",
+      "line": "{{trend}} **{{material}}** — {{price}} (base {{base}}, {{change}})",
+      "tierT1": "T1 Raw",
+      "tierT2": "T2 Processed",
+      "tierT3": "T3 Finished",
+      "tierSpecial": "Special",
+      "footer": "Prices change every 30 minutes · Direct buy = price ×2",
+      "updated": "Last updated <t:{{unix}}:R>",
+      "empty": "No global market price data."
     },
     "browse": {
       "title": "🛒 Active Listings",

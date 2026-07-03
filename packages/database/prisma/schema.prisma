@@ -309,12 +309,24 @@ model WarehouseStack {
 
 /// 글로벌 마켓 — 자재별 변동가 (docs/06). 30분 주기 갱신.
 /// 유저 직구매가 = currentPrice × 2.
+///
+/// 가격 tick(30분)마다 `currentPrice` 를 재계산하고 거래량 윈도를 리셋한다
+/// (docs/design/06-market.md §가격 산출 공식):
+///  - `recentSales`      : 현재 30분 윈도의 누적 거래량. tick 에서 0 으로 리셋.
+///  - `avgSales`         : 30분 윈도 거래량의 지수이동평균(EMA).
+///    tick 마다 `ema = ema×0.9 + recentSales×0.1` 로 갱신 — 상수 기준선 대신
+///    EMA 를 쓰면 유저 규모 변화에 수요 기준선이 자동 적응한다(#15 v1 결정,
+///    v2 rolling average 마이그레이션 불필요). avgSales=0 이면 demandFactor=0
+///    (0-나눗셈 가드, #15 U-5).
+///  - `windowStartedAt`  : 현재 윈도 시작 시각. tick 에서 갱신 — 관측/디버깅용.
 model GlobalMarketPrice {
-  material     MaterialType @id
-  basePrice    BigInt
-  currentPrice BigInt
-  recentSales  Int          @default(0) // 최근 30분 거래량
-  updatedAt    DateTime     @updatedAt
+  material        MaterialType @id
+  basePrice       BigInt
+  currentPrice    BigInt
+  recentSales     Int          @default(0) // 최근 30분 거래량 (현재 윈도)
+  avgSales        Float        @default(0) // 30분 거래량 EMA (tick 마다 ×0.9 + recent×0.1)
+  windowStartedAt DateTime     @default(now()) // 현재 30분 윈도 시작 시각
+  updatedAt       DateTime     @updatedAt
 }
 
 /// 유저 상점 등록 (docs/06). 세율은 등록 시점 값으로 고정.
@@ -418,8 +430,13 @@ model StockPriceTick {
 ///  - 취소/만료(cancel·expire): kind=MARKET_SELL 를 유지하되 toUserId=null,
 ///    price=0 으로 실판매와 구분한다(자재 회수 이벤트 — enum 미확장 v0).
 ///    amount 에는 회수 수량을 남긴다.
+///  - 글로벌 판매(유저→시스템, #15 U-3): kind=MARKET_SELL, fromUserId=판매자,
+///    toUserId=null(상대 없음), price=총액(>0). toUserId=null 이면서 price>0 인
+///    행이 글로벌 판매 — price=0 인 회수(cancel/expire)와 구분된다.
+///    MARKET_SELL enum 주석("글로벌/유저 상점 판매")의 원 의도를 따르는 것으로
+///    enum 확장 없이 판별 가능해 v1 은 enum 을 확장하지 않는다.
 /// 반복 상대 XP 감쇠는 (fromUserId,toUserId,kind,createdAt) 카운트로 판정하므로
-/// toUserId=null 인 회수 기록은 감쇠 카운트에 잡히지 않는다.
+/// toUserId=null 인 회수·글로벌 판매 기록은 감쇠 카운트에 잡히지 않는다.
 model TradeLog {
   id         String        @id @default(cuid())
   fromUserId String?

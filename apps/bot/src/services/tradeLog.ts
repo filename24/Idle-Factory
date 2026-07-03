@@ -80,11 +80,15 @@ export function applyPpm(base: bigint, ppm: number): bigint {
  * v0 규약(docs/design/09-level-xp.md §사기 방지, schema `TradeLog` 주석):
  *  - 실판매(buy): toUserId=구매자, amount=수량, price=총액.
  *  - 취소/만료: toUserId=null, price=0(자재 회수 이벤트 구분자), amount=회수 수량.
+ *  - 글로벌 판매(유저→시스템, #15 U-3): toUserId=null(상대 없음), price=총액(>0),
+ *    amount=수량. toUserId=null 이면서 price>0 이면 글로벌 판매 — price=0 인
+ *    취소/만료 회수와 구분된다. `MARKET_SELL` enum 주석("글로벌/유저 상점 판매")
+ *    의 원 의도대로 enum 확장 없이 판별 가능하다.
  */
 export interface MarketTradeLogInput {
   /** 판매자(매물 소유자) id. */
   readonly fromUserId: string
-  /** 구매자 id. 취소/만료 회수 기록은 null. */
+  /** 구매자 id. 취소/만료 회수·글로벌 판매(상대 없음) 기록은 null. */
   readonly toUserId: string | null
   /** 거래 자재. */
   readonly material: MaterialType
