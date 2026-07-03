@@ -1,0 +1,6 @@
+interface:
+  display_name: "Idle Factory"
+  short_description: "Repo-specific patterns and workflows for Idle-Factory"
+  default_prompt: "Use the Idle-Factory repo skill to follow existing architecture, testing, and workflow conventions."
+policy:
+  allow_implicit_invocation: true
