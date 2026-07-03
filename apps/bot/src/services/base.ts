@@ -37,6 +37,12 @@ export type ServiceErrorCode =
   | 'LISTING_NOT_ACTIVE'
   | 'NOT_LISTING_OWNER'
   | 'SELF_PURCHASE'
+  // 글로벌 마켓 (docs/design/06-market.md)
+  // - PRICE_NOT_FOUND: GlobalMarketPrice 행 없음 — 시드 누락(글로벌 판매 불가).
+  // - PRICE_OUT_OF_RANGE: 유저 상점 단가가 글로벌 현재가 ±50% 밴드 밖
+  //   (등록 시 + 구매 시 재검증 — #15 확정).
+  | 'PRICE_NOT_FOUND'
+  | 'PRICE_OUT_OF_RANGE'
 
 export class ServiceError extends Error {
   public readonly code: ServiceErrorCode

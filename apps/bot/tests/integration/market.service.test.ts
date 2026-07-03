@@ -937,3 +937,149 @@ describe('MarketService.cancel / expireStale — 회수 TradeLog (issue #26)', (
     expect(log.price).toBe(0n)
   })
 })
+
+describe('MarketService ±50% price band (list + buy revalidation, #15)', () => {
+  beforeEach(async () => {
+    await resetDb()
+  })
+
+  afterAll(async () => {
+    await closeDb()
+  })
+
+  async function seedGrainPrice(currentPrice: bigint) {
+    await testPrisma.globalMarketPrice.create({
+      data: { material: 'GRAIN', basePrice: 10n, currentPrice }
+    })
+  }
+
+  it('list: 글로벌 현재가 ±50% 밖 단가는 PRICE_OUT_OF_RANGE 로 차단된다', async () => {
+    await seedUserWithMaterial('u-band', 10n)
+    await seedGrainPrice(10n) // 허용 밴드 [5, 15]
+
+    for (const price of [4n, 16n]) {
+      await expect(
+        MarketService.list(testPrisma, {
+          userId: 'u-band',
+          material: 'GRAIN',
+          quantity: 1n,
+          pricePerUnit: price,
+          durationDays: 7
+        })
+      ).rejects.toMatchObject({
+        name: 'ServiceError',
+        code: 'PRICE_OUT_OF_RANGE'
+      })
+    }
+
+    // 차단 시 창고 차감 없음 (트랜잭션 롤백)
+    const wh = await testPrisma.warehouse.findUniqueOrThrow({
+      where: { userId: 'u-band' }
+    })
+    const stack = await testPrisma.warehouseStack.findUniqueOrThrow({
+      where: { warehouseId_material: { warehouseId: wh.id, material: 'GRAIN' } }
+    })
+    expect(stack.count).toBe(10n)
+  })
+
+  it('list: 밴드 경계값(min·max)은 허용된다', async () => {
+    await seedUserWithMaterial('u-band-ok', 10n)
+    await seedGrainPrice(10n) // 허용 밴드 [5, 15]
+
+    const low = await MarketService.list(testPrisma, {
+      userId: 'u-band-ok',
+      material: 'GRAIN',
+      quantity: 1n,
+      pricePerUnit: 5n,
+      durationDays: 7
+    })
+    const high = await MarketService.list(testPrisma, {
+      userId: 'u-band-ok',
+      material: 'GRAIN',
+      quantity: 1n,
+      pricePerUnit: 15n,
+      durationDays: 7
+    })
+    expect(low.listing.status).toBe('ACTIVE')
+    expect(high.listing.status).toBe('ACTIVE')
+  })
+
+  it('list: 가격 행이 없는 자재는 검증을 건너뛴다 (시드 전 하위 호환)', async () => {
+    await seedUserWithMaterial('u-noref', 5n)
+
+    const r = await MarketService.list(testPrisma, {
+      userId: 'u-noref',
+      material: 'GRAIN',
+      quantity: 1n,
+      pricePerUnit: 999n,
+      durationDays: 7
+    })
+    expect(r.listing.status).toBe('ACTIVE')
+  })
+
+  it('buy: 등록 후 가격 tick 으로 밴드를 이탈한 매물은 구매가 차단된다', async () => {
+    await seedUserWithMaterial('u-band-seller', 5n)
+    await seedBuyerWithMoney('u-band-buyer', 10_000n)
+    await seedGrainPrice(10n) // 등록 시 밴드 [5, 15]
+
+    const listed = await MarketService.list(testPrisma, {
+      userId: 'u-band-seller',
+      material: 'GRAIN',
+      quantity: 1n,
+      pricePerUnit: 15n, // 등록 시점 적법
+      durationDays: 7
+    })
+
+    // 30분 tick 급등 시뮬레이션: 현재가 40 → 허용 밴드 [20, 60], 15 는 이탈.
+    await testPrisma.globalMarketPrice.update({
+      where: { material: 'GRAIN' },
+      data: { currentPrice: 40n }
+    })
+
+    await expect(
+      MarketService.buy(testPrisma, {
+        buyerId: 'u-band-buyer',
+        listingId: listed.listing.id
+      })
+    ).rejects.toMatchObject({
+      name: 'ServiceError',
+      code: 'PRICE_OUT_OF_RANGE'
+    })
+
+    // 차단 시 자금 이동 없음.
+    const buyer = await testPrisma.user.findUniqueOrThrow({
+      where: { id: 'u-band-buyer' }
+    })
+    expect(buyer.money).toBe(10_000n)
+    const listing = await testPrisma.marketListing.findUniqueOrThrow({
+      where: { id: listed.listing.id }
+    })
+    expect(listing.status).toBe('ACTIVE')
+  })
+
+  it('buy: 가격이 움직여도 밴드 안이면 체결된다', async () => {
+    await seedUserWithMaterial('u-band-s2', 5n)
+    await seedBuyerWithMoney('u-band-b2', 10_000n)
+    await seedGrainPrice(10n)
+
+    const listed = await MarketService.list(testPrisma, {
+      userId: 'u-band-s2',
+      material: 'GRAIN',
+      quantity: 1n,
+      pricePerUnit: 15n,
+      durationDays: 7
+    })
+
+    // 현재가 12 → 밴드 [6, 18], 15 는 여전히 적법.
+    await testPrisma.globalMarketPrice.update({
+      where: { material: 'GRAIN' },
+      data: { currentPrice: 12n }
+    })
+
+    const bought = await MarketService.buy(testPrisma, {
+      buyerId: 'u-band-b2',
+      listingId: listed.listing.id
+    })
+    expect(bought.listing.status).toBe('SOLD')
+  })
+})
