@@ -248,13 +248,105 @@
   "market": {
     "list": {
       "success": "🛒 Listed **{{material}}** ×{{quantity}} at {{price}} each on the market.",
-      "footer": "Tax {{tax}}%",
+      "footer": "Tax {{tax}}% · Listing ID `{{id}}`",
+      "successButtons": {
+        "cancel": "Cancel"
+      },
       "error": {
         "insufficientStock": "Not enough stock. Need: {{required}} / Have: {{have}}",
         "invalidQuantity": "Quantity must be at least 1.",
         "invalidPrice": "Price must be at least 1.",
         "invalidDuration": "Duration must be 1–30 days."
+      },
+      "selectMaterial": {
+        "title": "List on Market",
+        "body": "Choose a material to list for sale.",
+        "placeholder": "Select a material..."
+      },
+      "durSelect": {
+        "title": "List {{material}} on Market",
+        "priceInfo": "Current lowest price: **{{price}}**",
+        "noPrice": "No active listings for this material.",
+        "taxInfo": "-# Tax: 3d · 3% | 1wk · 5% | 2wk · 8% | 1mo · 18%",
+        "btn3d": "3 days",
+        "btn7d": "1 week",
+        "btn14d": "2 weeks",
+        "btn30d": "1 month",
+        "btnCustom": "Custom"
+      },
+      "modal": {
+        "title": "List {{material}} on Market",
+        "quantityLabel": "Quantity",
+        "quantityPlaceholder": "e.g. 100",
+        "priceLabel": "Price per unit",
+        "pricePlaceholder": "e.g. 50",
+        "durationLabel": "Duration (days, 1–30)",
+        "durationPlaceholder": "e.g. 7",
+        "priceOnlyTitle": "{{material}} — Enter price per unit",
+        "error": {
+          "invalidQuantity": "Quantity must be a whole number ≥ 1.",
+          "invalidPrice": "Price must be a whole number ≥ 1.",
+          "invalidDuration": "Duration must be between 1 and 30 days."
+        }
+      },
+      "qtySelect": {
+        "title": "{{material}} — Select quantity",
+        "summary": "-# Material: {{material}} · Duration: {{days}}d (tax {{tax}}%)",
+        "priceInfo": "Current lowest price: **{{price}}**",
+        "noPrice": "No active listings for this material.",
+        "placeholder": "Select the quantity to sell...",
+        "customOption": "Custom",
+        "customOptionDesc": "Enter quantity and price manually"
+      },
+      "prcSelect": {
+        "title": "{{material}} ×{{quantity}} — Select price",
+        "summary": "-# Material: {{material}} · Duration: {{days}}d (tax {{tax}}%) · Quantity: {{quantity}}",
+        "priceBase": "-# Reference price: {{price}}",
+        "noPrice": "No active listings. Enter a price manually below.",
+        "placeholder": "Select the price per unit...",
+        "customOption": "Custom",
+        "customOptionDesc": "Enter price per unit manually"
+      },
+      "confirm": {
+        "title": "Confirm listing {{material}}",
+        "detail": "Quantity **{{quantity}}** · **{{price}}** each · {{days}}d · tax **{{tax}}%**",
+        "okBtn": "List",
+        "cancelBtn": "Cancel"
+      },
+      "stepCancelled": "Listing cancelled."
+    },
+    "buy": {
+      "success": "💸 Bought **{{material}}** ×{{quantity}}.",
+      "footer": "Total {{gross}} (tax {{tax}}, seller gets {{net}})",
+      "buttonLabel": "Buy",
+      "error": {
+        "listingNotFound": "Listing not found.",
+        "listingNotActive": "This listing is already sold or expired.",
+        "selfPurchase": "You can't buy your own listing.",
+        "insufficientMoney": "Not enough money. Need: {{required}} / Have: {{have}}"
       }
+    },
+    "cancel": {
+      "success": "↩️ Listing cancelled. **{{material}}** ×{{quantity}} returned to your warehouse.",
+      "buttonLabel": "Cancel",
+      "error": {
+        "listingNotFound": "Listing not found.",
+        "notOwner": "You can only cancel your own listings.",
+        "listingNotActive": "This listing is already sold or expired."
+      }
+    },
+    "browse": {
+      "title": "🛒 Active Listings",
+      "empty": "No listings to show. Try `/market list` to post one.",
+      "card": "**{{material}}** ×{{quantity}} · **{{price}}** each · expires <t:{{expiresUnix}}:R>\nListing ID `{{id}}`",
+      "page": "Page {{page}} / {{totalPages}} · {{total}} listings",
+      "filter": "Filter: {{material}}",
+      "filterAll": "All",
+      "prev": "‹ Prev",
+      "next": "Next ›"
+    },
+    "expire": {
+      "log": "expired {{count}} stale market listings"
     }
   }
 }

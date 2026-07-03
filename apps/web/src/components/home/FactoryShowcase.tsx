@@ -31,7 +31,7 @@ export function FactoryShowcase() {
       <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
         <div className="mb-12">
           <div className="mb-2 text-[10px] tracking-[0.25em] text-[var(--color-gold)] uppercase">
-            // 공장 카탈로그
+            {'// 공장 카탈로그'}
           </div>
           <h2 className="text-2xl font-bold text-[var(--color-foreground)] sm:text-3xl">
             11가지 공장, 3단계 티어

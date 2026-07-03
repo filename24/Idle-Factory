@@ -34,7 +34,7 @@ export class QuestCommand extends Command {
     if (visible.length === 0) {
       return interaction.reply({
         components: [buildEmptyQuestContainer(t)],
-        flags: v2Flags(true)
+        flags: v2Flags(false)
       })
     }
 
@@ -43,7 +43,7 @@ export class QuestCommand extends Command {
     const head = visible[0]!
     return interaction.reply({
       components: [buildQuestCardContainer(head, interaction.user.id, t)],
-      flags: v2Flags(true)
+      flags: v2Flags(false)
     })
   }
 

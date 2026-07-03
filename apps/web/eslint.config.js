@@ -7,7 +7,7 @@ const config = [
   ...nextCoreWebVitals,
   ...idleConfig,
   {
-    ignores: ['node_modules/**', '.next/**', '**/*.cjs'],
+    ignores: ['node_modules/**', '.next/**', '**/*.cjs', '.source/**', 'next.config.js'],
   },
 ]
 

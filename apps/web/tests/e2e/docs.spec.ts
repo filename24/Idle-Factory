@@ -34,12 +34,12 @@ test.describe('문서 페이지', () => {
     await expect(docs.sidebar.getByRole('link', { name: '게임 소개' }).first()).toBeVisible()
   })
 
-  test('/docs/getting-started/intro 페이지가 로드되어야 한다', async ({ page }) => {
+  test('/docs/getting-started/intro 페이지가 로드되어야 한다', async () => {
     await docs.goto('getting-started/intro')
     await expect(docs.articleBody).toBeVisible()
   })
 
-  test('/docs/facilities/factories 페이지가 로드되어야 한다', async ({ page }) => {
+  test('/docs/facilities/factories 페이지가 로드되어야 한다', async () => {
     await docs.goto('facilities/factories')
     await expect(docs.articleBody).toBeVisible()
   })

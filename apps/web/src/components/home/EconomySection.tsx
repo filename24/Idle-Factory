@@ -7,7 +7,7 @@ export function EconomySection() {
           {/* 텍스트 */}
           <div>
             <div className="mb-2 text-[10px] tracking-[0.25em] text-[var(--color-gold)] uppercase">
-              // 경제 시스템
+              {'// 경제 시스템'}
             </div>
             <h2 className="text-2xl font-bold text-[var(--color-foreground)] sm:text-3xl">
               살아있는 경제 시스템

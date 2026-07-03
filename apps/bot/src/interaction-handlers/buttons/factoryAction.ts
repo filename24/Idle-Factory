@@ -229,10 +229,16 @@ function resolveFactoryErrorBody(
       return t('game:common.error.warehouseFull')
     case 'MAX_GRADE':
       return t('game:factory.upgrade.error.maxGrade')
-    case 'INSUFFICIENT_MONEY':
+    case 'INSUFFICIENT_MONEY': {
+      const det = (err.details ?? {}) as {
+        required?: string
+        have?: string
+      }
       return t('game:factory.upgrade.error.insufficientMoney', {
-        required: '-'
+        required: det.required ?? '-',
+        have: det.have ?? '-'
       })
+    }
     case 'INSUFFICIENT_MATERIAL': {
       const details = (err.details ?? {}) as {
         material?: string
