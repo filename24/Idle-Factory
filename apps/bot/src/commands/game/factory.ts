@@ -32,14 +32,25 @@ import {
  * 참조: `docs/design/03-factories.md`.
  */
 
-/** `/factory build` 서브커맨드의 `type` 선택지로 사용할 MVP 공장 목록. */
-export const MVP_FACTORY_CHOICES: readonly FactoryType[] = [
+/**
+ * `/factory build` 서브커맨드의 `type` 선택지로 사용할 공장 목록.
+ *
+ * 해금된 11종 전체를 티어(T1→T2→T3) 순으로 나열한다. Discord 슬래시 커맨드
+ * choices 상한(25개) 이내이며, 실제 건설 가능 여부는 `unlockLevel` 대비 유저
+ * 레벨로 서비스 계층에서 검증한다. 근거: `docs/design/09-level-xp.md` §레벨별 해금.
+ */
+export const FACTORY_CHOICES: readonly FactoryType[] = [
   'FARM',
   'MINE',
   'LUMBER',
+  'OIL_WELL',
   'STEEL_MILL',
+  'REFINERY',
   'FLOUR_MILL',
-  'CAR_FACTORY'
+  'FURNITURE_FACTORY',
+  'CAR_FACTORY',
+  'ELECTRONICS_FACTORY',
+  'FOOD_FACTORY'
 ]
 
 /** `/factory setmode` 의 `mode` 선택지. */
@@ -400,7 +411,7 @@ export class FactoryCommand extends Command {
                 .setDescriptionLocalization('ko', '공장 종류')
                 .setRequired(true)
                 .addChoices(
-                  ...MVP_FACTORY_CHOICES.map((type) => ({
+                  ...FACTORY_CHOICES.map((type) => ({
                     name: `${FACTORY_CATALOG[type].emoji} ${type} (${formatBigInt(
                       FACTORY_CATALOG[type].buildCost
                     )})`,
