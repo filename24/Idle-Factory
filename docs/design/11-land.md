@@ -231,7 +231,7 @@
 3. 유저가 슬롯 선택 → 골드 차감 → 슬롯 활성화
 4. 그리드 갱신 (disabled → 활성 슬롯)
 
-> 슬롯별 구매 비용 기준: **TBD**
+> 슬롯별 구매 비용은 §슬롯 확장 비용의 확정 공식(`5,000 × 10^(N−1) × 2^(k−1)`)을 따른다.
 
 ## 토지 구역 구매 — 새 필지 구매 (Phase 2)
 
@@ -271,6 +271,7 @@
 - 한 토지에 **같은 종류 특수 슬롯 최대 2개** (편중 방지)
 - 새 토지 구역 구매 시 **독립적으로 재추첨**
 - **리롤 불가** — 고정. 새 토지 구매로만 재추첨 기회 획득
+- **창고 선점 슬롯 (0,0) 처리 (U-7, 2026-07-03 확정)**: 설계상 창고가 차지하는 (0,0)은 특수 슬롯 추첨에서 **제외**한다(기대 특수슬롯 수는 나머지 15칸 대상으로 보존). **단, 코드 현행(`packages/game-core` `generateSlotTypes`)은 (0,0)을 포함한 16칸 전체를 추첨하며, 창고는 아직 토지 슬롯에 배치되지 않는다(`Warehouse` 모델에 슬롯 좌표 없음).** 이 제외 규칙은 창고의 슬롯 점유가 구현될 때 함께 반영한다 — 그 전까지 (0,0)에 특수 타입이 부여돼도 창고와 무관하다.
 
 ### 생성 로직 (의사 코드)
 
@@ -352,6 +353,6 @@ interface Factory {
 
 - `Land` — 유저당 1~5개 토지 구역 (`userId + index` unique, `width`, `height`)
 - `Slot` — 토지 내 셀 (`landId + x + y` unique, `type`, `locked`)
-- `enum SlotType` — NORMAL / FERTILE / ORE_RICH / SUNNY / WINDY / WAREHOUSE_RESERVED 등
+- `enum SlotType` — NORMAL / ORE(광맥) / FERTILE(비옥한 땅) / FOREST(숲) / OIL(유전지) / WATER(수로) · 코드 현행. 위 §특수 슬롯 표의 5종이 모두 스키마·`specialSlots.ts` 에 구현돼 있다.
 - `Factory` 배치 필드 — `landId`, `anchorX`, `anchorY`, `width`, `height` (T3는 2×2)
 - `Warehouse` — 토지 위 1 슬롯 차지 (05-warehouse.md 참조)
