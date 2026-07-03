@@ -42,6 +42,12 @@ export type Reward =
 /**
  * 게임 상태 변화 한 건. 게임 서비스가 같은 트랜잭션 안에서
  * `QuestService.progress(tx, userId, event)` 로 흘려보낸다.
+ *
+ * `MARKET_LISTED` 는 "자재 판매 행위" 이벤트로, 두 경로에서 발화된다:
+ *  1. 유저 상점 등록 (`MarketService.list`)
+ *  2. 글로벌 마켓 즉시 판매 (`MarketSellService.sellToGlobal`, #15 U-3)
+ * 덕분에 구매자가 없는 1인 서버에서도 튜토리얼 Q3("자재 판매")를 완주할 수
+ * 있다 (docs/design/00-onboarding.md §튜토리얼 퀘스트 체인).
  */
 export type QuestEvent =
   | {
