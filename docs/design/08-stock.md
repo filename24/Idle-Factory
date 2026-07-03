@@ -57,7 +57,7 @@ finalIPO = clamp(userSetPrice, defaultIPO × 0.30, defaultIPO × 0.70)
 ### 주가 변동 — 1시간 주기
 
 - **1시간마다** 모든 상장 종목 가격 재계산
-- 요인: 최근 1시간 매수/매도 체결, 24시간 수익 변화율, 원자재 가격 간접 영향
+- 요인: 최근 1시간 매수/매도 체결, 24시간 수익 변화율, 자재 가격 간접 영향
 
 ```
 newPrice = prevPrice × (1 + demandPressure + profitDelta × 0.3)
@@ -67,6 +67,7 @@ profitDelta    = (last24hProfit - avg7dProfit) / avg7dProfit
 ```
 
 - **서킷브레이커**: 일일 ±30% clamp
+- **0-나눗셈 가드 (U-5, 2026-07-03 확정)**: `totalVolume = 0` 이면 `demandPressure = 0`, `avg7dProfit = 0` 이면 `profitDelta = 0` 으로 처리한다. ※ 주가 재계산 알고리즘은 아직 미구현이며, 본 가드는 구현 시 지켜야 할 확정 스펙이다.
 
 ## 배당 시스템
 
@@ -105,4 +106,4 @@ userDividend      = eachShareDividend × userSharesHeld
 - `Stock` — 상장 종목 (`issuerUserId`, `market`, `totalShares`, `currentPrice`, `dividendRate`)
 - `StockHolding` — 보유 지분 (`userId + stockId` unique, `shares`, `avgBuyPrice`)
 - `StockPriceTick` — 가격 히스토리 (차트·공시용)
-- `enum StockMarket` — SERVER (신뢰도 500+) / GLOBAL (신뢰도 1500+)
+- `enum StockMarket` — SERVER (코드 현행 게이팅: **Lv.10+**) / GLOBAL (**Lv.40+ · 신뢰도 1500+**). ※ 서버 주식에 **신뢰도 하한(500+)** 을 둘지는 보류 (모순 9, Phase 4 전 결정 — 07 참조)

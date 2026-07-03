@@ -110,7 +110,7 @@ flowchart TD
 
 - [ ] 퀘스트 안내 메시지 텍스트 (Components v2 UI 설계)
 - [ ] `/start` vs `/register` 명령어 이름 통일
-- [ ] 재가입(탈퇴 후 재시작) 허용 여부 및 자산 초기화 정책
+- [ ] 재가입(탈퇴 후 재시작) 허용 여부 및 자산 초기화 정책 — **보류 (U-8): Phase 3 전 결정** (07-global-system.md §재가입·자산 초기화)
 - [ ] 튜토리얼 스킵 옵션 (기존 게임 유경험자 대상)
 
 ## 관련 스키마
@@ -120,5 +120,5 @@ flowchart TD
 - `User.money` — 초기값 1,000 (BigInt)
 - `User.tutorialStep` — 현재 완료된 퀘스트 단계 (0~5, 5=완료)
 - `Land` — 가입 시 자동 생성 (width:3, height:3)
-- `Warehouse` — 가입 시 자동 생성 (grade:1, slotX:0, slotY:0)
+- `Warehouse` — 가입 시 자동 생성 (grade:1). ※ 현행 스키마엔 슬롯 좌표(slotX/slotY)가 없다 — 창고는 아직 토지 슬롯을 점유하지 않는다 (11-land.md §특수 슬롯 생성 규칙 U-7 참조)
 - `GlobalMarketPrice` — `basePrice` 필드가 위 기준가 테이블과 일치해야 함
