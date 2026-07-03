@@ -48,7 +48,11 @@ export interface FactoryCatalogEntry {
     readonly material: MaterialType
     readonly amount: bigint
   }
-  /** 이 공장을 해금하는 플레이어 레벨. `9999`면 Phase 1 MVP 미포함. */
+  /**
+   * 이 공장을 해금하는 플레이어 레벨.
+   * 근거: `docs/design/09-level-xp.md` §레벨별 해금 (균일안, 2026-07-03 확정) — T1 Lv.1 / T2 Lv.5 / T3 Lv.10.
+   * `9999` 이상은 미해금(미공개) 센티넬로 예약되어 있으나, 현재는 전 공장이 해금되어 사용처가 렌더러 폴백뿐이다.
+   */
   readonly unlockLevel: number
   /** Phase 1 MVP 출시에 포함되는지 여부 */
   readonly mvp: boolean
@@ -121,7 +125,8 @@ export const FACTORY_CATALOG: Readonly<Record<FactoryType, FactoryCatalogEntry>>
     secondaryOutputs: [],
     buildCost: T1_BUILD,
     upgradeMaterialBase: { material: 'CRUDE_OIL', amount: 20n },
-    unlockLevel: 9999,
+    // 09-level-xp.md §레벨별 해금: T1 공장 = Lv.1 (균일안, 2026-07-03 확정)
+    unlockLevel: 1,
     mvp: false,
   },
   STEEL_MILL: {
@@ -151,7 +156,8 @@ export const FACTORY_CATALOG: Readonly<Record<FactoryType, FactoryCatalogEntry>>
     buildCost: T2_BUILD,
     upgradeMaterialBase: { material: 'CRUDE_OIL', amount: 10n },
     buildMaterialCost: { material: 'CRUDE_OIL', amount: 100n },
-    unlockLevel: 9999,
+    // 09-level-xp.md §레벨별 해금: T2 공장 = Lv.5 (균일안, 2026-07-03 확정)
+    unlockLevel: 5,
     mvp: false,
   },
   FLOUR_MILL: {
@@ -181,7 +187,8 @@ export const FACTORY_CATALOG: Readonly<Record<FactoryType, FactoryCatalogEntry>>
     buildCost: T2_BUILD,
     upgradeMaterialBase: { material: 'WOOD', amount: 10n },
     buildMaterialCost: { material: 'WOOD', amount: 100n },
-    unlockLevel: 9999,
+    // 09-level-xp.md §레벨별 해금: T2 공장 = Lv.5 (균일안, 2026-07-03 확정)
+    unlockLevel: 5,
     mvp: false,
   },
   CAR_FACTORY: {
@@ -217,7 +224,8 @@ export const FACTORY_CATALOG: Readonly<Record<FactoryType, FactoryCatalogEntry>>
     buildCost: T3_BUILD,
     upgradeMaterialBase: { material: 'STEEL', amount: 5n },
     buildMaterialCost: { material: 'PLASTIC', amount: 50n },
-    unlockLevel: 9999,
+    // 09-level-xp.md §레벨별 해금: T3 공장 = Lv.10 (균일안, 2026-07-03 확정)
+    unlockLevel: 10,
     mvp: false,
   },
   FOOD_FACTORY: {
@@ -235,7 +243,8 @@ export const FACTORY_CATALOG: Readonly<Record<FactoryType, FactoryCatalogEntry>>
     buildCost: T3_BUILD,
     upgradeMaterialBase: { material: 'PROCESSED_FOOD', amount: 5n },
     buildMaterialCost: { material: 'PROCESSED_FOOD', amount: 50n },
-    unlockLevel: 9999,
+    // 09-level-xp.md §레벨별 해금: T3 공장 = Lv.10 (균일안, 2026-07-03 확정)
+    unlockLevel: 10,
     mvp: false,
   },
 }
