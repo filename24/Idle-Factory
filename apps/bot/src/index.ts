@@ -1,5 +1,6 @@
 import 'dotenv/config'
 import '@sapphire/plugin-i18next/register'
+import '@sapphire/plugin-scheduled-tasks/register'
 import { ShardingManager } from 'discord.js'
 import { fileURLToPath } from 'url'
 import { join, dirname } from 'path'

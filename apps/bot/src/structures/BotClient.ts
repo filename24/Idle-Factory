@@ -38,7 +38,7 @@ export default class BotClient extends SapphireClient {
 
   public override async login(token = config.bot.token): Promise<string> {
     logger.info('Connecting to database...')
-    container.db = new DatabaseClient()
+    container.db = new DatabaseClient({ useRedis: true })
     logger.info('Connected to Prisma')
 
     logger.info('Logging in bot...')

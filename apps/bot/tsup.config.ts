@@ -6,7 +6,8 @@ export default defineConfig({
     'src/bot.ts',
     'src/commands/**/*.ts',
     'src/listeners/**/*.ts',
-    'src/interaction-handlers/**/*.ts'
+    'src/interaction-handlers/**/*.ts',
+    'src/scheduled-tasks/**/*.ts'
   ],
   format: ['esm'],
   outDir: 'build',
