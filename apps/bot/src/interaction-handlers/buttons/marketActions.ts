@@ -25,6 +25,8 @@ import { MarketService } from '../../services/market'
 import { UserService } from '../../services/user'
 import {
   buildBrowseContainer,
+  logMarketBuySignal,
+  resolveMarketActor,
   MARKET_BROWSE_BUTTON_PREFIX,
   MARKET_BUY_BUTTON_PREFIX,
   MARKET_CANCEL_BUTTON_PREFIX
@@ -109,8 +111,20 @@ export class MarketButtonHandler extends InteractionHandler {
       if (data.kind === 'buy') {
         const result = await MarketService.buy(db, {
           buyerId: interaction.user.id,
-          listingId: data.listingId
+          listingId: data.listingId,
+          guildId: interaction.guildId,
+          actor: resolveMarketActor(interaction)
         })
+        logMarketBuySignal(
+          this.container.logger,
+          {
+            buyerId: interaction.user.id,
+            sellerId: result.listing.sellerId,
+            listingId: result.listing.id,
+            guildId: interaction.guildId
+          },
+          result.actorSignal
+        )
         await interaction.reply(
           simpleV2Payload({
             accent: V2_ACCENT.success,
@@ -134,7 +148,8 @@ export class MarketButtonHandler extends InteractionHandler {
       // cancel
       const result = await MarketService.cancel(db, {
         userId: interaction.user.id,
-        listingId: data.listingId
+        listingId: data.listingId,
+        guildId: interaction.guildId
       })
       await interaction.reply(
         simpleV2Payload({

@@ -645,3 +645,295 @@ describe('MarketService.searchActiveForAutocomplete', () => {
     expect(choices.map((c) => c.id)).toEqual([ok.id])
   })
 })
+
+// ──────────────────────────────────────────────────────────────
+// issue #26 — TradeLog 기록 · 판매자 XP 정합 · 반복 상대 감쇠 v0
+// ──────────────────────────────────────────────────────────────
+
+async function seedGuild(id: string): Promise<void> {
+  await testPrisma.guild.create({ data: { id, name: `guild-${id}` } })
+}
+
+describe('MarketService.buy — TradeLog + 판매자 XP (issue #26)', () => {
+  beforeEach(async () => {
+    await resetDb()
+  })
+
+  afterAll(async () => {
+    await closeDb()
+  })
+
+  it('records a MARKET_SELL TradeLog (from=seller, to=buyer, amount=qty, price=gross, guildId)', async () => {
+    await seedGuild('g-trade')
+    await seedUserWithMaterial('u-sell-log', 10n)
+    const listing = await listGrain('u-sell-log', 5n, 100n, 7) // gross = 500
+    await seedBuyerWithMoney('u-buy-log', 10_000n)
+
+    await MarketService.buy(testPrisma, {
+      buyerId: 'u-buy-log',
+      listingId: listing.id,
+      guildId: 'g-trade'
+    })
+
+    const logs = await testPrisma.tradeLog.findMany({
+      where: { kind: 'MARKET_SELL' }
+    })
+    expect(logs).toHaveLength(1)
+    const log = logs[0]!
+    expect(log.fromUserId).toBe('u-sell-log')
+    expect(log.toUserId).toBe('u-buy-log')
+    expect(log.material).toBe('GRAIN')
+    expect(log.amount).toBe(5n)
+    expect(log.price).toBe(500n) // gross
+    expect(log.guildId).toBe('g-trade')
+  })
+
+  it('degrades guildId to null when the referenced guild is not seeded (FK guard)', async () => {
+    await seedUserWithMaterial('u-sell-ng', 5n)
+    const listing = await listGrain('u-sell-ng', 5n, 10n)
+    await seedBuyerWithMoney('u-buy-ng', 1000n)
+
+    await MarketService.buy(testPrisma, {
+      buyerId: 'u-buy-ng',
+      listingId: listing.id,
+      guildId: 'g-missing'
+    })
+
+    const log = await testPrisma.tradeLog.findFirstOrThrow({
+      where: { kind: 'MARKET_SELL' }
+    })
+    expect(log.guildId).toBeNull()
+  })
+
+  it('grants the seller +20 XP (MARKET_SELL) and applies level-up; buyer gets no XP', async () => {
+    await seedUserWithMaterial('u-sell-xp', 5n)
+    // 판매자 Lv1, xp 90 → +20 = 110 ≥ 100(req Lv1) → Lv2, 잔여 10.
+    await testPrisma.user.update({
+      where: { id: 'u-sell-xp' },
+      data: { level: 1, xp: 90n }
+    })
+    const listing = await listGrain('u-sell-xp', 5n, 100n, 7)
+    await seedBuyerWithMoney('u-buy-xp', 10_000n)
+
+    const result = await MarketService.buy(testPrisma, {
+      buyerId: 'u-buy-xp',
+      listingId: listing.id
+    })
+
+    expect(result.sellerXpAwarded).toBe(20n)
+    expect(result.sellerLeveledUp).toBe(true)
+    expect(result.sellerNewLevel).toBe(2)
+
+    const seller = await testPrisma.user.findUniqueOrThrow({
+      where: { id: 'u-sell-xp' }
+    })
+    expect(seller.level).toBe(2)
+    expect(seller.xp).toBe(10n)
+
+    // 구매자 XP 는 설계상 없음 (docs/design/09-level-xp.md §이벤트별 XP).
+    const buyer = await testPrisma.user.findUniqueOrThrow({
+      where: { id: 'u-buy-xp' }
+    })
+    expect(buyer.xp).toBe(0n)
+    expect(buyer.level).toBe(1)
+  })
+
+  it('captures listing.guildId at registration and inherits it on expire', async () => {
+    await seedGuild('g-list')
+    await seedUserWithMaterial('u-list-g', 5n)
+    const r = await MarketService.list(testPrisma, {
+      userId: 'u-list-g',
+      material: 'GRAIN',
+      quantity: 5n,
+      pricePerUnit: 10n,
+      durationDays: 7,
+      guildId: 'g-list'
+    })
+    const listing = await testPrisma.marketListing.findUniqueOrThrow({
+      where: { id: r.listing.id }
+    })
+    expect(listing.guildId).toBe('g-list')
+  })
+})
+
+describe('MarketService.buy — 반복 상대 XP 감쇠 v0 (issue #26)', () => {
+  beforeEach(async () => {
+    await resetDb()
+  })
+
+  afterAll(async () => {
+    await closeDb()
+  })
+
+  /** 최근 24h 내 동일 (seller→buyer) 실판매 로그를 n건 시드한다. */
+  async function seedRecentSales(
+    sellerId: string,
+    buyerId: string,
+    n: number
+  ): Promise<void> {
+    for (let i = 0; i < n; i++) {
+      await testPrisma.tradeLog.create({
+        data: {
+          fromUserId: sellerId,
+          toUserId: buyerId,
+          kind: 'MARKET_SELL',
+          material: 'GRAIN',
+          amount: 1n,
+          price: 100n
+        }
+      })
+    }
+  }
+
+  it('grants 0 XP on the 6th sale to the same counterparty within 24h', async () => {
+    await seedUserWithMaterial('u-decay-s', 5n)
+    const listing = await listGrain('u-decay-s', 5n, 100n, 7)
+    await seedBuyerWithMoney('u-decay-b', 10_000n)
+    await seedRecentSales('u-decay-s', 'u-decay-b', 5) // 현재 건은 6회차
+
+    const before = await testPrisma.user.findUniqueOrThrow({
+      where: { id: 'u-decay-s' }
+    })
+
+    const result = await MarketService.buy(testPrisma, {
+      buyerId: 'u-decay-b',
+      listingId: listing.id
+    })
+
+    expect(result.sellerXpAwarded).toBe(0n)
+    expect(result.sellerLeveledUp).toBe(false)
+
+    const after = await testPrisma.user.findUniqueOrThrow({
+      where: { id: 'u-decay-s' }
+    })
+    // XP·레벨 불변, 대금(MONEY)은 정상 지급.
+    expect(after.xp).toBe(before.xp)
+    expect(after.level).toBe(before.level)
+    expect(after.money).toBeGreaterThan(before.money)
+  })
+
+  it('grants 50% XP (10) on the 4th sale to the same counterparty within 24h', async () => {
+    await seedUserWithMaterial('u-half-s', 5n)
+    const listing = await listGrain('u-half-s', 5n, 10n, 7)
+    await seedBuyerWithMoney('u-half-b', 10_000n)
+    await seedRecentSales('u-half-s', 'u-half-b', 3) // 현재 건은 4회차
+
+    const result = await MarketService.buy(testPrisma, {
+      buyerId: 'u-half-b',
+      listingId: listing.id
+    })
+
+    expect(result.sellerXpAwarded).toBe(10n) // floor(20 × 5000/10000)
+  })
+
+  it('ignores return records (toUserId=null) — sale after cancels still gets full 100% XP', async () => {
+    await seedUserWithMaterial('u-ret-s', 5n)
+    const listing = await listGrain('u-ret-s', 5n, 100n, 7)
+    await seedBuyerWithMoney('u-ret-b', 10_000n)
+    // 회수 로그(toUserId=null)만 6건 — 감쇠 카운트에 잡히면 안 됨.
+    for (let i = 0; i < 6; i++) {
+      await testPrisma.tradeLog.create({
+        data: {
+          fromUserId: 'u-ret-s',
+          toUserId: null,
+          kind: 'MARKET_SELL',
+          material: 'GRAIN',
+          amount: 1n,
+          price: 0n
+        }
+      })
+    }
+
+    const result = await MarketService.buy(testPrisma, {
+      buyerId: 'u-ret-b',
+      listingId: listing.id
+    })
+
+    expect(result.sellerXpAwarded).toBe(20n) // 첫 실판매 → 100%
+  })
+})
+
+describe('MarketService.cancel / expireStale — 회수 TradeLog (issue #26)', () => {
+  beforeEach(async () => {
+    await resetDb()
+  })
+
+  afterAll(async () => {
+    await closeDb()
+  })
+
+  it('cancel records a return TradeLog (toUserId=null, price=0, amount=qty, guildId)', async () => {
+    await seedGuild('g-cancel')
+    await seedUserWithMaterial('u-cancel-log', 8n)
+    const listing = await listGrain('u-cancel-log', 4n, 50n)
+
+    await MarketService.cancel(testPrisma, {
+      userId: 'u-cancel-log',
+      listingId: listing.id,
+      guildId: 'g-cancel'
+    })
+
+    const log = await testPrisma.tradeLog.findFirstOrThrow({
+      where: { fromUserId: 'u-cancel-log' }
+    })
+    expect(log.kind).toBe('MARKET_SELL')
+    expect(log.toUserId).toBeNull()
+    expect(log.price).toBe(0n)
+    expect(log.amount).toBe(4n)
+    expect(log.guildId).toBe('g-cancel')
+  })
+
+  it('expireStale records return TradeLogs (toUserId=null, price=0, inherits listing guildId)', async () => {
+    await seedGuild('g-expire')
+    await seedUserWithMaterial('u-expire-log', 6n)
+    const r = await MarketService.list(testPrisma, {
+      userId: 'u-expire-log',
+      material: 'GRAIN',
+      quantity: 3n,
+      pricePerUnit: 20n,
+      durationDays: 7,
+      guildId: 'g-expire'
+    })
+    await testPrisma.marketListing.update({
+      where: { id: r.listing.id },
+      data: { expiresAt: new Date(Date.now() - 60_000) }
+    })
+
+    const result = await MarketService.expireStale(testPrisma)
+    expect(result.expiredCount).toBe(1)
+
+    const log = await testPrisma.tradeLog.findFirstOrThrow({
+      where: { fromUserId: 'u-expire-log' }
+    })
+    expect(log.toUserId).toBeNull()
+    expect(log.price).toBe(0n)
+    expect(log.amount).toBe(3n)
+    expect(log.guildId).toBe('g-expire') // 등록 시점 캡처값 승계
+  })
+
+  it('expireStale degrades an unseeded listing guildId to null (batch FK guard)', async () => {
+    await seedUserWithMaterial('u-expire-ng', 4n)
+    const r = await MarketService.list(testPrisma, {
+      userId: 'u-expire-ng',
+      material: 'GRAIN',
+      quantity: 2n,
+      pricePerUnit: 10n,
+      durationDays: 7,
+      guildId: 'g-ghost' // Guild 행 미시드 — FK 위반 없이 null 로 낮아져야 함
+    })
+    await testPrisma.marketListing.update({
+      where: { id: r.listing.id },
+      data: { expiresAt: new Date(Date.now() - 60_000) }
+    })
+
+    const result = await MarketService.expireStale(testPrisma)
+    expect(result.expiredCount).toBe(1)
+
+    const log = await testPrisma.tradeLog.findFirstOrThrow({
+      where: { fromUserId: 'u-expire-ng' }
+    })
+    expect(log.guildId).toBeNull()
+    expect(log.toUserId).toBeNull()
+    expect(log.price).toBe(0n)
+  })
+})

@@ -181,6 +181,7 @@ model Guild {
   stocks       Stock[]
   settlements  WeeklySettlement[]
   inactivePool InactiveServerPool?
+  trades       TradeLog[]          @relation("GuildTrades")
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -320,6 +321,12 @@ model GlobalMarketPrice {
 model MarketListing {
   id           String        @id @default(cuid())
   sellerId     String
+  /// 등록 시점의 활동 서버(snowflake) 캡처 — best-effort, FK 없음.
+  /// 만료 회수(expireStale)는 인터랙션이 없어 활동 서버를 알 수 없으므로 이 값을
+  /// 회수 TradeLog 의 guildId 대체값으로 쓴다. 서버 탈퇴 후에도 원본을 보존하고,
+  /// TradeLog.guildId(FK) 측 가드가 유령 참조를 방어한다.
+  /// 근거: docs/design/09-level-xp.md §사기 방지 (거래의 활동 서버 귀속).
+  guildId      String?
   material     MaterialType
   price        BigInt // 단가
   qty          Int
@@ -403,23 +410,41 @@ model StockPriceTick {
 // 로그 / 정산 / 재분배
 // ──────────────────────────────────────────────────────────────
 
-/// 거래 로그 — 사기 방지·XP 중복 방지·통계용
+/// 거래 로그 — 사기 방지·XP 중복 방지·통계용.
+///
+/// v0 마켓 기록 규약 (docs/design/09-level-xp.md §사기 방지):
+///  - 실판매(buy): kind=MARKET_SELL, fromUserId=판매자, toUserId=구매자,
+///    amount=수량, price=총액(gross).
+///  - 취소/만료(cancel·expire): kind=MARKET_SELL 를 유지하되 toUserId=null,
+///    price=0 으로 실판매와 구분한다(자재 회수 이벤트 — enum 미확장 v0).
+///    amount 에는 회수 수량을 남긴다.
+/// 반복 상대 XP 감쇠는 (fromUserId,toUserId,kind,createdAt) 카운트로 판정하므로
+/// toUserId=null 인 회수 기록은 감쇠 카운트에 잡히지 않는다.
 model TradeLog {
   id         String        @id @default(cuid())
   fromUserId String?
   toUserId   String?
+  /// 거래가 발생한 활동 서버(snowflake). buy/cancel 은 인터랙션 guildId,
+  /// expire 는 MarketListing.guildId 를 승계. 서버 탈퇴 시 SetNull.
+  /// 근거: docs/design/09-level-xp.md §사기 방지 (활동 서버 귀속).
+  guildId    String?
   kind       TradeKind
   material   MaterialType?
   amount     BigInt        @default(0)
   price      BigInt        @default(0)
   createdAt  DateTime      @default(now())
 
-  fromUser User? @relation("TradeFrom", fields: [fromUserId], references: [id], onDelete: SetNull)
-  toUser   User? @relation("TradeTo", fields: [toUserId], references: [id], onDelete: SetNull)
+  fromUser User?  @relation("TradeFrom", fields: [fromUserId], references: [id], onDelete: SetNull)
+  toUser   User?  @relation("TradeTo", fields: [toUserId], references: [id], onDelete: SetNull)
+  guild    Guild? @relation("GuildTrades", fields: [guildId], references: [id], onDelete: SetNull)
 
   @@index([fromUserId, createdAt])
   @@index([toUserId, createdAt])
   @@index([kind, createdAt])
+  @@index([guildId, createdAt])
+  // 반복 상대 XP 감쇠 카운트 전용 인덱스 — 쿼리 필터(fromUserId·toUserId·kind 동등 +
+  // createdAt 범위)와 순서 일치. MARKET_SELL 외 kind 가 적재돼도 유효하다.
+  @@index([fromUserId, toUserId, kind, createdAt])
 }
 
 /// 주 1회 세금 정산 (docs/07). 일요일 자정 UTC 기준.

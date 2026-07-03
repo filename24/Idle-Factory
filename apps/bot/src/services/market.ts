@@ -13,6 +13,14 @@ import type { ListingStatus, MarketListing, PrismaClient } from '@idle/database'
 import type { MaterialType } from '@idle/game-core'
 import { ServiceError, runInTx, type Tx } from './base'
 import { QuestService, type QuestProgressResult } from './quest'
+import {
+  assessActorTrust,
+  grantMarketSellReward,
+  recordMarketTrade,
+  resolveExistingGuildIds,
+  type ActorTrustSignal,
+  type MarketActorInput
+} from './tradeLog'
 
 /** 등록 가능 기간 한도 (docs/06). */
 const MIN_DURATION_DAYS = 1
@@ -54,6 +62,8 @@ export interface MarketListInput {
   readonly quantity: bigint
   readonly pricePerUnit: bigint
   readonly durationDays: number
+  /** 등록 시점 활동 서버 snowflake. 만료 회수 TradeLog 의 활동 서버 대체값으로 캡처. */
+  readonly guildId?: string | null
 }
 
 export interface MarketListResult {
@@ -64,6 +74,10 @@ export interface MarketListResult {
 export interface MarketBuyInput {
   readonly buyerId: string
   readonly listingId: string
+  /** 구매가 발생한 활동 서버 snowflake. TradeLog.guildId 로 기록. */
+  readonly guildId?: string | null
+  /** 구매자 신규 계정/서버 멤버 시그널(v0 로깅용). 미전달 시 시그널 계산 생략. */
+  readonly actor?: MarketActorInput
 }
 
 export interface MarketBuyResult {
@@ -71,11 +85,21 @@ export interface MarketBuyResult {
   readonly grossPrice: bigint
   readonly tax: bigint
   readonly netRevenue: bigint
+  /** 판매자 XP 지급으로 레벨업이 발생했는지. */
+  readonly sellerLeveledUp: boolean
+  /** 판매자의 지급 후 레벨. */
+  readonly sellerNewLevel: number
+  /** 판매자에게 실제 지급된(반복 상대 감쇠 후) XP. */
+  readonly sellerXpAwarded: bigint
+  /** 구매자 신뢰 시그널(actor 입력이 있을 때만). 상위 핸들러가 로깅한다. */
+  readonly actorSignal?: ActorTrustSignal
 }
 
 export interface MarketCancelInput {
   readonly userId: string
   readonly listingId: string
+  /** 취소가 발생한 활동 서버 snowflake. 회수 TradeLog.guildId 로 기록. */
+  readonly guildId?: string | null
 }
 
 export interface MarketCancelResult {
@@ -246,6 +270,7 @@ export const MarketService = {
       const listing = await tx.marketListing.create({
         data: {
           sellerId: userId,
+          guildId: input.guildId ?? null,
           material,
           price: pricePerUnit,
           qty: qtyAsNumber,
@@ -271,19 +296,25 @@ export const MarketService = {
    *
    * 1. 매물/구매자 검증 (`LISTING_NOT_FOUND`, `LISTING_NOT_ACTIVE`, `SELF_PURCHASE`,
    *    `USER_NOT_FOUND`, `INSUFFICIENT_MONEY`).
-   * 2. 구매자 자금 차감, 판매자에게 세후 금액 지급.
-   * 3. 구매자 창고에 자재 입고 (upsert).
-   * 4. `status = SOLD`.
+   * 2. 구매자 자금 차감.
+   * 3. 판매자에게 세후 대금(MONEY) + 판매 XP(반복 상대 감쇠 적용) 지급 —
+   *    `grantMarketSellReward` 경유로 레벨업까지 일관 처리.
+   * 4. 구매자 창고에 자재 입고 (upsert).
+   * 5. `TradeLog` 실판매 기록(from=판매자·to=구매자·price=총액) + `status = SOLD`.
    *
    * 세율은 등록 시점 `MarketListing.taxRate` 를 그대로 사용한다.
+   * `actor` 가 주어지면 tx 바깥에서 신규 계정 시그널을 계산해 결과에 실어 반환한다.
+   * 구매자 XP 는 설계상 없다 (docs/design/09-level-xp.md §이벤트별 XP).
    */
   async buy(
     prisma: PrismaClient,
     input: MarketBuyInput
   ): Promise<MarketBuyResult> {
-    const { buyerId, listingId } = input
+    const { buyerId, listingId, guildId = null, actor } = input
+    // now 는 트랜잭션 재시도(P2034) 간에도 안정적이도록 tx 바깥에서 한 번 캡처한다.
+    const now = new Date()
 
-    return runInTx(prisma, async (tx) => {
+    const txResult = await runInTx(prisma, async (tx) => {
       const listing = await tx.marketListing.findUnique({
         where: { id: listingId }
       })
@@ -328,15 +359,22 @@ export const MarketService = {
         })
       }
 
+      // 구매자 자금 차감.
       await tx.user.update({
         where: { id: buyerId },
         data: { money: { decrement: grossPrice } }
       })
-      await tx.user.update({
-        where: { id: listing.sellerId },
-        data: { money: { increment: netRevenue } }
+
+      // 판매자 세후 대금 + 반복 상대 감쇠 XP (기존 수동 increment 대체 — 레벨업 일관 처리).
+      // 반드시 아래 recordMarketTrade(현재 건 기록) 전에 호출 — 감쇠 카운트에서 현재 건 제외.
+      const sellerReward = await grantMarketSellReward(tx, {
+        sellerId: listing.sellerId,
+        buyerId,
+        netRevenue,
+        at: now
       })
 
+      // 구매자 창고 입고.
       await tx.warehouseStack.upsert({
         where: {
           warehouseId_material: {
@@ -352,13 +390,43 @@ export const MarketService = {
         update: { count: { increment: BigInt(listing.qty) } }
       })
 
+      // 거래 로그(실판매): from=판매자·to=구매자·amount=수량·price=총액.
+      await recordMarketTrade(tx, {
+        fromUserId: listing.sellerId,
+        toUserId: buyerId,
+        material: listing.material,
+        amount: BigInt(listing.qty),
+        price: grossPrice,
+        guildId
+      })
+
       const updated = await tx.marketListing.update({
         where: { id: listing.id },
         data: { status: 'SOLD' }
       })
 
-      return { listing: updated, grossPrice, tax, netRevenue }
+      return { listing: updated, grossPrice, tax, netRevenue, sellerReward }
     })
+
+    // 신규 계정/서버 멤버 시그널(v0 로깅용) — tx 바깥에서 계산해 부수효과를 격리한다.
+    const actorSignal = actor
+      ? assessActorTrust({
+          accountCreatedAt: actor.accountCreatedAt,
+          guildJoinedAt: actor.guildJoinedAt,
+          at: now
+        })
+      : undefined
+
+    return {
+      listing: txResult.listing,
+      grossPrice: txResult.grossPrice,
+      tax: txResult.tax,
+      netRevenue: txResult.netRevenue,
+      sellerLeveledUp: txResult.sellerReward.leveledUp,
+      sellerNewLevel: txResult.sellerReward.newLevel,
+      sellerXpAwarded: txResult.sellerReward.awardedXp,
+      actorSignal
+    }
   },
 
   /**
@@ -370,7 +438,7 @@ export const MarketService = {
     prisma: PrismaClient,
     input: MarketCancelInput
   ): Promise<MarketCancelResult> {
-    const { userId, listingId } = input
+    const { userId, listingId, guildId = null } = input
 
     return runInTx(prisma, async (tx) => {
       const listing = await tx.marketListing.findUnique({
@@ -387,6 +455,17 @@ export const MarketService = {
       }
 
       const updated = await returnStackAndMark(tx, listing, 'CANCELED')
+
+      // 회수 로그: 실판매 아님 → toUserId=null·price=0 으로 구분. amount 는 회수 수량.
+      await recordMarketTrade(tx, {
+        fromUserId: listing.sellerId,
+        toUserId: null,
+        material: listing.material,
+        amount: BigInt(listing.qty),
+        price: 0n,
+        guildId
+      })
+
       return {
         listing: updated,
         returned: { material: listing.material, quantity: BigInt(listing.qty) }
@@ -406,11 +485,39 @@ export const MarketService = {
           status: 'ACTIVE',
           expiresAt: { lte: new Date() }
         },
-        select: { id: true, sellerId: true, material: true, qty: true }
+        select: {
+          id: true,
+          sellerId: true,
+          material: true,
+          qty: true,
+          guildId: true
+        }
       })
+
+      // Guild FK 방어를 건별 findUnique 대신 배치 1회 조회로 처리 (N+1 방지 —
+      // 대량 백로그에서도 Serializable 트랜잭션 타임아웃 여유 확보).
+      const knownGuildIds = await resolveExistingGuildIds(
+        tx,
+        stale.map((l) => l.guildId)
+      )
 
       for (const listing of stale) {
         await returnStackAndMark(tx, listing, 'EXPIRED')
+
+        // 회수 로그: 인터랙션이 없으므로 등록 시점 캡처한 listing.guildId 를 활동 서버로 승계.
+        // 실판매 아님 → toUserId=null·price=0 구분자. amount 는 회수 수량.
+        await recordMarketTrade(
+          tx,
+          {
+            fromUserId: listing.sellerId,
+            toUserId: null,
+            material: listing.material,
+            amount: BigInt(listing.qty),
+            price: 0n,
+            guildId: listing.guildId
+          },
+          { knownGuildIds }
+        )
       }
 
       return { expiredCount: stale.length }

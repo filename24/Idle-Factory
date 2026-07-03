@@ -159,7 +159,8 @@ export class MarketListConfirmButtonHandler extends InteractionHandler {
         material: data.material,
         quantity,
         pricePerUnit,
-        durationDays
+        durationDays,
+        guildId: interaction.guildId
       })
 
       // ephemeral 메시지 업데이트
