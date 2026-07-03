@@ -39,7 +39,17 @@ export type IConfig = {
   repository?: string
 } & { logger: LoggerConfig } & { bot: BotConfig } & {
   report: ErrorReportConfig
-} & { i18n: i18nConfig }
+} & { i18n: i18nConfig } & { redis: RedisConfig }
+
+/**
+ * Redis 접속 설정.
+ *
+ * scheduled-tasks(BullMQ) 큐와 DatabaseClient 캐시가 공유하는 접속 정보.
+ */
+export interface RedisConfig {
+  /** Redis 접속 URL (예: `redis://localhost:6380`). */
+  url: string
+}
 
 export interface i18nConfig {
   options: InternationalizationOptions

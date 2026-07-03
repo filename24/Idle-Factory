@@ -39,6 +39,11 @@ const reportType =
     ? ReportType.Text
     : ReportType.Webhook
 
+// BullMQ(scheduled-tasks)·DatabaseClient 가 공유하는 Redis 접속 URL.
+// dev 기본값은 docker-compose.dev.yml 의 Redis 7 (호스트 포트 6380).
+// 프로덕션은 반드시 REDIS_URL 을 주입해야 한다.
+const redisUrl = env('REDIS_URL', 'redis://localhost:6380')
+
 const config: IConfig = {
   BUILD_NUMBER: getBuildNumber(),
   BUILD_VERSION: env('BUILD_VERSION', '0.1.4'),
@@ -52,7 +57,14 @@ const config: IConfig = {
         IntentsBitField.Flags.GuildMessages,
         IntentsBitField.Flags.Guilds
       ],
-      allowedMentions: { parse: ['users', 'roles'], repliedUser: false }
+      allowedMentions: { parse: ['users', 'roles'], repliedUser: false },
+      // @sapphire/plugin-scheduled-tasks 의 BullMQ 큐 Redis 연결.
+      // 클라이언트 생성 시점에 큐·워커가 이 연결로 즉시 구성된다.
+      tasks: {
+        bull: {
+          connection: { url: redisUrl }
+        }
+      }
     },
     token: requireEnv('BOT_TOKEN'),
     owners: parseList(process.env.BOT_OWNERS),
@@ -73,6 +85,9 @@ const config: IConfig = {
   logger: {
     level: env('LOG_LEVEL', 'chat') as IConfig['logger']['level'],
     dev: parseBool(process.env.LOG_DEV, false)
+  },
+  redis: {
+    url: redisUrl
   },
   i18n: {
     options: {
