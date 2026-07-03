@@ -173,7 +173,8 @@ export class MarketListDetailsModalHandler extends InteractionHandler {
         material: data.material,
         quantity,
         pricePerUnit,
-        durationDays
+        durationDays,
+        guildId: interaction.guildId
       })
 
       const taxRate = result.listing.taxRate ?? 0

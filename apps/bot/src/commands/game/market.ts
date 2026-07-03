@@ -38,6 +38,10 @@ import {
   materialChoiceLocalizations
 } from '../../utils/enumLocale'
 import { MarketService } from '../../services/market'
+import type {
+  ActorTrustSignal,
+  MarketActorInput
+} from '../../services/tradeLog'
 import { UserService } from '../../services/user'
 
 export const MATERIAL_CHOICES: readonly MaterialType[] = [
@@ -124,8 +128,20 @@ export class MarketCommand extends Command {
       await UserService.ensure(db, { discordId: interaction.user.id })
       const result = await MarketService.buy(db, {
         buyerId: interaction.user.id,
-        listingId
+        listingId,
+        guildId: interaction.guildId,
+        actor: resolveMarketActor(interaction)
       })
+      logMarketBuySignal(
+        this.container.logger,
+        {
+          buyerId: interaction.user.id,
+          sellerId: result.listing.sellerId,
+          listingId: result.listing.id,
+          guildId: interaction.guildId
+        },
+        result.actorSignal
+      )
 
       return interaction.reply(
         simpleV2Payload({
@@ -159,7 +175,8 @@ export class MarketCommand extends Command {
       await UserService.ensure(db, { discordId: interaction.user.id })
       const result = await MarketService.cancel(db, {
         userId: interaction.user.id,
-        listingId
+        listingId,
+        guildId: interaction.guildId
       })
 
       return interaction.reply(
@@ -475,6 +492,62 @@ function isKnownServiceError(err: unknown): boolean {
 
 function truncate(text: string, max: number): string {
   return text.length <= max ? text : `${text.slice(0, max - 1)}…`
+}
+
+/**
+ * 인터랙션에서 구매자 신뢰 시그널 입력을 추출한다(서비스 input 배선용).
+ *
+ * 계정 생성일은 `User.createdAt`(snowflake 파생, 항상 존재), 서버 가입일은
+ * `GuildMember.joinedAt`. 멤버 캐시 미스/부분 객체면 joinedAt 을 얻지 못하므로 null.
+ * (봇 전용 커스텀 epoch 인 `utils/SnowFlake.ts` 는 계정일 산출에 부적합 — 사용 금지.)
+ */
+export function resolveMarketActor(interaction: {
+  user: { createdAt: Date }
+  member: unknown
+}): MarketActorInput {
+  return {
+    accountCreatedAt: interaction.user.createdAt,
+    guildJoinedAt: extractGuildJoinedAt(interaction.member)
+  }
+}
+
+/** `GuildMember.joinedAt`(Date) 만 취하고, API 부분 객체(`joined_at` 문자열)나 null 은 null. */
+function extractGuildJoinedAt(member: unknown): Date | null {
+  if (
+    member &&
+    typeof member === 'object' &&
+    'joinedAt' in member &&
+    member.joinedAt instanceof Date
+  ) {
+    return member.joinedAt
+  }
+  return null
+}
+
+/** 시그널 로거 최소 인터페이스(Sapphire `ILogger` 호환). */
+interface SignalLogger {
+  warn(...values: readonly unknown[]): void
+}
+
+/**
+ * 신규 계정/서버 멤버 시그널이 잡히면 구조화 로깅한다(v0, 비차단).
+ *
+ * 플래그가 없으면 no-op — 정상 거래는 로그 노이즈를 남기지 않는다.
+ * IP 취득 불가 확정에 따른 대체 관측 지점(docs/design/09-level-xp.md §사기 방지).
+ */
+export function logMarketBuySignal(
+  logger: SignalLogger,
+  ctx: {
+    buyerId: string
+    sellerId: string
+    listingId: string
+    guildId: string | null
+  },
+  signal: ActorTrustSignal | undefined
+): void {
+  if (!signal) return
+  if (!signal.isNewAccount && !signal.isNewGuildMember) return
+  logger.warn('[market:buy] 신규 계정 거래 시그널(v0)', { ...ctx, signal })
 }
 
 /**
