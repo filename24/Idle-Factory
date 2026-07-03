@@ -423,6 +423,52 @@
     },
     "expire": {
       "log": "expired {{count}} stale market listings"
+    },
+    "directbuy": {
+      "selectMaterial": {
+        "title": "Direct Buy",
+        "body": "Pick a material to buy instantly at **2x** the global market price (T1/T2 materials only).",
+        "placeholder": "Select a material...",
+        "priceDesc": "{{price}} each (market ×2)"
+      },
+      "limitSummary": "Daily limit left **{{remaining}}/{{limit}}** · resets <t:{{resetUnix}}:R>",
+      "qtySelect": {
+        "title": "{{material}} — Select quantity",
+        "summary": "Direct buy price: **{{price}}** each (market ×2)",
+        "placeholder": "Select a quantity to buy...",
+        "presetOption": "{{count}}x",
+        "maxOption": "Rest of today's limit ({{count}}x)",
+        "customOption": "Custom amount",
+        "customOptionDesc": "Type the quantity yourself"
+      },
+      "modal": {
+        "title": "{{material}} — Enter quantity",
+        "quantityLabel": "Quantity",
+        "quantityPlaceholder": "e.g. 100",
+        "error": {
+          "invalidQuantity": "Quantity must be a positive integer (max 6 digits)."
+        }
+      },
+      "confirm": {
+        "title": "Confirm {{material}} purchase",
+        "detail": "**{{quantity}}x** × **{{price}}** each (market ×2) = **{{total}}**",
+        "remainingAfter": "Daily limit after purchase: **{{remaining}}/{{limit}}**",
+        "notice": "Prices move every 30 minutes. The final charge uses the price ×2 at execution time.",
+        "okBtn": "Buy",
+        "cancelBtn": "Cancel"
+      },
+      "success": "📦 Bought **{{quantity}}x {{material}}** directly.",
+      "footer": "{{price}} each (market ×2) · {{total}} paid · {{remaining}}/{{limit}} daily limit left",
+      "stepCancelled": "Purchase cancelled.",
+      "error": {
+        "invalidQuantity": "Quantity must be at least 1.",
+        "materialNotAllowed": "This material cannot be bought directly. Only T1/T2 materials are allowed.",
+        "dailyLimitExceeded": "Daily purchase limit exceeded. Remaining: {{remaining}}/{{limit}} · resets <t:{{resetUnix}}:R>",
+        "dailyLimitExceededShort": "Daily purchase limit exceeded. Remaining: {{remaining}}/{{limit}}",
+        "insufficientMoney": "Not enough money. Required: {{required}} / You have: {{have}}",
+        "priceNotFound": "This material has no global market price yet.",
+        "limitReached": "You have used today's purchase limit ({{limit}}). Resets <t:{{resetUnix}}:R>"
+      }
     }
   }
 }

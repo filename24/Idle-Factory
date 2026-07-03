@@ -5,6 +5,7 @@
  */
 
 export * from './LandRenderer'
+export * from './DirectBuyRenderer'
 export * from './FactoryRenderer'
 export * from './GuildSettingsRenderer'
 export * from './MarketRenderer'

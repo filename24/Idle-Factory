@@ -8,6 +8,7 @@
  *  - `browse [material] [page]` — 활성 매물 목록 페이지네이션.
  *  - `sell` — 창고 자재를 글로벌 마켓에 즉시 판매 (현재 시세 100%, #15 U-3).
  *  - `price` — 글로벌 마켓 자재 시세 보드 (현재가·기준가 대비 등락).
+ *  - `directbuy` — 자재 직구매 (현재가 ×2 할증, T1+T2 만, 일일 한도 — #16).
  *
  * 등록·글로벌 판매 즉시 `MARKET_LISTED` 이벤트가 발화돼 Q3 ("자재 판매")
  * 트리거를 살린다 — 글로벌 판매 덕에 1인 서버에서도 Q3 완주가 가능하다.
@@ -33,8 +34,10 @@ import {
   type AutocompleteInteraction
 } from 'discord.js'
 import type { MaterialType } from '@idle/game-core'
+import { directBuyUnitPrice } from '@idle/game-core'
 import { simpleV2Payload, V2_ACCENT, v2Flags } from '@utils/ComponentsV2'
 import {
+  buildDirectBuyMaterialSelectContainer,
   buildPriceBoardContainer,
   buildSellMaterialSelectContainer,
   formatBigInt
@@ -44,6 +47,7 @@ import {
   localizeMaterial,
   materialChoiceLocalizations
 } from '../../utils/enumLocale'
+import { DirectBuyService } from '../../services/directBuy'
 import { MarketService } from '../../services/market'
 import { MarketPriceService } from '../../services/marketPrice'
 import { MarketSellService } from '../../services/marketSell'
@@ -95,6 +99,7 @@ export class MarketCommand extends Command {
     if (sub === 'browse') return this.handleBrowse(interaction)
     if (sub === 'sell') return this.handleSell(interaction)
     if (sub === 'price') return this.handlePrice(interaction)
+    if (sub === 'directbuy') return this.handleDirectBuy(interaction)
     return this.replyUnknown(interaction)
   }
 
@@ -236,6 +241,52 @@ export class MarketCommand extends Command {
     const container = buildSellMaterialSelectContainer(
       interaction.user.id,
       stacks,
+      t
+    )
+    return interaction.reply({ components: [container], flags: v2Flags(true) })
+  }
+
+  /**
+   * `/market directbuy` — 자재 직구매 1단계 (허용 자재 Select, #16).
+   *
+   * 각 자재 옵션에 ×2 할증 단가를, 본문에 남은 일일 한도를 노출한다.
+   * 오늘 한도를 모두 썼으면 안내만 응답. 이후 단계는
+   * selects/marketDirectBuyMaterial → selects/marketDirectBuyQuantity →
+   * buttons/marketDirectBuyConfirm 핸들러 체인이 이어받는다.
+   */
+  private async handleDirectBuy(
+    interaction: Command.ChatInputCommandInteraction
+  ) {
+    const { db } = this.container
+    const t = await fetchT(interaction)
+
+    await UserService.ensure(db, { discordId: interaction.user.id })
+    const [views, usage] = await Promise.all([
+      MarketPriceService.listPrices(db),
+      DirectBuyService.getDailyUsage(db, interaction.user.id)
+    ])
+
+    if (usage.remaining <= 0) {
+      return interaction.reply(
+        simpleV2Payload({
+          accent: V2_ACCENT.warn,
+          body: t('game:market.directbuy.error.limitReached', {
+            limit: usage.limit.toLocaleString('en-US'),
+            resetUnix: Math.floor(usage.resetsAt.getTime() / 1000)
+          }),
+          ephemeral: true
+        })
+      )
+    }
+
+    // 자재별 ×2 할증 단가 맵 — 시세 행이 없는 자재는 옵션 설명을 생략한다.
+    const unitPrices = new Map<MaterialType, bigint>(
+      views.map((v) => [v.material, directBuyUnitPrice(v.currentPrice)])
+    )
+    const container = buildDirectBuyMaterialSelectContainer(
+      interaction.user.id,
+      unitPrices,
+      usage,
       t
     )
     return interaction.reply({ components: [container], flags: v2Flags(true) })
@@ -412,6 +463,18 @@ export class MarketCommand extends Command {
             .setNameLocalization('ko', '시세')
             .setDescription('Show global market prices.')
             .setDescriptionLocalization('ko', '글로벌 마켓 시세를 봅니다.')
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName('directbuy')
+            .setNameLocalization('ko', '직구매')
+            .setDescription(
+              'Buy materials instantly at 2x the market price (daily limit).'
+            )
+            .setDescriptionLocalization(
+              'ko',
+              '자재를 시세 2배로 즉시 구매합니다 (일일 한도).'
+            )
         )
     )
   }
