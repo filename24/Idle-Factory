@@ -326,10 +326,13 @@ export function resolveMoveErrorBody(
     case 'MOVE_SAME_POSITION':
       return t('game:land.move.error.samePosition')
     case 'INSUFFICIENT_MONEY': {
+      // 확인/성공 문구와 동일하게 천 단위 구분 포맷으로 표기한다 (예: "25,000").
       const d = (details ?? {}) as { required?: string }
-      return t('game:land.move.error.insufficientMoney', {
-        required: d.required ?? '-'
-      })
+      const required =
+        d.required && /^\d+$/.test(d.required)
+          ? formatBigInt(BigInt(d.required))
+          : (d.required ?? '-')
+      return t('game:land.move.error.insufficientMoney', { required })
     }
     case 'USER_NOT_FOUND':
       return t('game:common.error.userNotFound')

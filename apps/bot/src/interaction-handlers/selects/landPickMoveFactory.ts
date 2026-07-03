@@ -57,23 +57,26 @@ export class LandPickMoveFactorySelectHandler extends InteractionHandler {
     const { db } = this.container
     const t = await fetchT(interaction)
 
-    const land = await db.land.findUnique({
-      where: {
-        userId_index: { userId: interaction.user.id, index: data.landIndex }
-      },
-      include: { slots: true }
-    })
-    const factory = await db.factory.findUnique({
-      where: { id: data.factoryId },
-      select: {
-        id: true,
-        userId: true,
-        landId: true,
-        type: true,
-        anchorX: true,
-        anchorY: true
-      }
-    })
+    // 서로 독립인 두 조회는 병렬로 수행한다.
+    const [land, factory] = await Promise.all([
+      db.land.findUnique({
+        where: {
+          userId_index: { userId: interaction.user.id, index: data.landIndex }
+        },
+        include: { slots: true }
+      }),
+      db.factory.findUnique({
+        where: { id: data.factoryId },
+        select: {
+          id: true,
+          userId: true,
+          landId: true,
+          type: true,
+          anchorX: true,
+          anchorY: true
+        }
+      })
+    ])
 
     // 남의 공장·타 구역 공장·존재하지 않는 공장은 이동 불가.
     if (

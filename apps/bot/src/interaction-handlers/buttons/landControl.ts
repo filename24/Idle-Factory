@@ -108,24 +108,7 @@ export class LandControlButtonHandler extends InteractionHandler {
     }
 
     if (action === 'move') {
-      const factoryIds = [
-        ...new Set(
-          land.slots.filter((s) => s.factoryId).map((s) => s.factoryId!)
-        )
-      ]
-      const factories =
-        factoryIds.length === 0
-          ? []
-          : await db.factory.findMany({
-              where: { id: { in: factoryIds } },
-              select: {
-                id: true,
-                type: true,
-                grade: true,
-                anchorX: true,
-                anchorY: true
-              }
-            })
+      const factories = await this.loadPlacedFactories(land.slots)
       const payload = buildMoveFactoryPickSelectPayload({
         ownerId: userId,
         landIndex,
@@ -182,24 +165,7 @@ export class LandControlButtonHandler extends InteractionHandler {
     }
 
     if (action === 'destroy') {
-      const factoryIds = [
-        ...new Set(
-          land.slots.filter((s) => s.factoryId).map((s) => s.factoryId!)
-        )
-      ]
-      const factories =
-        factoryIds.length === 0
-          ? []
-          : await db.factory.findMany({
-              where: { id: { in: factoryIds } },
-              select: {
-                id: true,
-                type: true,
-                grade: true,
-                anchorX: true,
-                anchorY: true
-              }
-            })
+      const factories = await this.loadPlacedFactories(land.slots)
       const payload = buildFactoryPickSelectPayload({
         ownerId: userId,
         landIndex,
@@ -211,5 +177,33 @@ export class LandControlButtonHandler extends InteractionHandler {
       )
       return
     }
+  }
+
+  /**
+   * 토지 슬롯 점유 정보에서 설치된 공장 목록을 조회한다 (move/destroy pick UI 공용).
+   *
+   * 슬롯의 `factoryId` 를 중복 제거해 모은 뒤 select 최소 필드로 일괄 조회한다.
+   */
+  private async loadPlacedFactories(
+    slots: ReadonlyArray<{ factoryId: string | null }>
+  ) {
+    const factoryIds = [
+      ...new Set(
+        slots
+          .filter((s): s is { factoryId: string } => s.factoryId !== null)
+          .map((s) => s.factoryId)
+      )
+    ]
+    if (factoryIds.length === 0) return []
+    return this.container.db.factory.findMany({
+      where: { id: { in: factoryIds } },
+      select: {
+        id: true,
+        type: true,
+        grade: true,
+        anchorX: true,
+        anchorY: true
+      }
+    })
   }
 }
