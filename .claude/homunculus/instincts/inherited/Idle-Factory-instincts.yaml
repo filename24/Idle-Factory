@@ -1,0 +1,541 @@
+# Instincts generated from https://github.com/filename24/Idle-Factory
+# Generated: 2026-07-03T15:07:29.977Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: Idle-Factory-commit-conventional
+trigger: "when writing a commit message"
+confidence: 0.85
+domain: git
+source: repo-analysis
+source_repo: https://github.com/filename24/Idle-Factory
+---
+
+# Idle Factory Commit Conventional
+
+## Action
+
+Use conventional commit format with prefixes: feat, fix, chore, refactor, docs
+
+## Evidence
+
+- 14 commits analyzed
+- Detected conventional commit pattern
+- Examples: feat(bot): implement market buy/cancel/browse/expire (closes #14), fix(bot): pass INSUFFICIENT_MONEY details and fix quest ephemeral flag
+
+---
+id: Idle-Factory-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/filename24/Idle-Factory
+---
+
+# Idle Factory Commit Length
+
+## Action
+
+Write moderate-length commit messages (~51 characters)
+
+## Evidence
+
+- Average commit message length: 51 chars
+- Based on 14 commits
+
+---
+id: Idle-Factory-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/filename24/Idle-Factory
+---
+
+# Idle Factory Naming Files
+
+## Action
+
+Use camelCase naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: camelCase
+
+---
+id: Idle-Factory-import-relative
+trigger: "when importing modules"
+confidence: 0.75
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/filename24/Idle-Factory
+---
+
+# Idle Factory Import Relative
+
+## Action
+
+Use relative imports for project files
+
+## Evidence
+
+- Import analysis shows relative import pattern
+- Example: import { x } from '../lib/x'
+
+---
+id: Idle-Factory-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/filename24/Idle-Factory
+---
+
+# Idle Factory Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: Idle-Factory-arch-type-based
+trigger: "when adding new code"
+confidence: 0.8
+domain: architecture
+source: repo-analysis
+source_repo: https://github.com/filename24/Idle-Factory
+---
+
+# Idle Factory Arch Type Based
+
+## Action
+
+Place code in the appropriate type folder (components/, services/, utils/, etc.)
+
+## Evidence
+
+- Type-based module organization detected
+- Folders: 
+
+---
+id: Idle-Factory-test-framework
+trigger: "when writing tests"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/filename24/Idle-Factory
+---
+
+# Idle Factory Test Framework
+
+## Action
+
+Use vitest as the test framework
+
+## Evidence
+
+- Test framework detected: vitest
+- File pattern: *.test.ts
+
+---
+id: Idle-Factory-test-naming
+trigger: "when creating a test file"
+confidence: 0.85
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/filename24/Idle-Factory
+---
+
+# Idle Factory Test Naming
+
+## Action
+
+Name test files using the pattern: *.test.ts
+
+## Evidence
+
+- File pattern: *.test.ts
+- Consistent across test files
+
+---
+id: Idle-Factory-test-types
+trigger: "when planning tests for a feature"
+confidence: 0.7
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/filename24/Idle-Factory
+---
+
+# Idle Factory Test Types
+
+## Action
+
+Write unit, integration, e2e tests to match project standards
+
+## Evidence
+
+- Test types detected: unit, integration, e2e
+- Coverage config: no
+
+---
+id: Idle-Factory-workflow-feature-development
+trigger: "when implementing a new feature"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/filename24/Idle-Factory
+---
+
+# Idle Factory Workflow Feature Development
+
+## Action
+
+Follow the feature-development workflow:
+1. Add feature implementation
+2. Add tests for feature
+3. Update documentation
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~17x per month
+- Files: apps/bot/src/commands/game/*, apps/bot/src/interaction-handlers/buttons/*, apps/bot/src/listeners/*
+
+---
+id: Idle-Factory-workflow-add-or-update-market-feature
+trigger: "when doing add or update market feature"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/filename24/Idle-Factory
+---
+
+# Idle Factory Workflow Add Or Update Market Feature
+
+## Action
+
+Follow the add-or-update-market-feature workflow:
+1. Modify or create command handler in apps/bot/src/commands/game/market.ts
+2. Update or add interaction handlers in apps/bot/src/interaction-handlers/buttons/, modals/, or selects/ related to market
+3. Update locale files for i18n in apps/bot/src/locales/en-US/game.json and apps/bot/src/locales/ko/game.json
+4. Modify or add service logic in apps/bot/src/services/market.ts or related service files
+5. Update or add utility files in apps/bot/src/utils/ if needed
+6. Write or update integration tests in apps/bot/tests/integration/ or related test files
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: apps/bot/src/commands/game/market.ts, apps/bot/src/interaction-handlers/buttons/market*.ts, apps/bot/src/interaction-handlers/modals/market*.ts
+
+---
+id: Idle-Factory-workflow-add-or-update-bot-command-with-permissions
+trigger: "when doing add or update bot command with permissions"
+confidence: 0.55
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/filename24/Idle-Factory
+---
+
+# Idle Factory Workflow Add Or Update Bot Command With Permissions
+
+## Action
+
+Follow the add-or-update-bot-command-with-permissions workflow:
+1. Create or modify command file in apps/bot/src/commands/dev/ or apps/bot/src/commands/game/
+2. Implement or update permission/precondition logic in apps/bot/src/preconditions/
+3. Optionally update related logic or service files
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~1x per month
+- Files: apps/bot/src/commands/dev/*.ts, apps/bot/src/commands/game/*.ts, apps/bot/src/preconditions/*.ts
+
+---
+id: Idle-Factory-workflow-add-or-update-i18n-locale-strings
+trigger: "when doing add or update i18n locale strings"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/filename24/Idle-Factory
+---
+
+# Idle Factory Workflow Add Or Update I18n Locale Strings
+
+## Action
+
+Follow the add-or-update-i18n-locale-strings workflow:
+1. Modify or add keys/strings in apps/bot/src/locales/en-US/game.json
+2. Modify or add corresponding keys/strings in apps/bot/src/locales/ko/game.json
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: apps/bot/src/locales/en-US/game.json, apps/bot/src/locales/ko/game.json
+
+---
+id: idle-factory-naming-files-camelCase
+trigger: "When creating or renaming a file in the codebase"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: filename24/Idle-Factory
+---
+
+# Idle Factory Naming Files CamelCase
+
+## Action
+
+Name the file using camelCase (e.g., marketActions.ts)
+
+## Evidence
+
+- Pattern in namingConventions.files
+- apps/bot/src/interaction-handlers/buttons/marketActions.ts
+
+---
+id: idle-factory-naming-functions-camelCase
+trigger: "When defining a function"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: filename24/Idle-Factory
+---
+
+# Idle Factory Naming Functions CamelCase
+
+## Action
+
+Name the function using camelCase
+
+## Evidence
+
+- Pattern in namingConventions.functions
+
+---
+id: idle-factory-naming-classes-PascalCase
+trigger: "When defining a class"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: filename24/Idle-Factory
+---
+
+# Idle Factory Naming Classes PascalCase
+
+## Action
+
+Name the class using PascalCase
+
+## Evidence
+
+- Pattern in namingConventions.classes
+
+---
+id: idle-factory-naming-constants-SCREAMING_SNAKE_CASE
+trigger: "When defining a constant"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: filename24/Idle-Factory
+---
+
+# Idle Factory Naming Constants SCREAMING_SNAKE_CASE
+
+## Action
+
+Name the constant using SCREAMING_SNAKE_CASE
+
+## Evidence
+
+- Pattern in namingConventions.constants
+
+---
+id: idle-factory-imports-relative
+trigger: "When importing modules"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: filename24/Idle-Factory
+---
+
+# Idle Factory Imports Relative
+
+## Action
+
+Use relative import paths
+
+## Evidence
+
+- Pattern in importStyle: relative
+- apps/bot/src/commands/game/market.ts
+
+---
+id: idle-factory-exports-named
+trigger: "When exporting functions, classes, or constants"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: filename24/Idle-Factory
+---
+
+# Idle Factory Exports Named
+
+## Action
+
+Use named exports
+
+## Evidence
+
+- Pattern in exportStyle: named
+
+---
+id: idle-factory-testing-vitest-pattern
+trigger: "When writing tests"
+confidence: 0.85
+domain: testing
+source: repo-analysis
+source_repo: filename24/Idle-Factory
+---
+
+# Idle Factory Testing Vitest Pattern
+
+## Action
+
+Use Vitest as the testing framework and name test files with *.test.ts
+
+## Evidence
+
+- Pattern in testing.framework
+- Pattern in testing.filePattern
+- apps/bot/tests/integration/marketActions.test.ts
+
+---
+id: idle-factory-testing-unit-integration-e2e
+trigger: "When adding tests for a feature"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: filename24/Idle-Factory
+---
+
+# Idle Factory Testing Unit Integration E2e
+
+## Action
+
+Write unit, integration, or e2e tests as appropriate for the feature
+
+## Evidence
+
+- Pattern in testing.testTypes
+- apps/bot/tests/integration/market*.test.ts
+
+---
+id: idle-factory-git-conventional-commits
+trigger: "When writing a commit message"
+confidence: 0.9
+domain: git
+source: repo-analysis
+source_repo: filename24/Idle-Factory
+---
+
+# Idle Factory Git Conventional Commits
+
+## Action
+
+Use conventional commit format with type prefix (feat, fix, chore, refactor, docs)
+
+## Evidence
+
+- Seen in commit: feat(bot): implement market buy/cancel/browse/expire (closes #14)
+- Seen in commit: fix(web): resolve ESLint errors blocking CI
+
+---
+id: idle-factory-git-commit-length
+trigger: "When composing a commit message"
+confidence: 0.7
+domain: git
+source: repo-analysis
+source_repo: filename24/Idle-Factory
+---
+
+# Idle Factory Git Commit Length
+
+## Action
+
+Keep the commit message concise, around 50 characters
+
+## Evidence
+
+- Pattern in commits.averageLength: 51
+
+---
+id: idle-factory-workflow-market-feature
+trigger: "When adding or updating a market-related feature in the bot"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: filename24/Idle-Factory
+---
+
+# Idle Factory Workflow Market Feature
+
+## Action
+
+Follow the workflow: update command handler, interaction handlers, i18n files, service logic, utilities, and integration tests in the specified files
+
+## Evidence
+
+- Workflow: add-or-update-market-feature
+- Example commits and files in workflow
+
+---
+id: idle-factory-workflow-bot-command-permissions
+trigger: "When adding or updating a bot command, especially with permission checks"
+confidence: 0.85
+domain: workflow
+source: repo-analysis
+source_repo: filename24/Idle-Factory
+---
+
+# Idle Factory Workflow Bot Command Permissions
+
+## Action
+
+Create/modify command file and update permission logic in preconditions
+
+## Evidence
+
+- Workflow: add-or-update-bot-command-with-permissions
+- Example commits and files in workflow
+
+---
+id: idle-factory-workflow-i18n-sync
+trigger: "When user-facing text or UI changes"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: filename24/Idle-Factory
+---
+
+# Idle Factory Workflow I18n Sync
+
+## Action
+
+Update both en-US and ko locale files with new or changed strings
+
+## Evidence
+
+- Workflow: add-or-update-i18n-locale-strings
+- Example commits and files in workflow
+
