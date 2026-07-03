@@ -43,6 +43,11 @@ export type ServiceErrorCode =
   //   (등록 시 + 구매 시 재검증 — #15 확정).
   | 'PRICE_NOT_FOUND'
   | 'PRICE_OUT_OF_RANGE'
+  // 자재 직구매 (docs/design/04-economy.md §자재 직구매, #16)
+  // - MATERIAL_NOT_DIRECT_BUYABLE: T3 완제품·RAW_BOOSTER 는 직구매 불가.
+  // - DAILY_LIMIT_EXCEEDED: 레벨 구간별 일일 총 한도 초과 (KST 자정 리셋).
+  | 'MATERIAL_NOT_DIRECT_BUYABLE'
+  | 'DAILY_LIMIT_EXCEEDED'
 
 export class ServiceError extends Error {
   public readonly code: ServiceErrorCode

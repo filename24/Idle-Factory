@@ -6,6 +6,7 @@
  *
  * 제공:
  *  - `recordMarketTrade` : TradeLog 한 건 기록(kind=MARKET_SELL 고정, Guild FK 가드 포함).
+ *  - `recordDirectBuyTrade` : 자재 직구매 TradeLog 기록(kind=DIRECT_BUY, #16).
  *  - `grantMarketSellReward` : 판매자에게 세후 대금(MONEY) + 반복 상대 감쇠 XP 지급.
  *  - `assessActorTrust` : 구매자 신규 계정/신규 서버 멤버 시그널 계산(v0 로깅용, 비차단).
  *
@@ -132,6 +133,53 @@ export async function recordMarketTrade(
       toUserId: input.toUserId,
       guildId: safeGuildId,
       kind: 'MARKET_SELL',
+      material: input.material,
+      amount: input.amount,
+      price: input.price
+    }
+  })
+}
+
+/**
+ * 자재 직구매 TradeLog 한 건 입력 (#16).
+ *
+ * 방향 규약: 직구매는 시스템(글로벌 마켓)이 판매자, 유저가 구매자인 거래다.
+ * 기존 컨벤션(실판매 buy 의 toUserId=구매자, 글로벌 판매의 상대 없음=null)을
+ * 그대로 확장해 **fromUserId=null(시스템)·toUserId=구매자·price=총액(gross,
+ * ×2 할증 반영)·amount=수량** 으로 기록한다. kind=DIRECT_BUY 라 MARKET_SELL
+ * 기반 반복 상대 XP 감쇠 카운트와 섞이지 않는다.
+ */
+export interface DirectBuyTradeLogInput {
+  /** 구매자 id. */
+  readonly buyerId: string
+  /** 구매 자재. */
+  readonly material: MaterialType
+  /** 수량. */
+  readonly amount: bigint
+  /** 총액(gross, 직구매 ×2 할증 단가 × 수량). */
+  readonly price: bigint
+  /** 활동 서버 snowflake. 없거나 미시드/탈퇴 서버면 가드가 null 로 낮춘다. */
+  readonly guildId: string | null
+}
+
+/**
+ * 자재 직구매 TradeLog 한 건을 기록한다 (kind=DIRECT_BUY, #16).
+ *
+ * `recordMarketTrade` 와 동일한 Guild FK 가드를 거친다 — 사기/통계 로그 실패가
+ * 실거래 트랜잭션을 깨선 안 되기 때문(best-effort 귀속).
+ * 근거: docs/design/04-economy.md §자재 직구매, schema `TradeKind.DIRECT_BUY`.
+ */
+export async function recordDirectBuyTrade(
+  tx: Tx,
+  input: DirectBuyTradeLogInput
+): Promise<void> {
+  const safeGuildId = await resolveGuildFk(tx, input.guildId)
+  await tx.tradeLog.create({
+    data: {
+      fromUserId: null,
+      toUserId: input.buyerId,
+      guildId: safeGuildId,
+      kind: 'DIRECT_BUY',
       material: input.material,
       amount: input.amount,
       price: input.price

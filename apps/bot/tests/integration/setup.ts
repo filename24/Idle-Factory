@@ -30,6 +30,8 @@ const TABLES = [
   'StockPriceTick',
   'TradeLog',
   'WeeklySettlement',
+  'WeeklySettlementLine',
+  'GuildDailyActivity',
   'InactiveServerPool',
   'Notice',
   'UserQuest'

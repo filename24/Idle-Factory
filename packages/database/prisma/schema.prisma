@@ -139,7 +139,9 @@ model User {
   level                Int       @default(1)
   flag                 BigInt    @default(1) // 비트 플래그
   lastActiveAt         DateTime  @default(now())
-  // 자재 직구매 일일 한도 캐시 (docs/04, 레벨 구간별 100/500/2000/10000)
+  // ⚠️ deprecated (#16): 자재 직구매 일일 한도의 단일 진실 소스는 DailyPurchase
+  // 테이블이다. 아래 두 캐시 컬럼은 사용하지 않는다 — additive-only 원칙에 따라
+  // 컬럼 삭제 없이 방치한다. 신규 코드에서 읽기/쓰기 금지.
   dailyBought          Int       @default(0)
   dailyBoughtResetAt   DateTime  @default(now())
   createdAt            DateTime  @default(now())
@@ -177,11 +179,12 @@ model Guild {
   joinedAt     DateTime  @default(now())
   leftAt       DateTime? // 봇 퇴장 시각 — 30일 경과 시 분배 풀로
 
-  factories    Factory[]
-  stocks       Stock[]
-  settlements  WeeklySettlement[]
-  inactivePool InactiveServerPool?
-  trades       TradeLog[]          @relation("GuildTrades")
+  factories       Factory[]
+  stocks          Stock[]
+  settlements     WeeklySettlement[]
+  settlementLines WeeklySettlementLine[] @relation("GuildSettlementLines")
+  inactivePool    InactiveServerPool?
+  trades          TradeLog[]             @relation("GuildTrades")
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -356,10 +359,11 @@ model MarketListing {
 }
 
 /// 자재 직구매 일일 한도 추적 (docs/04). (userId, date) unique.
+/// 일일 한도의 단일 진실 소스 — User.dailyBought 캐시 컬럼은 deprecated (#16).
 model DailyPurchase {
   id          String   @id @default(cuid())
   userId      String
-  date        DateTime // UTC 00:00 기준
+  date        DateTime // KST(UTC+9) 자정 경계의 UTC 순간 (#16 확정 — U-6 주간 정산 KST 와 일관)
   totalBought Int      @default(0)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -464,21 +468,84 @@ model TradeLog {
   @@index([fromUserId, toUserId, kind, createdAt])
 }
 
-/// 주 1회 세금 정산 (docs/07). 일요일 자정 UTC 기준.
+/// 주 1회 세금 정산 (docs/07) — 유저×주 단위 헤더 레코드.
+/// 정산 시각: 매주 일요일 00:00 KST (cron 은 UTC 토 15:00) — U-6, 2026-07-03 확정.
+/// weekStart 는 정산 대상 주의 시작(직전 일요일 00:00 KST 의 UTC 순간).
+///
+/// (userId, weekStart) unique 가 멱등성 앵커 (#16): 잡이 2회 실행돼도 두 번째
+/// 삽입이 P2002 로 실패해 유저 트랜잭션 전체(과세·금고 적립 포함)가 롤백된다.
+/// 서버별 과세 내역은 WeeklySettlementLine 자식 행으로 기록한다 (D-1 귀속 모델).
 model WeeklySettlement {
   id           String   @id @default(cuid())
   userId       String
-  guildId      String
+  /// ⚠️ deprecated (#16): 서버별 내역이 WeeklySettlementLine 으로 분리되면서
+  /// 헤더의 서버 귀속 개념이 사라졌다. 신규 행은 항상 null. additive-only 원칙에
+  /// 따라 컬럼은 유지하되 신규 코드에서 사용 금지.
+  guildId      String?
   weekStart    DateTime
+  /// 주간 판매 수익 합계 (gross, 전 서버 합산 — #16 v1 은 TradeLog.price 합).
   salesRevenue BigInt   @default(0)
+  /// 산정된 총 세액 (전 서버 합산).
+  taxDue       BigInt   @default(0)
+  /// 실제 납부된 세액 — 현금 부족 시 taxDue 보다 작을 수 있다 (미납 가드, #16).
   taxPaid      BigInt   @default(0)
+  /// 미납 잔액 = taxDue - taxPaid. 신뢰도 패널티 연동은 #17 소관.
+  unpaidAmount BigInt   @default(0)
+  /// 정산 시점 총자산 평가 스냅샷 (U-2) — 누진 구간 판정 근거 감사용.
+  totalAssets  BigInt   @default(0)
+  /// 적용된 누진 기본세율 (1만분율 — 500~2000). 서버 가산세는 라인별 기록.
+  baseTaxBps   Int      @default(0)
   createdAt    DateTime @default(now())
 
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  user  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guild Guild?                 @relation(fields: [guildId], references: [id], onDelete: SetNull)
+  lines WeeklySettlementLine[]
 
   @@unique([userId, weekStart])
+  @@index([weekStart])
   @@index([guildId, weekStart])
+}
+
+/// 주간 정산의 서버별 과세 내역 한 줄 (#16, D-1 귀속 모델).
+/// 세율 = 누진 기본세율(유저 글로벌 자산) + 해당 서버 가산세(cap 40%).
+/// guildId=null 라인은 서버 밖(DM 등) 판매분 — 기본 세율로 과세하되 금고 적립 없음.
+/// 납부 배분: 현금 부족 시 guildId 오름차순 → null 라인 순서로 결정적 그리디 배분.
+model WeeklySettlementLine {
+  id           String   @id @default(cuid())
+  settlementId String
+  /// 판매가 발생한 서버 (TradeLog.guildId 승계). null = 서버 밖 판매분.
+  guildId      String?
+  /// 부모 헤더의 weekStart 복제 — 서버별 최근 정산 조회(/server vault)용 비정규화.
+  weekStart    DateTime
+  /// 이 서버에서 발생한 주간 판매 수익 (gross).
+  salesRevenue BigInt   @default(0)
+  /// 이 서버 몫 세액 (유효 세율 적용).
+  taxDue       BigInt   @default(0)
+  /// 실제 납부분 — guildId 가 있으면 같은 액수가 Guild.vault 로 적립된다.
+  taxPaid      BigInt   @default(0)
+  /// 적용된 유효 세율 (1만분율, 누진+가산 cap 40%) — 감사용 스냅샷.
+  appliedBps   Int      @default(0)
+
+  settlement WeeklySettlement @relation(fields: [settlementId], references: [id], onDelete: Cascade)
+  guild      Guild?           @relation("GuildSettlementLines", fields: [guildId], references: [id], onDelete: SetNull)
+
+  @@index([settlementId])
+  @@index([guildId, weekStart])
+}
+
+/// 서버×유저 일간 활동 기록 — Guild.weeklyDAU 집계 원천 (#16, #17 신뢰도 입력).
+/// 커맨드 성공(chatInputCommandSuccess) 시 upsert. date 는 KST 자정 경계의 UTC 순간.
+/// 주간 정산 잡이 distinct userId 수로 weeklyDAU 를 갱신한 뒤 2주 초과분을 정리한다.
+/// FK 없음 — best-effort 기록이 유저/길드 행 시드 여부·삭제에 좌우되지 않도록.
+model GuildDailyActivity {
+  id      String   @id @default(cuid())
+  guildId String
+  userId  String
+  date    DateTime
+
+  @@unique([guildId, userId, date])
+  @@index([guildId, date])
+  @@index([date])
 }
 
 /// 비활성 서버 자산 풀 (docs/07).

@@ -423,6 +423,72 @@
     },
     "expire": {
       "log": "expired {{count}} stale market listings"
+    },
+    "directbuy": {
+      "selectMaterial": {
+        "title": "자재 직구매",
+        "body": "구매할 자재를 선택하세요. 글로벌 시세의 **2배** 가격으로 즉시 구매돼요 (T1·T2 자재만).",
+        "placeholder": "자재를 선택하세요...",
+        "priceDesc": "개당 {{price}}원 (시세 ×2)"
+      },
+      "limitSummary": "오늘 남은 한도 **{{remaining}}/{{limit}}개** · 리셋 <t:{{resetUnix}}:R>",
+      "qtySelect": {
+        "title": "{{material}} — 구매 수량 선택",
+        "summary": "직구매 단가: 개당 **{{price}}원** (시세 ×2)",
+        "placeholder": "구매할 수량을 선택하세요...",
+        "presetOption": "{{count}}개",
+        "maxOption": "오늘 한도 전부 ({{count}}개)",
+        "customOption": "직접 입력",
+        "customOptionDesc": "구매 수량을 직접 입력"
+      },
+      "modal": {
+        "title": "{{material}} — 구매 수량 입력",
+        "quantityLabel": "수량",
+        "quantityPlaceholder": "예: 100",
+        "error": {
+          "invalidQuantity": "수량은 1 이상의 정수여야 해요 (최대 6자리)."
+        }
+      },
+      "confirm": {
+        "title": "{{material}} 직구매 확인",
+        "detail": "수량 **{{quantity}}개** × 개당 **{{price}}원** (시세 ×2) = **{{total}}원**",
+        "remainingAfter": "구매 후 남은 일일 한도: **{{remaining}}/{{limit}}개**",
+        "notice": "시세는 30분마다 변동돼요. 최종 결제는 체결 시점 가격 ×2로 계산돼요.",
+        "okBtn": "구매",
+        "cancelBtn": "취소"
+      },
+      "success": "📦 **{{material}}** {{quantity}}개를 직구매했어요.",
+      "footer": "개당 {{price}}원 (시세 ×2) · 총 {{total}}원 지불 · 오늘 남은 한도 {{remaining}}/{{limit}}개",
+      "stepCancelled": "구매를 취소했어요.",
+      "error": {
+        "invalidQuantity": "수량은 1 이상이어야 해요.",
+        "materialNotAllowed": "이 자재는 직구매할 수 없어요. T1·T2 자재만 구매할 수 있어요.",
+        "dailyLimitExceeded": "일일 구매 한도를 초과했어요. 남은 한도: {{remaining}}/{{limit}}개 · 리셋 <t:{{resetUnix}}:R>",
+        "dailyLimitExceededShort": "일일 구매 한도를 초과했어요. 남은 한도: {{remaining}}/{{limit}}개",
+        "insufficientMoney": "돈이 부족해요. 필요: {{required}}원 / 보유: {{have}}원",
+        "priceNotFound": "이 자재는 아직 글로벌 마켓 시세가 없어요.",
+        "limitReached": "오늘 구매 한도({{limit}}개)를 모두 사용했어요. 리셋 <t:{{resetUnix}}:R>"
+      }
+    }
+  },
+  "server": {
+    "vault": {
+      "title": "🏦 {{guildName}} 서버 금고",
+      "balance": "**금고 잔액:** {{balance}}원",
+      "surcharge": "**서버 가산세:** +{{surcharge}}%p",
+      "credit": "**신뢰도:** {{credit}} pt (증감 시스템은 준비 중이에요)",
+      "weeklyDau": "**주간 활성 유저:** {{dau}}명",
+      "settlement": {
+        "heading": "최근 주간 정산",
+        "summary": "<t:{{weekUnix}}:D> 시작 주 — 판매 수익 **{{revenue}}원** · 징수 세금 **{{taxPaid}}원** · 과세 유저 **{{users}}명**",
+        "unpaid": "미납 잔액: **{{unpaid}}원**",
+        "empty": "아직 정산 이력이 없어요. 매주 일요일 00:00(KST)에 정산돼요."
+      },
+      "footer": "세금은 매주 일요일 00:00 KST에 자산 누진세율로 정산돼 서버 금고에 적립돼요.",
+      "error": {
+        "guildOnly": "이 명령은 서버에서만 사용할 수 있어요.",
+        "notRegistered": "이 서버는 아직 등록되지 않았어요. `/setup`으로 시작해보세요."
+      }
     }
   }
 }

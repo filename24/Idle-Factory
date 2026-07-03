@@ -74,8 +74,11 @@ export const MarketSellService = {
    *  3. 창고 차감 → `currentPrice × qty` 지급.
    *  4. `recentSales += qty` — 다음 tick 의 demandFactor 입력. 공식상 윈도
    *     거래량이 EMA 를 웃돌면 가격 상승 요인이 된다 (docs/design/06-market.md
-   *     §가격 산출 공식 — 이슈 #15 의 "가격 하락 압력" 표현과 방향이 다르며,
-   *     부호 재검토는 #16 직구매 수요 반영과 함께 다룬다). Int4 상한에서 포화.
+   *     §가격 산출 공식 — 이슈 #15 의 "가격 하락 압력" 표현과 방향이 다름).
+   *     #16 확정: 직구매(DirectBuyService)도 부호 분리 없이 같은 recentSales 에
+   *     단일 누적한다 — recentSales 는 방향 없는 "거래 활동량" 신호로 두고 문서
+   *     공식을 유지한다. 판매(공급)/직구매(수요) 부호 분리 재설계는 밸런스
+   *     시뮬레이터(#31) 검증 이후로 이월. Int4 상한에서 포화.
    *  5. `TradeLog` 기록 — kind=MARKET_SELL, toUserId=null·price>0 (글로벌 판매
    *     규약). price=0 인 취소/만료 회수와 구분된다 (schema `TradeLog` 주석).
    *  6. 판매 XP +20 지급 (docs/design/09-level-xp.md §이벤트별 XP "마켓 판매
