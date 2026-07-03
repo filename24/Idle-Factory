@@ -470,5 +470,25 @@
         "limitReached": "You have used today's purchase limit ({{limit}}). Resets <t:{{resetUnix}}:R>"
       }
     }
+  },
+  "server": {
+    "vault": {
+      "title": "🏦 {{guildName}} Server Vault",
+      "balance": "**Vault balance:** {{balance}}",
+      "surcharge": "**Server surcharge:** +{{surcharge}}%p",
+      "credit": "**Credit:** {{credit}} pt (credit system coming soon)",
+      "weeklyDau": "**Weekly active users:** {{dau}}",
+      "settlement": {
+        "heading": "Latest weekly settlement",
+        "summary": "Week of <t:{{weekUnix}}:D> — sales revenue **{{revenue}}** · tax collected **{{taxPaid}}** · **{{users}}** taxed users",
+        "unpaid": "Unpaid balance: **{{unpaid}}**",
+        "empty": "No settlement history yet. Settlements run every Sunday 00:00 KST."
+      },
+      "footer": "Taxes settle every Sunday 00:00 KST with progressive asset rates and are deposited into the server vault.",
+      "error": {
+        "guildOnly": "This command can only be used in a server.",
+        "notRegistered": "This server is not registered yet. Try `/setup` to get started."
+      }
+    }
   }
 }

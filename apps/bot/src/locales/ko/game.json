@@ -470,5 +470,25 @@
         "limitReached": "오늘 구매 한도({{limit}}개)를 모두 사용했어요. 리셋 <t:{{resetUnix}}:R>"
       }
     }
+  },
+  "server": {
+    "vault": {
+      "title": "🏦 {{guildName}} 서버 금고",
+      "balance": "**금고 잔액:** {{balance}}원",
+      "surcharge": "**서버 가산세:** +{{surcharge}}%p",
+      "credit": "**신뢰도:** {{credit}} pt (증감 시스템은 준비 중이에요)",
+      "weeklyDau": "**주간 활성 유저:** {{dau}}명",
+      "settlement": {
+        "heading": "최근 주간 정산",
+        "summary": "<t:{{weekUnix}}:D> 시작 주 — 판매 수익 **{{revenue}}원** · 징수 세금 **{{taxPaid}}원** · 과세 유저 **{{users}}명**",
+        "unpaid": "미납 잔액: **{{unpaid}}원**",
+        "empty": "아직 정산 이력이 없어요. 매주 일요일 00:00(KST)에 정산돼요."
+      },
+      "footer": "세금은 매주 일요일 00:00 KST에 자산 누진세율로 정산돼 서버 금고에 적립돼요.",
+      "error": {
+        "guildOnly": "이 명령은 서버에서만 사용할 수 있어요.",
+        "notRegistered": "이 서버는 아직 등록되지 않았어요. `/setup`으로 시작해보세요."
+      }
+    }
   }
 }
