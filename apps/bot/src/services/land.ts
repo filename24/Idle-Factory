@@ -1,9 +1,13 @@
-import type { PrismaClient } from '@idle/database'
+import type { FactoryType, PrismaClient } from '@idle/database'
 import {
+  canPlace,
+  getOccupiedCells,
   LAND_MAX_HEIGHT,
   LAND_MAX_WIDTH,
   landExpansionCost,
-  landExpansionLevelRequirement
+  landExpansionLevelRequirement,
+  moveCost,
+  type SlotState
 } from '@idle/game-core'
 import { runInTx, ServiceError, type Tx } from './base'
 import { createLandWithSlots } from './user'
@@ -242,6 +246,156 @@ export const LandService = {
         remainingMoney: user.money - cost
       }
     })
+  },
+
+  /**
+   * 공장 1개를 **같은 토지 구역 내** 다른 위치로 이동한다 (docs/design/11-land.md §공장 이동).
+   *
+   * 설계 확정 사항:
+   * - **비용 = 해당 공장 신축비의 25%** (`moveCost`, docs/11-land.md §공장 이동 · 철거 표).
+   * - **구역 간 이동 불가** — 목적지는 대상 공장이 이미 속한 토지(`landId`) 내부로만 제한한다.
+   *   (구역 간 이동은 설계 미정이므로 같은 `landId` 로 한정. docs/11-land.md §공장 이동 "같은 토지 구역 내 빈 슬롯으로만".)
+   * - **등급·내용물·생산 연속성 유지** — 앵커 좌표만 갱신하고 `lastHarvestAt` 은 건드리지 않는다.
+   *   (docs/11-land.md §공장 이동 "등급·내용물 유지". tick 누적이 초기화되지 않도록 '유지'로 확정.)
+   * - **시너지·특수 슬롯 보너스는 수확 시 재계산** — `harvest.ts` 가 매 수확마다 현재 좌표·슬롯으로
+   *   `computeLandSynergies` / `getSpecialSlotBonus` 를 다시 계산하므로 이동 후 별도 갱신이 필요 없다.
+   *
+   * 검증 순서:
+   *  1. 목적지 좌표가 4×4 물리 범위 내 정수인지
+   *  2. 대상 토지 존재 + 호출자 소유
+   *  3. 대상 공장 존재 + 호출자 소유 + 이 토지 소속(구역 간 이동 차단)
+   *  4. 목적지가 현재 위치와 다른지 (`MOVE_SAME_POSITION`)
+   *  5. 자기 자신 점유 셀을 비운 가상 상태에서 배치 가능한지 (T3 2×2 전체 경계·잠금·점유 검증)
+   *  6. 자금이 이동 비용 이상인지
+   *
+   * 성공 시: 자금 차감 → 기존 점유 셀 해제 → 목적지 셀 점유(T3 는 4셀 동반) → 공장 앵커 갱신.
+   *
+   * @returns 이동 결과 요약
+   */
+  async moveFactory(
+    prisma: PrismaClient,
+    input: MoveFactoryInput
+  ): Promise<MoveFactoryResult> {
+    const { userId, landIndex, factoryId, toX, toY } = input
+
+    if (
+      !Number.isInteger(toX) ||
+      !Number.isInteger(toY) ||
+      toX < 0 ||
+      toY < 0 ||
+      toX >= LAND_MAX_WIDTH ||
+      toY >= LAND_MAX_HEIGHT
+    ) {
+      throw new ServiceError(
+        'OUT_OF_BOUNDS',
+        `destination (${toX}, ${toY}) outside ${LAND_MAX_WIDTH}×${LAND_MAX_HEIGHT} grid`
+      )
+    }
+
+    return runInTx(prisma, async (tx) => {
+      const land = await tx.land.findUnique({
+        where: { userId_index: { userId, index: landIndex } },
+        include: { slots: true }
+      })
+      if (!land) throw new ServiceError('LAND_NOT_FOUND')
+
+      const factory = await tx.factory.findUnique({ where: { id: factoryId } })
+      // 존재하지 않거나 남의 공장이면 이동 불가. 창고 등 공장이 아닌 대상도 여기서 걸러진다.
+      if (!factory || factory.userId !== userId) {
+        throw new ServiceError('FACTORY_NOT_FOUND')
+      }
+      // 구역 간 이동 차단 — 대상 공장은 반드시 이 토지에 속해야 한다.
+      if (factory.landId !== land.id) {
+        throw new ServiceError('FACTORY_NOT_FOUND')
+      }
+
+      const fromX = factory.anchorX
+      const fromY = factory.anchorY
+      if (toX === fromX && toY === fromY) {
+        throw new ServiceError('MOVE_SAME_POSITION')
+      }
+
+      // 이동 대상 공장이 지금 점유한 셀을 비운 가상 슬롯 상태로 배치 검증.
+      // (T3 를 자기 자리와 겹치는 위치로 밀어 넣는 경우도 자기 점유는 장애물이 아니어야 함.)
+      const virtualSlots: SlotState[] = land.slots.map((s) => ({
+        x: s.x,
+        y: s.y,
+        type: s.type,
+        locked: s.locked,
+        factoryId: s.factoryId === factoryId ? null : s.factoryId
+      }))
+
+      const placement = canPlace({
+        landWidth: land.width,
+        landHeight: land.height,
+        slots: virtualSlots,
+        type: factory.type,
+        anchorX: toX,
+        anchorY: toY
+      })
+      if (!placement.ok) {
+        switch (placement.reason) {
+          case 'OUT_OF_BOUNDS':
+            throw new ServiceError('OUT_OF_BOUNDS')
+          case 'LOCKED':
+            throw new ServiceError('SLOT_LOCKED')
+          case 'OCCUPIED':
+          case 'OVERLAP':
+          default:
+            throw new ServiceError('SLOT_OCCUPIED')
+        }
+      }
+
+      const cost = moveCost(factory.type)
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        select: { money: true }
+      })
+      if (!user) throw new ServiceError('USER_NOT_FOUND')
+      if (user.money < cost) {
+        throw new ServiceError('INSUFFICIENT_MONEY', undefined, {
+          required: cost.toString(),
+          have: user.money.toString()
+        })
+      }
+
+      await tx.user.update({
+        where: { id: userId },
+        data: { money: { decrement: cost } }
+      })
+
+      // 기존 점유 셀 전부 해제 후 목적지 셀 점유. factoryId 기준으로 지워 데이터 드리프트에도 견고.
+      await tx.slot.updateMany({
+        where: { landId: land.id, factoryId },
+        data: { factoryId: null }
+      })
+      const newCells = getOccupiedCells(toX, toY, factory.width, factory.height)
+      await tx.slot.updateMany({
+        where: {
+          landId: land.id,
+          OR: newCells.map((c) => ({ x: c.x, y: c.y }))
+        },
+        data: { factoryId }
+      })
+
+      // 앵커 좌표만 갱신 — lastHarvestAt 은 유지(생산 연속성).
+      await tx.factory.update({
+        where: { id: factoryId },
+        data: { anchorX: toX, anchorY: toY }
+      })
+
+      return {
+        landIndex,
+        factoryId,
+        type: factory.type,
+        fromX,
+        fromY,
+        toX,
+        toY,
+        cost,
+        remainingMoney: user.money - cost
+      }
+    })
   }
 } as const
 
@@ -259,6 +413,31 @@ export interface ExpandSlotResult {
   readonly x: number
   readonly y: number
   readonly order: number
+  readonly cost: bigint
+  readonly remainingMoney: bigint
+}
+
+/** `/land move` 입력 — 이동할 공장과 목적지 앵커 좌표. */
+export interface MoveFactoryInput {
+  readonly userId: string
+  /** 대상 공장이 속한 토지 번호 (구역 간 이동 차단에 사용). */
+  readonly landIndex: number
+  readonly factoryId: string
+  /** 목적지 앵커 X (0-based, 좌상단). */
+  readonly toX: number
+  /** 목적지 앵커 Y (0-based, 좌상단). */
+  readonly toY: number
+}
+
+/** `/land move` 성공 결과 — 이동 전/후 좌표와 비용. */
+export interface MoveFactoryResult {
+  readonly landIndex: number
+  readonly factoryId: string
+  readonly type: FactoryType
+  readonly fromX: number
+  readonly fromY: number
+  readonly toX: number
+  readonly toY: number
   readonly cost: bigint
   readonly remainingMoney: bigint
 }

@@ -101,7 +101,9 @@
       "move": "이동",
       "destroy": "철거",
       "expand": "확장",
-      "moveNotImplemented": "↔️ 공장 이동은 준비 중이에요 (docs/11-land.md §공장 이동 · 철거).",
+      "movePickTitle": "↔️ 이동할 공장을 선택하세요",
+      "movePickPlaceholder": "공장 선택",
+      "movePickEmpty": "이 토지에 이동할 공장이 없어요. 먼저 `[건설]`로 공장을 지어보세요.",
       "buildPickTitle": "🏗️ 건설할 빈 셀을 선택하세요",
       "buildPickPlaceholder": "빈 셀 좌표 선택",
       "buildPickEmpty": "현재 활성 영역에 비어있는 셀이 없어요. `/land expand` 로 슬롯을 확장해보세요.",
@@ -126,6 +128,7 @@
     },
     "buy": {
       "success": "{{index}}번째 토지를 구매했어요! (-{{cost}} 💰, 잔액 {{remaining}} 💰, 보유 {{total}}개)",
+      "hintNext": "👉 다음에 구매 가능한 토지 번호는 {{index}}번이에요.",
       "error": {
         "maxLands": "이미 최대 {{max}}개의 토지를 보유 중이에요.",
         "alreadyExists": "해당 번호의 토지는 이미 존재해요.",
@@ -139,6 +142,25 @@
         "alreadyUnlocked": "이미 활성화된 슬롯이에요.",
         "levelLocked": "이 슬롯은 레벨 {{level}}부터 확장할 수 있어요.",
         "insufficientMoney": "슬롯 확장에 필요한 자금이 부족해요. 필요: {{required}} 💰"
+      }
+    },
+    "move": {
+      "destTitle": "↔️ {{emoji}} {{type}} 이동 — 목적지 선택",
+      "destBody": "이동 비용 **{{cost}} 💰** · 등급·내용물은 그대로 유지돼요.",
+      "destPlaceholder": "목적지 슬롯 선택",
+      "destEmpty": "이동할 수 있는 빈 공간이 없어요. 슬롯을 확장하거나 다른 공장을 철거해보세요.",
+      "confirmTitle": "↔️ {{emoji}} {{type}} 이동 확인",
+      "confirmBody": "({{fromX}}, {{fromY}}) → ({{toX}}, {{toY}})\n이동 비용 **{{cost}} 💰** 를 지불할까요?",
+      "confirmYes": "이동",
+      "confirmCancel": "취소",
+      "cancelled": "이동을 취소했어요.",
+      "success": "↔️ {{emoji}} {{type}} 공장을 ({{fromX}}, {{fromY}}) → ({{toX}}, {{toY}})(으)로 이동했어요! (-{{cost}} 💰, 잔액 {{remaining}} 💰)",
+      "error": {
+        "outOfBounds": "목적지가 토지 범위를 벗어났어요.",
+        "slotLocked": "목적지에 아직 잠긴 슬롯이 있어요. 먼저 `[확장]`으로 해금하세요.",
+        "slotOccupied": "목적지가 이미 다른 공장에 점유돼 있어요.",
+        "samePosition": "공장이 이미 그 자리에 있어요.",
+        "insufficientMoney": "이동 비용이 부족해요. 필요: {{required}} 💰"
       }
     }
   },
