@@ -9,9 +9,9 @@
  * - build    → `buildEmptyCellPickSelectPayload` (활성 빈 셀 선택)
  * - destroy  → `buildFactoryPickSelectPayload` (설치된 공장 선택)
  * - expand   → `buildLockedSlotPickSelectPayload` (잠긴 슬롯 선택)
- * - move     → 준비 중 안내 (Phase 2+ 스코프)
+ * - move     → `buildMoveFactoryPickSelectPayload` (이동할 공장 선택 → 목적지 → 확인)
  *
- * 참조: `docs/design/11-land.md` §Discord 시각화.
+ * 참조: `docs/design/11-land.md` §Discord 시각화, §공장 이동.
  */
 
 import {
@@ -30,6 +30,7 @@ import {
   buildLockedSlotPickSelectPayload,
   type LandControlAction
 } from '../../commands/game/land'
+import { buildMoveFactoryPickSelectPayload } from '../../commands/game/landMove'
 import {
   assertInteractionOwner,
   parseOwnerPrefixedCustomId
@@ -89,19 +90,6 @@ export class LandControlButtonHandler extends InteractionHandler {
       return
     }
 
-    if (action === 'move') {
-      await interaction.editReply({
-        components: [
-          simpleContainer(
-            V2_ACCENT.info,
-            undefined,
-            t('game:land.control.moveNotImplemented')
-          )
-        ]
-      })
-      return
-    }
-
     const land = await db.land.findUnique({
       where: { userId_index: { userId, index: landIndex } },
       include: { slots: true }
@@ -116,6 +104,20 @@ export class LandControlButtonHandler extends InteractionHandler {
           )
         ]
       })
+      return
+    }
+
+    if (action === 'move') {
+      const factories = await this.loadPlacedFactories(land.slots)
+      const payload = buildMoveFactoryPickSelectPayload({
+        ownerId: userId,
+        landIndex,
+        factories,
+        t
+      })
+      await interaction.editReply(
+        payload as Parameters<typeof interaction.editReply>[0]
+      )
       return
     }
 
@@ -163,24 +165,7 @@ export class LandControlButtonHandler extends InteractionHandler {
     }
 
     if (action === 'destroy') {
-      const factoryIds = [
-        ...new Set(
-          land.slots.filter((s) => s.factoryId).map((s) => s.factoryId!)
-        )
-      ]
-      const factories =
-        factoryIds.length === 0
-          ? []
-          : await db.factory.findMany({
-              where: { id: { in: factoryIds } },
-              select: {
-                id: true,
-                type: true,
-                grade: true,
-                anchorX: true,
-                anchorY: true
-              }
-            })
+      const factories = await this.loadPlacedFactories(land.slots)
       const payload = buildFactoryPickSelectPayload({
         ownerId: userId,
         landIndex,
@@ -192,5 +177,33 @@ export class LandControlButtonHandler extends InteractionHandler {
       )
       return
     }
+  }
+
+  /**
+   * 토지 슬롯 점유 정보에서 설치된 공장 목록을 조회한다 (move/destroy pick UI 공용).
+   *
+   * 슬롯의 `factoryId` 를 중복 제거해 모은 뒤 select 최소 필드로 일괄 조회한다.
+   */
+  private async loadPlacedFactories(
+    slots: ReadonlyArray<{ factoryId: string | null }>
+  ) {
+    const factoryIds = [
+      ...new Set(
+        slots
+          .filter((s): s is { factoryId: string } => s.factoryId !== null)
+          .map((s) => s.factoryId)
+      )
+    ]
+    if (factoryIds.length === 0) return []
+    return this.container.db.factory.findMany({
+      where: { id: { in: factoryIds } },
+      select: {
+        id: true,
+        type: true,
+        grade: true,
+        anchorX: true,
+        anchorY: true
+      }
+    })
   }
 }

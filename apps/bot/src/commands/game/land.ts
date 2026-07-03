@@ -1052,12 +1052,37 @@ export class LandCommand extends Command {
         default:
           body = t('game:common.error.unknown')
       }
+      // 잘못된 번호/중복으로 실패하면 실제 다음 구매 가능 번호를 덧붙여 안내한다 (UX).
+      if (
+        err.code === 'INVALID_LAND_INDEX' ||
+        err.code === 'LAND_ALREADY_EXISTS'
+      ) {
+        const hint = await this.nextBuyableHint(interaction.user.id, t)
+        if (hint) body = `${body}\n${hint}`
+      }
     } else {
       body = t('game:common.error.unknown')
     }
     return interaction.editReply({
       components: [simpleContainer(V2_ACCENT.warn, undefined, body)]
     })
+  }
+
+  /**
+   * 유저의 다음 구매 가능 토지 번호 안내 문구. 이미 최대(5개)면 null.
+   *
+   * 다음 번호 = 현재 보유 토지 수 + 1 (index 연속성, docs/design/11-land.md).
+   */
+  private async nextBuyableHint(
+    userId: string,
+    t: TFunction
+  ): Promise<string | null> {
+    const owned = await this.container.db.land.count({ where: { userId } })
+    const nextIndex = owned + 1
+    if (nextIndex < MIN_BUYABLE_INDEX || nextIndex > MAX_BUYABLE_INDEX) {
+      return null
+    }
+    return t('game:land.buy.hintNext', { index: nextIndex })
   }
 
   public override registerApplicationCommands(registry: Command.Registry) {

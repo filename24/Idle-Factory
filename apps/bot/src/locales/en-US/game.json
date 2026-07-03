@@ -101,7 +101,9 @@
       "move": "Move",
       "destroy": "Destroy",
       "expand": "Expand",
-      "moveNotImplemented": "↔️ Factory move is not yet implemented (docs/11-land.md §Move · Destroy).",
+      "movePickTitle": "↔️ Pick a factory to move",
+      "movePickPlaceholder": "Choose a factory",
+      "movePickEmpty": "No factories to move on this land. Build one with `[Build]` first.",
       "buildPickTitle": "🏗️ Pick an empty cell to build on",
       "buildPickPlaceholder": "Choose an empty cell",
       "buildPickEmpty": "No empty cells in active area. Try `/land expand` to unlock more slots.",
@@ -134,11 +136,31 @@
     },
     "buy": {
       "success": "Bought land #{{index}}! (-{{cost}} 💰, balance {{remaining}} 💰, total {{total}} lands)",
+      "hintNext": "👉 Your next buyable land is #{{index}}.",
       "error": {
         "maxLands": "You already own the maximum of {{max}} lands.",
         "alreadyExists": "You already own that land.",
         "invalidIndex": "Land index must be between {{min}} and {{max}}. Buy them in order.",
         "insufficientMoney": "Not enough money to buy this land."
+      }
+    },
+    "move": {
+      "destTitle": "↔️ Move {{emoji}} {{type}} — pick destination",
+      "destBody": "Move cost **{{cost}} 💰** · Grade & contents are preserved.",
+      "destPlaceholder": "Choose a destination slot",
+      "destEmpty": "No free space to move to. Expand slots or destroy another factory first.",
+      "confirmTitle": "↔️ Confirm moving {{emoji}} {{type}}",
+      "confirmBody": "({{fromX}}, {{fromY}}) → ({{toX}}, {{toY}})\nPay **{{cost}} 💰** to move?",
+      "confirmYes": "Move",
+      "confirmCancel": "Cancel",
+      "cancelled": "Move cancelled.",
+      "success": "↔️ Moved {{emoji}} {{type}} from ({{fromX}}, {{fromY}}) to ({{toX}}, {{toY}})! (-{{cost}} 💰, balance {{remaining}} 💰)",
+      "error": {
+        "outOfBounds": "Destination is out of bounds.",
+        "slotLocked": "Destination has a locked slot. Unlock it with `[Expand]` first.",
+        "slotOccupied": "Destination is already occupied by another factory.",
+        "samePosition": "The factory is already there.",
+        "insufficientMoney": "Not enough money to move. Need: {{required}} 💰"
       }
     }
   },

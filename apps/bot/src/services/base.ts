@@ -6,6 +6,7 @@ import { Prisma, PrismaClient } from '@idle/database'
  * - `MAX_LANDS`: 유저가 이미 최대 5개 토지를 보유 (docs/design/11-land.md).
  * - `LAND_ALREADY_EXISTS`: 구매하려는 index의 토지가 이미 존재.
  * - `INVALID_LAND_INDEX`: 구매 대상 index가 유효 범위(2..5)를 벗어났거나 연속성 조건 위반.
+ * - `MOVE_SAME_POSITION`: 공장 이동 목적지가 현재 위치와 동일 (docs/design/11-land.md §공장 이동).
  */
 export type ServiceErrorCode =
   | 'USER_NOT_FOUND'
@@ -23,6 +24,7 @@ export type ServiceErrorCode =
   | 'LAND_ALREADY_EXISTS'
   | 'INVALID_LAND_INDEX'
   | 'LAND_NOT_FOUND'
+  | 'MOVE_SAME_POSITION'
   // 퀘스트
   | 'QUEST_NOT_FOUND'
   | 'QUEST_NOT_COMPLETED'
