@@ -110,6 +110,9 @@ export function resolveMarketErrorMessage(
     }
     case 'USER_NOT_FOUND':
       return t('game:common.error.userNotFound')
+    // 서버 신뢰도 < 700 → 유저 상점 등록 차단 (#17, 07 §신뢰도 효과).
+    case 'CREDIT_LISTING_BLOCKED':
+      return t('game:market.list.error.creditBlocked')
     default:
       return t('game:common.error.unknown')
   }

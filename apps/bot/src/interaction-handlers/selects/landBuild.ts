@@ -92,7 +92,8 @@ export class LandBuildTypeSelectHandler extends InteractionHandler {
         landIndex: data.landIndex,
         type: data.value as FactoryType,
         anchorX: data.x,
-        anchorY: data.y
+        anchorY: data.y,
+        guildId: interaction.guildId
       })
       await this.refreshGrid(interaction, data.landIndex, t)
       if (quest.newlyCompleted.length > 0) {
@@ -169,6 +170,12 @@ function resolveBuildErrorBody(
       return t('game:factory.build.error.insufficientMaterial', {
         amount,
         material: materialLabel
+      })
+    }
+    case 'CREDIT_RESTRICTED': {
+      const d = (err.details ?? {}) as { credit?: number | null }
+      return t('game:common.error.creditRestricted', {
+        credit: d.credit ?? '?'
       })
     }
     case 'SLOT_OCCUPIED':
