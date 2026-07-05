@@ -41,7 +41,10 @@
       "confirmYes": "Destroy",
       "confirmCancel": "Cancel",
       "success": "🧨 {{emoji}} {{type}} factory destroyed. (+{{refund}} 💰, balance {{remaining}} 💰)",
-      "cancelled": "Destruction cancelled."
+      "cancelled": "Destruction cancelled.",
+      "error": {
+        "listed": "You can't destroy a listed factory — shareholders would lose their shares. (Delisting isn't supported yet.)"
+      }
     }
   },
   "harvest": {
@@ -489,6 +492,60 @@
         "guildOnly": "This command can only be used in a server.",
         "notRegistered": "This server is not registered yet. Try `/setup` to get started."
       }
+    }
+  },
+  "stock": {
+    "ipo": {
+      "success": "📈 Listed your **{{factory}}** as a stock!",
+      "priceInfo": "Base **{{base}}** · Desired {{requested}} · Final **{{final}}**",
+      "clampedNote": "-# Your desired price {{requested}} was outside the allowed band (30–70% of base) and was adjusted to {{final}}.",
+      "footer": "{{shares}} shares issued · IPO price {{price}} per share",
+      "error": {
+        "priceOutOfRange": "The IPO price must be at least 1.",
+        "factoryNotFound": "That factory isn't yours or could not be found.",
+        "alreadyListed": "This factory is already listed.",
+        "conditionNotMet": "You don't meet the listing requirements yet:\n{{failures}}",
+        "condition": {
+          "LEVEL": "• Level 25 or higher",
+          "FACTORY_COUNT": "• Own at least 5 factories",
+          "TOTAL_ASSETS": "• Total assets of 100,000,000 or more",
+          "RECENT_30D_TRADES": "• At least 10 trades in the last 30 days"
+        }
+      }
+    },
+    "buy": {
+      "success": "📥 Bought {{shares}} shares of {{stock}}.",
+      "footer": "Filled at {{price}} per share · Total {{total}} · Holding {{holding}} (avg {{avg}})",
+      "error": {
+        "floatExhausted": "Not enough shares available. The tradable float is exhausted.",
+        "insufficientMoney": "Not enough money. Need: {{required}} / Have: {{have}}"
+      }
+    },
+    "sell": {
+      "success": "📤 Sold {{shares}} shares of {{stock}}.",
+      "footer": "Filled at {{price}} per share · Received {{total}} · {{remaining}} shares left",
+      "levelUp": "🎉 Level up! You're now **Lv.{{level}}**. (+{{xp}} XP)",
+      "error": {
+        "insufficientShares": "Not enough shares. Requested: {{requested}} / Have: {{have}}"
+      }
+    },
+    "info": {
+      "title": "{{factory}} Stock",
+      "priceLine": "**Price:** {{price}}  {{trend}} {{change}}",
+      "sparkLine": "-# Last 24h: `{{spark}}`",
+      "sparkEmpty": "-# No price history yet.",
+      "holdingLine": "**Your shares:** {{shares}} / {{outstanding}} ({{percent}})",
+      "avgLine": "**Avg buy price:** {{avg}}",
+      "pnlLine": "**Unrealized P&L:** {{pnl}}  {{pnlTrend}} {{pnlChange}}",
+      "noHolding": "-# You don't hold this stock.",
+      "footer": "{{outstanding}} issued · {{held}} held · listed <t:{{listedUnix}}:R>"
+    },
+    "error": {
+      "notFound": "That stock could not be found.",
+      "selfTrade": "You can't trade a stock you listed yourself.",
+      "levelGate": "Stock trading unlocks at level {{required}}. (Currently Lv.{{level}})",
+      "rateLimited": "You're trading too frequently. Please try again shortly. (max {{max}}/hour)",
+      "invalidQuantity": "Quantity must be an integer of at least 1."
     }
   }
 }

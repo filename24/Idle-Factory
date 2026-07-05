@@ -28,12 +28,27 @@ export interface FactoryHarvestSummary {
   readonly consumed: MaterialBag
 }
 
+/**
+ * 상장 공장 수확 수익 적립 한 건 (D8, #18).
+ *
+ * 상장된 공장이 수확되면 `수확 수량 × 글로벌 현재가` 평가액을
+ * `Stock.weeklyProfit` 에 누적하고 `StockProfitLog` 행을 남긴 결과 스냅샷.
+ */
+export interface StockProfitAccrual {
+  readonly stockId: string
+  readonly factoryId: string
+  /** 적립된 평가액 (Σ 수확 수량 × 글로벌 현재가). */
+  readonly amount: bigint
+}
+
 export interface HarvestAllResult {
   readonly factories: FactoryHarvestSummary[]
   readonly xpGained: bigint
   readonly newLevel: number
   readonly leveledUp: boolean
   readonly quest: QuestProgressResult
+  /** 상장 공장의 주간 수익 적립 내역 (D8) — 상장 공장이 없으면 빈 배열. */
+  readonly stockProfits: readonly StockProfitAccrual[]
 }
 
 async function applyMaterialDelta(
@@ -316,6 +331,86 @@ async function harvestWhere(
       })
     }
 
-    return { factories: summaries, xpGained, newLevel, leveledUp, quest }
+    // 상장 공장 주간 수익 적립 (D8, #18) — 동일 트랜잭션.
+    const stockProfits = await accrueStockProfits(tx, summaries)
+
+    return {
+      factories: summaries,
+      xpGained,
+      newLevel,
+      leveledUp,
+      quest,
+      stockProfits
+    }
   })
+}
+
+/**
+ * 상장된 공장의 수확 수익을 적립한다 (D8, docs/design/08-stock.md §배당 시스템
+ * 재원 — 마스터플랜 "수확·판매 시 수익 적립 경로": 판매 귀속은 창고에서 자재가
+ * 섞여 불가하므로 **수확 시점 평가액**으로 적립한다).
+ *
+ * 수확된 공장 중 상장(Stock 존재) 공장만 대상으로,
+ * `Δ = Σ(수확 수량 × 글로벌 현재가)` 를 `Stock.weeklyProfit += Δ` 에 누적하고
+ * `StockProfitLog` 행을 삽입한다 — 주가 tick 의 last24hProfit/avg7dProfit
+ * 집계(D9)와 배당 재원이 이 로그·컬럼을 읽는다.
+ *
+ * 시세가 없는 자재(방어 경로)는 0 으로 평가한다 (evaluateTotalAssets 관례).
+ * 평가액이 0 이면 로그를 남기지 않는다.
+ */
+async function accrueStockProfits(
+  tx: Tx,
+  summaries: readonly FactoryHarvestSummary[]
+): Promise<readonly StockProfitAccrual[]> {
+  if (summaries.length === 0) return []
+
+  const stocks = await tx.stock.findMany({
+    where: { factoryId: { in: summaries.map((s) => s.factoryId) } },
+    select: { id: true, factoryId: true }
+  })
+  if (stocks.length === 0) return []
+
+  // 상장 공장의 생산 자재만 모아 시세를 1회 배치 조회 (N+1 방지).
+  const stockByFactory = new Map(stocks.map((s) => [s.factoryId, s.id]))
+  const listedSummaries = summaries.filter((s) =>
+    stockByFactory.has(s.factoryId)
+  )
+  const materials = [
+    ...new Set(
+      listedSummaries.flatMap((s) => Object.keys(s.produced) as MaterialType[])
+    )
+  ]
+  const priceRows = await tx.globalMarketPrice.findMany({
+    where: { material: { in: materials } },
+    select: { material: true, currentPrice: true }
+  })
+  const prices = new Map<MaterialType, bigint>(
+    priceRows.map((r) => [r.material as MaterialType, r.currentPrice])
+  )
+
+  const accruals: StockProfitAccrual[] = []
+  for (const summary of listedSummaries) {
+    const stockId = stockByFactory.get(summary.factoryId)
+    if (!stockId) continue
+
+    let amount = 0n
+    for (const [mat, qty] of Object.entries(summary.produced) as Array<
+      [MaterialType, bigint]
+    >) {
+      if (!qty || qty <= 0n) continue
+      amount += qty * (prices.get(mat) ?? 0n)
+    }
+    if (amount <= 0n) continue
+
+    await tx.stock.update({
+      where: { id: stockId },
+      data: { weeklyProfit: { increment: amount } }
+    })
+    await tx.stockProfitLog.create({
+      data: { stockId, amount }
+    })
+    accruals.push({ stockId, factoryId: summary.factoryId, amount })
+  }
+
+  return accruals
 }

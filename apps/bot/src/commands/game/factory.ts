@@ -294,6 +294,8 @@ export class FactoryCommand extends Command {
         return t('game:common.error.userNotFound')
       case 'FACTORY_NOT_FOUND':
         return t('game:common.error.factoryNotFound')
+      case 'FACTORY_LISTED':
+        return t('game:factory.destroy.error.listed')
       case 'WAREHOUSE_FULL':
         return t('game:common.error.warehouseFull')
       case 'INSUFFICIENT_MONEY': {

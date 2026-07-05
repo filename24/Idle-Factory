@@ -188,6 +188,58 @@ export async function recordDirectBuyTrade(
 }
 
 /**
+ * 주식 거래 TradeLog 한 건 입력 (#18).
+ *
+ * 방향 규약 (D3 — 매매 상대는 시스템, 유저 간 호가창 없음):
+ *  - 매수/매도(STOCK_BUY/STOCK_SELL): fromUserId=거래 유저, toUserId=null(시스템),
+ *    amount=주수, price=총액. rate limit(1시간 6회, D11)과 주가 tick 수급
+ *    집계(D9)가 `[stockId, kind, createdAt]` 인덱스로 이 행을 센다.
+ *  - 배당(DIVIDEND): fromUserId=null(시스템), toUserId=수령 유저, amount=보유
+ *    주수, price=지급액 (docs/design/08-stock.md §배당 시스템).
+ */
+export interface StockTradeLogInput {
+  /** 거래 유저 id. 배당(DIVIDEND)은 null(시스템 지급). */
+  readonly fromUserId: string | null
+  /** 상대 유저 id. 매수/매도는 null(시스템 상대), 배당은 수령 유저. */
+  readonly toUserId: string | null
+  /** 대상 종목 id. */
+  readonly stockId: string
+  /** 거래 종류. */
+  readonly kind: 'STOCK_BUY' | 'STOCK_SELL' | 'DIVIDEND'
+  /** 주수. */
+  readonly amount: bigint
+  /** 총액(매수 지불액 / 매도 수령액 / 배당 지급액). */
+  readonly price: bigint
+  /** 활동 서버 snowflake. 없거나 미시드/탈퇴 서버면 가드가 null 로 낮춘다. */
+  readonly guildId: string | null
+}
+
+/**
+ * 주식 거래 TradeLog 한 건을 기록한다 (kind=STOCK_BUY/STOCK_SELL/DIVIDEND, #18).
+ *
+ * `recordMarketTrade` 와 동일한 Guild FK 가드를 거친다 — 통계/사기 로그 실패가
+ * 실거래 트랜잭션을 깨선 안 되기 때문(best-effort 귀속). material 은 주식
+ * 거래에 해당 없음이라 null 고정 (schema `TradeLog.stockId` 주석).
+ */
+export async function recordStockTrade(
+  tx: Tx,
+  input: StockTradeLogInput
+): Promise<void> {
+  const safeGuildId = await resolveGuildFk(tx, input.guildId)
+  await tx.tradeLog.create({
+    data: {
+      fromUserId: input.fromUserId,
+      toUserId: input.toUserId,
+      guildId: safeGuildId,
+      kind: input.kind,
+      stockId: input.stockId,
+      amount: input.amount,
+      price: input.price
+    }
+  })
+}
+
+/**
  * guildId 가 실제 Guild 행을 가리킬 때만 그대로, 아니면 null 을 반환한다(FK 방어).
  *
  * 주의: check-then-insert 사이에 Guild 행이 하드 삭제되면 여전히 FK 위반(P2003,
