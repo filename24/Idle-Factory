@@ -1,36 +1,34 @@
+import { Glow } from '@/components/ui/Glow'
+
 /** 경제 시스템 소개 섹션 */
 export function EconomySection() {
   return (
-    <section className="border-b border-[var(--color-border)]">
-      <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
+    <section className="border-hairline relative overflow-hidden border-b">
+      <Glow tone="green" />
+      <div className="mx-auto max-w-6xl px-4 py-24 sm:px-6 sm:py-32">
         <div className="grid gap-16 lg:grid-cols-2 lg:items-start lg:gap-20">
           {/* 텍스트 */}
           <div>
-            <div className="mb-2 text-[10px] tracking-[0.25em] text-[var(--color-gold)] uppercase">
+            <div className="text-mute mb-3 font-mono text-xs font-medium tracking-[0.18em] uppercase">
               {'// 경제 시스템'}
             </div>
-            <h2 className="text-2xl font-bold text-[var(--color-foreground)] sm:text-3xl">
+            <h2 className="font-display text-ink text-4xl leading-[1.05] tracking-[-0.02em] break-keep sm:text-5xl">
               살아있는 경제 시스템
             </h2>
-            <p className="mt-4 text-sm leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
+            <p className="text-charcoal mt-4 text-base leading-relaxed break-keep">
               Idle Factory의 시장은 단순한 상점이 아닙니다. 플레이어의 생산과 거래가 가격을
               움직이고, 서버 전체의 신뢰도가 생산성에 영향을 줍니다.
             </p>
 
-            <ul className="mt-10 space-y-0 border-t border-[var(--color-border)]">
+            <ul className="border-hairline mt-10 space-y-0 border-t">
               {FEATURES.map((f) => (
-                <li
-                  key={f.title}
-                  className="flex items-start gap-5 border-b border-[var(--color-border)] py-5"
-                >
-                  <span className="mt-0.5 shrink-0 border border-[var(--color-gold-dim)] px-1.5 py-0.5 text-[10px] font-medium tracking-widest text-[var(--color-gold)] uppercase">
+                <li key={f.title} className="border-hairline flex items-start gap-5 border-b py-5">
+                  <span className="border-hairline-strong bg-elevated text-ink mt-0.5 shrink-0 rounded-md border px-1.5 py-0.5 font-mono text-[10px] font-medium tracking-widest uppercase">
                     {f.tag}
                   </span>
                   <div>
-                    <div className="text-sm font-medium text-[var(--color-foreground)]">
-                      {f.title}
-                    </div>
-                    <div className="mt-1 text-xs leading-relaxed text-[var(--color-muted-foreground)]">
+                    <div className="text-ink text-sm font-medium">{f.title}</div>
+                    <div className="text-charcoal mt-1 text-xs leading-relaxed break-keep">
                       {f.desc}
                     </div>
                   </div>
@@ -40,54 +38,36 @@ export function EconomySection() {
           </div>
 
           {/* 시세 패널 — 트레이딩 터미널 스타일 */}
-          <div className="border border-[var(--color-border)]">
-            <div className="flex items-center justify-between border-b border-[var(--color-border)] px-4 py-2.5">
-              <span className="text-[10px] tracking-[0.2em] text-[var(--color-muted-foreground)] uppercase">
+          <div className="border-hairline-strong bg-deep overflow-hidden rounded-xl border">
+            <div className="border-hairline flex items-center justify-between border-b px-4 py-3">
+              <span className="text-mute font-mono text-[10px] tracking-[0.2em] uppercase">
                 Market Feed
               </span>
-              <span className="flex items-center gap-1.5 text-[10px] text-[var(--color-success)]">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--color-success)]" />
+              <span className="text-accent-green flex items-center gap-1.5 text-[10px]">
+                <span className="bg-accent-green size-1.5 animate-pulse rounded-full" />
                 Live
               </span>
             </div>
 
-            {METRICS.map((m, i) => (
+            {METRICS.map((m) => (
               <div
                 key={m.label}
-                className="relative flex items-center justify-between px-4 py-5"
-                style={{
-                  borderBottom:
-                    i < METRICS.length - 1 ? '1px solid var(--color-border)' : undefined,
-                }}
+                className={`border-hairline flex items-center justify-between border-b border-l-2 px-4 py-5 last:border-b-0 ${m.accentClass}`}
               >
-                {/* 좌측 액센트 바 */}
-                <div
-                  className="absolute top-0 left-0 h-full w-[3px]"
-                  style={{ background: m.accentColor }}
-                />
-
-                <div className="pl-1">
-                  <div className="text-[10px] tracking-[0.15em] text-[var(--color-muted-foreground)] uppercase">
-                    {m.label}
-                  </div>
+                <div>
+                  <div className="text-mute text-[10px] tracking-[0.15em] uppercase">{m.label}</div>
                   <div
-                    className="mt-1 text-xl font-bold tabular-nums sm:text-2xl"
-                    style={{ color: m.valueColor ?? 'var(--color-foreground)' }}
+                    className={`mt-1 text-xl font-bold tabular-nums sm:text-2xl ${m.valueClass}`}
                   >
                     {m.value}
                   </div>
                 </div>
 
                 <div className="text-right">
-                  <div
-                    className="text-sm font-medium tabular-nums"
-                    style={{ color: m.changeColor }}
-                  >
+                  <div className={`text-sm font-medium tabular-nums ${m.changeClass}`}>
                     {m.change}
                   </div>
-                  <div className="mt-0.5 text-[10px] text-[var(--color-muted-foreground)]">
-                    {m.changeSub}
-                  </div>
+                  <div className="text-mute mt-0.5 text-[10px]">{m.changeSub}</div>
                 </div>
               </div>
             ))}
@@ -122,35 +102,35 @@ const METRICS = [
     value: '₩ 4,820',
     change: '▲ 3.2%',
     changeSub: '24h 변동',
-    accentColor: 'var(--color-success)',
-    changeColor: 'var(--color-success)',
-    valueColor: undefined,
+    accentClass: 'border-l-accent-green/60',
+    changeClass: 'text-accent-green',
+    valueClass: 'text-ink',
   },
   {
     label: '원유 시세',
     value: '₩ 2,105',
     change: '▼ 1.7%',
     changeSub: '24h 변동',
-    accentColor: 'var(--color-danger)',
-    changeColor: 'var(--color-danger)',
-    valueColor: undefined,
+    accentClass: 'border-l-accent-red/60',
+    changeClass: 'text-accent-red',
+    valueClass: 'text-ink',
   },
   {
     label: '서버 신뢰도',
     value: '87%',
     change: '▲ +2pt',
     changeSub: '전일 대비',
-    accentColor: 'var(--color-gold)',
-    changeColor: 'var(--color-success)',
-    valueColor: 'var(--color-gold)',
+    accentClass: 'border-l-hairline-strong',
+    changeClass: 'text-accent-green',
+    valueClass: 'text-ink',
   },
   {
     label: '활성 공장',
     value: '142',
     change: '가동 중',
     changeSub: '현재 기준',
-    accentColor: 'var(--color-border)',
-    changeColor: 'var(--color-muted-foreground)',
-    valueColor: undefined,
+    accentClass: 'border-l-hairline-strong',
+    changeClass: 'text-mute',
+    valueClass: 'text-ink',
   },
 ]

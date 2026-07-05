@@ -1,46 +1,43 @@
+import { Glow } from '@/components/ui/Glow'
+
 /** 핵심 게임 루프 3단계 섹션 */
 export function CoreLoopSection() {
   return (
-    <section className="border-y border-[var(--color-border)] bg-[var(--color-surface)]">
-      <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
+    <section className="border-hairline relative overflow-hidden border-y">
+      <Glow tone="orange" />
+      <div className="relative mx-auto max-w-6xl px-4 py-24 sm:px-6 sm:py-32">
         {/* 섹션 헤더 — 좌정렬 */}
-        <div className="mb-2 text-[10px] tracking-[0.25em] text-[var(--color-gold)] uppercase">
+        <div className="text-mute mb-2 text-xs font-medium tracking-[0.18em] uppercase">
           {'// 핵심 루프'}
         </div>
-        <h2 className="text-2xl font-bold text-[var(--color-foreground)] sm:text-3xl">
+        <h2 className="font-display text-ink text-4xl leading-[1.05] tracking-[-0.02em] break-keep sm:text-5xl">
           간단한 3단계, 무한한 전략
         </h2>
-        <p className="mt-3 max-w-xl text-sm text-[var(--color-muted-foreground)] sm:text-base">
+        <p className="text-charcoal mt-3 max-w-xl text-base leading-relaxed break-keep">
           복잡한 조작 없이 명령어 하나로 제국을 키워가세요
         </p>
 
-        {/* 단계 목록 */}
-        <div className="mt-12 border-t border-[var(--color-border)]">
+        {/* 단계 카드 그리드 */}
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {STEPS.map((step, i) => (
             <div
               key={step.title}
-              className="group flex items-start gap-6 border-b border-[var(--color-border)] py-8 sm:gap-12"
+              className="group border-hairline-strong bg-surface rounded-xl border p-8 transition-colors hover:border-white/20"
             >
               {/* 단계 번호 */}
-              <div className="w-16 shrink-0 leading-none font-bold text-[var(--color-gold)] opacity-30 transition-opacity duration-150 group-hover:opacity-100 sm:w-24">
-                <span className="text-5xl tabular-nums sm:text-6xl">
-                  {String(i + 1).padStart(2, '0')}
-                </span>
+              <div className="border-hairline bg-elevated text-ink flex size-10 items-center justify-center rounded-lg border text-sm font-medium tabular-nums">
+                {String(i + 1).padStart(2, '0')}
               </div>
 
               {/* 내용 */}
-              <div className="pt-1 sm:pt-2">
-                <h3 className="text-base font-semibold text-[var(--color-foreground)] sm:text-lg">
-                  {step.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-[var(--color-muted-foreground)]">
-                  {step.description}
-                </p>
-              </div>
+              <h3 className="text-ink mt-6 text-xl font-medium tracking-tight">{step.title}</h3>
+              <p className="text-charcoal mt-2 text-sm leading-relaxed break-keep">
+                {step.description}
+              </p>
 
               {/* 커맨드 힌트 */}
-              <div className="ml-auto hidden shrink-0 self-center lg:block">
-                <span className="border border-[var(--color-border)] px-2 py-1 text-[10px] tracking-wider text-[var(--color-muted-foreground)] uppercase">
+              <div className="mt-6">
+                <span className="border-hairline bg-elevated text-mute inline-flex items-center rounded-md border px-2 py-1 font-mono text-[13px] tracking-wider uppercase">
                   {step.cmd}
                 </span>
               </div>

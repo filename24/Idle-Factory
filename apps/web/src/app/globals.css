@@ -3,132 +3,108 @@
 
 @custom-variant dark (&:is(.dark *));
 
-:root {
-  --background: oklch(0.985 0 0);
-  --foreground: oklch(0.205 0 0);
-  --card: oklch(0.97 0 0);
-  --card-foreground: oklch(0.205 0 0);
-  --popover: oklch(0.97 0 0);
-  --popover-foreground: oklch(0.205 0 0);
-  --primary: oklch(0.666 0.179 58.318);
-  --primary-foreground: oklch(0.985 0.001 106.423);
-  --secondary: oklch(0.985 0.001 106.423);
-  --secondary-foreground: oklch(0.268 0.007 34.298);
-  --muted: oklch(0.923 0.003 48.717);
-  --muted-foreground: oklch(0.216 0.006 56.043);
-  --accent: oklch(0.985 0.001 106.423);
-  --accent-foreground: oklch(0.374 0.01 67.558);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0.001 106.423);
-  --border: oklch(0.869 0.005 56.366);
-  --input: oklch(0.709 0.01 56.259);
-  --ring: oklch(0.666 0.179 58.318);
-  --chart-1: oklch(0.666 0.179 58.318);
-  --chart-2: oklch(0.705 0.213 47.604);
-  --chart-3: oklch(0.795 0.184 86.047);
-  --chart-4: oklch(0.637 0.237 25.331);
-  --chart-5: oklch(0.656 0.241 354.308);
-  --sidebar: oklch(0.985 0.001 106.423);
-  --sidebar-foreground: oklch(0.268 0.007 34.298);
-  --sidebar-primary: oklch(0.2046 0 0);
-  --sidebar-primary-foreground: oklch(0.666 0.179 58.318);
-  --sidebar-accent: oklch(0.985 0.001 106.423);
-  --sidebar-accent-foreground: oklch(0.268 0.007 34.298);
-  --sidebar-border: oklch(0.869 0.005 56.366);
-  --sidebar-ring: oklch(0.666 0.179 58.318);
-  --font-sans: Geist Mono, monospace;
-  --font-serif: Geist Mono, monospace;
-  --font-mono: Geist Mono, monospace;
-  --radius: 0rem;
-  --shadow-x: 0px;
-  --shadow-y: 1px;
-  --shadow-blur: 0px;
-  --shadow-spread: 0px;
-  --shadow-opacity: 0;
-  --shadow-color: hsl(0 0% 0%);
-  --shadow-2xs: 0px 1px 0px 0px hsl(0 0% 0% / 0);
-  --shadow-xs: 0px 1px 0px 0px hsl(0 0% 0% / 0);
-  --shadow-sm: 0px 1px 0px 0px hsl(0 0% 0% / 0), 0px 1px 2px -1px hsl(0 0% 0% / 0);
-  --shadow: 0px 1px 0px 0px hsl(0 0% 0% / 0), 0px 1px 2px -1px hsl(0 0% 0% / 0);
-  --shadow-md: 0px 1px 0px 0px hsl(0 0% 0% / 0), 0px 2px 4px -1px hsl(0 0% 0% / 0);
-  --shadow-lg: 0px 1px 0px 0px hsl(0 0% 0% / 0), 0px 4px 6px -1px hsl(0 0% 0% / 0);
-  --shadow-xl: 0px 1px 0px 0px hsl(0 0% 0% / 0), 0px 8px 10px -1px hsl(0 0% 0% / 0);
-  --shadow-2xl: 0px 1px 0px 0px hsl(0 0% 0% / 0);
+/*
+ * ── Idle Factory 디자인 시스템 ──
+ * DESIGN.md(Resend 에디토리얼 다크) 기준. 순수 블랙 캔버스 위 오프화이트 텍스트,
+ * 화이트가 유일한 브랜드 액센트, 6색은 저투명 glow 전용, 그림자 없이 헤어라인 보더로만 깊이 표현.
+ * 다크 단일 레지스터 — 라이트 모드 없음. :root == .dark 로 동일 값 유지.
+ */
+:root,
+.dark {
+  /* shadcn 시맨틱 토큰 → DESIGN.md 매핑 */
+  --background: #000000; /* colors.canvas — 순수 블랙 */
+  --foreground: #fcfdff; /* colors.ink — 오프화이트 */
+  --card: #0a0a0c; /* colors.surface-card */
+  --card-foreground: #fcfdff;
+  --popover: #0a0a0c;
+  --popover-foreground: #fcfdff;
+  --primary: #fcfdff; /* 브랜드 액센트 = 화이트 (button-primary) */
+  --primary-foreground: #000000; /* colors.primary-on — 흰 버튼 위 검정 텍스트 */
+  --secondary: #101012; /* colors.surface-elevated (ghost 버튼) */
+  --secondary-foreground: #fcfdff;
+  --muted: #101012;
+  --muted-foreground: rgba(252, 253, 255, 0.7); /* colors.charcoal — 보조 텍스트 */
+  --accent: #101012;
+  --accent-foreground: #fcfdff;
+  --destructive: #ff2047; /* colors.accent-red */
+  --destructive-foreground: #fcfdff;
+  --border: rgba(255, 255, 255, 0.1); /* 기본 헤어라인 (hairline↔strong 중간) */
+  --input: rgba(255, 255, 255, 0.14); /* colors.hairline-strong */
+  --ring: #fcfdff; /* 포커스 = 화이트 (border를 ink로 두껍게) */
+  --chart-1: #ff801f; /* accent-orange */
+  --chart-2: #ffc53d; /* accent-yellow */
+  --chart-3: #3b9eff; /* accent-blue */
+  --chart-4: #11ff99; /* accent-green */
+  --chart-5: #ff2047; /* accent-red */
+  --sidebar: #0a0a0c;
+  --sidebar-foreground: rgba(252, 253, 255, 0.86);
+  --sidebar-primary: #fcfdff;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #101012;
+  --sidebar-accent-foreground: #fcfdff;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-ring: #fcfdff;
+
+  /* 폰트 스택 — Fraunces/Gowun Batang(디스플레이), Pretendard(본문/UI), Geist Mono(코드) */
+  --font-sans:
+    'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', sans-serif;
+  --font-display:
+    var(--font-fraunces), var(--font-gowun-batang), 'Pretendard Variable', Georgia, serif;
+  --font-serif: var(--font-display);
+  --font-mono: var(--font-geist-mono), 'SFMono-Regular', ui-monospace, monospace;
+
+  /* DESIGN.md rounded — 버튼/인풋 8px(lg), 카드/코드웰 12px(xl) */
+  --radius: 0.5rem;
+
+  /* DESIGN.md는 그림자를 쓰지 않음 — 모든 그림자 토큰 무력화 (헤어라인 보더로 대체) */
+  --shadow-2xs: 0 0 #0000;
+  --shadow-xs: 0 0 #0000;
+  --shadow-sm: 0 0 #0000;
+  --shadow: 0 0 #0000;
+  --shadow-md: 0 0 #0000;
+  --shadow-lg: 0 0 #0000;
+  --shadow-xl: 0 0 #0000;
+  --shadow-2xl: 0 0 #0000;
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 
-  /* ── 게임 커스텀 디자인 토큰 (라이트) ── */
-  --color-canvas: oklch(98.5% 0.004 80);
-  --color-surface: oklch(96% 0.006 75);
-  --color-elevated: oklch(92% 0.009 70);
-  --color-gold: oklch(68% 0.18 55);
-  --color-gold-dim: oklch(60% 0.16 55);
-  --color-gold-subtle: oklch(97% 0.04 65);
-  --color-success: oklch(56% 0.18 145);
-  --color-danger: oklch(54% 0.22 25);
-}
+  /* ── 서피스 (DESIGN.md colors.surface-*) ── */
+  --color-canvas: #000000;
+  --color-surface: #0a0a0c;
+  --color-elevated: #101012;
+  --color-deep: #06060a; /* 코드 웰 배경 */
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.97 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.97 0.001 106.424);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.97 0.001 106.424);
-  --primary: oklch(0.666 0.179 58.318);
-  --primary-foreground: oklch(0.97 0.001 106.424);
-  --secondary: oklch(0.268 0.007 34.298);
-  --secondary-foreground: oklch(0.97 0.001 106.424);
-  --muted: oklch(0.216 0.006 56.043);
-  --muted-foreground: oklch(0.709 0.01 56.259);
-  --accent: oklch(0.374 0.01 67.558);
-  --accent-foreground: oklch(0.97 0.001 106.424);
-  --destructive: oklch(0.505 0.213 27.518);
-  --destructive-foreground: oklch(0.97 0.001 106.424);
-  --border: oklch(0.374 0.01 67.558);
-  --input: oklch(0.268 0.007 34.298);
-  --ring: oklch(0.473 0.137 46.201);
-  --chart-1: oklch(0.555 0.163 48.998);
-  --chart-2: oklch(0.553 0.195 38.402);
-  --chart-3: oklch(0.554 0.135 66.442);
-  --chart-4: oklch(0.505 0.213 27.518);
-  --chart-5: oklch(0.525 0.223 3.958);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.97 0.001 106.424);
-  --sidebar-primary: oklch(0.555 0.163 48.998);
-  --sidebar-primary-foreground: oklch(0.97 0.001 106.424);
-  --sidebar-accent: oklch(0.268 0.007 34.298);
-  --sidebar-accent-foreground: oklch(0.97 0.001 106.424);
-  --sidebar-border: oklch(0.374 0.01 67.558);
-  --sidebar-ring: oklch(0.473 0.137 46.201);
-  --font-sans: Geist Mono, monospace;
-  --font-serif: Geist Mono, monospace;
-  --font-mono: Geist Mono, monospace;
-  --radius: 0rem;
-  --shadow-x: 0px;
-  --shadow-y: 1px;
-  --shadow-blur: 0px;
-  --shadow-spread: 0px;
-  --shadow-opacity: 0;
-  --shadow-color: hsl(0 0% 0%);
-  --shadow-2xs: 0px 1px 0px 0px hsl(0 0% 0% / 0);
-  --shadow-xs: 0px 1px 0px 0px hsl(0 0% 0% / 0);
-  --shadow-sm: 0px 1px 0px 0px hsl(0 0% 0% / 0), 0px 1px 2px -1px hsl(0 0% 0% / 0);
-  --shadow: 0px 1px 0px 0px hsl(0 0% 0% / 0), 0px 1px 2px -1px hsl(0 0% 0% / 0);
-  --shadow-md: 0px 1px 0px 0px hsl(0 0% 0% / 0), 0px 2px 4px -1px hsl(0 0% 0% / 0);
-  --shadow-lg: 0px 1px 0px 0px hsl(0 0% 0% / 0), 0px 4px 6px -1px hsl(0 0% 0% / 0);
-  --shadow-xl: 0px 1px 0px 0px hsl(0 0% 0% / 0), 0px 8px 10px -1px hsl(0 0% 0% / 0);
-  --shadow-2xl: 0px 1px 0px 0px hsl(0 0% 0% / 0);
+  /* ── 텍스트 계조 (DESIGN.md colors.text) ── */
+  --color-ink: #fcfdff;
+  --color-body: rgba(252, 253, 255, 0.86);
+  --color-charcoal: rgba(252, 253, 255, 0.7);
+  --color-mute: #a1a4a5;
+  --color-ash: #888e90;
+  --color-stone: #464a4d;
 
-  /* ── 게임 커스텀 디자인 토큰 (다크) ── */
-  --color-canvas: oklch(14.5% 0 0);
-  --color-surface: oklch(19% 0.005 60);
-  --color-elevated: oklch(25% 0.008 60);
-  --color-gold: oklch(72% 0.18 55);
-  --color-gold-dim: oklch(64% 0.16 55);
-  --color-gold-subtle: oklch(21% 0.06 55);
-  --color-success: oklch(62% 0.2 145);
-  --color-danger: oklch(58% 0.24 25);
+  /* ── 헤어라인 (그림자 대체) ── */
+  --color-hairline: rgba(255, 255, 255, 0.06);
+  --color-hairline-strong: rgba(255, 255, 255, 0.14);
+  --color-divider-soft: rgba(255, 255, 255, 0.04);
+
+  /* ── 액센트 + glow (저투명 분위기 워시 전용, 솔리드 금지) ── */
+  --color-accent-orange: #ff801f;
+  --color-accent-orange-glow: rgba(255, 89, 0, 0.22);
+  --color-accent-yellow: #ffc53d;
+  --color-accent-blue: #3b9eff;
+  --color-accent-blue-glow: rgba(0, 117, 255, 0.34);
+  --color-accent-green: #11ff99;
+  --color-accent-green-glow: rgba(34, 255, 153, 0.18);
+  --color-accent-red: #ff2047;
+  --color-accent-red-glow: rgba(255, 32, 71, 0.34);
+  --color-link: #3b9eff;
+
+  /* 하위 호환 별칭 — 골드 브랜드는 화이트 액센트로 통합 (마이그레이션 잔여 참조 대비) */
+  --color-gold: #fcfdff;
+  --color-gold-dim: rgba(252, 253, 255, 0.86);
+  --color-gold-subtle: #101012;
+  --color-success: #11ff99;
+  --color-danger: #ff2047;
 }
 
 @theme inline {
@@ -165,14 +141,35 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  /* DESIGN.md 커스텀 토큰 → Tailwind 유틸리티 (bg-canvas, text-ink, border-hairline 등) */
+  --color-canvas: var(--color-canvas);
+  --color-surface: var(--color-surface);
+  --color-elevated: var(--color-elevated);
+  --color-deep: var(--color-deep);
+  --color-ink: var(--color-ink);
+  --color-body: var(--color-body);
+  --color-charcoal: var(--color-charcoal);
+  --color-mute: var(--color-mute);
+  --color-ash: var(--color-ash);
+  --color-hairline: var(--color-hairline);
+  --color-hairline-strong: var(--color-hairline-strong);
+  --color-accent-orange: var(--color-accent-orange);
+  --color-accent-yellow: var(--color-accent-yellow);
+  --color-accent-blue: var(--color-accent-blue);
+  --color-accent-green: var(--color-accent-green);
+  --color-accent-red: var(--color-accent-red);
+  --color-link: var(--color-link);
+
   --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: calc(var(--radius) - 4px); /* 4px */
+  --radius-md: calc(var(--radius) - 2px); /* 6px */
+  --radius-lg: var(--radius); /* 8px — 버튼/인풋 */
+  --radius-xl: calc(var(--radius) + 4px); /* 12px — 카드/코드웰 */
+  --radius-2xl: calc(var(--radius) + 8px); /* 16px — 큰 패널 */
 
   --shadow-2xs: var(--shadow-2xs);
   --shadow-xs: var(--shadow-xs);
@@ -190,6 +187,15 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    font-feature-settings: 'ss01', 'cv01';
+    -webkit-font-smoothing: antialiased;
+  }
+  /* 디스플레이 세리프 — lineHeight 1.0 고정, 타이트 트래킹 (DESIGN.md typography 원칙) */
+  .font-display {
+    font-family: var(--font-display);
+    font-feature-settings: 'ss01', 'liga';
+    letter-spacing: -0.02em;
   }
 }
 

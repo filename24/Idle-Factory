@@ -20,7 +20,7 @@ export function DocsSidebar({ tree, currentPath }: DocsSidebarProps) {
 function SidebarNode({ node, currentPath }: { node: PageTreeNode; currentPath: string }) {
   if (node.type === 'separator') {
     return (
-      <div className="mt-5 mb-1 px-2 text-xs font-semibold tracking-wider text-[var(--color-gold)] uppercase">
+      <div className="text-mute mt-5 mb-1 px-2 text-xs font-medium tracking-[0.18em] uppercase">
         {node.name}
       </div>
     )
@@ -32,11 +32,11 @@ function SidebarNode({ node, currentPath }: { node: PageTreeNode; currentPath: s
         {node.index ? (
           <SidebarLink href={node.index.url} label={String(node.name)} currentPath={currentPath} />
         ) : (
-          <div className="mb-1 px-2 py-1 text-xs font-semibold text-[var(--color-muted-foreground)]">
+          <div className="text-mute mb-1 px-2 py-1 text-xs font-medium tracking-[0.18em] uppercase">
             {node.name}
           </div>
         )}
-        <div className="ml-3 border-l border-[var(--color-border)] pl-3">
+        <div className="border-hairline ml-3 border-l pl-3">
           {node.children.map((child) => (
             <SidebarNode
               key={child.$id ?? String(child.name)}
@@ -67,10 +67,10 @@ function SidebarLink({
     <Link
       href={href}
       className={[
-        'mb-0.5 block rounded-[var(--radius-md)] px-2 py-1.5 text-sm transition-colors duration-100',
+        'relative mb-0.5 block rounded-lg px-2 py-1.5 text-sm transition-colors duration-100',
         isActive
-          ? 'bg-[var(--color-gold-subtle)] font-medium text-[var(--color-gold)]'
-          : 'text-[var(--color-muted-foreground)] hover:bg-[var(--color-elevated)] hover:text-[var(--color-foreground)]',
+          ? 'bg-elevated text-ink font-medium before:absolute before:top-1 before:bottom-1 before:-left-3 before:w-px before:bg-white/40 before:content-[""]'
+          : 'text-charcoal hover:bg-elevated hover:text-ink',
       ].join(' ')}
     >
       {label}
