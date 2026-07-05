@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   description: 'Discord에서 즐기는 공장 건설 경제 시뮬레이션',
 }
 
-/** 루트 레이아웃 — 순수 블랙 캔버스, 디스플레이 세리프 + Pretendard 본문, 공통 Header/Footer 포함 */
+/** 루트 레이아웃 — 순수 블랙 캔버스, Pretendard(디스플레이·본문) + Geist Mono(코드), 공통 Header/Footer 포함 */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko" className={`dark ${geistMono.variable} antialiased`} suppressHydrationWarning>
