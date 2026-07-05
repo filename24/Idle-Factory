@@ -1,9 +1,11 @@
-import type { FactoryType, ShortageMode } from '@idle/database'
+import type { FactoryType, ShortageMode, UpgradeBooster } from '@idle/database'
 import {
   FACTORY_CATALOG,
+  RAW_BOOSTER_UNLOCK_LEVEL,
   buildCost,
   canPlace,
   getOccupiedCells,
+  isBoosterChoiceGrade,
   upgradeMaterialCost,
   upgradeMoneyCost,
   xpForEvent,
@@ -42,6 +44,17 @@ export interface UpgradeParams {
   readonly factoryId: string
 }
 
+export interface ChooseBoosterParams {
+  readonly userId: string
+  readonly factoryId: string
+  readonly booster: UpgradeBooster
+}
+
+export interface ApplyRawBoosterParams {
+  readonly userId: string
+  readonly factoryId: string
+}
+
 export interface SetModeParams {
   readonly userId: string
   readonly factoryId: string
@@ -57,6 +70,8 @@ export interface FactoryInfoDTO {
   readonly width: number
   readonly height: number
   readonly shortageMode: ShortageMode
+  readonly upgradeBooster: UpgradeBooster | null
+  readonly hasRawBooster: boolean
   readonly nextUpgradeCost: {
     readonly money: bigint | null
     readonly material: { material: string; amount: bigint } | null
@@ -310,7 +325,98 @@ export const FactoryService = {
         toGrade: updated.grade,
         type: factory.type
       })
-      return { factory: updated, quest }
+      // 3/5/7/10 등급 도달 시 부스터 분기 선택 UI 노출 신호
+      // (docs/design/03-factories.md §업그레이드 부스터 선택 시스템, #19).
+      return {
+        factory: updated,
+        quest,
+        boosterChoiceAvailable: isBoosterChoiceGrade(updated.grade)
+      }
+    })
+  },
+
+  /**
+   * 부스터 분기 선택 확정 — `Factory.upgradeBooster` 갱신.
+   *
+   * 현재 등급이 분기 등급(3/5/7/10)일 때만 허용한다. 이미 다음 등급으로
+   * 넘어간 뒤 남아 있는 오래된 선택 메뉴의 재사용을 막기 위한 방어이며,
+   * 분기 등급에서 다시 선택하면 이전 값을 덮어쓴다 (단일 부스터 경로 —
+   * docs/design/03-factories.md §선택 규칙).
+   */
+  async chooseBooster(prisma: PrismaClient, params: ChooseBoosterParams) {
+    const { userId, factoryId, booster } = params
+    return runInTx(prisma, async (tx) => {
+      const factory = await tx.factory.findUnique({ where: { id: factoryId } })
+      if (!factory || factory.userId !== userId) {
+        throw new ServiceError('FACTORY_NOT_FOUND')
+      }
+      if (!isBoosterChoiceGrade(factory.grade)) {
+        throw new ServiceError('BOOSTER_NOT_AVAILABLE', undefined, {
+          grade: factory.grade
+        })
+      }
+      return tx.factory.update({
+        where: { id: factoryId },
+        data: { upgradeBooster: booster }
+      })
+    })
+  },
+
+  /**
+   * 원자재 부스터(`RAW_BOOSTER`) 투입 — 창고에서 1개 차감 후
+   * `Factory.hasRawBooster = true` (영구, 공장당 1회).
+   *
+   * 해금 조건: 유저 Lv.50 (docs/design/03-factories.md §🧪 원자재 부스터).
+   */
+  async applyRawBooster(prisma: PrismaClient, params: ApplyRawBoosterParams) {
+    const { userId, factoryId } = params
+    return runInTx(prisma, async (tx) => {
+      const factory = await tx.factory.findUnique({ where: { id: factoryId } })
+      if (!factory || factory.userId !== userId) {
+        throw new ServiceError('FACTORY_NOT_FOUND')
+      }
+      if (factory.hasRawBooster) {
+        throw new ServiceError('RAW_BOOSTER_ALREADY_APPLIED')
+      }
+
+      const user = await tx.user.findUnique({ where: { id: userId } })
+      if (!user) throw new ServiceError('USER_NOT_FOUND')
+      if (user.level < RAW_BOOSTER_UNLOCK_LEVEL) {
+        throw new ServiceError('LEVEL_LOCKED', undefined, {
+          level: RAW_BOOSTER_UNLOCK_LEVEL
+        })
+      }
+
+      const warehouse = await tx.warehouse.findUnique({ where: { userId } })
+      if (!warehouse) {
+        throw new ServiceError('INSUFFICIENT_MATERIAL', undefined, {
+          material: 'RAW_BOOSTER',
+          amount: 1n
+        })
+      }
+      const stack = await tx.warehouseStack.findUnique({
+        where: {
+          warehouseId_material: {
+            warehouseId: warehouse.id,
+            material: 'RAW_BOOSTER'
+          }
+        }
+      })
+      if (!stack || stack.count < 1n) {
+        throw new ServiceError('INSUFFICIENT_MATERIAL', undefined, {
+          material: 'RAW_BOOSTER',
+          amount: 1n
+        })
+      }
+      await tx.warehouseStack.update({
+        where: { id: stack.id },
+        data: { count: { decrement: 1n } }
+      })
+
+      return tx.factory.update({
+        where: { id: factoryId },
+        data: { hasRawBooster: true }
+      })
     })
   },
 
@@ -330,6 +436,8 @@ export const FactoryService = {
       width: factory.width,
       height: factory.height,
       shortageMode: factory.shortageMode,
+      upgradeBooster: factory.upgradeBooster,
+      hasRawBooster: factory.hasRawBooster,
       unlockLevel: entry.unlockLevel,
       nextUpgradeCost: canUpgrade
         ? {

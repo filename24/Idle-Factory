@@ -297,6 +297,204 @@ describe('FactoryService', () => {
         })
       ).rejects.toMatchObject({ code: 'MAX_GRADE' })
     })
+
+    it('signals boosterChoiceAvailable only at choice grades (3/5/7/10)', async () => {
+      const { user, warehouse } = await seedUser('u-up-3', {
+        money: 100_000_000n
+      })
+      await ensureMaterial(warehouse.id, 'GRAIN', 1_000_000n)
+
+      const { factory } = await FactoryService.build(testPrisma, {
+        userId: user.id,
+        landIndex: 1,
+        type: 'FARM',
+        anchorX: 0,
+        anchorY: 0
+      })
+
+      // 1 → 2: 분기 등급 아님
+      const first = await FactoryService.upgrade(testPrisma, {
+        userId: user.id,
+        factoryId: factory.id
+      })
+      expect(first.factory.grade).toBe(2)
+      expect(first.boosterChoiceAvailable).toBe(false)
+
+      // 2 → 3: 분기 등급
+      const second = await FactoryService.upgrade(testPrisma, {
+        userId: user.id,
+        factoryId: factory.id
+      })
+      expect(second.factory.grade).toBe(3)
+      expect(second.boosterChoiceAvailable).toBe(true)
+    })
+  })
+
+  describe('chooseBooster', () => {
+    it('sets upgradeBooster at a choice grade and overwrites on re-choice', async () => {
+      const { user } = await seedUser('u-boost-1')
+      const { factory } = await FactoryService.build(testPrisma, {
+        userId: user.id,
+        landIndex: 1,
+        type: 'FARM',
+        anchorX: 0,
+        anchorY: 0
+      })
+      await testPrisma.factory.update({
+        where: { id: factory.id },
+        data: { grade: 3 }
+      })
+
+      const chosen = await FactoryService.chooseBooster(testPrisma, {
+        userId: user.id,
+        factoryId: factory.id,
+        booster: 'SPEED'
+      })
+      expect(chosen.upgradeBooster).toBe('SPEED')
+
+      // 같은 분기 등급에서 재선택 시 덮어쓴다.
+      const rechosen = await FactoryService.chooseBooster(testPrisma, {
+        userId: user.id,
+        factoryId: factory.id,
+        booster: 'SAVING'
+      })
+      expect(rechosen.upgradeBooster).toBe('SAVING')
+    })
+
+    it('throws BOOSTER_NOT_AVAILABLE outside choice grades', async () => {
+      const { user } = await seedUser('u-boost-2')
+      const { factory } = await FactoryService.build(testPrisma, {
+        userId: user.id,
+        landIndex: 1,
+        type: 'FARM',
+        anchorX: 0,
+        anchorY: 0
+      })
+      // grade 1 — 분기 등급 아님
+      await expect(
+        FactoryService.chooseBooster(testPrisma, {
+          userId: user.id,
+          factoryId: factory.id,
+          booster: 'SPEED'
+        })
+      ).rejects.toMatchObject({ code: 'BOOSTER_NOT_AVAILABLE' })
+    })
+
+    it('throws FACTORY_NOT_FOUND for a factory owned by another user', async () => {
+      const { user } = await seedUser('u-boost-3')
+      await seedUser('u-boost-3b')
+      const { factory } = await FactoryService.build(testPrisma, {
+        userId: user.id,
+        landIndex: 1,
+        type: 'FARM',
+        anchorX: 0,
+        anchorY: 0
+      })
+      await testPrisma.factory.update({
+        where: { id: factory.id },
+        data: { grade: 3 }
+      })
+      await expect(
+        FactoryService.chooseBooster(testPrisma, {
+          userId: 'u-boost-3b',
+          factoryId: factory.id,
+          booster: 'RARE'
+        })
+      ).rejects.toMatchObject({ code: 'FACTORY_NOT_FOUND' })
+    })
+  })
+
+  describe('applyRawBooster', () => {
+    async function seedFactoryWithBoosterStock(
+      id: string,
+      opts: { level?: number; boosterCount?: bigint } = {}
+    ) {
+      const { user, warehouse } = await seedUser(id, {
+        level: opts.level ?? 50
+      })
+      await ensureMaterial(warehouse.id, 'RAW_BOOSTER', opts.boosterCount ?? 1n)
+      const { factory } = await FactoryService.build(testPrisma, {
+        userId: user.id,
+        landIndex: 1,
+        type: 'FARM',
+        anchorX: 0,
+        anchorY: 0
+      })
+      return { user, warehouse, factory }
+    }
+
+    it('consumes one RAW_BOOSTER and sets hasRawBooster permanently', async () => {
+      const { user, warehouse, factory } =
+        await seedFactoryWithBoosterStock('u-raw-1')
+
+      const updated = await FactoryService.applyRawBooster(testPrisma, {
+        userId: user.id,
+        factoryId: factory.id
+      })
+      expect(updated.hasRawBooster).toBe(true)
+
+      const stack = await testPrisma.warehouseStack.findUniqueOrThrow({
+        where: {
+          warehouseId_material: {
+            warehouseId: warehouse.id,
+            material: 'RAW_BOOSTER'
+          }
+        }
+      })
+      expect(stack.count).toBe(0n)
+    })
+
+    it('throws LEVEL_LOCKED below Lv.50', async () => {
+      const { user, factory } = await seedFactoryWithBoosterStock('u-raw-2', {
+        level: 49
+      })
+      await expect(
+        FactoryService.applyRawBooster(testPrisma, {
+          userId: user.id,
+          factoryId: factory.id
+        })
+      ).rejects.toMatchObject({ code: 'LEVEL_LOCKED' })
+    })
+
+    it('throws INSUFFICIENT_MATERIAL without RAW_BOOSTER stock', async () => {
+      const { user, factory } = await seedFactoryWithBoosterStock('u-raw-3', {
+        boosterCount: 0n
+      })
+      await expect(
+        FactoryService.applyRawBooster(testPrisma, {
+          userId: user.id,
+          factoryId: factory.id
+        })
+      ).rejects.toMatchObject({ code: 'INSUFFICIENT_MATERIAL' })
+    })
+
+    it('throws RAW_BOOSTER_ALREADY_APPLIED on a second injection', async () => {
+      const { user, warehouse, factory } = await seedFactoryWithBoosterStock(
+        'u-raw-4',
+        { boosterCount: 2n }
+      )
+      await FactoryService.applyRawBooster(testPrisma, {
+        userId: user.id,
+        factoryId: factory.id
+      })
+      await expect(
+        FactoryService.applyRawBooster(testPrisma, {
+          userId: user.id,
+          factoryId: factory.id
+        })
+      ).rejects.toMatchObject({ code: 'RAW_BOOSTER_ALREADY_APPLIED' })
+
+      // 두 번째 시도는 재고를 소모하지 않는다.
+      const stack = await testPrisma.warehouseStack.findUniqueOrThrow({
+        where: {
+          warehouseId_material: {
+            warehouseId: warehouse.id,
+            material: 'RAW_BOOSTER'
+          }
+        }
+      })
+      expect(stack.count).toBe(1n)
+    })
   })
 
   describe('setMode', () => {

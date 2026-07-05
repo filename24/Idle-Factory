@@ -8,7 +8,8 @@
  * 본 모듈은 부작용 없이 순수 함수로 수확 결과를 산출한다.
  */
 
-import type { FactoryState, MaterialBag, MaterialType } from '../types'
+import type { FactoryState, MaterialBag, MaterialType, UpgradeBooster } from '../types'
+import { boosterConsumptionMultiplier, boosterProductionMultiplier } from './booster'
 import { getFactoryEntry } from './catalog'
 
 /** 1 tick 길이 (밀리초). 10분. `docs/design/02-core-loop.md`. */
@@ -82,13 +83,21 @@ export function computeElapsedTicks(lastHarvestAt: Date, now: Date): number {
  *
  * 공식: `multiplier = (3/2)^(grade-1)`.
  * 원료 부스터가 켜져 있으면 추가로 `× 1.2`.
+ * 업그레이드 부스터가 생산량형(`SPEED` ×1.15 / `PROFIT` ×1.1)이면 추가로 곱한다 —
+ * 생산 배수에 함께 접어야 창고 클램프(수용 가능 tick 계산)가 부스터 반영 후
+ * 실제 생산량 기준으로 정확해진다. 근거: `docs/design/03-factories.md` §업그레이드 부스터.
  * 부동소수점 오차를 피하려고 분자/분모를 분리해 bigint로 유지한다.
  *
  * @param grade 공장 등급 (1..10). 1 미만은 1로 간주.
  * @param hasRawBooster 원료 부스터 적용 여부
+ * @param upgradeBooster 업그레이드 부스터 (생산량형만 반영, 기본 null)
  * @returns 적용할 배수의 분자·분모
  */
-export function computeGradeMultiplier(grade: number, hasRawBooster: boolean): GradeMultiplier {
+export function computeGradeMultiplier(
+  grade: number,
+  hasRawBooster: boolean,
+  upgradeBooster: UpgradeBooster | null = null,
+): GradeMultiplier {
   const exponent = Math.max(0, grade - 1)
   let numerator = 1n
   let denominator = 1n
@@ -100,6 +109,9 @@ export function computeGradeMultiplier(grade: number, hasRawBooster: boolean): G
     numerator *= 12n
     denominator *= 10n
   }
+  const booster = boosterProductionMultiplier(upgradeBooster)
+  numerator *= booster.numerator
+  denominator *= booster.denominator
   return { numerator, denominator }
 }
 
@@ -184,12 +196,18 @@ export function computeFactoryYield(params: ComputeFactoryYieldParams): FactoryY
     return { ticksRealized: 0, produced: {}, consumed: {} }
   }
 
+  // SAVING 부스터는 재료 소비를 ×0.8 로 줄인다 (docs/design/03-factories.md §업그레이드 부스터).
+  const consumption = boosterConsumptionMultiplier(factory.upgradeBooster)
+
   // Material clamp (T2/T3 recipes).
   if (catalog.recipe.length > 0) {
     let maxByMaterial = Number.POSITIVE_INFINITY
     for (const req of catalog.recipe) {
       const available = availableMaterials[req.material] ?? 0n
-      const possible = Math.floor(Number(available) / Number(req.amount))
+      // 소비 배수(분수) 반영: ticks × req × (num/den) ≤ available 을 만족하는 최대 ticks.
+      const possible = Math.floor(
+        Number(available * consumption.denominator) / Number(req.amount * consumption.numerator),
+      )
       if (possible < maxByMaterial) maxByMaterial = possible
     }
     // Phase 1: PAUSE | AUTO_BUY | PARTIAL all treated as PAUSE.
@@ -201,7 +219,7 @@ export function computeFactoryYield(params: ComputeFactoryYieldParams): FactoryY
     return { ticksRealized: 0, produced: {}, consumed: {} }
   }
 
-  const mult = computeGradeMultiplier(factory.grade, factory.hasRawBooster)
+  const mult = computeGradeMultiplier(factory.grade, factory.hasRawBooster, factory.upgradeBooster)
 
   // First pass to inspect whether warehouse can hold the output.
   const firstPass = computeOutputsForTicks(catalog, elapsedTicks, mult, slotBonus, synergyBonus)
@@ -223,7 +241,10 @@ export function computeFactoryYield(params: ComputeFactoryYieldParams): FactoryY
 
   const consumed: MaterialBag = {}
   for (const req of catalog.recipe) {
-    addToBag(consumed, req.material, req.amount * BigInt(elapsedTicks))
+    // 총소비 = ⌊req × ticks × (num/den)⌋ — tick별이 아니라 총량에 분수를 적용해 절사 손실 최소화.
+    const total =
+      (req.amount * BigInt(elapsedTicks) * consumption.numerator) / consumption.denominator
+    addToBag(consumed, req.material, total)
   }
 
   return {

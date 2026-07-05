@@ -29,8 +29,11 @@
         "position": "Position",
         "mode": "Mode",
         "nextCost": "Next upgrade",
-        "unlock": "Unlock level"
-      }
+        "unlock": "Unlock level",
+        "booster": "Booster",
+        "rawBooster": "Raw Booster"
+      },
+      "boosterNone": "Not chosen"
     },
     "setMode": {
       "success": "Factory mode changed to `{{mode}}`."
@@ -42,6 +45,29 @@
       "confirmCancel": "Cancel",
       "success": "🧨 {{emoji}} {{type}} factory destroyed. (+{{refund}} 💰, balance {{remaining}} 💰)",
       "cancelled": "Destruction cancelled."
+    },
+    "boosterChoice": {
+      "title": "G{{grade}} reached — choose a booster",
+      "body": "You reached a booster milestone. Pick a specialization to permanently apply to this factory. Choosing again at a milestone grade (3·5·7·10) replaces the previous booster.",
+      "placeholder": "Select a booster",
+      "desc": {
+        "SAVING": "Material consumption -20% (best for T2/T3)",
+        "RARE": "Low chance to drop Raw Boosters (T1/T2 only)",
+        "SPEED": "Production per tick +15%",
+        "PROFIT": "Final output +10%"
+      },
+      "applied": "{{emoji}} **{{booster}}** booster applied! It lasts permanently on this factory.",
+      "error": {
+        "notAvailable": "You can only choose a booster at milestone grades (3·5·7·10)."
+      }
+    },
+    "applyBooster": {
+      "success": "{{emoji}} Injected a Raw Booster into the {{type}} factory! Grade bonus is now permanently ×1.2.",
+      "error": {
+        "levelLocked": "Raw Boosters unlock at Lv.{{level}}.",
+        "alreadyApplied": "This factory already has a Raw Booster. (One per factory)",
+        "noRawBooster": "No Raw Booster in your warehouse. Get one via the Rare Drop booster on T1/T2 factories or by trading."
+      }
     }
   },
   "harvest": {
@@ -215,6 +241,12 @@
     "ELECTRONIC": "Electronics",
     "FINISHED_FOOD": "Finished Food",
     "RAW_BOOSTER": "Raw Booster"
+  },
+  "booster": {
+    "SAVING": "Material Saver",
+    "RARE": "Rare Drop",
+    "SPEED": "Production Speed",
+    "PROFIT": "Extra Profit"
   },
   "quest": {
     "title": "📜 Quests",

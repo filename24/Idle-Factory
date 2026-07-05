@@ -4,6 +4,7 @@ import {
   computeElapsedTicks,
   computeFactoryYield,
   computeFree,
+  computeRareBoosterDrop,
   computeLandSynergies,
   getSpecialSlotBonus,
   getSynergyMultiplier,
@@ -268,6 +269,27 @@ async function harvestWhere(
         balance[mat] = (balance[mat] ?? 0n) + amt
       }
 
+      // RARE 부스터 드롭 — T1/T2 공장이 tick당 저확률로 RAW_BOOSTER 생산 (#19).
+      // 일반 산출과 달리 확률 이벤트라 computeFactoryYield 의 창고 클램프에
+      // 포함되지 않으므로, 산출 반영 후 남은 여유 공간으로 별도 클램프한다.
+      const producedForSummary = { ...result.produced }
+      const rareDrop = computeRareBoosterDrop({
+        type: state.type,
+        upgradeBooster: state.upgradeBooster,
+        ticks: result.ticksRealized
+      })
+      if (rareDrop > 0n) {
+        const freeAfterProduce = computeFree(warehouse.grade, balance)
+        const credited =
+          rareDrop < freeAfterProduce ? rareDrop : freeAfterProduce
+        if (credited > 0n) {
+          await applyMaterialDelta(tx, warehouse.id, 'RAW_BOOSTER', credited)
+          balance.RAW_BOOSTER = (balance.RAW_BOOSTER ?? 0n) + credited
+          producedForSummary.RAW_BOOSTER =
+            (producedForSummary.RAW_BOOSTER ?? 0n) + credited
+        }
+      }
+
       const advancedAt = new Date(
         factory.lastHarvestAt.getTime() + result.ticksRealized * TICK_MS
       )
@@ -281,7 +303,7 @@ async function harvestWhere(
         factoryId: factory.id,
         type: factory.type,
         ticks: result.ticksRealized,
-        produced: result.produced,
+        produced: producedForSummary,
         consumed: result.consumed
       })
     }

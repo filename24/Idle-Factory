@@ -181,3 +181,104 @@ describe('computeFactoryYield — refinery secondary output', () => {
     expect(result.produced.PLASTIC).toBe(1n)
   })
 })
+
+describe('computeGradeMultiplier — upgradeBooster', () => {
+  it('applies SPEED as ×115/100', () => {
+    const m = computeGradeMultiplier(1, false, 'SPEED')
+    expect(m.numerator).toBe(115n)
+    expect(m.denominator).toBe(100n)
+  })
+
+  it('applies PROFIT as ×11/10', () => {
+    const m = computeGradeMultiplier(1, false, 'PROFIT')
+    expect(m.numerator).toBe(11n)
+    expect(m.denominator).toBe(10n)
+  })
+
+  it('SAVING/RARE/null leave the production multiplier unchanged', () => {
+    for (const booster of ['SAVING', 'RARE', null] as const) {
+      const m = computeGradeMultiplier(1, false, booster)
+      expect(m.numerator).toBe(1n)
+      expect(m.denominator).toBe(1n)
+    }
+  })
+
+  it('stacks with grade and raw booster (grade 2 + raw + SPEED)', () => {
+    const m = computeGradeMultiplier(2, true, 'SPEED')
+    expect(m.numerator).toBe(3n * 12n * 115n)
+    expect(m.denominator).toBe(2n * 10n * 100n)
+  })
+})
+
+describe('computeFactoryYield — upgradeBooster effects', () => {
+  it('SPEED boosts FARM output by ×1.15 (10 ticks: 300 → 345)', () => {
+    const result = computeFactoryYield({
+      factory: makeFactory({ upgradeBooster: 'SPEED' }),
+      availableMaterials: {},
+      warehouseFree: HUGE_WAREHOUSE,
+      elapsedTicks: 10,
+    })
+    expect(result.ticksRealized).toBe(10)
+    expect(result.produced.GRAIN).toBe(345n)
+  })
+
+  it('PROFIT boosts FARM output by ×1.1 (10 ticks: 300 → 330)', () => {
+    const result = computeFactoryYield({
+      factory: makeFactory({ upgradeBooster: 'PROFIT' }),
+      availableMaterials: {},
+      warehouseFree: HUGE_WAREHOUSE,
+      elapsedTicks: 10,
+    })
+    expect(result.produced.GRAIN).toBe(330n)
+  })
+
+  it('SAVING reduces STEEL_MILL consumption ×0.8 without touching output', () => {
+    const result = computeFactoryYield({
+      factory: makeFactory({ type: 'STEEL_MILL', upgradeBooster: 'SAVING' }),
+      availableMaterials: { ORE: 100n },
+      warehouseFree: HUGE_WAREHOUSE,
+      elapsedTicks: 10,
+    })
+    expect(result.ticksRealized).toBe(10)
+    // 3 ORE/tick × 10 ticks × 0.8 = 24
+    expect(result.consumed.ORE).toBe(24n)
+    expect(result.produced.STEEL).toBe(50n)
+  })
+
+  it('SAVING extends the material clamp (12 ORE: 4 ticks → 5 ticks)', () => {
+    const noBooster = computeFactoryYield({
+      factory: makeFactory({ type: 'STEEL_MILL' }),
+      availableMaterials: { ORE: 12n },
+      warehouseFree: HUGE_WAREHOUSE,
+      elapsedTicks: 10,
+    })
+    expect(noBooster.ticksRealized).toBe(4)
+
+    const withSaving = computeFactoryYield({
+      factory: makeFactory({ type: 'STEEL_MILL', upgradeBooster: 'SAVING' }),
+      availableMaterials: { ORE: 12n },
+      warehouseFree: HUGE_WAREHOUSE,
+      elapsedTicks: 10,
+    })
+    // floor(12×10 / (3×8)) = 5 ticks, consumed = ⌊3×5×8/10⌋ = 12 ≤ 12
+    expect(withSaving.ticksRealized).toBe(5)
+    expect(withSaving.consumed.ORE).toBe(12n)
+    expect(withSaving.produced.STEEL).toBe(25n)
+  })
+
+  it('RARE leaves produced/consumed identical to no booster', () => {
+    const base = computeFactoryYield({
+      factory: makeFactory({ type: 'STEEL_MILL' }),
+      availableMaterials: { ORE: 30n },
+      warehouseFree: HUGE_WAREHOUSE,
+      elapsedTicks: 10,
+    })
+    const rare = computeFactoryYield({
+      factory: makeFactory({ type: 'STEEL_MILL', upgradeBooster: 'RARE' }),
+      availableMaterials: { ORE: 30n },
+      warehouseFree: HUGE_WAREHOUSE,
+      elapsedTicks: 10,
+    })
+    expect(rare).toEqual(base)
+  })
+})

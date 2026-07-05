@@ -6,8 +6,12 @@ import {
   type MaterialType
 } from '@idle/game-core'
 import type { ShortageMode } from '@idle/database'
-import { simpleV2Payload, V2_ACCENT } from '@utils/ComponentsV2'
-import { formatBigInt, renderFactoryInfo } from '@structures/renderers'
+import { simpleV2Payload, V2_ACCENT, v2Flags } from '@utils/ComponentsV2'
+import {
+  buildBoosterChoiceContainer,
+  formatBigInt,
+  renderFactoryInfo
+} from '@structures/renderers'
 import { appendQuestCompletions } from '@utils/questNotifier'
 import { DEFAULT_LAND_INDEX, FactoryService } from '../../services/factory'
 import { MAX_BUYABLE_INDEX } from '../../services/land'
@@ -23,9 +27,11 @@ import {
  *
  * 서브커맨드:
  * - `build`: 토지 `(x, y)`에 MVP 공장을 건설한다.
- * - `upgrade`: 소유 공장을 한 단계 업그레이드한다.
+ * - `upgrade`: 소유 공장을 한 단계 업그레이드한다. 3/5/7/10등급 도달 시 부스터 선택 UI 노출.
  * - `info`: 공장 현재 상태를 조회한다.
  * - `setmode`: 원료 부족 시 동작 모드를 변경한다.
+ * - `destroy`: 공장을 철거한다 (건설비 50% 환불).
+ * - `applybooster`: 창고의 원료 부스터를 공장에 영구 투입한다 (Lv.50+).
  *
  * 모든 응답은 공개 메시지로 전송된다.
  *
@@ -76,6 +82,8 @@ export class FactoryCommand extends Command {
         return this.handleSetMode(interaction)
       case 'destroy':
         return this.handleDestroy(interaction)
+      case 'applybooster':
+        return this.handleApplyBooster(interaction)
       default:
         return this.replyError(interaction, 'game:common.error.unknown')
     }
@@ -147,10 +155,11 @@ export class FactoryCommand extends Command {
 
     try {
       await UserService.ensure(db, { discordId: interaction.user.id })
-      const { factory, quest } = await FactoryService.upgrade(db, {
-        userId: interaction.user.id,
-        factoryId
-      })
+      const { factory, quest, boosterChoiceAvailable } =
+        await FactoryService.upgrade(db, {
+          userId: interaction.user.id,
+          factoryId
+        })
       const base = simpleV2Payload({
         accent: V2_ACCENT.success,
         title: t('game:factory.upgrade.success', {
@@ -159,9 +168,60 @@ export class FactoryCommand extends Command {
         }),
         ephemeral: false
       })
-      return interaction.reply(appendQuestCompletions(base, quest, t))
+      await interaction.reply(appendQuestCompletions(base, quest, t))
+      // 분기 등급(3/5/7/10) 도달 시 부스터 4지선다 followUp (#19).
+      // 업그레이드는 이미 커밋됐으므로 followUp 실패가 성공 흐름을
+      // 오류 응답으로 오염시키지 않도록 개별 격리한다.
+      if (boosterChoiceAvailable) {
+        try {
+          await interaction.followUp({
+            components: [
+              buildBoosterChoiceContainer({
+                ownerId: interaction.user.id,
+                factoryId: factory.id,
+                grade: factory.grade,
+                t
+              })
+            ],
+            flags: v2Flags(false)
+          })
+        } catch (followUpErr) {
+          this.container.logger.error(followUpErr)
+        }
+      }
+      return
     } catch (err) {
       return this.replyFromError(interaction, err, 'upgrade')
+    }
+  }
+
+  /** `/factory applybooster` 처리 — 창고의 원료 부스터 1개를 공장에 영구 투입한다. */
+  private async handleApplyBooster(
+    interaction: Command.ChatInputCommandInteraction
+  ) {
+    const { db } = this.container
+    const t = await fetchT(interaction)
+    const factoryId = interaction.options.getString('factory_id', true)
+
+    try {
+      await UserService.ensure(db, { discordId: interaction.user.id })
+      const factory = await FactoryService.applyRawBooster(db, {
+        userId: interaction.user.id,
+        factoryId
+      })
+      const entry = FACTORY_CATALOG[factory.type]
+      return interaction.reply(
+        simpleV2Payload({
+          accent: V2_ACCENT.rare,
+          body: t('game:factory.applyBooster.success', {
+            emoji: entry.emoji,
+            type: localizeFactoryType(t, factory.type)
+          }),
+          ephemeral: false
+        })
+      )
+    } catch (err) {
+      return this.replyFromError(interaction, err, 'applybooster')
     }
   }
 
@@ -271,7 +331,13 @@ export class FactoryCommand extends Command {
   private async replyFromError(
     interaction: Command.ChatInputCommandInteraction,
     err: unknown,
-    surface: 'build' | 'upgrade' | 'info' | 'setmode' | 'destroy'
+    surface:
+      | 'build'
+      | 'upgrade'
+      | 'info'
+      | 'setmode'
+      | 'destroy'
+      | 'applybooster'
   ) {
     if (!(err instanceof ServiceError)) {
       this.container.logger.error(err)
@@ -285,7 +351,13 @@ export class FactoryCommand extends Command {
   /** `ServiceError.code`와 서브커맨드 컨텍스트에 따라 i18n 키와 상호작용 파라미터를 결정한다. */
   private resolveErrorKey(
     err: ServiceError,
-    surface: 'build' | 'upgrade' | 'info' | 'setmode' | 'destroy',
+    surface:
+      | 'build'
+      | 'upgrade'
+      | 'info'
+      | 'setmode'
+      | 'destroy'
+      | 'applybooster',
     t: TFunction,
     interaction: Command.ChatInputCommandInteraction
   ): string {
@@ -314,6 +386,9 @@ export class FactoryCommand extends Command {
         })
       }
       case 'INSUFFICIENT_MATERIAL': {
+        if (surface === 'applybooster') {
+          return t('game:factory.applyBooster.error.noRawBooster')
+        }
         const details = (err.details ?? {}) as {
           material?: string
           amount?: bigint | string
@@ -337,6 +412,12 @@ export class FactoryCommand extends Command {
         })
       }
       case 'LEVEL_LOCKED': {
+        if (surface === 'applybooster') {
+          const det = (err.details ?? {}) as { level?: number }
+          return t('game:factory.applyBooster.error.levelLocked', {
+            level: det.level ?? '?'
+          })
+        }
         const typeOpt = interaction.options.getString('type')
         const level =
           typeOpt && typeOpt in FACTORY_CATALOG
@@ -344,6 +425,8 @@ export class FactoryCommand extends Command {
             : '?'
         return t('game:factory.build.error.levelLocked', { level })
       }
+      case 'RAW_BOOSTER_ALREADY_APPLIED':
+        return t('game:factory.applyBooster.error.alreadyApplied')
       case 'SLOT_OCCUPIED':
         return t('game:factory.build.error.slotOccupied')
       case 'OUT_OF_BOUNDS':
@@ -513,6 +596,26 @@ export class FactoryCommand extends Command {
                 .addChoices(
                   ...SHORTAGE_MODES.map((m) => ({ name: m, value: m }))
                 )
+            )
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName('applybooster')
+            .setDescription(
+              'Inject a Raw Booster into a factory (permanent, Lv.50+).'
+            )
+            .setNameLocalization('ko', '부스터투입')
+            .setDescriptionLocalization(
+              'ko',
+              '원료 부스터를 공장에 영구 투입합니다 (Lv.50+).'
+            )
+            .addStringOption((o) =>
+              o
+                .setName('factory_id')
+                .setDescription('Factory ID')
+                .setNameLocalization('ko', '공장id')
+                .setDescriptionLocalization('ko', '공장 ID')
+                .setRequired(true)
             )
         )
         .addSubcommand((sub) =>

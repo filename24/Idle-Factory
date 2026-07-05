@@ -8,7 +8,12 @@
  */
 
 import type { TFunction } from '@sapphire/plugin-i18next'
-import type { FactoryType, MaterialType, ShortageMode } from '@idle/game-core'
+import type {
+  FactoryType,
+  MaterialType,
+  ShortageMode,
+  UpgradeBooster
+} from '@idle/game-core'
 import koGame from '../locales/ko/game.json'
 
 /** `FARM` → "농장" / "Farm". */
@@ -24,6 +29,14 @@ export function localizeMaterial(t: TFunction, material: MaterialType): string {
 /** `PAUSE` → "일시 정지" / "Paused". */
 export function localizeShortageMode(t: TFunction, mode: ShortageMode): string {
   return t(`game:shortageMode.${mode}`, { defaultValue: mode })
+}
+
+/** `SAVING` → "자재 절감형" / "Material Saver". */
+export function localizeUpgradeBooster(
+  t: TFunction,
+  booster: UpgradeBooster
+): string {
+  return t(`game:booster.${booster}`, { defaultValue: booster })
 }
 
 const KO_MATERIAL = koGame.material as Record<string, string | undefined>

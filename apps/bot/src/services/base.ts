@@ -48,6 +48,11 @@ export type ServiceErrorCode =
   // - DAILY_LIMIT_EXCEEDED: 레벨 구간별 일일 총 한도 초과 (KST 자정 리셋).
   | 'MATERIAL_NOT_DIRECT_BUYABLE'
   | 'DAILY_LIMIT_EXCEEDED'
+  // 공장 부스터 (docs/design/03-factories.md §업그레이드 부스터, #19)
+  // - BOOSTER_NOT_AVAILABLE: 현재 등급이 분기 등급(3/5/7/10)이 아니어서 부스터 선택 불가.
+  // - RAW_BOOSTER_ALREADY_APPLIED: 이 공장에는 이미 원자재 부스터가 투입됨 (공장당 1회).
+  | 'BOOSTER_NOT_AVAILABLE'
+  | 'RAW_BOOSTER_ALREADY_APPLIED'
 
 export class ServiceError extends Error {
   public readonly code: ServiceErrorCode
