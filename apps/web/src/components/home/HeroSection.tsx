@@ -20,7 +20,7 @@ export function HeroSection() {
           <h1 className="font-display text-ink mt-6 text-[clamp(2.75rem,7vw,5.5rem)] leading-[1.02] tracking-[-0.02em] break-keep">
             내 손으로 짓는
             <br />
-            <span className="italic">산업 제국</span>
+            <span className="font-bold">산업 제국</span>
           </h1>
 
           {/* 서브타이틀 */}

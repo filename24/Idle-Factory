@@ -45,12 +45,11 @@
   --sidebar-border: rgba(255, 255, 255, 0.06);
   --sidebar-ring: #fcfdff;
 
-  /* 폰트 스택 — Fraunces/Gowun Batang(디스플레이), Pretendard(본문/UI), Geist Mono(코드) */
+  /* 폰트 스택 — Pretendard(디스플레이/본문/UI 공통), Geist Mono(코드) */
   --font-sans:
     'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', sans-serif;
-  --font-display:
-    var(--font-fraunces), var(--font-gowun-batang), 'Pretendard Variable', Georgia, serif;
-  --font-serif: var(--font-display);
+  --font-display: var(--font-sans);
+  --font-serif: var(--font-sans);
   --font-mono: var(--font-geist-mono), 'SFMono-Regular', ui-monospace, monospace;
 
   /* DESIGN.md rounded — 버튼/인풋 8px(lg), 카드/코드웰 12px(xl) */
@@ -191,10 +190,10 @@
     font-feature-settings: 'ss01', 'cv01';
     -webkit-font-smoothing: antialiased;
   }
-  /* 디스플레이 세리프 — lineHeight 1.0 고정, 타이트 트래킹 (DESIGN.md typography 원칙) */
+  /* 디스플레이 헤드라인 — Pretendard 세미볼드 + 타이트 트래킹 (DESIGN.md typography 원칙) */
   .font-display {
     font-family: var(--font-display);
-    font-feature-settings: 'ss01', 'liga';
+    font-weight: 600;
     letter-spacing: -0.02em;
   }
 }
