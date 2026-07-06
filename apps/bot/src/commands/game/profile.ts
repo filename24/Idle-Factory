@@ -11,10 +11,30 @@
 
 import { Command } from '@sapphire/framework'
 import { fetchT } from '@sapphire/plugin-i18next'
-import { simpleV2Payload, V2_ACCENT } from '@utils/ComponentsV2'
-import { xpRequiredForLevel } from '@idle/game-core'
-import { formatBigInt } from '@structures/renderers'
+import { simpleV2Payload, V2_ACCENT } from '../../utils/ComponentsV2'
+import { getCreditTier, xpRequiredForLevel } from '@idle/game-core'
+import { formatBigInt } from '../../structures/renderers/FactoryRenderer'
 import { UserService } from '../../services/user'
+
+/**
+ * 서버 신뢰도 상태 라인을 생성한다.
+ *
+ * 신뢰도 점수와 `getCreditTier`로 산정한 티어 라벨을 기존 프로필 라인
+ * 스타일(라벨 볼드)에 맞춰 한 줄 문자열로 반환한다. 티어 라벨은
+ * `game:server.vault.creditTier.<TIER>` 로케일 키로 조회한다.
+ *
+ * @param t 대상 서버 로케일 `t` 함수
+ * @param credit 서버 신뢰도 점수
+ * @returns `**서버 신뢰도:** 1000 pt · 신뢰 (1000~1499)` 형태의 라인 문자열
+ */
+export function buildServerCreditLine(
+  t: Awaited<ReturnType<typeof fetchT>>,
+  credit: number
+): string {
+  const tier = getCreditTier(credit)
+  const tierLabel = t(`game:server.vault.creditTier.${tier}`)
+  return `**${t('game:profile.fields.serverCredit')}:** ${credit} pt · ${tierLabel}`
+}
 
 export class ProfileCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -45,13 +65,28 @@ export class ProfileCommand extends Command {
 
     const displayName = hydrated.nickname ?? interaction.user.username
 
-    const body = [
+    const lines = [
       `**${t('game:profile.fields.level')}:** ${level}`,
       `**${t('game:profile.fields.xp')}:** ${formatBigInt(xp)} / ${formatBigInt(xpNeeded)}`,
       `**${t('game:profile.fields.money')}:** ${formatBigInt(hydrated.money)} 💰`,
       `**${t('game:profile.fields.warehouseGrade')}:** G${hydrated.warehouse?.grade ?? 1}`,
       `**${t('game:profile.fields.factoryCount')}:** ${factoryCount}`
-    ].join('\n')
+    ]
+
+    // 길드 컨텍스트(DM 아님)에서 등록된 서버일 때만 서버 신뢰도 라인을 덧붙인다.
+    // DM·미등록 서버면 라인을 생략해 기존 동작을 유지한다.
+    if (interaction.guildId) {
+      const guild = await db.guild.findUnique({
+        where: { id: interaction.guildId },
+        select: { credit: true }
+      })
+
+      if (guild) {
+        lines.push(buildServerCreditLine(t, guild.credit))
+      }
+    }
+
+    const body = lines.join('\n')
 
     return interaction.reply(
       simpleV2Payload({
