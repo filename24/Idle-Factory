@@ -16,6 +16,7 @@ import {
   WeeklySettlementService,
   type SettleWeekResult
 } from '../../src/services/weeklySettlement'
+import { GuildService } from '../../src/services/guild'
 import type { PrismaClient } from '@idle/database'
 
 const fakePrisma = {} as PrismaClient
@@ -44,6 +45,11 @@ describe('runWeeklySettlement', () => {
       warn: vi.fn(),
       error: vi.fn()
     } as unknown as typeof container.logger
+    // 주간 신뢰도 적용(#17)은 별도 검증하므로 여기선 no-op 스텁.
+    vi.spyOn(GuildService, 'applyWeeklyCredit').mockResolvedValue({
+      updatedGuilds: 0,
+      emergencySupportedGuildIds: []
+    })
   })
 
   afterEach(() => {
@@ -63,7 +69,9 @@ describe('runWeeklySettlement', () => {
 
     expect(spy).toHaveBeenCalledWith(fakePrisma)
     expect(result).toBe(7)
-    expect(container.logger.info).toHaveBeenCalledOnce()
+    // 정산 요약 + 신뢰도 요약 두 건의 info 로그.
+    expect(container.logger.info).toHaveBeenCalledTimes(2)
+    expect(GuildService.applyWeeklyCredit).toHaveBeenCalledWith(fakePrisma)
     expect(container.logger.error).not.toHaveBeenCalled()
   })
 

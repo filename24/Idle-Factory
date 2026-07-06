@@ -17,7 +17,7 @@
       "error": {
         "insufficientMoney": "Not enough money. Required: {{required}} 💰",
         "insufficientMaterial": "Not enough material. Required: {{amount}} {{material}}",
-        "maxGrade": "Already at max grade."
+        "maxGrade": "Already at max grade (max G{{maxGrade}} at this server's credit)."
       }
     },
     "info": {
@@ -180,6 +180,7 @@
       "factoryNotFound": "That factory could not be found.",
       "warehouseFull": "Warehouse is full. Upgrade it or sell some materials.",
       "notYourInteraction": "This isn't your interaction. Please run the command yourself.",
+      "creditRestricted": "This server's credit is too low ({{credit}}) to use this feature. Credit of 300 or higher is required.",
       "unknown": "An unknown error occurred. Please try again in a moment."
     }
   },
@@ -279,7 +280,8 @@
         "invalidQuantity": "Quantity must be at least 1.",
         "invalidPrice": "Price must be at least 1.",
         "invalidDuration": "Duration must be 1–30 days.",
-        "priceOutOfRange": "The listing price must be within ±50% of the global market price. Allowed range: {{min}}–{{max}}"
+        "priceOutOfRange": "The listing price must be within ±50% of the global market price. Allowed range: {{min}}–{{max}}",
+        "creditBlocked": "This server's credit is too low to list on the user market. (requires credit 700 or higher)"
       },
       "selectMaterial": {
         "title": "List on Market",
@@ -476,7 +478,15 @@
       "title": "🏦 {{guildName}} Server Vault",
       "balance": "**Vault balance:** {{balance}}",
       "surcharge": "**Server surcharge:** +{{surcharge}}%p",
-      "credit": "**Credit:** {{credit}} pt (credit system coming soon)",
+      "credit": "**Credit:** {{credit}} pt · {{tier}}",
+      "creditHint": "-# Adjusts each weekly settlement by activity (weekly active users×0.5 − 10). Below 300 limits features · 700+ market listing · 1000+ factory G9·XP +10% · 1500+ factory G10·XP +20%",
+      "creditTier": {
+        "RESTRICTED": "Restricted (0–299)",
+        "LIMITED": "Limited (300–699)",
+        "NORMAL": "Normal (700–999)",
+        "TRUSTED": "Trusted (1000–1499)",
+        "ELITE": "Elite (1500+)"
+      },
       "weeklyDau": "**Weekly active users:** {{dau}}",
       "settlement": {
         "heading": "Latest weekly settlement",

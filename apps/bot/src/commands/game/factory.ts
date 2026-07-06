@@ -1,6 +1,7 @@
 import { Command } from '@sapphire/framework'
 import { fetchT, type TFunction } from '@sapphire/plugin-i18next'
 import {
+  ABSOLUTE_MAX_GRADE,
   FACTORY_CATALOG,
   type FactoryType,
   type MaterialType
@@ -105,11 +106,16 @@ export class FactoryCommand extends Command {
         landIndex,
         type,
         anchorX: x,
-        anchorY: y
+        anchorY: y,
+        guildId: interaction.guildId
       })
 
       const entry = FACTORY_CATALOG[factory.type]
-      const info = await FactoryService.info(db, factory.id)
+      const info = await FactoryService.info(
+        db,
+        factory.id,
+        interaction.guildId
+      )
       const nextCost =
         info.nextUpgradeCost.money !== null &&
         info.nextUpgradeCost.material !== null
@@ -149,7 +155,8 @@ export class FactoryCommand extends Command {
       await UserService.ensure(db, { discordId: interaction.user.id })
       const { factory, quest } = await FactoryService.upgrade(db, {
         userId: interaction.user.id,
-        factoryId
+        factoryId,
+        guildId: interaction.guildId
       })
       const base = simpleV2Payload({
         accent: V2_ACCENT.success,
@@ -172,7 +179,7 @@ export class FactoryCommand extends Command {
     const factoryId = interaction.options.getString('factory_id', true)
 
     try {
-      const info = await FactoryService.info(db, factoryId)
+      const info = await FactoryService.info(db, factoryId, interaction.guildId)
       const entry = FACTORY_CATALOG[info.type]
       const nextCost =
         info.nextUpgradeCost.money !== null &&
@@ -348,8 +355,18 @@ export class FactoryCommand extends Command {
         return t('game:factory.build.error.slotOccupied')
       case 'OUT_OF_BOUNDS':
         return t('game:factory.build.error.outOfBounds')
-      case 'MAX_GRADE':
-        return t('game:factory.upgrade.error.maxGrade')
+      case 'MAX_GRADE': {
+        const det = (err.details ?? {}) as { maxGrade?: number }
+        return t('game:factory.upgrade.error.maxGrade', {
+          maxGrade: det.maxGrade ?? ABSOLUTE_MAX_GRADE
+        })
+      }
+      case 'CREDIT_RESTRICTED': {
+        const det = (err.details ?? {}) as { credit?: number | null }
+        return t('game:common.error.creditRestricted', {
+          credit: det.credit ?? '?'
+        })
+      }
       case 'LAND_NOT_FOUND':
         return t('game:factory.build.error.landNotFound')
       default:

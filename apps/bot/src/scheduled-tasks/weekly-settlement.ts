@@ -1,7 +1,9 @@
 import { container } from '@sapphire/framework'
 import { ScheduledTask } from '@sapphire/plugin-scheduled-tasks'
 import type { PrismaClient } from '@idle/database'
+import { EMERGENCY_SUPPORT_CAP } from '@idle/game-core'
 
+import { GuildService } from '../services/guild'
 import { WeeklySettlementService } from '../services/weeklySettlement'
 
 /**
@@ -20,6 +22,10 @@ export const WEEKLY_SETTLEMENT_CRON = '0 15 * * 6'
  * 순수 함수로 노출한다. 실제 정산(수익 집계 + 누진 과세 + 금고 적립 +
  * weeklyDAU 갱신)은 `WeeklySettlementService.settleWeek` 에 위임한다 —
  * (userId, weekStart) unique 앵커 덕에 중복 실행돼도 유저당 1회만 처리된다.
+ *
+ * 정산 직후 `GuildService.applyWeeklyCredit` 로 주간 신뢰도 증감·긴급 지원금을
+ * 적용한다 (#17). **순서 중요**: settleWeek 내부의 `refreshWeeklyDau` 가 직전 주
+ * DAU 로 `Guild.weeklyDAU` 를 갱신한 뒤여야 신뢰도 입력이 "지난 주 DAU" 가 된다.
  *
  * @param prisma - DB 클라이언트
  * @returns 이번 실행에서 정산된 유저 수
@@ -41,6 +47,19 @@ export async function runWeeklySettlement(
       `[weekly-settlement] user settlement failed (user=${failure.userId}): ${failure.message}`
     )
   }
+
+  // 주간 신뢰도 증감 + 긴급 지원금 (refreshWeeklyDau 이후 = 지난 주 DAU 입력).
+  const credit = await GuildService.applyWeeklyCredit(prisma)
+  container.logger.info(
+    `[weekly-settlement] credit updated=${credit.updatedGuilds} ` +
+      `emergencySupported=${credit.emergencySupportedGuildIds.length}`
+  )
+  for (const guildId of credit.emergencySupportedGuildIds) {
+    container.logger.warn(
+      `[weekly-settlement] emergency support issued (guild=${guildId}): vault topped up to ${EMERGENCY_SUPPORT_CAP}`
+    )
+  }
+
   return result.settledUsers
 }
 

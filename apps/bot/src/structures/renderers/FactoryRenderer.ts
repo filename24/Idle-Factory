@@ -21,6 +21,11 @@ export interface FactoryInfoDTO {
   readonly type: FactoryType
   /** 현재 등급 1..10 */
   readonly grade: number
+  /**
+   * 서버 신뢰도 기준 유효 최대 등급(8 | 9 | 10). 제공되면 등급 라인을
+   * `G{grade} / {effectiveMaxGrade}` 로 표시한다. 근거: 이슈 #17 확정 결정 1.
+   */
+  readonly effectiveMaxGrade?: number
   /** 배치된 앵커 X */
   readonly anchorX: number
   /** 배치된 앵커 Y */
@@ -84,9 +89,14 @@ export function renderFactoryInfo(
         : '미공개'
       : `Lv.${catalogEntry.unlockLevel}`
 
+  const gradeValue =
+    factory.effectiveMaxGrade !== undefined
+      ? `G${factory.grade} / ${factory.effectiveMaxGrade}`
+      : `G${factory.grade}`
+
   const lines = [
     `**${fieldLabel('type', '종류')}:** ${catalogEntry.emoji} ${typeLabel} (${catalogEntry.tier})`,
-    `**${fieldLabel('grade', '등급')}:** G${factory.grade}`,
+    `**${fieldLabel('grade', '등급')}:** ${gradeValue}`,
     `**${fieldLabel('position', '좌표')}:** (${factory.anchorX}, ${factory.anchorY})`,
     `**${fieldLabel('mode', '모드')}:** ${modeLabel}`,
     `**${fieldLabel('unlock', '해금 레벨')}:** ${unlockValue}`

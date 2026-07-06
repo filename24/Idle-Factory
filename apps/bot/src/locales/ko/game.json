@@ -17,7 +17,7 @@
       "error": {
         "insufficientMoney": "돈이 부족해요. 필요: {{required}} 💰",
         "insufficientMaterial": "재료가 부족해요. 필요: {{amount}} {{material}}",
-        "maxGrade": "이미 최대 등급이에요."
+        "maxGrade": "이미 최대 등급이에요 (현재 신뢰도 기준 최대 G{{maxGrade}})."
       }
     },
     "info": {
@@ -180,6 +180,7 @@
       "factoryNotFound": "해당 공장을 찾을 수 없어요.",
       "warehouseFull": "창고가 가득 찼어요. 창고를 확장하거나 자원을 판매해주세요.",
       "notYourInteraction": "본인이 시작한 인터랙션이 아니에요. 직접 명령어를 사용해주세요.",
+      "creditRestricted": "서버 신뢰도가 낮아(현재 {{credit}}) 이 기능을 사용할 수 없어요. 신뢰도 300 이상이 필요해요.",
       "unknown": "알 수 없는 오류가 발생했어요. 잠시 후 다시 시도해주세요."
     }
   },
@@ -279,7 +280,8 @@
         "invalidQuantity": "수량은 1 이상이어야 해요.",
         "invalidPrice": "가격은 1원 이상이어야 해요.",
         "invalidDuration": "기간은 1~30일이어야 해요.",
-        "priceOutOfRange": "등록가는 글로벌 시세의 ±50% 범위여야 해요. 허용 범위: {{min}}~{{max}}원"
+        "priceOutOfRange": "등록가는 글로벌 시세의 ±50% 범위여야 해요. 허용 범위: {{min}}~{{max}}원",
+        "creditBlocked": "서버 신뢰도가 부족해 유저 상점에 등록할 수 없습니다. (신뢰도 700 이상 필요)"
       },
       "selectMaterial": {
         "title": "마켓 등록",
@@ -476,7 +478,15 @@
       "title": "🏦 {{guildName}} 서버 금고",
       "balance": "**금고 잔액:** {{balance}}원",
       "surcharge": "**서버 가산세:** +{{surcharge}}%p",
-      "credit": "**신뢰도:** {{credit}} pt (증감 시스템은 준비 중이에요)",
+      "credit": "**신뢰도:** {{credit}} pt · {{tier}}",
+      "creditHint": "-# 매주 정산 시 활성도로 증감해요 (주간 활성 유저×0.5 − 10). 300 미만 기능 제한 · 700+ 상점 등록 · 1000+ 공장 G9·XP +10% · 1500+ 공장 G10·XP +20%",
+      "creditTier": {
+        "RESTRICTED": "제한 (0~299)",
+        "LIMITED": "제한적 (300~699)",
+        "NORMAL": "정상 (700~999)",
+        "TRUSTED": "신뢰 (1000~1499)",
+        "ELITE": "엘리트 (1500+)"
+      },
       "weeklyDau": "**주간 활성 유저:** {{dau}}명",
       "settlement": {
         "heading": "최근 주간 정산",
