@@ -17,7 +17,9 @@ import {
   type SettleWeekResult
 } from '../../src/services/weeklySettlement'
 import { GuildService } from '../../src/services/guild'
+import { AnnounceService, type AnnounceItem } from '../../src/services/announce'
 import type { PrismaClient } from '@idle/database'
+import type { TFunction } from 'i18next'
 
 const fakePrisma = {} as PrismaClient
 
@@ -48,7 +50,8 @@ describe('runWeeklySettlement', () => {
     // 주간 신뢰도 적용(#17)은 별도 검증하므로 여기선 no-op 스텁.
     vi.spyOn(GuildService, 'applyWeeklyCredit').mockResolvedValue({
       updatedGuilds: 0,
-      emergencySupportedGuildIds: []
+      emergencySupportedGuildIds: [],
+      changes: []
     })
   })
 
@@ -90,5 +93,70 @@ describe('runWeeklySettlement', () => {
 
     expect(result).toBe(1)
     expect(container.logger.error).toHaveBeenCalledTimes(2)
+  })
+
+  it('신뢰도 변동/긴급 지원금을 각 서버 공지 채널로 디스패치한다', async () => {
+    vi.spyOn(WeeklySettlementService, 'settleWeek').mockResolvedValue(
+      fakeResult({ settledUsers: 3 })
+    )
+    // g-1: 증가(+50), g-2: 감소(-50)+긴급, g-3: 변동없음(스팸 방지 스킵)
+    vi.spyOn(GuildService, 'applyWeeklyCredit').mockResolvedValue({
+      updatedGuilds: 3,
+      emergencySupportedGuildIds: ['g-2'],
+      changes: [
+        {
+          guildId: 'g-1',
+          before: 1000,
+          after: 1050,
+          delta: 50,
+          emergency: false
+        },
+        {
+          guildId: 'g-2',
+          before: 250,
+          after: 200,
+          delta: -50,
+          emergency: true
+        },
+        { guildId: 'g-3', before: 900, after: 900, delta: 0, emergency: false }
+      ]
+    })
+    const announceSpy = vi
+      .spyOn(AnnounceService, 'announceMany')
+      .mockResolvedValue(0)
+
+    await runWeeklySettlement(fakePrisma)
+
+    expect(announceSpy).toHaveBeenCalledTimes(1)
+    const items = announceSpy.mock.calls[0]![0] as ReadonlyArray<AnnounceItem>
+    // weekly 2건(g-1, g-2) + emergency 1건(g-2) = 3건. delta 0 인 g-3 은 스킵.
+    expect(items).toHaveLength(3)
+    expect(items.map((i) => i.guildId)).toEqual(['g-1', 'g-2', 'g-2'])
+
+    // 캡처한 build 를 fakeT 로 호출해 사용 로케일 키를 검증.
+    const keysOf = (item: AnnounceItem): string[] => {
+      const seen: string[] = []
+      const fakeT = ((key: string) => {
+        seen.push(key)
+        return key
+      }) as unknown as TFunction
+      const containers = item.build(fakeT)
+      expect(containers).toHaveLength(1)
+      return seen
+    }
+
+    const weeklyKeys = keysOf(items[0]!)
+    expect(weeklyKeys).toContain('game:server.announce.weekly.title')
+    expect(weeklyKeys).toContain('game:server.announce.weekly.body')
+    expect(weeklyKeys).toContain('game:server.announce.weekly.tier')
+    // after=1050 → TRUSTED 티어 라벨 조회.
+    expect(weeklyKeys).toContain('game:server.vault.creditTier.TRUSTED')
+
+    const emergencyKeys = keysOf(items[2]!)
+    expect(emergencyKeys).toContain('game:server.announce.emergency.title')
+    expect(emergencyKeys).toContain('game:server.announce.emergency.body')
+
+    // 신뢰도 요약 info 는 여전히 2회(정산 + 신뢰도)로 유지.
+    expect(container.logger.info).toHaveBeenCalledTimes(2)
   })
 })

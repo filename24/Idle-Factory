@@ -15,15 +15,23 @@
 import { container } from '@sapphire/framework'
 import { fetchT } from '@sapphire/plugin-i18next'
 import type { ContainerBuilder } from 'discord.js'
-import type { TFunction } from 'i18next'
 
 import { v2MessageOptions } from '../utils/ComponentsV2'
+
+/**
+ * 대상 서버 로케일 `t` 함수 타입.
+ *
+ * i18next 가 트리에 두 버전(플러그인 v26 · 전이 의존 v25)으로 존재해 `TFunction`
+ * 을 직접 import 하면 버전 충돌이 난다. `fetchT` 의 실제 반환 타입에서 파생해
+ * 플러그인이 넘겨주는 정확한 타입과 일치시킨다.
+ */
+export type AnnounceT = Awaited<ReturnType<typeof fetchT>>
 
 /**
  * 공지 페이로드 빌더 — 대상 길드의 로케일 `t` 를 받아 Components v2 컨테이너
  * 배열을 만든다. 호출자가 메시지 문구·구성을 결정한다.
  */
-export type AnnounceBuilder = (t: TFunction) => ContainerBuilder[]
+export type AnnounceBuilder = (t: AnnounceT) => ContainerBuilder[]
 
 /** 여러 길드에 동시(순차) 공지할 항목. */
 export interface AnnounceItem {

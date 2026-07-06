@@ -8,6 +8,8 @@ import {
 } from '@idle/game-core'
 
 import { runInTx } from '../services/base'
+import { AnnounceService } from '../services/announce'
+import { simpleContainer, V2_ACCENT } from '../utils/ComponentsV2'
 
 /**
  * 일일 글로벌 잡 cron 패턴 — 매일 15:00 UTC = KST 00:00 (U-6).
@@ -44,17 +46,18 @@ export interface DailyGlobalResult {
  * 신뢰도는 `applyCreditDelta` 로 0~2000 clamp. 멱등하지 않으므로(같은 날 재실행
  * 시 −20) 스케줄러 큐 occurrence dedup 에 의존한다.
  *
- * @returns 실제 신뢰도가 갱신된(패널티가 적용된) 서버 수. 이미 하한(0)이라 쓰기를
- *          생략한 서버는 카운트하지 않는다.
+ * @returns 실제 신뢰도가 갱신된(패널티가 적용된) 서버 목록. 각 항목은 길드 ID 와
+ *          패널티 적용 **후** 신뢰도(`credit`)를 담는다. 이미 하한(0)이라 쓰기를
+ *          생략한 서버는 포함하지 않는다.
  */
 export async function applyUnpaidPenalty(
   prisma: PrismaClient
-): Promise<number> {
+): Promise<ReadonlyArray<{ guildId: string; credit: number }>> {
   const latest = await prisma.weeklySettlementLine.findFirst({
     orderBy: { weekStart: 'desc' },
     select: { weekStart: true }
   })
-  if (!latest) return 0
+  if (!latest) return []
 
   const lines = await prisma.weeklySettlementLine.findMany({
     where: { weekStart: latest.weekStart, guildId: { not: null } },
@@ -67,7 +70,7 @@ export async function applyUnpaidPenalty(
       unpaidGuildIds.add(line.guildId)
     }
   }
-  if (unpaidGuildIds.size === 0) return 0
+  if (unpaidGuildIds.size === 0) return []
 
   const ids = [...unpaidGuildIds]
   return runInTx(prisma, async (tx) => {
@@ -75,18 +78,47 @@ export async function applyUnpaidPenalty(
       where: { id: { in: ids } },
       select: { id: true, credit: true }
     })
-    let penalized = 0
+    const penalized: Array<{ guildId: string; credit: number }> = []
     for (const guild of guilds) {
       const next = applyCreditDelta(guild.credit, UNPAID_DAILY_PENALTY)
-      if (next === guild.credit) continue // 이미 하한(0) — 쓰기·카운트 생략.
+      if (next === guild.credit) continue // 이미 하한(0) — 쓰기·수집 생략.
       await tx.guild.update({
         where: { id: guild.id },
         data: { credit: next }
       })
-      penalized += 1
+      penalized.push({ guildId: guild.id, credit: next })
     }
     return penalized
   })
+}
+
+/**
+ * 미납 패널티가 적용된 각 서버에 신뢰도 감소를 공지한다.
+ *
+ * 각 항목을 `AnnounceService.announceMany` 로 순차 전송한다. 빌드 콜백은 대상
+ * 서버 로케일 `t` 로 경고 accent 컨테이너 하나를 만들며, 본문에 패널티 크기
+ * (`penalty`=|UNPAID_DAILY_PENALTY|=10)와 적용 후 신뢰도(`credit`)를 인터폴레이션
+ * 한다. 공지는 부가 효과이므로 전송 실패는 잡을 막지 않는다(서비스가 조용히 스킵).
+ *
+ * @param penalized 패널티 적용 서버 목록(길드 ID·적용 후 신뢰도).
+ * @returns 실제 전송에 성공한 서버 수.
+ */
+export async function announceUnpaidPenalty(
+  penalized: ReadonlyArray<{ guildId: string; credit: number }>
+): Promise<number> {
+  const penalty = Math.abs(UNPAID_DAILY_PENALTY)
+  return AnnounceService.announceMany(
+    penalized.map(({ guildId, credit }) => ({
+      guildId,
+      build: (t) => [
+        simpleContainer(
+          V2_ACCENT.warn,
+          t('game:server.announce.daily.title'),
+          t('game:server.announce.daily.body', { penalty, credit })
+        )
+      ]
+    }))
+  )
 }
 
 /**
@@ -185,13 +217,16 @@ export async function runDailyGlobal(
   prisma: PrismaClient,
   now: Date = new Date()
 ): Promise<DailyGlobalResult> {
-  const penalizedGuilds = await applyUnpaidPenalty(prisma)
+  const penalized = await applyUnpaidPenalty(prisma)
+  const penalizedGuilds = penalized.length
   const { collectedGuilds, frozenTotal } = await collectInactive(prisma, now)
 
   container.logger.info(
     `[daily-global] penalized=${penalizedGuilds} ` +
       `collected=${collectedGuilds} frozen=${frozenTotal}`
   )
+
+  await announceUnpaidPenalty(penalized)
 
   return { penalizedGuilds, collectedGuilds, frozenTotal }
 }

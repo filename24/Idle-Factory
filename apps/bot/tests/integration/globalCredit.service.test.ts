@@ -165,7 +165,7 @@ describe('applyUnpaidPenalty', () => {
 
     const penalized = await applyUnpaidPenalty(testPrisma)
 
-    expect(penalized).toBe(1)
+    expect(penalized.length).toBe(1)
     expect(await creditOf('g-unpaid')).toBe(990)
     expect(await creditOf('g-paid')).toBe(1000)
   })
@@ -188,7 +188,7 @@ describe('applyUnpaidPenalty', () => {
 
     const penalized = await applyUnpaidPenalty(testPrisma)
 
-    expect(penalized).toBe(0)
+    expect(penalized.length).toBe(0)
     expect(await creditOf('g-x')).toBe(1000)
   })
 

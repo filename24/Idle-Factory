@@ -8,6 +8,9 @@ import {
 } from '@idle/game-core'
 
 import { runInTx, type Tx } from '../services/base'
+import { AnnounceService, type AnnounceT } from '../services/announce'
+import { simpleContainer, V2_ACCENT } from '../utils/ComponentsV2'
+import { formatBigInt } from '../structures/renderers/FactoryRenderer'
 
 /**
  * 월간 비활성 자산 재분배 cron 패턴 — 매월 1일 00:00 UTC.
@@ -46,6 +49,8 @@ export interface MonthlyRedistributionResult {
   readonly userPayouts: number
   /** 개별 지급 트랜잭션이 실패해 미지급으로 남은 수신 길드 id 목록. */
   readonly failedGuildIds: ReadonlyArray<string>
+  /** 실제 금고 증액에 성공한 각 서버의 (길드 id, 지급액) — 수령 공지 대상. */
+  readonly payouts: ReadonlyArray<{ guildId: string; amount: bigint }>
 }
 
 /** 분배 없음(빈 풀·수혜 서버 없음) 결과. */
@@ -55,8 +60,40 @@ function emptyResult(totalPool: bigint): MonthlyRedistributionResult {
     distributedPools: 0,
     guildShares: 0,
     userPayouts: 0,
-    failedGuildIds: []
+    failedGuildIds: [],
+    payouts: []
   }
+}
+
+/**
+ * 월간 재분배로 금고를 지급받은 각 활성 서버에 수령 공지를 전송한다.
+ *
+ * `amount > 0n` 인 항목만 대상으로 삼아 `AnnounceService.announceMany` 로
+ * Components v2 컨테이너(성공 accent + monthly 문구·formatBigInt 금액)를 보낸다.
+ * 클라이언트 미가용·채널 미설정 시 서비스가 조용히 no-op 하므로 잡을 죽이지
+ * 않는다. 근거: docs/design/07-global-system.md §비활성 서버 자산 분배.
+ *
+ * @param payouts (길드 id, 지급액) 목록.
+ * @returns 실제 전송에 성공한 길드 수.
+ */
+export async function announceRedistribution(
+  payouts: ReadonlyArray<{ guildId: string; amount: bigint }>
+): Promise<number> {
+  const items = payouts
+    .filter((p) => p.amount > 0n)
+    .map((p) => ({
+      guildId: p.guildId,
+      build: (t: AnnounceT) => [
+        simpleContainer(
+          V2_ACCENT.success,
+          t('game:server.announce.monthly.title'),
+          t('game:server.announce.monthly.body', {
+            amount: formatBigInt(p.amount)
+          })
+        )
+      ]
+    }))
+  return AnnounceService.announceMany(items)
 }
 
 /**
@@ -214,7 +251,8 @@ export async function runMonthlyRedistribution(
       distributedPools: poolCount,
       guildShares: 0,
       userPayouts: 0,
-      failedGuildIds: []
+      failedGuildIds: [],
+      payouts: []
     }
   }
 
@@ -244,6 +282,7 @@ export async function runMonthlyRedistribution(
   let guildShares = 0
   let userPayouts = 0
   const failedGuildIds: string[] = []
+  const payouts: { guildId: string; amount: bigint }[] = []
 
   for (let i = 0; i < eligible.length; i++) {
     const guild = eligible[i]
@@ -255,6 +294,7 @@ export async function runMonthlyRedistribution(
       const paid = await payoutGuildShare(prisma, guild.id, share, now)
       guildShares += 1
       userPayouts += paid
+      payouts.push({ guildId: guild.id, amount: share })
     } catch (err) {
       failedGuildIds.push(guild.id)
       container.logger.error(
@@ -270,12 +310,16 @@ export async function runMonthlyRedistribution(
       `guilds=${guildShares} users=${userPayouts} failed=${failedGuildIds.length}`
   )
 
+  // 수령 서버에 지급액 공지(부가 효과 — 실패해도 정산 결과에 영향 없음).
+  await announceRedistribution(payouts)
+
   return {
     totalPool,
     distributedPools: poolCount,
     guildShares,
     userPayouts,
-    failedGuildIds
+    failedGuildIds,
+    payouts
   }
 }
 

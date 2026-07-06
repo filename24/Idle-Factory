@@ -82,12 +82,38 @@ export interface CreditEffects {
   readonly xpBonusBps: number
 }
 
-/** `applyWeeklyCredit` 결과 요약 — 호출자(주간 잡)가 로깅한다. */
+/**
+ * `applyWeeklyCredit` 의 서버별 신뢰도 변동 항목.
+ *
+ * 호출자(주간 잡)가 서버별 공지를 구성하는 데 쓴다 — before/after 로 문구를
+ * 만들고, `delta === 0` 이면 공지를 스킵(스팸 방지), `emergency` 면 긴급 지원금
+ * 공지를 별도로 붙인다. 근거: docs/design/07-global-system.md §신뢰도 변동.
+ */
+export interface WeeklyCreditChange {
+  /** 대상 서버(Discord snowflake). */
+  readonly guildId: string
+  /** 적용 전 신뢰도. */
+  readonly before: number
+  /** 적용 후 신뢰도(0~2000 clamp). */
+  readonly after: number
+  /** 증감량(`after - before`). 0 이면 변동 없음. */
+  readonly delta: number
+  /** 이 서버에 긴급 지원금(금고 보전)이 발동됐는지 여부. */
+  readonly emergency: boolean
+}
+
+/** `applyWeeklyCredit` 결과 요약 — 호출자(주간 잡)가 로깅·공지에 쓴다. */
 export interface WeeklyCreditResult {
   /** 신뢰도가 갱신된 활성 서버 수. */
   readonly updatedGuilds: number
   /** 긴급 지원금(금고 100만원 보전)이 발동된 서버 id 목록. */
   readonly emergencySupportedGuildIds: ReadonlyArray<string>
+  /**
+   * 서버별 신뢰도 변동 상세. 활성 서버 1건당 1개(변동 0 포함)로, 호출자가
+   * 서버별 공지 디스패치에 사용한다. `emergencySupportedGuildIds` 와 중복되지만
+   * before/after 문구 구성을 위해 별도로 노출한다(가산 확장).
+   */
+  readonly changes: ReadonlyArray<WeeklyCreditChange>
 }
 
 export const GuildService = {
@@ -345,6 +371,7 @@ export const GuildService = {
     })
 
     const emergencySupportedGuildIds: string[] = []
+    const changes: WeeklyCreditChange[] = []
     let updatedGuilds = 0
 
     for (const g of guilds) {
@@ -385,9 +412,16 @@ export const GuildService = {
 
       updatedGuilds += 1
       if (emergencyApplied) emergencySupportedGuildIds.push(g.id)
+      changes.push({
+        guildId: g.id,
+        before: g.credit,
+        after: nextCredit,
+        delta: nextCredit - g.credit,
+        emergency: emergencyApplied
+      })
     }
 
-    return { updatedGuilds, emergencySupportedGuildIds }
+    return { updatedGuilds, emergencySupportedGuildIds, changes }
   },
 
   /**
