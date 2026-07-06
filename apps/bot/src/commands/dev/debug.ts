@@ -22,6 +22,7 @@
 import { Command } from '@sapphire/framework'
 import { fetchT } from '@sapphire/plugin-i18next'
 import type { MaterialType } from '@idle/game-core'
+import type { PrismaClient } from '@idle/database'
 import { simpleV2Payload, V2_ACCENT } from '@utils/ComponentsV2'
 import {
   localizeMaterial,
@@ -32,7 +33,59 @@ import { MarketService, taxRateForDuration } from '../../services/market'
 import { RewardService } from '../../services/reward'
 import { UserService } from '../../services/user'
 import { runInTx } from '../../services/base'
+import { runWeeklySettlement } from '../../scheduled-tasks/weekly-settlement'
+import { runDailyGlobal } from '../../scheduled-tasks/daily-global'
+import { runMonthlyRedistribution } from '../../scheduled-tasks/monthly-redistribution'
 import config from '../../config'
+
+/** `/debug run-scheduler` 로 수동 실행 가능한 스케줄러 task 식별자 목록. */
+const SCHEDULER_TASKS = [
+  'market-expire',
+  'weekly-settlement',
+  'daily-global',
+  'monthly-redistribution'
+] as const
+
+/**
+ * `run-scheduler` 서브커맨드의 순수 매핑/실행 헬퍼.
+ *
+ * task 식별자를 대응하는 스케줄러 run* / expireStale 로직으로 라우팅하고,
+ * 실행 결과 수치를 사람이 읽을 요약 문자열로 정리해 돌려준다. 알림은 각 run*
+ * 내부에서 부가 효과로 발생하므로 여기서는 로직 호출과 요약만 담당한다.
+ *
+ * @param task 실행할 스케줄러 식별자(알 수 없는 값은 'market-expire' 로 폴백).
+ * @param db 대상 PrismaClient.
+ * @returns 정규화된 task 식별자와 결과 요약 문자열.
+ */
+export async function runSchedulerTask(
+  task: string,
+  db: PrismaClient
+): Promise<{ task: string; summary: string }> {
+  switch (task) {
+    case 'weekly-settlement': {
+      const settled = await runWeeklySettlement(db)
+      return { task, summary: `정산 유저 ${settled}명` }
+    }
+    case 'daily-global': {
+      const r = await runDailyGlobal(db)
+      return {
+        task,
+        summary: `패널티 ${r.penalizedGuilds} · 동결 ${r.collectedGuilds}`
+      }
+    }
+    case 'monthly-redistribution': {
+      const r = await runMonthlyRedistribution(db)
+      return {
+        task,
+        summary: `재분배 서버 ${r.guildShares} · 유저 ${r.userPayouts}`
+      }
+    }
+    default: {
+      const { expiredCount } = await MarketService.expireStale(db)
+      return { task: 'market-expire', summary: `만료 ${expiredCount}건` }
+    }
+  }
+}
 
 /** 디버그 판매자(seed-listing)로 쓰는 고정 유저 id — 실제 Discord 계정 아님. */
 const DEBUG_SELLER_ID = '000000000000000001'
@@ -200,14 +253,15 @@ export class DebugCommand extends Command {
     )
   }
 
-  /** 만료 스케줄러 로직을 수동 실행한다. */
+  /** 선택한 스케줄러 로직을 수동 실행하고 결과 요약을 응답한다. */
   private async runScheduler(interaction: Command.ChatInputCommandInteraction) {
-    const { expiredCount } = await MarketService.expireStale(this.container.db)
+    const task = interaction.options.getString('task') ?? 'market-expire'
+    const result = await runSchedulerTask(task, this.container.db)
     return interaction.reply(
       simpleV2Payload({
         accent: V2_ACCENT.success,
         title: '🔄 스케줄러 실행',
-        body: `\`expireStale\` 실행 완료 — 만료 처리 **${expiredCount}건**.`,
+        body: `\`${result.task}\` 실행 완료 — ${result.summary}.`,
         ephemeral: true
       })
     )
@@ -338,10 +392,23 @@ export class DebugCommand extends Command {
           .addSubcommand((sub) =>
             sub
               .setName('run-scheduler')
-              .setDescription('Run the market expire scheduler now.')
-              .setDescriptionLocalization(
-                'ko',
-                '만료 스케줄러를 수동 실행합니다.'
+              .setDescription('Run a scheduler task now.')
+              .setDescriptionLocalization('ko', '스케줄러를 수동 실행합니다.')
+              .addStringOption((opt) =>
+                opt
+                  .setName('task')
+                  .setDescription('Scheduler task (default: market-expire)')
+                  .setDescriptionLocalization(
+                    'ko',
+                    '실행할 스케줄러 (기본: 매물 만료)'
+                  )
+                  .setRequired(false)
+                  .addChoices(
+                    ...SCHEDULER_TASKS.map((task) => ({
+                      name: task,
+                      value: task
+                    }))
+                  )
               )
           )
           .addSubcommand((sub) =>
