@@ -38,53 +38,81 @@ import { runDailyGlobal } from '../../scheduled-tasks/daily-global'
 import { runMonthlyRedistribution } from '../../scheduled-tasks/monthly-redistribution'
 import config from '../../config'
 
-/** `/debug run-scheduler` 로 수동 실행 가능한 스케줄러 task 식별자 목록. */
-const SCHEDULER_TASKS = [
-  'market-expire',
-  'weekly-settlement',
-  'daily-global',
-  'monthly-redistribution'
-] as const
+/**
+ * `runSchedulerTask`·autocomplete 가 조회하는 scheduled-tasks 스토어의 최소 인터페이스.
+ *
+ * 실제로는 `container.stores.get('scheduled-tasks')`(ScheduledTaskStore) 를
+ * 넘긴다. 이름 조회(has/get)와 키 열거(keys)만 쓰므로 얇은 구조적 타입으로
+ * 노출해 단위 테스트에서 가짜 스토어를 주입할 수 있게 한다.
+ */
+export interface SchedulerStore {
+  has(name: string): boolean
+  get(name: string): { run(payload?: unknown): unknown } | undefined
+  keys(): Iterable<string>
+}
 
 /**
- * `run-scheduler` 서브커맨드의 순수 매핑/실행 헬퍼.
+ * 상세 요약을 제공하는 **알려진** 스케줄러 실행기.
  *
- * task 식별자를 대응하는 스케줄러 run* / expireStale 로직으로 라우팅하고,
- * 실행 결과 수치를 사람이 읽을 요약 문자열로 정리해 돌려준다. 알림은 각 run*
- * 내부에서 부가 효과로 발생하므로 여기서는 로직 호출과 요약만 담당한다.
+ * 각 run* 델리게이트를 호출해 실행 결과 수치를 사람이 읽을 요약으로 만든다.
+ * 여기에 없는(새로 추가된) 스케줄러는 피스의 `run()` 을 직접 호출하고 일반
+ * 요약으로 폴백하므로, 새 스케줄러도 debug 코드 수정 없이 자동 실행된다.
+ */
+const RICH_RUNNERS: Record<string, (db: PrismaClient) => Promise<string>> = {
+  'market-expire': async (db) => {
+    const { expiredCount } = await MarketService.expireStale(db)
+    return `만료 ${expiredCount}건`
+  },
+  'weekly-settlement': async (db) => {
+    const settled = await runWeeklySettlement(db)
+    return `정산 유저 ${settled}명`
+  },
+  'daily-global': async (db) => {
+    const r = await runDailyGlobal(db)
+    return `패널티 ${r.penalizedGuilds} · 동결 ${r.collectedGuilds}`
+  },
+  'monthly-redistribution': async (db) => {
+    const r = await runMonthlyRedistribution(db)
+    return `재분배 서버 ${r.guildShares} · 유저 ${r.userPayouts}`
+  }
+}
+
+/**
+ * 등록된 스케줄러 task 이름을 정렬해 반환한다(autocomplete 후보).
  *
- * @param task 실행할 스케줄러 식별자(알 수 없는 값은 'market-expire' 로 폴백).
+ * scheduled-tasks 스토어의 키를 그대로 노출하므로, 새 스케줄러 피스를 추가하면
+ * 재빌드만으로 debug 목록에 자동 반영된다.
+ */
+export function listSchedulerTaskNames(store: SchedulerStore): string[] {
+  return [...store.keys()].sort()
+}
+
+/**
+ * `run-scheduler` 서브커맨드의 스토어 기반 실행 헬퍼.
+ *
+ * 하드코딩 목록 대신 런타임 스토어를 조회한다 — 스토어에 없는 task 는
+ * `null`(알 수 없음). 알려진 task 는 `RICH_RUNNERS` 로 상세 요약을, 그 외
+ * 등록된 task 는 피스의 `run()` 을 직접 호출한 뒤 일반 요약으로 실행한다.
+ * 알림 등 부가 효과는 각 run*·피스 내부에서 발생한다.
+ *
+ * @param task 실행할 스케줄러 식별자.
  * @param db 대상 PrismaClient.
- * @returns 정규화된 task 식별자와 결과 요약 문자열.
+ * @param store scheduled-tasks 스토어(`container.stores.get('scheduled-tasks')`).
+ * @returns 실행한 task 와 결과 요약. 스토어에 없으면 null.
  */
 export async function runSchedulerTask(
   task: string,
-  db: PrismaClient
-): Promise<{ task: string; summary: string }> {
-  switch (task) {
-    case 'weekly-settlement': {
-      const settled = await runWeeklySettlement(db)
-      return { task, summary: `정산 유저 ${settled}명` }
-    }
-    case 'daily-global': {
-      const r = await runDailyGlobal(db)
-      return {
-        task,
-        summary: `패널티 ${r.penalizedGuilds} · 동결 ${r.collectedGuilds}`
-      }
-    }
-    case 'monthly-redistribution': {
-      const r = await runMonthlyRedistribution(db)
-      return {
-        task,
-        summary: `재분배 서버 ${r.guildShares} · 유저 ${r.userPayouts}`
-      }
-    }
-    default: {
-      const { expiredCount } = await MarketService.expireStale(db)
-      return { task: 'market-expire', summary: `만료 ${expiredCount}건` }
-    }
-  }
+  db: PrismaClient,
+  store: SchedulerStore
+): Promise<{ task: string; summary: string } | null> {
+  if (!store.has(task)) return null
+
+  const rich = RICH_RUNNERS[task]
+  if (rich) return { task, summary: await rich(db) }
+
+  // 상세 요약이 없는(새) 스케줄러 — 피스의 run() 을 직접 호출.
+  await store.get(task)?.run(undefined)
+  return { task, summary: '실행 완료' }
 }
 
 /** 디버그 판매자(seed-listing)로 쓰는 고정 유저 id — 실제 Discord 계정 아님. */
@@ -255,8 +283,22 @@ export class DebugCommand extends Command {
 
   /** 선택한 스케줄러 로직을 수동 실행하고 결과 요약을 응답한다. */
   private async runScheduler(interaction: Command.ChatInputCommandInteraction) {
+    const store = this.container.stores.get(
+      'scheduled-tasks'
+    ) as unknown as SchedulerStore
     const task = interaction.options.getString('task') ?? 'market-expire'
-    const result = await runSchedulerTask(task, this.container.db)
+    const result = await runSchedulerTask(task, this.container.db, store)
+
+    if (!result) {
+      return interaction.reply(
+        simpleV2Payload({
+          accent: V2_ACCENT.warn,
+          body: `알 수 없는 스케줄러: \`${task}\``,
+          ephemeral: true
+        })
+      )
+    }
+
     return interaction.reply(
       simpleV2Payload({
         accent: V2_ACCENT.success,
@@ -403,12 +445,7 @@ export class DebugCommand extends Command {
                     '실행할 스케줄러 (기본: 매물 만료)'
                   )
                   .setRequired(false)
-                  .addChoices(
-                    ...SCHEDULER_TASKS.map((task) => ({
-                      name: task,
-                      value: task
-                    }))
-                  )
+                  .setAutocomplete(true)
               )
           )
           .addSubcommand((sub) =>

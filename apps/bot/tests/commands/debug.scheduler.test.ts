@@ -1,19 +1,21 @@
 /**
- * `/debug run-scheduler` 의 순수 매핑/실행 헬퍼 `runSchedulerTask` 유닛 테스트.
+ * `/debug run-scheduler` 의 스토어 기반 실행 헬퍼 유닛 테스트.
  *
- * DB·discord 목 없이 각 task 값이 올바른 스케줄러 run* / expireStale 를 호출하고,
- * 반환 summary 문자열이 실행 결과 수치를 반영하는지 검증한다. 스케줄러 함수는
- * `vi.spyOn` 으로 가짜 결과를 반환하도록 대체하므로 실제 실행은 일어나지 않는다.
+ * 새 스케줄러 피스가 추가되면 자동으로 실행 대상이 되도록, `runSchedulerTask` 는
+ * 하드코딩 목록 대신 런타임 scheduled-tasks 스토어를 조회한다:
+ *  - 스토어에 없는 task → `null`(알 수 없음)
+ *  - 알려진 task(market-expire/weekly/daily/monthly) → 대응 run*·expireStale 로
+ *    실행 후 상세 요약
+ *  - 스토어에 있으나 상세 요약이 없는 task → 피스의 `run()` 을 직접 호출하고
+ *    일반 요약으로 폴백
+ * `listSchedulerTaskNames` 는 스토어 키를 정렬해 autocomplete 후보로 노출한다.
  */
 
-// config 모듈은 최상위에서 requireEnv('BOT_TOKEN') 를 실행하므로,
-// 테스트 환경(BOT_TOKEN 미설정)에서 로드 시 예외가 난다 → 목으로 대체한다.
 import { vi, describe, expect, it, afterEach } from 'vitest'
 
 vi.mock('../../src/config', () => ({ default: { devGuildID: undefined } }))
 
 // tsconfig path 별칭(@utils/@structures)은 vitest 가 해석하지 못하므로 스텁으로 대체한다.
-// 이 심볼들은 커맨드 메서드 본문에서만 쓰이고 runSchedulerTask 에서는 호출되지 않는다.
 vi.mock('@utils/ComponentsV2', () => ({
   simpleV2Payload: () => ({}),
   V2_ACCENT: {},
@@ -29,51 +31,72 @@ vi.mock('@utils/marketErrorKey', () => ({
   resolveMarketErrorMessage: () => ''
 }))
 
-import { runSchedulerTask } from '../../src/commands/dev/debug'
+import {
+  runSchedulerTask,
+  listSchedulerTaskNames,
+  type SchedulerStore
+} from '../../src/commands/dev/debug'
 import { MarketService } from '../../src/services/market'
 import * as weekly from '../../src/scheduled-tasks/weekly-settlement'
 import * as daily from '../../src/scheduled-tasks/daily-global'
 import * as monthly from '../../src/scheduled-tasks/monthly-redistribution'
 
-/** 테스트용 가짜 PrismaClient — 헬퍼는 이를 그대로 run* 로 넘길 뿐이다. */
 const db = {} as never
+
+/** 이름 목록(+선택적 run 스파이)으로 최소 scheduled-tasks 스토어를 흉내낸다. */
+function fakeStore(
+  names: string[],
+  run: () => unknown = () => undefined
+): SchedulerStore {
+  const map = new Map(names.map((n) => [n, { run }]))
+  return {
+    has: (n) => map.has(n),
+    get: (n) => map.get(n),
+    keys: () => map.keys()
+  }
+}
+
+const ALL = [
+  'market-expire',
+  'weekly-settlement',
+  'daily-global',
+  'monthly-redistribution',
+  'market-price-tick'
+]
 
 describe('runSchedulerTask', () => {
   afterEach(() => {
     vi.restoreAllMocks()
   })
 
-  it('market-expire 는 MarketService.expireStale 를 호출하고 만료 건수를 요약한다', async () => {
+  it('스토어에 없는 task 는 null 을 반환한다(알 수 없음)', async () => {
+    const result = await runSchedulerTask('does-not-exist', db, fakeStore(ALL))
+    expect(result).toBeNull()
+  })
+
+  it('market-expire 는 expireStale 를 호출하고 만료 건수를 요약한다', async () => {
     const spy = vi
       .spyOn(MarketService, 'expireStale')
       .mockResolvedValue({ expiredCount: 7 })
 
-    const result = await runSchedulerTask('market-expire', db)
+    const result = await runSchedulerTask('market-expire', db, fakeStore(ALL))
 
     expect(spy).toHaveBeenCalledWith(db)
-    expect(result.task).toBe('market-expire')
-    expect(result.summary).toContain('7')
-  })
-
-  it('알 수 없는/기본 task 는 market-expire 로 처리한다', async () => {
-    const spy = vi
-      .spyOn(MarketService, 'expireStale')
-      .mockResolvedValue({ expiredCount: 0 })
-
-    const result = await runSchedulerTask('unknown-task', db)
-
-    expect(spy).toHaveBeenCalledWith(db)
-    expect(result.summary).toContain('0')
+    expect(result?.task).toBe('market-expire')
+    expect(result?.summary).toContain('7')
   })
 
   it('weekly-settlement 은 runWeeklySettlement 을 호출하고 정산 유저 수를 요약한다', async () => {
     const spy = vi.spyOn(weekly, 'runWeeklySettlement').mockResolvedValue(42)
 
-    const result = await runSchedulerTask('weekly-settlement', db)
+    const result = await runSchedulerTask(
+      'weekly-settlement',
+      db,
+      fakeStore(ALL)
+    )
 
     expect(spy).toHaveBeenCalledWith(db)
-    expect(result.task).toBe('weekly-settlement')
-    expect(result.summary).toContain('42')
+    expect(result?.summary).toContain('42')
   })
 
   it('daily-global 은 runDailyGlobal 을 호출하고 패널티/동결 수치를 요약한다', async () => {
@@ -83,12 +106,11 @@ describe('runSchedulerTask', () => {
       frozenTotal: 999n
     })
 
-    const result = await runSchedulerTask('daily-global', db)
+    const result = await runSchedulerTask('daily-global', db, fakeStore(ALL))
 
     expect(spy).toHaveBeenCalledWith(db)
-    expect(result.task).toBe('daily-global')
-    expect(result.summary).toContain('3')
-    expect(result.summary).toContain('5')
+    expect(result?.summary).toContain('3')
+    expect(result?.summary).toContain('5')
   })
 
   it('monthly-redistribution 은 runMonthlyRedistribution 을 호출하고 서버/유저 수를 요약한다', async () => {
@@ -103,11 +125,38 @@ describe('runSchedulerTask', () => {
         payouts: []
       })
 
-    const result = await runSchedulerTask('monthly-redistribution', db)
+    const result = await runSchedulerTask(
+      'monthly-redistribution',
+      db,
+      fakeStore(ALL)
+    )
 
     expect(spy).toHaveBeenCalledWith(db)
-    expect(result.task).toBe('monthly-redistribution')
-    expect(result.summary).toContain('4')
-    expect(result.summary).toContain('11')
+    expect(result?.summary).toContain('4')
+    expect(result?.summary).toContain('11')
+  })
+
+  it('상세 요약이 없는 task 는 피스의 run() 을 직접 호출하고 일반 요약으로 폴백한다', async () => {
+    const run = vi.fn().mockResolvedValue(undefined)
+    const store = fakeStore(['market-price-tick'], run)
+
+    const result = await runSchedulerTask('market-price-tick', db, store)
+
+    expect(run).toHaveBeenCalledTimes(1)
+    expect(result?.task).toBe('market-price-tick')
+    expect(result?.summary.length).toBeGreaterThan(0)
+  })
+})
+
+describe('listSchedulerTaskNames', () => {
+  it('스토어 키를 정렬해 반환한다(새 태스크 자동 포함)', () => {
+    const names = listSchedulerTaskNames(
+      fakeStore(['weekly-settlement', 'market-expire', 'daily-global'])
+    )
+    expect(names).toEqual([
+      'daily-global',
+      'market-expire',
+      'weekly-settlement'
+    ])
   })
 })
