@@ -74,6 +74,7 @@ Current default (see `config.ts`): `GuildMessages` + `Guilds` only. Add intents 
 ## Conventions
 
 - Prefer Sapphire's piece abstractions (`Command`, `Listener`, `InteractionHandler`) over raw discord.js handlers.
+- **Store directories hold pieces only.** Sapphire loads _every_ file under `commands/`, `listeners/`, and `interaction-handlers/` as a piece and throws `EMPTY_MODULE` at boot on any file without a piece class. Non-piece helpers (pure functions, payload/embed builders, decision logic) MUST live in `utils/` (or another non-store dir) — never inside a store directory, even if only one command uses them. Examples: `utils/landNav.ts`, `utils/announceAction.ts`, `utils/landMove.ts`.
 - Keep user-facing strings in `src/locales/*` and resolve via i18next.
 - Do not import from `@prisma/client` directly; use `@idle/database` when it is added as a dependency.
 
