@@ -7,6 +7,8 @@ import { Prisma, PrismaClient } from '@idle/database'
  * - `LAND_ALREADY_EXISTS`: 구매하려는 index의 토지가 이미 존재.
  * - `INVALID_LAND_INDEX`: 구매 대상 index가 유효 범위(2..5)를 벗어났거나 연속성 조건 위반.
  * - `MOVE_SAME_POSITION`: 공장 이동 목적지가 현재 위치와 동일 (docs/design/11-land.md §공장 이동).
+ * - `CREDIT_RESTRICTED`: 서버 신뢰도가 RESTRICTED(0~299) 구간이라 기능 차단
+ *   (docs/design/07-global-system.md §신뢰도 효과, 이슈 #17 확정 결정 7 — 신뢰도 300 미만 시 공장 건설·업그레이드 불가).
  */
 export type ServiceErrorCode =
   | 'USER_NOT_FOUND'
@@ -23,6 +25,7 @@ export type ServiceErrorCode =
   | 'FACTORY_LISTED'
   | 'LEVEL_LOCKED'
   | 'MAX_GRADE'
+  | 'CREDIT_RESTRICTED'
   | 'WAREHOUSE_FULL'
   | 'MAX_LANDS'
   | 'LAND_ALREADY_EXISTS'
@@ -73,6 +76,10 @@ export type ServiceErrorCode =
   | 'STOCK_RATE_LIMITED'
   | 'STOCK_IPO_PRICE_OUT_OF_RANGE'
   | 'STOCK_LEVEL_GATE'
+  // 서버 신뢰도 기능 제한 (docs/design/07-global-system.md §신뢰도 효과, 이슈 #17)
+  // - CREDIT_LISTING_BLOCKED: 활동 서버 신뢰도 < 700 → 유저 상점 등록 차단 (07 L55,
+  //   확정 결정 7). RESTRICTED(<300) 도 이 게이트에 자동 포함된다.
+  | 'CREDIT_LISTING_BLOCKED'
 
 export class ServiceError extends Error {
   public readonly code: ServiceErrorCode

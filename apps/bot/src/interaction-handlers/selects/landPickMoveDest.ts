@@ -15,7 +15,7 @@ import { parseXYValue } from '../../commands/game/land'
 import {
   LAND_MOVE_DEST_SELECT_PREFIX,
   buildMoveConfirmPayload
-} from '../../commands/game/landMove'
+} from '../../utils/landMove'
 import {
   assertInteractionOwner,
   parseOwnerPrefixedCustomId

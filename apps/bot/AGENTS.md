@@ -74,8 +74,20 @@ Current default (see `config.ts`): `GuildMessages` + `Guilds` only. Add intents 
 ## Conventions
 
 - Prefer Sapphire's piece abstractions (`Command`, `Listener`, `InteractionHandler`) over raw discord.js handlers.
+- **Store directories hold pieces only.** Sapphire loads _every_ file under `commands/`, `listeners/`, and `interaction-handlers/` as a piece and throws `EMPTY_MODULE` at boot on any file without a piece class. Non-piece helpers (pure functions, payload/embed builders, decision logic) MUST live in `utils/` (or another non-store dir) — never inside a store directory, even if only one command uses them. Examples: `utils/landNav.ts`, `utils/announceAction.ts`, `utils/landMove.ts`.
 - Keep user-facing strings in `src/locales/*` and resolve via i18next.
+- **i18next `TFunction` typing.** Two i18next versions resolve in the tree (plugin v26 + a transitive v25). Never `import type { TFunction } from 'i18next'` — it conflicts with the type `fetchT` (from `@sapphire/plugin-i18next`) returns and breaks `tsc`. Derive it instead: `type T = Awaited<ReturnType<typeof fetchT>>`, or let it infer from the callback signature.
+- **Global/server notifications go through `AnnounceService`** (`services/announce.ts`). Scheduled jobs and `/debug` dispatch server announcements to each guild's `Guild.announceChannelId` via `announce` / `announceMany`; it silently no-ops when the client or channel is unavailable, so it is safe to call from jobs and tests. Do not `channel.send` ad-hoc for global events. The channel is configured with `/server announce`.
 - Do not import from `@prisma/client` directly; use `@idle/database` when it is added as a dependency.
+
+## Scheduled Tasks
+
+`src/scheduled-tasks/` uses `@sapphire/plugin-scheduled-tasks` (BullMQ over Redis) — no `node-cron` / `setInterval`. Tasks do not run without `REDIS_URL`. Each task's delegate logic (e.g. `runWeeklySettlement`, `runDailyGlobal`, `runMonthlyRedistribution`) is exported as a pure `(prisma) => result` function so it is unit-testable and reusable outside the queue. `/debug run-scheduler` enumerates the live task store for autocomplete and dynamic dispatch, so new task pieces appear automatically; running it with no `task` runs every registered scheduler in sequence.
+
+## Testing
+
+- Unit tests mock services / `container` and never touch a DB. Integration tests (`tests/integration/**`) run against a REAL dev Postgres — start it with `pnpm db:dev:up` (`localhost:5433`, a `*-dev` database). `tests/integration/setup.ts` only `TRUNCATE`s tables, so the schema must already be migrated. Vitest runs `singleFork` and the dev DB is shared across processes, so integration suites are **not** safe to run in parallel.
+- Vitest does not resolve TS path aliases (`@utils`, `@structures`). In tests, import source via relative paths or `vi.mock` the alias; a source file that transitively imports an alias will fail to load in a unit test unless mocked. (Cleaner fix if it keeps biting: add `vite-tsconfig-paths` to `vitest.config.ts`.)
 
 ## Discord UI — Components v2 (mandatory)
 

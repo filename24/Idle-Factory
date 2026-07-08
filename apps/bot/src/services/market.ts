@@ -13,6 +13,7 @@ import type { ListingStatus, MarketListing, PrismaClient } from '@idle/database'
 import type { MaterialType } from '@idle/game-core'
 import { listingPriceBand } from '@idle/game-core'
 import { ServiceError, runInTx, type Tx } from './base'
+import { GuildService } from './guild'
 import { QuestService, type QuestProgressResult } from './quest'
 import {
   assessActorTrust,
@@ -32,6 +33,12 @@ const MIN_PRICE_PER_UNIT = 1n
 const MIN_QUANTITY = 1n
 /** Discord autocomplete 응답 상한. */
 const AUTOCOMPLETE_MAX = 25
+/**
+ * 유저 상점 등록 최소 신뢰도. 활동 서버 신뢰도가 이 값 미만이면 등록 차단.
+ * 근거: docs/design/07-global-system.md L55(§신뢰도 효과 "유저 상점 등록 불가"),
+ * 이슈 #17 확정 결정 7 (credit < 700 등록 차단, RESTRICTED<300 자동 포함).
+ */
+const MARKET_LISTING_MIN_CREDIT = 700
 
 /**
  * 등록 기간(일) → 세율 매핑.
@@ -261,6 +268,17 @@ export const MarketService = {
         select: { id: true }
       })
       if (!user) throw new ServiceError('USER_NOT_FOUND')
+
+      // 활동 서버 신뢰도 게이트 (결정 7) — 핸들러 우회를 막기 위해 서비스에서 차단.
+      // guildId 가 없으면(DM 등) 귀속할 서버가 없어 검증을 생략한다.
+      if (input.guildId) {
+        await GuildService.assertCreditAtLeast(
+          tx,
+          input.guildId,
+          MARKET_LISTING_MIN_CREDIT,
+          'CREDIT_LISTING_BLOCKED'
+        )
+      }
 
       // 등록 시점 ±50% 밴드 검증 — 구매 시점(buy)에도 같은 밴드로 재검증한다.
       await assertWithinListingBand(tx, material, pricePerUnit)

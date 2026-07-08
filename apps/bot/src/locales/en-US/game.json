@@ -17,7 +17,7 @@
       "error": {
         "insufficientMoney": "Not enough money. Required: {{required}} 💰",
         "insufficientMaterial": "Not enough material. Required: {{amount}} {{material}}",
-        "maxGrade": "Already at max grade."
+        "maxGrade": "Already at max grade (max G{{maxGrade}} at this server's credit)."
       }
     },
     "info": {
@@ -174,7 +174,8 @@
       "xp": "XP",
       "money": "Money",
       "warehouseGrade": "Warehouse grade",
-      "factoryCount": "Factories"
+      "factoryCount": "Factories",
+      "serverCredit": "Server Credit"
     }
   },
   "common": {
@@ -183,6 +184,7 @@
       "factoryNotFound": "That factory could not be found.",
       "warehouseFull": "Warehouse is full. Upgrade it or sell some materials.",
       "notYourInteraction": "This isn't your interaction. Please run the command yourself.",
+      "creditRestricted": "This server's credit is too low ({{credit}}) to use this feature. Credit of 300 or higher is required.",
       "unknown": "An unknown error occurred. Please try again in a moment."
     }
   },
@@ -282,7 +284,8 @@
         "invalidQuantity": "Quantity must be at least 1.",
         "invalidPrice": "Price must be at least 1.",
         "invalidDuration": "Duration must be 1–30 days.",
-        "priceOutOfRange": "The listing price must be within ±50% of the global market price. Allowed range: {{min}}–{{max}}"
+        "priceOutOfRange": "The listing price must be within ±50% of the global market price. Allowed range: {{min}}–{{max}}",
+        "creditBlocked": "This server's credit is too low to list on the user market. (requires credit 700 or higher)"
       },
       "selectMaterial": {
         "title": "List on Market",
@@ -479,7 +482,15 @@
       "title": "🏦 {{guildName}} Server Vault",
       "balance": "**Vault balance:** {{balance}}",
       "surcharge": "**Server surcharge:** +{{surcharge}}%p",
-      "credit": "**Credit:** {{credit}} pt (credit system coming soon)",
+      "credit": "**Credit:** {{credit}} pt · {{tier}}",
+      "creditHint": "-# Adjusts each weekly settlement by activity (weekly active users×0.5 − 10). Below 300 limits features · 700+ market listing · 1000+ factory G9·XP +10% · 1500+ factory G10·XP +20%",
+      "creditTier": {
+        "RESTRICTED": "Restricted (0–299)",
+        "LIMITED": "Limited (300–699)",
+        "NORMAL": "Normal (700–999)",
+        "TRUSTED": "Trusted (1000–1499)",
+        "ELITE": "Elite (1500+)"
+      },
       "weeklyDau": "**Weekly active users:** {{dau}}",
       "settlement": {
         "heading": "Latest weekly settlement",
@@ -491,6 +502,33 @@
       "error": {
         "guildOnly": "This command can only be used in a server.",
         "notRegistered": "This server is not registered yet. Try `/setup` to get started."
+      }
+    },
+    "announce": {
+      "channel": {
+        "set": "📢 Global events will now be announced in this channel — credit changes, emergency support, and asset redistribution.",
+        "cleared": "📢 Announcement channel cleared. Global event notifications are now off.",
+        "current": "Current announcement channel: <#{{channelId}}>",
+        "none": "No announcement channel is set yet.",
+        "notTextable": "⚠️ Only a text channel the bot can post in may be set as the announcement channel.",
+        "missingPerms": "⚠️ I don't have permission to send messages in that channel. Please check the bot's permissions."
+      },
+      "weekly": {
+        "title": "📊 Weekly Credit Settlement",
+        "body": "This week your server credit changed **{{before}} → {{after}}**. ({{delta}})",
+        "tier": "-# Current tier: **{{tier}}**"
+      },
+      "emergency": {
+        "title": "🚨 Emergency Support Granted",
+        "body": "Your credit was low, so the server vault was topped up to **{{cap}}**. Stay active to recover your credit."
+      },
+      "monthly": {
+        "title": "💸 Inactive Server Asset Redistribution",
+        "body": "This month's redistribution deposited **{{amount}}** into your server vault."
+      },
+      "daily": {
+        "title": "⚠️ Unpaid Tax Credit Penalty",
+        "body": "Unpaid taxes reduced your server credit by **{{penalty}}** (now **{{credit}} pt**). Please pay your settled taxes."
       }
     }
   },

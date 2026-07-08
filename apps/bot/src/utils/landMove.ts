@@ -29,7 +29,7 @@ import {
 import { simpleContainer, V2_ACCENT, v2Flags } from '@utils/ComponentsV2'
 import { formatBigInt } from '@structures/renderers'
 import { localizeFactoryType } from '@utils/enumLocale'
-import { LAND_VIEW_BUTTON_PREFIX } from './land'
+import { LAND_VIEW_BUTTON_PREFIX } from '../commands/game/land'
 
 // ──────────────────────────────────────────────────────────────
 // customId prefix — interaction handler 와 공유

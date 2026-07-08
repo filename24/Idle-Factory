@@ -168,16 +168,17 @@ model User {
 
 /// Discord 서버. id 는 snowflake. 퇴장 추적을 위해 leftAt 유지.
 model Guild {
-  id           String    @id
-  name         String
-  lang         String    @default("ko")
-  credit       Int       @default(1000) // 신뢰도 0~2000 (docs/07)
-  vault        BigInt    @default(0) // 서버 금고
-  weeklyDAU    Int       @default(0)
-  taxSurcharge Float     @default(0) // 관리자 가산치 0~0.20
-  flag         BigInt    @default(1)
-  joinedAt     DateTime  @default(now())
-  leftAt       DateTime? // 봇 퇴장 시각 — 30일 경과 시 분배 풀로
+  id                String    @id
+  name              String
+  lang              String    @default("ko")
+  credit            Int       @default(1000) // 신뢰도 0~2000 (docs/07)
+  vault             BigInt    @default(0) // 서버 금고
+  weeklyDAU         Int       @default(0)
+  taxSurcharge      Float     @default(0) // 관리자 가산치 0~0.20
+  flag              BigInt    @default(1)
+  joinedAt          DateTime  @default(now())
+  leftAt            DateTime? // 봇 퇴장 시각 — 30일 경과 시 분배 풀로
+  announceChannelId String? // 글로벌 이벤트(신뢰도·재분배·긴급지원금) 공지 채널 (docs/07)
 
   factories       Factory[]
   stocks          Stock[]
