@@ -17,7 +17,7 @@ import { ChannelType, PermissionFlagsBits } from 'discord.js'
 import { simpleV2Payload, V2_ACCENT, v2Flags } from '@utils/ComponentsV2'
 import { buildServerVaultContainer } from '@structures/renderers'
 import { WeeklySettlementService } from '../../services/weeklySettlement'
-import { resolveAnnounceAction } from './announceAction'
+import { resolveAnnounceAction } from '../../utils/announceAction'
 
 export class ServerCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {

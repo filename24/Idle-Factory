@@ -20,7 +20,7 @@ import { buildLandViewPayload } from '../../commands/game/land'
 import {
   LAND_MOVE_CONFIRM_BUTTON_PREFIX,
   resolveMoveErrorBody
-} from '../../commands/game/landMove'
+} from '../../utils/landMove'
 import { LandService } from '../../services/land'
 import { ServiceError } from '../../services/base'
 import {

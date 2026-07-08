@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   resolveAnnounceAction,
   type AnnounceActionInput
-} from '../../src/commands/game/announceAction'
+} from '../../src/utils/announceAction'
 
 /**
  * `resolveAnnounceAction` 순수 함수 분기 표 검증.
