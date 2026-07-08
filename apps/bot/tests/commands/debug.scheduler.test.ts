@@ -33,6 +33,7 @@ vi.mock('@utils/marketErrorKey', () => ({
 
 import {
   runSchedulerTask,
+  runAllSchedulerTasks,
   listSchedulerTaskNames,
   type SchedulerStore
 } from '../../src/commands/dev/debug'
@@ -145,6 +146,42 @@ describe('runSchedulerTask', () => {
     expect(run).toHaveBeenCalledTimes(1)
     expect(result?.task).toBe('market-price-tick')
     expect(result?.summary.length).toBeGreaterThan(0)
+  })
+})
+
+describe('runAllSchedulerTasks', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('등록된 모든 스케줄러를 실행하고 각 결과 요약을 모은다', async () => {
+    vi.spyOn(MarketService, 'expireStale').mockResolvedValue({
+      expiredCount: 2
+    })
+    const run = vi.fn().mockResolvedValue(undefined)
+    const store = fakeStore(['market-expire', 'market-price-tick'], run)
+
+    const results = await runAllSchedulerTasks(db, store)
+
+    expect(results).toHaveLength(2)
+    const byTask = Object.fromEntries(results.map((r) => [r.task, r.summary]))
+    expect(byTask['market-expire']).toContain('2')
+    expect(byTask['market-price-tick']).toBeDefined()
+    // rich 는 expireStale, generic 만 피스 run() 을 호출한다.
+    expect(run).toHaveBeenCalledTimes(1)
+  })
+
+  it('개별 task 실패는 나머지를 막지 않고 실패 요약으로 기록한다', async () => {
+    vi.spyOn(MarketService, 'expireStale').mockRejectedValue(new Error('boom'))
+    const run = vi.fn().mockResolvedValue(undefined)
+    const store = fakeStore(['market-expire', 'market-price-tick'], run)
+
+    const results = await runAllSchedulerTasks(db, store)
+
+    expect(results).toHaveLength(2)
+    const byTask = Object.fromEntries(results.map((r) => [r.task, r.summary]))
+    expect(byTask['market-expire']).toContain('실패')
+    expect(byTask['market-price-tick']).toContain('완료')
   })
 })
 
