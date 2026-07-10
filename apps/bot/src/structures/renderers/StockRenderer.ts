@@ -42,6 +42,12 @@ export const STOCK_BUY_QTY_MODAL_PREFIX = 'stock:buyqty:'
 /** 시세 보드 종목별 "자세히 보기" 버튼 customId 프리픽스 (+종목 id). */
 export const STOCK_DETAIL_BUTTON_PREFIX = 'stock:detail:'
 
+/** 상세 카드 매도 버튼 customId 프리픽스 (+종목 id). */
+export const STOCK_SELL_BUTTON_PREFIX = 'stock:sellmkt:'
+
+/** 매도 수량 입력 Modal customId 프리픽스 (+종목 id). */
+export const STOCK_SELL_QTY_MODAL_PREFIX = 'stock:sellqty:'
+
 /**
  * 시세 보드 페이지 이동/새로고침 버튼 customId 프리픽스.
  *
@@ -246,21 +252,29 @@ export function buildStockInfoContainer(
     )
   )
 
-  // 매수 버튼(옵션) — 텍스트 다음 ActionRow 앞엔 Separator 필수.
+  // 거래 버튼(옵션) — 텍스트 다음 ActionRow 앞엔 Separator 필수. 매수는 항상,
+  // 매도는 조회 유저가 이 종목을 보유(주수>0)한 경우에만 노출한다.
   if (opts?.buyButton) {
     container.addSeparatorComponents(
       new SeparatorBuilder()
         .setDivider(true)
         .setSpacing(SeparatorSpacingSize.Small)
     )
-    container.addActionRowComponents(
-      new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder()
-          .setCustomId(`${STOCK_BUY_BUTTON_PREFIX}${stock.id}`)
-          .setLabel(t('game:stock.info.buyButton'))
-          .setStyle(ButtonStyle.Success)
-      )
+    const tradeRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`${STOCK_BUY_BUTTON_PREFIX}${stock.id}`)
+        .setLabel(t('game:stock.info.buyButton'))
+        .setStyle(ButtonStyle.Success)
     )
+    if (holding && holding.shares > 0) {
+      tradeRow.addComponents(
+        new ButtonBuilder()
+          .setCustomId(`${STOCK_SELL_BUTTON_PREFIX}${stock.id}`)
+          .setLabel(t('game:stock.info.sellButton'))
+          .setStyle(ButtonStyle.Danger)
+      )
+    }
+    container.addActionRowComponents(tradeRow)
   }
 
   return container
@@ -414,6 +428,39 @@ export function buildStockBuyModal(
           .setLabel(t('game:stock.market.modal.sharesLabel'))
           .setStyle(TextInputStyle.Short)
           .setPlaceholder(t('game:stock.market.modal.sharesPlaceholder'))
+          .setMinLength(1)
+          .setMaxLength(6)
+          .setRequired(true)
+      )
+    )
+}
+
+/**
+ * 상세 카드 매도 버튼 → 수량 입력 Modal 을 만든다 (매수 Modal 과 대칭).
+ *
+ * customId 는 `STOCK_SELL_QTY_MODAL_PREFIX + 종목 id`. 보유 주수는 6자리 안이라
+ * TextInput 은 1~6자리 정수만 받는다(제출 핸들러가 보유량 대비 재검증).
+ *
+ * @param stockId 대상 종목 id
+ * @param factoryLabel 종목(공장 종류) 로케일 라벨 — Modal 제목용
+ * @param t i18next 번역 함수
+ * @returns discord.js ModalBuilder
+ */
+export function buildStockSellModal(
+  stockId: string,
+  factoryLabel: string,
+  t: TFunction
+): ModalBuilder {
+  return new ModalBuilder()
+    .setCustomId(`${STOCK_SELL_QTY_MODAL_PREFIX}${stockId}`)
+    .setTitle(t('game:stock.market.sellModal.title', { factory: factoryLabel }))
+    .addComponents(
+      new ActionRowBuilder<TextInputBuilder>().addComponents(
+        new TextInputBuilder()
+          .setCustomId('shares')
+          .setLabel(t('game:stock.market.sellModal.sharesLabel'))
+          .setStyle(TextInputStyle.Short)
+          .setPlaceholder(t('game:stock.market.sellModal.sharesPlaceholder'))
           .setMinLength(1)
           .setMaxLength(6)
           .setRequired(true)

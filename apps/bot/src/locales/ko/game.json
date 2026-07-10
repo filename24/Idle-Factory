@@ -578,6 +578,7 @@
       "noHolding": "-# 이 종목을 보유하고 있지 않아요.",
       "metaLine": "**상장자:** {{issuer}} · **상장가:** {{ipo}}원 · **배당률:** {{dividend}}%",
       "buyButton": "💵 매수",
+      "sellButton": "💸 매도",
       "footer": "발행 {{outstanding}}주 · 유통 {{held}}주 · 상장 <t:{{listedUnix}}:R>"
     },
     "market": {
@@ -596,6 +597,11 @@
         "title": "{{factory}} 매수",
         "sharesLabel": "매수 주수",
         "sharesPlaceholder": "예: 10"
+      },
+      "sellModal": {
+        "title": "{{factory}} 매도",
+        "sharesLabel": "매도 주수",
+        "sharesPlaceholder": "예: 5"
       }
     },
     "error": {

@@ -578,6 +578,7 @@
       "noHolding": "-# You don't hold this stock.",
       "metaLine": "**Issuer:** {{issuer}} · **IPO:** {{ipo}} · **Dividend:** {{dividend}}%",
       "buyButton": "💵 Buy",
+      "sellButton": "💸 Sell",
       "footer": "{{outstanding}} issued · {{held}} held · listed <t:{{listedUnix}}:R>"
     },
     "market": {
@@ -596,6 +597,11 @@
         "title": "Buy {{factory}}",
         "sharesLabel": "Shares to buy",
         "sharesPlaceholder": "e.g. 10"
+      },
+      "sellModal": {
+        "title": "Sell {{factory}}",
+        "sharesLabel": "Shares to sell",
+        "sharesPlaceholder": "e.g. 5"
       }
     },
     "error": {
