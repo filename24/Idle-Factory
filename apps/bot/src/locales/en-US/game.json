@@ -572,6 +572,8 @@
       "priceLine": "**Price:** {{price}}  {{trend}} {{change}}",
       "sparkLine": "-# Last 24h: `{{spark}}`",
       "sparkEmpty": "-# No price history yet.",
+      "chartAlt": "{{factory}} price chart, last 7 days",
+      "rangeLine": "-# Last 7d high **{{high}}** · low **{{low}}**",
       "holdingLine": "**Your shares:** {{shares}} / {{outstanding}} ({{percent}})",
       "avgLine": "**Avg buy price:** {{avg}}",
       "pnlLine": "**Unrealized P&L:** {{pnl}}  {{pnlTrend}} {{pnlChange}}",

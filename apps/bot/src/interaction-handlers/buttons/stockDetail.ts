@@ -19,14 +19,19 @@ import {
   InteractionHandlerTypes
 } from '@sapphire/framework'
 import { fetchT } from '@sapphire/plugin-i18next'
-import type { ButtonInteraction } from 'discord.js'
+import { AttachmentBuilder, type ButtonInteraction } from 'discord.js'
 import {
   buildStockInfoContainer,
+  renderStockChart,
+  stockChartFilename,
   STOCK_DETAIL_BUTTON_PREFIX
 } from '@structures/renderers'
 import { simpleV2Payload, V2_ACCENT, v2Flags } from '@utils/ComponentsV2'
 import { ServiceError } from '../../services/base'
 import { StockService } from '../../services/stock'
+
+/** 그래프를 그리기 위한 최소 tick 수 — 미만이면 스파크라인으로 폴백. */
+const MIN_CHART_POINTS = 2
 
 export class StockDetailButtonHandler extends InteractionHandler {
   public constructor(
@@ -55,13 +60,46 @@ export class StockDetailButtonHandler extends InteractionHandler {
     data: { stockId: string }
   ): Promise<void> {
     const t = await fetchT(interaction)
+    const { db } = this.container
     try {
-      const view = await StockService.getDetail(this.container.db, {
+      const [view, history] = await Promise.all([
+        StockService.getDetail(db, {
+          stockId: data.stockId,
+          userId: interaction.user.id
+        }),
+        StockService.getPriceHistory(db, { stockId: data.stockId })
+      ])
+
+      // tick 이 2개 미만이면 그래프가 무의미 → 스파크라인 폴백.
+      if (history.length < MIN_CHART_POINTS) {
+        const container = buildStockInfoContainer(view, t, { buyButton: true })
+        await interaction.reply({
+          components: [container],
+          flags: v2Flags(true)
+        })
+        return
+      }
+
+      const prices = history.map((h) => h.price)
+      const high = prices.reduce((m, p) => (p > m ? p : m), prices[0])
+      const low = prices.reduce((m, p) => (p < m ? p : m), prices[0])
+      const filename = stockChartFilename(data.stockId)
+      const png = renderStockChart({
         stockId: data.stockId,
-        userId: interaction.user.id
+        lastTickAtMs: view.stock.lastTickAt.getTime(),
+        prices,
+        ipoPrice: view.stock.ipoPrice
       })
-      const container = buildStockInfoContainer(view, t, { buyButton: true })
-      await interaction.reply({ components: [container], flags: v2Flags(true) })
+
+      const container = buildStockInfoContainer(view, t, {
+        buyButton: true,
+        chart: { attachmentName: filename, high, low }
+      })
+      await interaction.reply({
+        components: [container],
+        files: [new AttachmentBuilder(png, { name: filename })],
+        flags: v2Flags(true)
+      })
     } catch (err) {
       if (!(err instanceof ServiceError)) this.container.logger.error(err)
       await interaction.reply(

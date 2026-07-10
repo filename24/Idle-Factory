@@ -93,6 +93,15 @@ const AUTOCOMPLETE_MAX = 25
  */
 export const STOCK_MARKET_PAGE_SIZE = 4
 
+/** 상세 카드 가격 그래프 조회 윈도 — 7일 (docs/design/08-stock.md §주가 변동). */
+export const STOCK_CHART_WINDOW_DAYS = 7
+
+/**
+ * 그래프 가격 tick 조회 상한 — 7일 × 시간당 1 tick = 168 이지만 시드로 촘촘한
+ * 경우를 대비해 여유를 둔다(쿼리 폭주 방지).
+ */
+export const STOCK_CHART_MAX_POINTS = 400
+
 /** `/stock info` 스파크라인용 기본 tick 조회 수 — 최근 24시간(1시간 tick). */
 const DEFAULT_RECENT_TICKS = 24
 
@@ -758,6 +767,32 @@ export const StockService = {
       totalHeldShares: held._sum.shares ?? 0,
       recentTicks
     }
+  },
+
+  /**
+   * 종목의 최근 `days` 일 가격 tick 이력을 오래된→최신 순으로 조회한다 (read-only).
+   *
+   * `/stock` 상세 카드의 가격 그래프(7일 윈도) 렌더용. 시간 필터(`tickAt >=
+   * now - days`)로 창을 자르되, 시드로 tick 이 촘촘한 경우를 대비해 상한(`take`)을
+   * 둔다. 반환은 그래프가 바로 쓰도록 `{ price, tickAt }` 오름차순.
+   *
+   * @param prisma DB 클라이언트
+   * @param input.stockId 대상 종목 id
+   * @param input.days 조회 윈도(일) — 기본 7
+   * @returns 시간 오름차순 가격 tick 목록
+   */
+  async getPriceHistory(
+    prisma: PrismaClient,
+    input: { readonly stockId: string; readonly days?: number }
+  ): Promise<Array<{ price: bigint; tickAt: Date }>> {
+    const days = input.days ?? STOCK_CHART_WINDOW_DAYS
+    const since = new Date(Date.now() - days * DAY_MS)
+    return prisma.stockPriceTick.findMany({
+      where: { stockId: input.stockId, tickAt: { gte: since } },
+      orderBy: { tickAt: 'asc' },
+      take: STOCK_CHART_MAX_POINTS,
+      select: { price: true, tickAt: true }
+    })
   },
 
   /**

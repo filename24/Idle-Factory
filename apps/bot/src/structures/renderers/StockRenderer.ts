@@ -19,6 +19,8 @@ import {
   ButtonBuilder,
   ButtonStyle,
   ContainerBuilder,
+  MediaGalleryBuilder,
+  MediaGalleryItemBuilder,
   ModalBuilder,
   SeparatorBuilder,
   SeparatorSpacingSize,
@@ -128,12 +130,21 @@ export function computeChangePpm(current: bigint, ref: bigint): bigint {
  * @param view `StockService.getDetail` 결과 (read-only)
  * @param t i18next 번역 함수
  * @param opts.buyButton 하단에 매수 버튼(수량 Modal 트리거)을 붙일지
+ * @param opts.chart 7일 가격 그래프 첨부(있으면 ASCII 스파크라인 대신 이미지 +
+ *   7일 고저 표시). `attachmentName` 은 함께 보낼 `AttachmentBuilder` 이름과 일치.
  * @returns Components v2 ContainerBuilder
  */
 export function buildStockInfoContainer(
   view: StockDetailView,
   t: TFunction,
-  opts?: { readonly buyButton?: boolean }
+  opts?: {
+    readonly buyButton?: boolean
+    readonly chart?: {
+      readonly attachmentName: string
+      readonly high: bigint
+      readonly low: bigint
+    }
+  }
 ): ContainerBuilder {
   const { stock, factoryType, holding, totalHeldShares, recentTicks } = view
   const factoryLabel = localizeFactoryType(t, factoryType)
@@ -164,8 +175,27 @@ export function buildStockInfoContainer(
     )
   )
 
-  // 스파크라인 — 오래된→최신 순으로 뒤집어 렌더.
-  if (recentTicks.length > 0) {
+  // 그래프가 있으면 이미지(+7일 고저), 없으면 ASCII 스파크라인.
+  if (opts?.chart) {
+    container.addMediaGalleryComponents(
+      new MediaGalleryBuilder().addItems(
+        new MediaGalleryItemBuilder()
+          .setURL(`attachment://${opts.chart.attachmentName}`)
+          .setDescription(
+            t('game:stock.info.chartAlt', { factory: factoryLabel })
+          )
+      )
+    )
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        t('game:stock.info.rangeLine', {
+          high: formatBigInt(opts.chart.high),
+          low: formatBigInt(opts.chart.low)
+        })
+      )
+    )
+  } else if (recentTicks.length > 0) {
+    // 오래된→최신 순으로 뒤집어 렌더.
     const oldestFirst = [...recentTicks].reverse().map((tick) => tick.price)
     container.addTextDisplayComponents(
       new TextDisplayBuilder().setContent(

@@ -572,6 +572,8 @@
       "priceLine": "**현재가:** {{price}}원  {{trend}} {{change}}",
       "sparkLine": "-# 최근 24시간: `{{spark}}`",
       "sparkEmpty": "-# 아직 가격 기록이 없어요.",
+      "chartAlt": "{{factory}} 최근 7일 가격 그래프",
+      "rangeLine": "-# 최근 7일 고가 **{{high}}원** · 저가 **{{low}}원**",
       "holdingLine": "**보유 지분:** {{shares}} / {{outstanding}}주 ({{percent}})",
       "avgLine": "**평균 매수단가:** {{avg}}원",
       "pnlLine": "**평가 손익:** {{pnl}}원  {{pnlTrend}} {{pnlChange}}",
