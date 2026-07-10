@@ -1,4 +1,5 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
+import type { FactoryType, UpgradeBooster } from '@idle/game-core'
 import { FactoryService } from '../../src/services/factory'
 import { ServiceError } from '../../src/services/base'
 import { createLandWithSlots } from '../../src/services/user'
@@ -672,6 +673,128 @@ describe('FactoryService', () => {
         name: 'ServiceError',
         code: 'FACTORY_NOT_FOUND'
       })
+    })
+  })
+
+  describe('searchOwnedForAutocomplete', () => {
+    async function landIdOf(userId: string): Promise<string> {
+      const land = await testPrisma.land.findFirstOrThrow({
+        where: { userId }
+      })
+      return land.id
+    }
+
+    async function seedFactoryRow(
+      userId: string,
+      landId: string,
+      over: {
+        type?: FactoryType
+        anchorX?: number
+        createdAt?: Date
+        upgradeBooster?: UpgradeBooster
+        hasRawBooster?: boolean
+      } = {}
+    ) {
+      return testPrisma.factory.create({
+        data: {
+          userId,
+          landId,
+          type: over.type ?? 'FARM',
+          tier: 'T1',
+          anchorX: over.anchorX ?? 0,
+          anchorY: 0,
+          createdAt: over.createdAt,
+          upgradeBooster: over.upgradeBooster,
+          hasRawBooster: over.hasRawBooster ?? false
+        }
+      })
+    }
+
+    it('내 공장만 최신순으로 반환한다(타인 공장 제외)', async () => {
+      const { user } = await seedUser('u-ac-1')
+      const { user: other } = await seedUser('u-ac-2')
+      const landId = await landIdOf(user.id)
+      const otherLandId = await landIdOf(other.id)
+
+      const f1 = await seedFactoryRow(user.id, landId, {
+        type: 'FARM',
+        createdAt: new Date('2020-01-01T00:00:00Z')
+      })
+      const f2 = await seedFactoryRow(user.id, landId, {
+        type: 'MINE',
+        anchorX: 1,
+        createdAt: new Date('2020-01-02T00:00:00Z'),
+        upgradeBooster: 'RARE',
+        hasRawBooster: true
+      })
+      await seedFactoryRow(other.id, otherLandId, { type: 'LUMBER' })
+
+      const rows = await FactoryService.searchOwnedForAutocomplete(testPrisma, {
+        userId: user.id
+      })
+
+      expect(rows.map((r) => r.id)).toEqual([f2.id, f1.id])
+      expect(rows[0]).toMatchObject({
+        type: 'MINE',
+        upgradeBooster: 'RARE',
+        hasRawBooster: true
+      })
+    })
+
+    it('query 로 공장 종류(enum) 부분일치 필터링한다', async () => {
+      const { user } = await seedUser('u-ac-3')
+      const landId = await landIdOf(user.id)
+      await seedFactoryRow(user.id, landId, { type: 'FARM' })
+      const mine = await seedFactoryRow(user.id, landId, {
+        type: 'MINE',
+        anchorX: 1
+      })
+
+      const rows = await FactoryService.searchOwnedForAutocomplete(testPrisma, {
+        userId: user.id,
+        query: 'min'
+      })
+
+      expect(rows.map((r) => r.id)).toEqual([mine.id])
+    })
+
+    it('query 로 공장 id 부분일치 필터링한다', async () => {
+      const { user } = await seedUser('u-ac-4')
+      const landId = await landIdOf(user.id)
+      const target = await seedFactoryRow(user.id, landId, { type: 'FARM' })
+      await seedFactoryRow(user.id, landId, { type: 'MINE', anchorX: 1 })
+
+      const rows = await FactoryService.searchOwnedForAutocomplete(testPrisma, {
+        userId: user.id,
+        query: target.id.slice(-6)
+      })
+
+      expect(rows.map((r) => r.id)).toEqual([target.id])
+    })
+
+    it('limit 으로 반환 개수를 제한한다', async () => {
+      const { user } = await seedUser('u-ac-5')
+      const landId = await landIdOf(user.id)
+      await seedFactoryRow(user.id, landId, { anchorX: 0 })
+      await seedFactoryRow(user.id, landId, { anchorX: 1 })
+      await seedFactoryRow(user.id, landId, { anchorX: 2 })
+
+      const rows = await FactoryService.searchOwnedForAutocomplete(testPrisma, {
+        userId: user.id,
+        limit: 2
+      })
+
+      expect(rows).toHaveLength(2)
+    })
+
+    it('공장이 없으면 빈 배열을 반환한다', async () => {
+      await seedUser('u-ac-6')
+
+      const rows = await FactoryService.searchOwnedForAutocomplete(testPrisma, {
+        userId: 'u-ac-6'
+      })
+
+      expect(rows).toEqual([])
     })
   })
 })

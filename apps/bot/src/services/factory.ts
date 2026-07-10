@@ -597,6 +597,52 @@ export const FactoryService = {
     }
   },
 
+  /**
+   * 유저 소유 공장을 autocomplete 후보로 조회한다(읽기 전용).
+   *
+   * `/debug set-grade`·`set-booster` 의 `factory` 옵션이 cuid 를 손으로 입력하지
+   * 않도록, 호출자 소유 공장을 최신순으로 노출한다. `query` 가 있으면 공장 id
+   * 또는 종류(enum 명) 부분일치로 거른다. 유저의 공장 수는 토지·슬롯으로
+   * 상한이 있어 작으므로 후보 fetch 후 메모리에서 필터링한다.
+   *
+   * @param prisma PrismaClient
+   * @param params `userId`(소유자)·`query`(부분일치, 선택)·`limit`(기본 25)
+   * @returns 라벨 구성에 필요한 최소 필드 배열(최신순, 최대 `limit`개)
+   */
+  async searchOwnedForAutocomplete(
+    prisma: PrismaClient,
+    params: { userId: string; query?: string; limit?: number }
+  ): Promise<
+    Array<{
+      id: string
+      type: FactoryType
+      grade: number
+      upgradeBooster: UpgradeBooster | null
+      hasRawBooster: boolean
+    }>
+  > {
+    const { userId, query, limit = 25 } = params
+    const rows = await prisma.factory.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        type: true,
+        grade: true,
+        upgradeBooster: true,
+        hasRawBooster: true
+      }
+    })
+    const q = query?.trim().toLowerCase()
+    const filtered = q
+      ? rows.filter(
+          (f) =>
+            f.id.toLowerCase().includes(q) || f.type.toLowerCase().includes(q)
+        )
+      : rows
+    return filtered.slice(0, limit)
+  },
+
   async setMode(prisma: PrismaClient, params: SetModeParams) {
     const { userId, factoryId, mode } = params
     return runInTx(prisma, async (tx) => {

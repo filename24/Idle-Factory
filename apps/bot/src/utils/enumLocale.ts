@@ -41,6 +41,7 @@ export function localizeUpgradeBooster(
 
 const KO_MATERIAL = koGame.material as Record<string, string | undefined>
 const KO_FACTORY_TYPE = koGame.factoryType as Record<string, string | undefined>
+const KO_BOOSTER = koGame.booster as Record<string, string | undefined>
 
 /**
  * 슬래시 커맨드 choice 의 `name_localizations` 에 끼워 넣을 한국어 매핑.
@@ -60,5 +61,13 @@ export function factoryTypeChoiceLocalizations(
   type: FactoryType
 ): { ko: string } | undefined {
   const ko = KO_FACTORY_TYPE[type]
+  return ko ? { ko } : undefined
+}
+
+/** UpgradeBooster 슬래시 choice 한국어 라벨 매핑(`/debug set-booster` 용). */
+export function boosterChoiceLocalizations(
+  booster: UpgradeBooster
+): { ko: string } | undefined {
+  const ko = KO_BOOSTER[booster]
   return ko ? { ko } : undefined
 }

@@ -16,6 +16,9 @@
  *  - `set-weekly-profit <stock> <amount>` — 종목 주간수익을 절대값으로 설정(배당 정산 테스트용)
  *  - `set-stock-price <stock> <price>`    — 종목 현재가를 설정하고 tick 1건 삽입(서킷브레이커 테스트용)
  *  - `seed-stock-ticks <stock> [count] [base]` — 백데이트 시간별 tick 이력 주입(info 스파크라인 테스트용)
+ *  - `set-grade <factory> <grade>`        — 공장 등급을 절대값으로 설정(부스터 분기 UI·MAX_GRADE 테스트용, #19)
+ *  - `set-booster <factory> <booster>`    — 공장 업그레이드 부스터를 설정/해제(RARE 드롭·생산 배수 테스트용, #19)
+ *  - `give-raw-booster [amount]`          — 창고에 RAW_BOOSTER 자재 지급(원자재 부스터 투입 테스트용, #19)
  *
  * 게이팅(이중 방어):
  *  1. `preconditions: ['OwnerOnly']` — owner 만 실행 (`OwnerOnly.ts`).
@@ -26,8 +29,12 @@
 
 import { Command } from '@sapphire/framework'
 import { fetchT } from '@sapphire/plugin-i18next'
-import type { MaterialType, FactoryType } from '@idle/game-core'
-import { FACTORY_CATALOG } from '@idle/game-core'
+import type { MaterialType, FactoryType, UpgradeBooster } from '@idle/game-core'
+import {
+  ABSOLUTE_MAX_GRADE,
+  FACTORY_CATALOG,
+  isBoosterChoiceGrade
+} from '@idle/game-core'
 import type { PrismaClient } from '@idle/database'
 import { MessageFlags } from 'discord.js'
 import {
@@ -39,9 +46,16 @@ import {
 import {
   localizeMaterial,
   localizeFactoryType,
+  localizeUpgradeBooster,
   materialChoiceLocalizations,
-  factoryTypeChoiceLocalizations
+  factoryTypeChoiceLocalizations,
+  boosterChoiceLocalizations
 } from '../../utils/enumLocale'
+import {
+  BOOSTER_OPTION_NONE,
+  DEBUG_RAW_BOOSTER_DEFAULT_AMOUNT,
+  parseBoosterOption
+} from '../../utils/debugFactoryOptions'
 import { MATERIAL_CHOICES } from '../game/market'
 import { MarketService, taxRateForDuration } from '../../services/market'
 import { RewardService } from '../../services/reward'
@@ -225,6 +239,12 @@ export class DebugCommand extends Command {
         return this.setStockPrice(interaction)
       case 'seed-stock-ticks':
         return this.seedStockTicks(interaction)
+      case 'set-grade':
+        return this.setGrade(interaction)
+      case 'set-booster':
+        return this.setBooster(interaction)
+      case 'give-raw-booster':
+        return this.giveRawBooster(interaction)
       default:
         return interaction.reply(
           simpleV2Payload({
@@ -718,6 +738,146 @@ export class DebugCommand extends Command {
     )
   }
 
+  /** 내 공장 id 미존재(또는 타인 공장) 시 공통 경고 응답. */
+  private replyFactoryNotFound(
+    interaction: Command.ChatInputCommandInteraction,
+    factoryId: string
+  ) {
+    return interaction.reply(
+      simpleV2Payload({
+        accent: V2_ACCENT.warn,
+        body: `\`${factoryId}\` 는 내 공장이 아니거나 존재하지 않아요.`,
+        ephemeral: true
+      })
+    )
+  }
+
+  /**
+   * 내 공장의 등급을 절대값으로 설정한다 (`Factory.grade` = grade).
+   *
+   * 부스터 분기 선택 UI 는 `/factory upgrade` 로 **새 등급**이 3/5/7/10 이 될 때만
+   * 뜨므로, 이 커맨드로 등급을 2/4/6/9 로 맞춘 뒤 업그레이드하면 UI 를 즉시
+   * 재현할 수 있다. MAX_GRADE·상한 도달 케이스 테스트에도 쓴다 (#19).
+   */
+  private async setGrade(interaction: Command.ChatInputCommandInteraction) {
+    const { db } = this.container
+    const t = await fetchT(interaction)
+    const factoryId = interaction.options.getString('factory', true)
+    const grade = interaction.options.getInteger('grade', true)
+    const userId = interaction.user.id
+
+    const factory = await db.factory.findFirst({
+      where: { id: factoryId, userId },
+      select: { id: true, type: true }
+    })
+    if (!factory) return this.replyFactoryNotFound(interaction, factoryId)
+
+    await db.factory.update({ where: { id: factory.id }, data: { grade } })
+
+    const nextIsBranch = isBoosterChoiceGrade(grade + 1)
+    const hint = nextIsBranch
+      ? `\`/factory upgrade\` 로 **G${grade + 1}** 도달 시 부스터 선택 UI 가 떠요.`
+      : '`/factory upgrade` 로 3/5/7/10등급에 도달하면 부스터 선택 UI 가 떠요.'
+
+    return interaction.reply(
+      simpleV2Payload({
+        accent: V2_ACCENT.success,
+        title: '🏭 공장 등급 설정',
+        body: [
+          `**${localizeFactoryType(t, factory.type)}** 공장 등급을 **G${grade}** 로 설정했어요.`,
+          hint
+        ].join('\n'),
+        footer: `공장 id: ${factory.id}`,
+        ephemeral: true
+      })
+    )
+  }
+
+  /**
+   * 내 공장의 업그레이드 부스터를 설정하거나 해제한다 (`Factory.upgradeBooster`).
+   *
+   * 분기 등급 게이트(`chooseBooster`)를 우회해 직접 세팅하므로, RARE 드롭(T1/T2
+   * 공장 + 수확)·생산 배수(SAVING/SPEED/PROFIT) 를 등급 조작 없이 바로 관찰할 수
+   * 있다. `NONE` 은 부스터 해제(null) (#19).
+   */
+  private async setBooster(interaction: Command.ChatInputCommandInteraction) {
+    const { db } = this.container
+    const t = await fetchT(interaction)
+    const factoryId = interaction.options.getString('factory', true)
+    const booster = parseBoosterOption(
+      interaction.options.getString('booster', true)
+    )
+    const userId = interaction.user.id
+
+    const factory = await db.factory.findFirst({
+      where: { id: factoryId, userId },
+      select: { id: true, type: true, tier: true }
+    })
+    if (!factory) return this.replyFactoryNotFound(interaction, factoryId)
+
+    await db.factory.update({
+      where: { id: factory.id },
+      data: { upgradeBooster: booster }
+    })
+
+    const boosterLabel = booster
+      ? localizeUpgradeBooster(t, booster)
+      : '없음(해제)'
+    // RARE 는 T1/T2 만 RAW_BOOSTER 드롭 대상(T3 드롭률 0) — QA 착오 방지 힌트.
+    const rareHint =
+      booster === 'RARE'
+        ? factory.tier === 'T3'
+          ? '\n-# ⚠️ T3 공장은 RARE 드롭 대상이 아니에요(드롭 확률 0). T1/T2 공장에서 테스트하세요.'
+          : '\n-# 수확(harvest)을 여러 tick 돌리면 RAW_BOOSTER 드롭을 관찰할 수 있어요.'
+        : ''
+
+    return interaction.reply(
+      simpleV2Payload({
+        accent: V2_ACCENT.rare,
+        title: '🔧 부스터 설정',
+        body: `**${localizeFactoryType(t, factory.type)}** 공장의 업그레이드 부스터를 **${boosterLabel}** 로 설정했어요.${rareHint}`,
+        footer: `공장 id: ${factory.id}`,
+        ephemeral: true
+      })
+    )
+  }
+
+  /**
+   * 내 창고에 원자재 부스터(`RAW_BOOSTER`) 자재를 지급한다.
+   *
+   * `RAW_BOOSTER` 는 직구매·마켓 대상이 아니라 `/debug material` 로 지급할 수
+   * 없으므로 전용 서브커맨드로 분리한다. `/factory applybooster` (Lv.50+) 투입
+   * 테스트의 사전 준비용 (#19).
+   */
+  private async giveRawBooster(
+    interaction: Command.ChatInputCommandInteraction
+  ) {
+    const { db } = this.container
+    const amount = BigInt(
+      interaction.options.getInteger('amount') ??
+        DEBUG_RAW_BOOSTER_DEFAULT_AMOUNT
+    )
+    const userId = interaction.user.id
+
+    await UserService.ensure(db, { discordId: userId })
+    await runInTx(db, (tx) =>
+      RewardService.grant(tx, userId, [
+        { kind: 'MATERIAL', material: 'RAW_BOOSTER', amount }
+      ])
+    )
+
+    return interaction.reply(
+      simpleV2Payload({
+        accent: V2_ACCENT.success,
+        title: '🧪 원자재 부스터 지급',
+        body: `원자재 부스터(**RAW_BOOSTER**) ×${amount.toString()} 를 창고에 지급했어요.`,
+        footer:
+          '`/factory applybooster` 로 공장에 투입해 보세요 (Lv.50+ 필요).',
+        ephemeral: true
+      })
+    )
+  }
+
   public override registerApplicationCommands(registry: Command.Registry) {
     const materialChoices = MATERIAL_CHOICES.map((m) => ({
       name: m,
@@ -729,6 +889,24 @@ export class DebugCommand extends Command {
       name_localizations: factoryTypeChoiceLocalizations(f),
       value: f
     }))
+    const boosterValues: readonly UpgradeBooster[] = [
+      'SAVING',
+      'RARE',
+      'SPEED',
+      'PROFIT'
+    ]
+    const boosterChoices = [
+      ...boosterValues.map((b) => ({
+        name: b,
+        name_localizations: boosterChoiceLocalizations(b),
+        value: b as string
+      })),
+      {
+        name: 'NONE (clear)',
+        name_localizations: { ko: '없음(해제)' },
+        value: BOOSTER_OPTION_NONE
+      }
+    ]
 
     registry.registerChatInputCommand(
       (builder) =>
@@ -990,6 +1168,85 @@ export class DebugCommand extends Command {
                   .setName('base')
                   .setDescription('Base price (default: current price)')
                   .setDescriptionLocalization('ko', '기준가 (기본: 현재가)')
+                  .setMinValue(1)
+                  .setRequired(false)
+              )
+          )
+          .addSubcommand((sub) =>
+            sub
+              .setName('set-grade')
+              .setDescription("Set a factory's grade (booster-UI QA).")
+              .setDescriptionLocalization(
+                'ko',
+                '공장 등급을 설정합니다 (부스터 UI 테스트용).'
+              )
+              .addStringOption((opt) =>
+                opt
+                  .setName('factory')
+                  .setDescription('Your factory')
+                  .setDescriptionLocalization('ko', '내 공장')
+                  .setRequired(true)
+                  .setAutocomplete(true)
+              )
+              .addIntegerOption((opt) =>
+                opt
+                  .setName('grade')
+                  .setDescription(`Target grade (1-${ABSOLUTE_MAX_GRADE})`)
+                  .setDescriptionLocalization(
+                    'ko',
+                    `설정할 등급 (1~${ABSOLUTE_MAX_GRADE})`
+                  )
+                  .setMinValue(1)
+                  .setMaxValue(ABSOLUTE_MAX_GRADE)
+                  .setRequired(true)
+              )
+          )
+          .addSubcommand((sub) =>
+            sub
+              .setName('set-booster')
+              .setDescription("Set/clear a factory's upgrade booster.")
+              .setDescriptionLocalization(
+                'ko',
+                '공장 업그레이드 부스터를 설정/해제합니다.'
+              )
+              .addStringOption((opt) =>
+                opt
+                  .setName('factory')
+                  .setDescription('Your factory')
+                  .setDescriptionLocalization('ko', '내 공장')
+                  .setRequired(true)
+                  .setAutocomplete(true)
+              )
+              .addStringOption((opt) =>
+                opt
+                  .setName('booster')
+                  .setDescription('Upgrade booster (NONE clears)')
+                  .setDescriptionLocalization(
+                    'ko',
+                    '업그레이드 부스터 (NONE=해제)'
+                  )
+                  .setRequired(true)
+                  .addChoices(...boosterChoices)
+              )
+          )
+          .addSubcommand((sub) =>
+            sub
+              .setName('give-raw-booster')
+              .setDescription('Grant RAW_BOOSTER material to your warehouse.')
+              .setDescriptionLocalization(
+                'ko',
+                '창고에 원자재 부스터(RAW_BOOSTER) 자재를 지급합니다.'
+              )
+              .addIntegerOption((opt) =>
+                opt
+                  .setName('amount')
+                  .setDescription(
+                    `Amount (default: ${DEBUG_RAW_BOOSTER_DEFAULT_AMOUNT})`
+                  )
+                  .setDescriptionLocalization(
+                    'ko',
+                    `지급 수량 (기본: ${DEBUG_RAW_BOOSTER_DEFAULT_AMOUNT})`
+                  )
                   .setMinValue(1)
                   .setRequired(false)
               )
