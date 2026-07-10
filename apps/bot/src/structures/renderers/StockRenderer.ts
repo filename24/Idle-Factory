@@ -20,7 +20,6 @@ import {
   ButtonStyle,
   ContainerBuilder,
   ModalBuilder,
-  SectionBuilder,
   SeparatorBuilder,
   SeparatorSpacingSize,
   TextDisplayBuilder,
@@ -39,6 +38,9 @@ export const STOCK_BUY_BUTTON_PREFIX = 'stock:buymkt:'
 
 /** 시세 보드 매수 수량 입력 Modal customId 프리픽스 (+종목 id). */
 export const STOCK_BUY_QTY_MODAL_PREFIX = 'stock:buyqty:'
+
+/** 시세 보드 종목별 "자세히 보기" 버튼 customId 프리픽스 (+종목 id). */
+export const STOCK_DETAIL_BUTTON_PREFIX = 'stock:detail:'
 
 /**
  * 시세 보드 페이지 이동/새로고침 버튼 customId 프리픽스.
@@ -107,10 +109,11 @@ export function computeChangePpm(current: bigint, ref: bigint): bigint {
 }
 
 /**
- * `/stock info` 종목 상세 컨테이너를 만든다.
+ * `/stock info` · 시세 보드 "자세히 보기" 종목 상세 컨테이너를 만든다.
  *
  * 구성: 제목(공장 종류) → 현재가+등락 → 스파크라인(최근 24 tick) → 보유
- * 지분/평단가/평가 손익(보유 시) → 발행·유통·상장 메타 푸터.
+ * 지분/평단가/평가 손익(보유 시) → 상장자·상장가·배당률 → 발행·유통·상장 메타
+ * 푸터 → (옵션) 매수 버튼. 종목에 필요한 정보를 한 카드에 모두 담는다.
  *
  * 등락 기준가는 최근 tick 윈도의 가장 오래된 tick 가격이며(≈24시간 전),
  * tick 이력이 없으면 IPO 가로 대체한다. 평가 손익은 조회 유저의 보유 행이
@@ -118,11 +121,13 @@ export function computeChangePpm(current: bigint, ref: bigint): bigint {
  *
  * @param view `StockService.getDetail` 결과 (read-only)
  * @param t i18next 번역 함수
+ * @param opts.buyButton 하단에 매수 버튼(수량 Modal 트리거)을 붙일지
  * @returns Components v2 ContainerBuilder
  */
 export function buildStockInfoContainer(
   view: StockDetailView,
-  t: TFunction
+  t: TFunction,
+  opts?: { readonly buyButton?: boolean }
 ): ContainerBuilder {
   const { stock, factoryType, holding, totalHeldShares, recentTicks } = view
   const factoryLabel = localizeFactoryType(t, factoryType)
@@ -220,6 +225,17 @@ export function buildStockInfoContainer(
     )
   }
 
+  // 상장자·상장가·배당률 — 종목 고유 메타(모든 정보 노출).
+  container.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(
+      t('game:stock.info.metaLine', {
+        issuer: `<@${view.issuerUserId}>`,
+        ipo: formatBigInt(stock.ipoPrice),
+        dividend: (stock.dividendRatePpm / 100).toFixed(1)
+      })
+    )
+  )
+
   container.addTextDisplayComponents(
     new TextDisplayBuilder().setContent(
       `-# ${t('game:stock.info.footer', {
@@ -229,6 +245,23 @@ export function buildStockInfoContainer(
       })}`
     )
   )
+
+  // 매수 버튼(옵션) — 텍스트 다음 ActionRow 앞엔 Separator 필수.
+  if (opts?.buyButton) {
+    container.addSeparatorComponents(
+      new SeparatorBuilder()
+        .setDivider(true)
+        .setSpacing(SeparatorSpacingSize.Small)
+    )
+    container.addActionRowComponents(
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setCustomId(`${STOCK_BUY_BUTTON_PREFIX}${stock.id}`)
+          .setLabel(t('game:stock.info.buyButton'))
+          .setStyle(ButtonStyle.Success)
+      )
+    )
+  }
 
   return container
 }
@@ -287,6 +320,13 @@ export function buildStockMarketContainer(
     )
   )
 
+  // 헤더(제목·부제) → 종목 목록(버튼 행 포함) 경계 구분선.
+  container.addSeparatorComponents(
+    new SeparatorBuilder()
+      .setDivider(true)
+      .setSpacing(SeparatorSpacingSize.Small)
+  )
+
   for (const row of rows) {
     const factoryLabel = localizeFactoryType(t, row.factoryType)
     const { trend, change } = formatChangeFromBasePpm(
@@ -299,15 +339,22 @@ export function buildStockMarketContainer(
       change,
       holding: formatBigInt(BigInt(row.myShares))
     })
-    container.addSectionComponents(
-      new SectionBuilder()
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent(text))
-        .setButtonAccessory(
-          new ButtonBuilder()
-            .setCustomId(`${STOCK_BUY_BUTTON_PREFIX}${row.id}`)
-            .setLabel(t('game:stock.market.buyButton'))
-            .setStyle(ButtonStyle.Success)
-        )
+    // 종목 요약 텍스트 + [자세히 · 매수] 버튼 행. Section accessory 는 버튼을
+    // 하나만 허용하므로 버튼 2개를 위해 TextDisplay + ActionRow 로 구성한다.
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(text)
+    )
+    container.addActionRowComponents(
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setCustomId(`${STOCK_DETAIL_BUTTON_PREFIX}${row.id}`)
+          .setLabel(t('game:stock.market.detailButton'))
+          .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+          .setCustomId(`${STOCK_BUY_BUTTON_PREFIX}${row.id}`)
+          .setLabel(t('game:stock.market.buyButton'))
+          .setStyle(ButtonStyle.Success)
+      )
     )
   }
 

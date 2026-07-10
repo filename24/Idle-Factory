@@ -576,14 +576,17 @@
       "avgLine": "**Avg buy price:** {{avg}}",
       "pnlLine": "**Unrealized P&L:** {{pnl}}  {{pnlTrend}} {{pnlChange}}",
       "noHolding": "-# You don't hold this stock.",
+      "metaLine": "**Issuer:** {{issuer}} · **IPO:** {{ipo}} · **Dividend:** {{dividend}}%",
+      "buyButton": "💵 Buy",
       "footer": "{{outstanding}} issued · {{held}} held · listed <t:{{listedUnix}}:R>"
     },
     "market": {
       "title": "📊 Server Stock Market",
-      "pageInfo": "{{count}} listed · page {{page}}/{{pages}} · buy right from the board",
+      "pageInfo": "{{count}} listed · page {{page}}/{{pages}} · use Details / Buy",
       "empty": "-# No stocks are listed yet. Try `/stock ipo` to list a factory.",
       "row": "**{{factory}}** · **{{price}}** {{trend}} {{change}} · holding {{holding}}",
-      "buyButton": "Buy",
+      "detailButton": "📊 Details",
+      "buyButton": "💵 Buy",
       "nav": {
         "prev": "◀ Prev",
         "refresh": "🔄 Refresh",

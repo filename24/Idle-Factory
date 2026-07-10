@@ -576,14 +576,17 @@
       "avgLine": "**평균 매수단가:** {{avg}}원",
       "pnlLine": "**평가 손익:** {{pnl}}원  {{pnlTrend}} {{pnlChange}}",
       "noHolding": "-# 이 종목을 보유하고 있지 않아요.",
+      "metaLine": "**상장자:** {{issuer}} · **상장가:** {{ipo}}원 · **배당률:** {{dividend}}%",
+      "buyButton": "💵 매수",
       "footer": "발행 {{outstanding}}주 · 유통 {{held}}주 · 상장 <t:{{listedUnix}}:R>"
     },
     "market": {
       "title": "📊 서버 주식 시세",
-      "pageInfo": "상장 종목 {{count}}개 · {{page}}/{{pages}} 페이지 · 매수 버튼으로 바로 사요",
+      "pageInfo": "상장 종목 {{count}}개 · {{page}}/{{pages}} 페이지 · 자세히·매수 버튼으로 확인해요",
       "empty": "-# 아직 상장된 종목이 없어요. `/stock ipo` 로 공장을 상장해 보세요.",
       "row": "**{{factory}}** · **{{price}}원** {{trend}} {{change}} · 보유 {{holding}}주",
-      "buyButton": "매수",
+      "detailButton": "📊 자세히",
+      "buyButton": "💵 매수",
       "nav": {
         "prev": "◀ 이전",
         "refresh": "🔄 새로고침",

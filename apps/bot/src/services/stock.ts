@@ -87,11 +87,11 @@ const ACTIVE_TRADE_KINDS = [
 const AUTOCOMPLETE_MAX = 25
 
 /**
- * `/stock market` 시세 보드 페이지당 종목 수 — 종목당 Section 1개(매수 버튼
- * accessory)라, 제목·부제·네비 ActionRow 를 더해도 Container 최상위 컴포넌트
- * 한도(40) 안이고 한 화면 가독성이 좋은 값. 종목이 이보다 많으면 페이지네이션.
+ * `/stock market` 시세 보드 페이지당 종목 수 — 종목당 ActionRow 1개(자세히·매수
+ * 버튼)를 쓰므로 Discord ActionRow 5행 한도에서 네비 1행을 빼고 4행으로 잡는다
+ * (4 종목 + 네비 = 5행). 종목이 이보다 많으면 페이지네이션.
  */
-export const STOCK_MARKET_PAGE_SIZE = 8
+export const STOCK_MARKET_PAGE_SIZE = 4
 
 /** `/stock info` 스파크라인용 기본 tick 조회 수 — 최근 24시간(1시간 tick). */
 const DEFAULT_RECENT_TICKS = 24
