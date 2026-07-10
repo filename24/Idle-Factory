@@ -23,13 +23,17 @@ import type { AutocompleteInteraction } from 'discord.js'
 import type { FactoryType } from '@idle/game-core'
 import type { PrismaClient } from '@idle/database'
 import { simpleV2Payload, V2_ACCENT, v2Flags } from '@utils/ComponentsV2'
-import { buildStockInfoContainer, formatBigInt } from '@structures/renderers'
+import {
+  buildStockInfoContainer,
+  buildStockMarketContainer,
+  formatBigInt
+} from '@structures/renderers'
 import {
   resolveStockErrorMessage,
   type StockSurface
 } from '@utils/stockErrorKey'
 import { localizeFactoryType } from '../../utils/enumLocale'
-import { StockService } from '../../services/stock'
+import { StockService, STOCK_MARKET_LIST_MAX } from '../../services/stock'
 import { UserService } from '../../services/user'
 
 /** Discord autocomplete 응답 라벨 길이 한도. */
@@ -44,6 +48,7 @@ export class StockCommand extends Command {
     interaction: Command.ChatInputCommandInteraction
   ) {
     const sub = interaction.options.getSubcommand(true)
+    if (sub === 'market') return this.handleMarket(interaction)
     if (sub === 'ipo') return this.handleIpo(interaction)
     if (sub === 'buy') return this.handleBuy(interaction)
     if (sub === 'sell') return this.handleSell(interaction)
@@ -96,6 +101,26 @@ export class StockCommand extends Command {
     }
 
     return interaction.respond([])
+  }
+
+  /**
+   * `/stock market` — 상장 종목 시세 보드. 한 화면에 종목을 모아 보여주고 각
+   * 종목의 매수 버튼(Section accessory)으로 바로 매수 Modal 을 띄운다. 표시
+   * 상한(`STOCK_MARKET_LIST_MAX`)에 도달하면 상한 안내 푸터를 덧붙인다.
+   */
+  private async handleMarket(interaction: Command.ChatInputCommandInteraction) {
+    const { db } = this.container
+    const t = await fetchT(interaction)
+    const rows = await StockService.listListedForGuild(db, {
+      guildId: interaction.guildId,
+      userId: interaction.user.id
+    })
+    const truncated = rows.length >= STOCK_MARKET_LIST_MAX
+    const container = buildStockMarketContainer(rows, t, { truncated })
+    return interaction.reply({
+      components: [container],
+      flags: v2Flags(false)
+    })
   }
 
   private async handleIpo(interaction: Command.ChatInputCommandInteraction) {
@@ -301,6 +326,16 @@ export class StockCommand extends Command {
         .setDescription('Server stock market actions.')
         .setNameLocalization('ko', '주식')
         .setDescriptionLocalization('ko', '서버 주식 관련 명령')
+        .addSubcommand((sub) =>
+          sub
+            .setName('market')
+            .setNameLocalization('ko', '시세')
+            .setDescription('Browse listed stocks and buy on one screen.')
+            .setDescriptionLocalization(
+              'ko',
+              '상장 종목을 한 화면에서 보고 바로 매수합니다.'
+            )
+        )
         .addSubcommand((sub) =>
           sub
             .setName('ipo')

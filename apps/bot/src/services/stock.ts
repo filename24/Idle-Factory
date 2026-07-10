@@ -86,6 +86,12 @@ const ACTIVE_TRADE_KINDS = [
 /** Discord autocomplete 응답 상한 (market.ts 관례). */
 const AUTOCOMPLETE_MAX = 25
 
+/**
+ * `/stock market` 시세 보드 한 화면 표시 상한 — 종목당 Section 1개(매수 버튼
+ * accessory)라, Container 최상위 컴포넌트 한도(40)와 가독성을 고려한 상수.
+ */
+export const STOCK_MARKET_LIST_MAX = 20
+
 /** `/stock info` 스파크라인용 기본 tick 조회 수 — 최근 24시간(1시간 tick). */
 const DEFAULT_RECENT_TICKS = 24
 
@@ -195,6 +201,21 @@ export interface StockAutocompleteChoice {
   readonly factoryType: FactoryType
   /** 현재가. */
   readonly currentPrice: bigint
+}
+
+/** `/stock market` 시세 보드 한 줄 (종목 + 조회 유저 보유량). */
+export interface StockMarketRow {
+  readonly id: string
+  /** 상장 공장 종류. */
+  readonly factoryType: FactoryType
+  /** 현재가. */
+  readonly currentPrice: bigint
+  /** IPO 상장가 — 보드 등락 기준가(vs 상장가). */
+  readonly ipoPrice: bigint
+  /** 발행 주수. */
+  readonly sharesOutstanding: number
+  /** 조회 유저의 보유 주수 (미보유 0). */
+  readonly myShares: number
 }
 
 /**
@@ -789,6 +810,64 @@ export const StockService = {
       id: r.id,
       factoryType: r.factory.type as FactoryType,
       currentPrice: r.currentPrice
+    }))
+  },
+
+  /**
+   * `/stock market` 시세 보드용 상장 종목 목록 (read-only).
+   *
+   * 최근 상장순 상위 `limit`(기본·최대 `STOCK_MARKET_LIST_MAX`)개를 조회 서버
+   * 격리(`searchListedForAutocomplete` 와 동일: 해당 서버 + `guildId=null`
+   * 폴백)로 반환한다. 조회 유저 보유량은 종목별 `holdings` 를 유저 필터로
+   * 함께 select 해 N+1 없이 한 쿼리로 붙인다.
+   *
+   * @param prisma - DB 클라이언트
+   * @param input.guildId - 조회 서버 snowflake (null/생략 시 소속 서버 없는 종목만)
+   * @param input.userId - 보유량 집계 대상 유저 id
+   * @param input.limit - 표시 상한 (기본·최대 `STOCK_MARKET_LIST_MAX`)
+   * @returns 종목 행 목록 (최근 상장순)
+   */
+  async listListedForGuild(
+    prisma: PrismaClient,
+    input: {
+      readonly guildId?: string | null
+      readonly userId: string
+      readonly limit?: number
+    }
+  ): Promise<StockMarketRow[]> {
+    const limit = Math.min(
+      input.limit ?? STOCK_MARKET_LIST_MAX,
+      STOCK_MARKET_LIST_MAX
+    )
+    const guildFilter =
+      input.guildId != null
+        ? { OR: [{ guildId: null }, { guildId: input.guildId }] }
+        : { guildId: null }
+
+    const rows = await prisma.stock.findMany({
+      where: guildFilter,
+      orderBy: { listedAt: 'desc' },
+      take: limit,
+      select: {
+        id: true,
+        currentPrice: true,
+        ipoPrice: true,
+        sharesOutstanding: true,
+        factory: { select: { type: true } },
+        holdings: {
+          where: { userId: input.userId },
+          select: { shares: true }
+        }
+      }
+    })
+
+    return rows.map((r) => ({
+      id: r.id,
+      factoryType: r.factory.type as FactoryType,
+      currentPrice: r.currentPrice,
+      ipoPrice: r.ipoPrice,
+      sharesOutstanding: r.sharesOutstanding,
+      myShares: r.holdings[0]?.shares ?? 0
     }))
   }
 } as const

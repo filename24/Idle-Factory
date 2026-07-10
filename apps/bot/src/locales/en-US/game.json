@@ -578,6 +578,19 @@
       "noHolding": "-# You don't hold this stock.",
       "footer": "{{outstanding}} issued · {{held}} held · listed <t:{{listedUnix}}:R>"
     },
+    "market": {
+      "title": "📊 Server Stock Market",
+      "subtitle": "{{count}} listed · buy right from the board",
+      "empty": "-# No stocks are listed yet. Try `/stock ipo` to list a factory.",
+      "row": "**{{factory}}** · **{{price}}** {{trend}} {{change}} · holding {{holding}}",
+      "buyButton": "Buy",
+      "truncated": "-# Showing up to {{max}} most recently listed.",
+      "modal": {
+        "title": "Buy {{factory}}",
+        "sharesLabel": "Shares to buy",
+        "sharesPlaceholder": "e.g. 10"
+      }
+    },
     "error": {
       "notFound": "That stock could not be found.",
       "selfTrade": "You can't trade a stock you listed yourself.",

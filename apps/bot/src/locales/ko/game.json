@@ -578,6 +578,19 @@
       "noHolding": "-# 이 종목을 보유하고 있지 않아요.",
       "footer": "발행 {{outstanding}}주 · 유통 {{held}}주 · 상장 <t:{{listedUnix}}:R>"
     },
+    "market": {
+      "title": "📊 서버 주식 시세",
+      "subtitle": "상장 종목 {{count}}개 · 매수 버튼으로 바로 사요",
+      "empty": "-# 아직 상장된 종목이 없어요. `/stock ipo` 로 공장을 상장해 보세요.",
+      "row": "**{{factory}}** · **{{price}}원** {{trend}} {{change}} · 보유 {{holding}}주",
+      "buyButton": "매수",
+      "truncated": "-# 최근 상장순 최대 {{max}}개까지 표시돼요.",
+      "modal": {
+        "title": "{{factory}} 매수",
+        "sharesLabel": "매수 주수",
+        "sharesPlaceholder": "예: 10"
+      }
+    },
     "error": {
       "notFound": "해당 종목을 찾을 수 없어요.",
       "selfTrade": "본인이 상장한 종목은 매매할 수 없어요.",

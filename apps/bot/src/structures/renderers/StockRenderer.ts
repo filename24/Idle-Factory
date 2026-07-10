@@ -15,17 +15,31 @@
  */
 
 import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
   ContainerBuilder,
+  ModalBuilder,
+  SectionBuilder,
   SeparatorBuilder,
   SeparatorSpacingSize,
-  TextDisplayBuilder
+  TextDisplayBuilder,
+  TextInputBuilder,
+  TextInputStyle
 } from 'discord.js'
 import type { TFunction } from '@sapphire/plugin-i18next'
 import { V2_ACCENT } from '@utils/ComponentsV2'
-import type { StockDetailView } from '../../services/stock'
+import type { StockDetailView, StockMarketRow } from '../../services/stock'
+import { STOCK_MARKET_LIST_MAX } from '../../services/stock'
 import { localizeFactoryType } from '../../utils/enumLocale'
 import { formatBigInt } from './FactoryRenderer'
 import { formatChangeFromBasePpm } from './MarketRenderer'
+
+/** `/stock market` 시세 보드의 종목별 매수 버튼 customId 프리픽스 (+종목 id). */
+export const STOCK_BUY_BUTTON_PREFIX = 'stock:buymkt:'
+
+/** 시세 보드 매수 수량 입력 Modal customId 프리픽스 (+종목 id). */
+export const STOCK_BUY_QTY_MODAL_PREFIX = 'stock:buyqty:'
 
 /**
  * 스파크라인 블록 문자 8단계 (▁ 최저 → █ 최고).
@@ -208,4 +222,112 @@ export function buildStockInfoContainer(
   )
 
   return container
+}
+
+/**
+ * `/stock market` 시세 보드 컨테이너를 만든다 — 한 화면에 상장 종목을 모아
+ * 보여주고, 각 종목마다 **매수 버튼**(Section accessory)으로 바로 매수한다.
+ *
+ * 구성: 제목 → (종목 있으면) 부제(종목 수) → 종목별 Section(종류·현재가·등락·
+ * 보유 주수 + 매수 버튼). 종목이 없으면 빈 상태 문구만. 등락 기준가는 IPO
+ * 상장가(vs 상장가)다. `truncated` 면 표시 상한 안내 푸터를 덧붙인다.
+ *
+ * Section + Button accessory 는 componentsv2-builder 스킬이 권장하는 "목록 +
+ * 개별 액션" 패턴이라 ActionRow 나열 없이 폭도 확보된다. 매수 버튼 customId 는
+ * `STOCK_BUY_BUTTON_PREFIX + 종목 id`.
+ *
+ * @param rows `StockService.listListedForGuild` 결과 (read-only)
+ * @param t i18next 번역 함수
+ * @param opts.truncated 표시 상한(`STOCK_MARKET_LIST_MAX`)에 걸려 잘렸는지
+ * @returns Components v2 ContainerBuilder
+ */
+export function buildStockMarketContainer(
+  rows: readonly StockMarketRow[],
+  t: TFunction,
+  opts?: { readonly truncated?: boolean }
+): ContainerBuilder {
+  const container = new ContainerBuilder().setAccentColor(V2_ACCENT.info)
+  container.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(`# **${t('game:stock.market.title')}**`)
+  )
+
+  if (rows.length === 0) {
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(t('game:stock.market.empty'))
+    )
+    return container
+  }
+
+  container.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(
+      `-# ${t('game:stock.market.subtitle', { count: rows.length })}`
+    )
+  )
+
+  for (const row of rows) {
+    const factoryLabel = localizeFactoryType(t, row.factoryType)
+    const { trend, change } = formatChangeFromBasePpm(
+      computeChangePpm(row.currentPrice, row.ipoPrice)
+    )
+    const text = t('game:stock.market.row', {
+      factory: factoryLabel,
+      price: formatBigInt(row.currentPrice),
+      trend,
+      change,
+      holding: formatBigInt(BigInt(row.myShares))
+    })
+    container.addSectionComponents(
+      new SectionBuilder()
+        .addTextDisplayComponents(new TextDisplayBuilder().setContent(text))
+        .setButtonAccessory(
+          new ButtonBuilder()
+            .setCustomId(`${STOCK_BUY_BUTTON_PREFIX}${row.id}`)
+            .setLabel(t('game:stock.market.buyButton'))
+            .setStyle(ButtonStyle.Success)
+        )
+    )
+  }
+
+  if (opts?.truncated) {
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        `-# ${t('game:stock.market.truncated', { max: STOCK_MARKET_LIST_MAX })}`
+      )
+    )
+  }
+
+  return container
+}
+
+/**
+ * 시세 보드 매수 버튼 → 수량 입력 Modal 을 만든다.
+ *
+ * customId 는 `STOCK_BUY_QTY_MODAL_PREFIX + 종목 id`. 발행 주수 상한이 6자리
+ * 안이므로 TextInput 은 1~6자리 정수만 받는다(제출 핸들러가 재검증).
+ *
+ * @param stockId 대상 종목 id
+ * @param factoryLabel 종목(공장 종류) 로케일 라벨 — Modal 제목용
+ * @param t i18next 번역 함수
+ * @returns discord.js ModalBuilder
+ */
+export function buildStockBuyModal(
+  stockId: string,
+  factoryLabel: string,
+  t: TFunction
+): ModalBuilder {
+  return new ModalBuilder()
+    .setCustomId(`${STOCK_BUY_QTY_MODAL_PREFIX}${stockId}`)
+    .setTitle(t('game:stock.market.modal.title', { factory: factoryLabel }))
+    .addComponents(
+      new ActionRowBuilder<TextInputBuilder>().addComponents(
+        new TextInputBuilder()
+          .setCustomId('shares')
+          .setLabel(t('game:stock.market.modal.sharesLabel'))
+          .setStyle(TextInputStyle.Short)
+          .setPlaceholder(t('game:stock.market.modal.sharesPlaceholder'))
+          .setMinLength(1)
+          .setMaxLength(6)
+          .setRequired(true)
+      )
+    )
 }
