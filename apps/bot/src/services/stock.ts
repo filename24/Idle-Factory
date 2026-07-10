@@ -97,8 +97,8 @@ export const STOCK_MARKET_PAGE_SIZE = 4
 export const STOCK_CHART_WINDOW_DAYS = 7
 
 /**
- * 그래프 가격 tick 조회 상한 — 7일 × 시간당 1 tick = 168 이지만 시드로 촘촘한
- * 경우를 대비해 여유를 둔다(쿼리 폭주 방지).
+ * 그래프 tick 조회 상한 — 7일 × 시간당 1 tick = 168 이지만 시드로 촘촘한 경우를
+ * 대비해 여유를 둔다(쿼리 폭주 방지).
  */
 export const STOCK_CHART_MAX_POINTS = 400
 

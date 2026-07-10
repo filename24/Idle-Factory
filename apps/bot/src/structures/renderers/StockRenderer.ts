@@ -130,8 +130,9 @@ export function computeChangePpm(current: bigint, ref: bigint): bigint {
  * @param view `StockService.getDetail` 결과 (read-only)
  * @param t i18next 번역 함수
  * @param opts.buyButton 하단에 매수 버튼(수량 Modal 트리거)을 붙일지
- * @param opts.chart 7일 가격 그래프 첨부(있으면 ASCII 스파크라인 대신 이미지 +
- *   7일 고저 표시). `attachmentName` 은 함께 보낼 `AttachmentBuilder` 이름과 일치.
+ * @param opts.chart 7일 가격 그래프 첨부(있으면 ASCII 스파크라인 대신 숫자 축이
+ *   있는 이미지 그래프). `attachmentName` 은 함께 보낼 `AttachmentBuilder` 이름과
+ *   일치해야 한다.
  * @returns Components v2 ContainerBuilder
  */
 export function buildStockInfoContainer(
@@ -139,11 +140,7 @@ export function buildStockInfoContainer(
   t: TFunction,
   opts?: {
     readonly buyButton?: boolean
-    readonly chart?: {
-      readonly attachmentName: string
-      readonly high: bigint
-      readonly low: bigint
-    }
+    readonly chart?: { readonly attachmentName: string }
   }
 ): ContainerBuilder {
   const { stock, factoryType, holding, totalHeldShares, recentTicks } = view
@@ -175,7 +172,7 @@ export function buildStockInfoContainer(
     )
   )
 
-  // 그래프가 있으면 이미지(+7일 고저), 없으면 ASCII 스파크라인.
+  // 그래프가 있으면 숫자 축 이미지, 없으면 ASCII 스파크라인(최근 24시간).
   if (opts?.chart) {
     container.addMediaGalleryComponents(
       new MediaGalleryBuilder().addItems(
@@ -184,14 +181,6 @@ export function buildStockInfoContainer(
           .setDescription(
             t('game:stock.info.chartAlt', { factory: factoryLabel })
           )
-      )
-    )
-    container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        t('game:stock.info.rangeLine', {
-          high: formatBigInt(opts.chart.high),
-          low: formatBigInt(opts.chart.low)
-        })
       )
     )
   } else if (recentTicks.length > 0) {

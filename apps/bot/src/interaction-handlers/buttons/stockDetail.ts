@@ -80,20 +80,16 @@ export class StockDetailButtonHandler extends InteractionHandler {
         return
       }
 
-      const prices = history.map((h) => h.price)
-      const high = prices.reduce((m, p) => (p > m ? p : m), prices[0])
-      const low = prices.reduce((m, p) => (p < m ? p : m), prices[0])
       const filename = stockChartFilename(data.stockId)
       const png = renderStockChart({
         stockId: data.stockId,
         lastTickAtMs: view.stock.lastTickAt.getTime(),
-        prices,
+        prices: history.map((h) => h.price),
         ipoPrice: view.stock.ipoPrice
       })
-
       const container = buildStockInfoContainer(view, t, {
         buyButton: true,
-        chart: { attachmentName: filename, high, low }
+        chart: { attachmentName: filename }
       })
       await interaction.reply({
         components: [container],
