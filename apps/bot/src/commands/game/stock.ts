@@ -19,7 +19,8 @@
 
 import { Command } from '@sapphire/framework'
 import { fetchT } from '@sapphire/plugin-i18next'
-import type { AutocompleteInteraction } from 'discord.js'
+import type { TFunction } from '@sapphire/plugin-i18next'
+import type { AutocompleteInteraction, ContainerBuilder } from 'discord.js'
 import type { FactoryType } from '@idle/game-core'
 import type { PrismaClient } from '@idle/database'
 import { simpleV2Payload, V2_ACCENT, v2Flags } from '@utils/ComponentsV2'
@@ -33,7 +34,7 @@ import {
   type StockSurface
 } from '@utils/stockErrorKey'
 import { localizeFactoryType } from '../../utils/enumLocale'
-import { StockService, STOCK_MARKET_LIST_MAX } from '../../services/stock'
+import { StockService, STOCK_MARKET_PAGE_SIZE } from '../../services/stock'
 import { UserService } from '../../services/user'
 
 /** Discord autocomplete 응답 라벨 길이 한도. */
@@ -105,22 +106,19 @@ export class StockCommand extends Command {
 
   /**
    * `/stock market` — 상장 종목 시세 보드. 한 화면에 종목을 모아 보여주고 각
-   * 종목의 매수 버튼(Section accessory)으로 바로 매수 Modal 을 띄운다. 표시
-   * 상한(`STOCK_MARKET_LIST_MAX`)에 도달하면 상한 안내 푸터를 덧붙인다.
+   * 종목의 매수 버튼(Section accessory)으로 바로 매수 Modal 을 띄운다. 종목이
+   * 페이지당 상한(`STOCK_MARKET_PAGE_SIZE`)을 넘으면 이전/다음·새로고침 네비로
+   * 페이지를 넘긴다(첫 페이지부터).
    */
   private async handleMarket(interaction: Command.ChatInputCommandInteraction) {
-    const { db } = this.container
     const t = await fetchT(interaction)
-    const rows = await StockService.listListedForGuild(db, {
+    const payload = await buildStockMarketPayload(this.container.db, {
+      userId: interaction.user.id,
       guildId: interaction.guildId,
-      userId: interaction.user.id
+      page: 0,
+      t
     })
-    const truncated = rows.length >= STOCK_MARKET_LIST_MAX
-    const container = buildStockMarketContainer(rows, t, { truncated })
-    return interaction.reply({
-      components: [container],
-      flags: v2Flags(false)
-    })
+    return interaction.reply(payload as Parameters<typeof interaction.reply>[0])
   }
 
   private async handleIpo(interaction: Command.ChatInputCommandInteraction) {
@@ -434,6 +432,61 @@ export class StockCommand extends Command {
         )
     )
   }
+}
+
+/**
+ * `/stock market` 시세 보드 한 페이지 페이로드를 만든다 (커맨드·네비 핸들러 공용).
+ *
+ * 요청 페이지를 조회한 뒤, 전체 종목 수로 페이지 수를 구해 요청 페이지가
+ * 마지막을 넘으면(종목이 줄어든 경우) 마지막 페이지로 클램프해 재조회한다.
+ * 항상 공개(non-ephemeral) Components v2 페이로드를 반환하며, 네비 버튼은
+ * 호출자(`userId`) 만 조작하도록 owner-prefixed 로 렌더된다.
+ *
+ * @param db PrismaClient
+ * @param input.userId 보드 호출자 id (보유량 집계·네비 게이팅)
+ * @param input.guildId 조회 서버 snowflake (없으면 null)
+ * @param input.page 요청 페이지(0-base, 음수는 0 으로 보정)
+ * @param input.t i18next 번역 함수
+ * @returns `{ components, flags }` Components v2 페이로드
+ */
+export async function buildStockMarketPayload(
+  db: PrismaClient,
+  input: {
+    readonly userId: string
+    readonly guildId: string | null
+    readonly page: number
+    readonly t: TFunction
+  }
+): Promise<{ components: ContainerBuilder[]; flags: number }> {
+  const size = STOCK_MARKET_PAGE_SIZE
+  let page = Math.max(0, input.page)
+  const firstPage = await StockService.listListedForGuild(db, {
+    guildId: input.guildId,
+    userId: input.userId,
+    limit: size,
+    offset: page * size
+  })
+  const total = firstPage.total
+  let rows = firstPage.rows
+  const pageCount = Math.max(1, Math.ceil(total / size))
+  // 종목이 줄어 요청 페이지가 마지막을 넘으면 마지막 페이지로 클램프 후 재조회.
+  if (page > pageCount - 1) {
+    page = pageCount - 1
+    const clamped = await StockService.listListedForGuild(db, {
+      guildId: input.guildId,
+      userId: input.userId,
+      limit: size,
+      offset: page * size
+    })
+    rows = clamped.rows
+  }
+  const container = buildStockMarketContainer(rows, input.t, {
+    ownerId: input.userId,
+    page,
+    pageCount,
+    total
+  })
+  return { components: [container], flags: v2Flags(false) }
 }
 
 /** 상장 미완료(미상장) 본인 공장 자동완성 후보. */

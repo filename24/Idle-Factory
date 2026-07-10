@@ -87,10 +87,11 @@ const ACTIVE_TRADE_KINDS = [
 const AUTOCOMPLETE_MAX = 25
 
 /**
- * `/stock market` 시세 보드 한 화면 표시 상한 — 종목당 Section 1개(매수 버튼
- * accessory)라, Container 최상위 컴포넌트 한도(40)와 가독성을 고려한 상수.
+ * `/stock market` 시세 보드 페이지당 종목 수 — 종목당 Section 1개(매수 버튼
+ * accessory)라, 제목·부제·네비 ActionRow 를 더해도 Container 최상위 컴포넌트
+ * 한도(40) 안이고 한 화면 가독성이 좋은 값. 종목이 이보다 많으면 페이지네이션.
  */
-export const STOCK_MARKET_LIST_MAX = 20
+export const STOCK_MARKET_PAGE_SIZE = 8
 
 /** `/stock info` 스파크라인용 기본 tick 조회 수 — 최근 24시간(1시간 tick). */
 const DEFAULT_RECENT_TICKS = 24
@@ -216,6 +217,14 @@ export interface StockMarketRow {
   readonly sharesOutstanding: number
   /** 조회 유저의 보유 주수 (미보유 0). */
   readonly myShares: number
+}
+
+/** `/stock market` 시세 보드 한 페이지 결과 (행 + 페이지네이션용 전체 종목 수). */
+export interface StockMarketPage {
+  /** 이 페이지의 종목 행 목록. */
+  readonly rows: StockMarketRow[]
+  /** 서버 격리 필터를 통과한 전체 상장 종목 수 (페이지 수 계산용). */
+  readonly total: number
 }
 
 /**
@@ -814,18 +823,20 @@ export const StockService = {
   },
 
   /**
-   * `/stock market` 시세 보드용 상장 종목 목록 (read-only).
+   * `/stock market` 시세 보드 한 페이지를 조회한다 (read-only).
    *
-   * 최근 상장순 상위 `limit`(기본·최대 `STOCK_MARKET_LIST_MAX`)개를 조회 서버
-   * 격리(`searchListedForAutocomplete` 와 동일: 해당 서버 + `guildId=null`
-   * 폴백)로 반환한다. 조회 유저 보유량은 종목별 `holdings` 를 유저 필터로
-   * 함께 select 해 N+1 없이 한 쿼리로 붙인다.
+   * 조회 서버 격리(`searchListedForAutocomplete` 와 동일: 해당 서버 +
+   * `guildId=null` 폴백)로 최근 상장순 정렬 후 `offset`/`limit` 로 페이지를
+   * 자른다. 조회 유저 보유량은 종목별 `holdings` 를 유저 필터로 함께 select 해
+   * N+1 없이 붙이고, 전체 종목 수(`total`)를 같은 필터로 count 해 함께 반환한다
+   * (페이지 수 계산용).
    *
    * @param prisma - DB 클라이언트
    * @param input.guildId - 조회 서버 snowflake (null/생략 시 소속 서버 없는 종목만)
    * @param input.userId - 보유량 집계 대상 유저 id
-   * @param input.limit - 표시 상한 (기본·최대 `STOCK_MARKET_LIST_MAX`)
-   * @returns 종목 행 목록 (최근 상장순)
+   * @param input.limit - 페이지당 종목 수 (기본·최대 `STOCK_MARKET_PAGE_SIZE`)
+   * @param input.offset - 건너뛸 종목 수 (`page × pageSize`, 기본 0)
+   * @returns `{ rows, total }` — 이 페이지 행 + 전체 종목 수
    */
   async listListedForGuild(
     prisma: PrismaClient,
@@ -833,42 +844,51 @@ export const StockService = {
       readonly guildId?: string | null
       readonly userId: string
       readonly limit?: number
+      readonly offset?: number
     }
-  ): Promise<StockMarketRow[]> {
+  ): Promise<StockMarketPage> {
     const limit = Math.min(
-      input.limit ?? STOCK_MARKET_LIST_MAX,
-      STOCK_MARKET_LIST_MAX
+      input.limit ?? STOCK_MARKET_PAGE_SIZE,
+      STOCK_MARKET_PAGE_SIZE
     )
+    const offset = Math.max(0, input.offset ?? 0)
     const guildFilter =
       input.guildId != null
         ? { OR: [{ guildId: null }, { guildId: input.guildId }] }
         : { guildId: null }
 
-    const rows = await prisma.stock.findMany({
-      where: guildFilter,
-      orderBy: { listedAt: 'desc' },
-      take: limit,
-      select: {
-        id: true,
-        currentPrice: true,
-        ipoPrice: true,
-        sharesOutstanding: true,
-        factory: { select: { type: true } },
-        holdings: {
-          where: { userId: input.userId },
-          select: { shares: true }
+    const [rows, total] = await Promise.all([
+      prisma.stock.findMany({
+        where: guildFilter,
+        orderBy: { listedAt: 'desc' },
+        skip: offset,
+        take: limit,
+        select: {
+          id: true,
+          currentPrice: true,
+          ipoPrice: true,
+          sharesOutstanding: true,
+          factory: { select: { type: true } },
+          holdings: {
+            where: { userId: input.userId },
+            select: { shares: true }
+          }
         }
-      }
-    })
+      }),
+      prisma.stock.count({ where: guildFilter })
+    ])
 
-    return rows.map((r) => ({
-      id: r.id,
-      factoryType: r.factory.type as FactoryType,
-      currentPrice: r.currentPrice,
-      ipoPrice: r.ipoPrice,
-      sharesOutstanding: r.sharesOutstanding,
-      myShares: r.holdings[0]?.shares ?? 0
-    }))
+    return {
+      rows: rows.map((r) => ({
+        id: r.id,
+        factoryType: r.factory.type as FactoryType,
+        currentPrice: r.currentPrice,
+        ipoPrice: r.ipoPrice,
+        sharesOutstanding: r.sharesOutstanding,
+        myShares: r.holdings[0]?.shares ?? 0
+      })),
+      total
+    }
   }
 } as const
 

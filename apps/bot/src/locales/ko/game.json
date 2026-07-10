@@ -580,11 +580,15 @@
     },
     "market": {
       "title": "📊 서버 주식 시세",
-      "subtitle": "상장 종목 {{count}}개 · 매수 버튼으로 바로 사요",
+      "pageInfo": "상장 종목 {{count}}개 · {{page}}/{{pages}} 페이지 · 매수 버튼으로 바로 사요",
       "empty": "-# 아직 상장된 종목이 없어요. `/stock ipo` 로 공장을 상장해 보세요.",
       "row": "**{{factory}}** · **{{price}}원** {{trend}} {{change}} · 보유 {{holding}}주",
       "buyButton": "매수",
-      "truncated": "-# 최근 상장순 최대 {{max}}개까지 표시돼요.",
+      "nav": {
+        "prev": "◀ 이전",
+        "refresh": "🔄 새로고침",
+        "next": "다음 ▶"
+      },
       "modal": {
         "title": "{{factory}} 매수",
         "sharesLabel": "매수 주수",

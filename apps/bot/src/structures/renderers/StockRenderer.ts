@@ -30,7 +30,6 @@ import {
 import type { TFunction } from '@sapphire/plugin-i18next'
 import { V2_ACCENT } from '@utils/ComponentsV2'
 import type { StockDetailView, StockMarketRow } from '../../services/stock'
-import { STOCK_MARKET_LIST_MAX } from '../../services/stock'
 import { localizeFactoryType } from '../../utils/enumLocale'
 import { formatBigInt } from './FactoryRenderer'
 import { formatChangeFromBasePpm } from './MarketRenderer'
@@ -40,6 +39,16 @@ export const STOCK_BUY_BUTTON_PREFIX = 'stock:buymkt:'
 
 /** 시세 보드 매수 수량 입력 Modal customId 프리픽스 (+종목 id). */
 export const STOCK_BUY_QTY_MODAL_PREFIX = 'stock:buyqty:'
+
+/**
+ * 시세 보드 페이지 이동/새로고침 버튼 customId 프리픽스.
+ *
+ * owner-prefixed 포맷 — `stock:mkt:<ownerId>:<targetPage>`. 공개 메시지라
+ * 네비게이션은 호출자 본인만 하도록 `parseOwnerPrefixedCustomId` 로 게이팅한다
+ * (매수 버튼은 누구나 가능하므로 별도 프리픽스). 새로고침은 현재 페이지를
+ * 그대로 타깃(`targetPage = 현재 page`)으로 재조회한다.
+ */
+export const STOCK_MARKET_NAV_PREFIX = 'stock:mkt:'
 
 /**
  * 스파크라인 블록 문자 8단계 (▁ 최저 → █ 최고).
@@ -227,24 +236,34 @@ export function buildStockInfoContainer(
 /**
  * `/stock market` 시세 보드 컨테이너를 만든다 — 한 화면에 상장 종목을 모아
  * 보여주고, 각 종목마다 **매수 버튼**(Section accessory)으로 바로 매수한다.
+ * 종목이 페이지당 상한을 넘으면 이전/다음 페이지 + 새로고침 네비게이션을 붙인다.
  *
- * 구성: 제목 → (종목 있으면) 부제(종목 수) → 종목별 Section(종류·현재가·등락·
- * 보유 주수 + 매수 버튼). 종목이 없으면 빈 상태 문구만. 등락 기준가는 IPO
- * 상장가(vs 상장가)다. `truncated` 면 표시 상한 안내 푸터를 덧붙인다.
+ * 구성: 제목 → (종목 있으면) 부제(전체 수·페이지) → 종목별 Section(종류·현재가·
+ * 등락·보유 주수 + 매수 버튼) → 구분선 → 네비 ActionRow(◀ 이전 · 🔄 새로고침 ·
+ * 다음 ▶). 종목이 없으면 빈 상태 문구만. 등락 기준가는 IPO 상장가(vs 상장가)다.
  *
  * Section + Button accessory 는 componentsv2-builder 스킬이 권장하는 "목록 +
- * 개별 액션" 패턴이라 ActionRow 나열 없이 폭도 확보된다. 매수 버튼 customId 는
- * `STOCK_BUY_BUTTON_PREFIX + 종목 id`.
+ * 개별 액션" 패턴. 매수 버튼 customId 는 `STOCK_BUY_BUTTON_PREFIX + 종목 id`
+ * (게이팅 없음 — 누구나 매수). 네비 버튼은 owner-prefixed
+ * (`STOCK_MARKET_NAV_PREFIX + ownerId + ':' + 대상 페이지`) 라 호출자만 이동한다.
  *
- * @param rows `StockService.listListedForGuild` 결과 (read-only)
+ * @param rows 이 페이지의 종목 행 (read-only)
  * @param t i18next 번역 함수
- * @param opts.truncated 표시 상한(`STOCK_MARKET_LIST_MAX`)에 걸려 잘렸는지
+ * @param opts.ownerId 보드 호출자 id (네비 게이팅용)
+ * @param opts.page 현재 페이지(0-base)
+ * @param opts.pageCount 전체 페이지 수(>=1)
+ * @param opts.total 전체 종목 수
  * @returns Components v2 ContainerBuilder
  */
 export function buildStockMarketContainer(
   rows: readonly StockMarketRow[],
   t: TFunction,
-  opts?: { readonly truncated?: boolean }
+  opts: {
+    readonly ownerId: string
+    readonly page: number
+    readonly pageCount: number
+    readonly total: number
+  }
 ): ContainerBuilder {
   const container = new ContainerBuilder().setAccentColor(V2_ACCENT.info)
   container.addTextDisplayComponents(
@@ -260,7 +279,11 @@ export function buildStockMarketContainer(
 
   container.addTextDisplayComponents(
     new TextDisplayBuilder().setContent(
-      `-# ${t('game:stock.market.subtitle', { count: rows.length })}`
+      `-# ${t('game:stock.market.pageInfo', {
+        count: opts.total,
+        page: opts.page + 1,
+        pages: opts.pageCount
+      })}`
     )
   )
 
@@ -288,13 +311,32 @@ export function buildStockMarketContainer(
     )
   }
 
-  if (opts?.truncated) {
-    container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        `-# ${t('game:stock.market.truncated', { max: STOCK_MARKET_LIST_MAX })}`
-      )
+  // 텍스트/Section 다음 ActionRow 앞에는 Separator 필수 (봇 규약).
+  container.addSeparatorComponents(
+    new SeparatorBuilder()
+      .setDivider(true)
+      .setSpacing(SeparatorSpacingSize.Small)
+  )
+
+  const nav = `${STOCK_MARKET_NAV_PREFIX}${opts.ownerId}:`
+  container.addActionRowComponents(
+    new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`${nav}${opts.page - 1}`)
+        .setLabel(t('game:stock.market.nav.prev'))
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(opts.page <= 0),
+      new ButtonBuilder()
+        .setCustomId(`${nav}${opts.page}`)
+        .setLabel(t('game:stock.market.nav.refresh'))
+        .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setCustomId(`${nav}${opts.page + 1}`)
+        .setLabel(t('game:stock.market.nav.next'))
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(opts.page >= opts.pageCount - 1)
     )
-  }
+  )
 
   return container
 }
