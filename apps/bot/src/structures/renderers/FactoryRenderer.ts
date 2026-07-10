@@ -24,7 +24,11 @@ import type {
   ShortageMode,
   UpgradeBooster
 } from '@idle/game-core'
-import { V2_ACCENT } from '@utils/ComponentsV2'
+// 상대경로 유지: 스케줄러(`scheduled-tasks/*`)가 이 파일의 `formatBigInt` 를 import 하므로
+// vitest 단위 테스트 그래프에 전이적으로 로드된다. vitest 는 `@utils` 별칭을 해석하지 못해
+// 별칭 import 시 렌더러가 로드 실패한다 (apps/bot/CLAUDE.md §Testing). 형제 렌더러는
+// 테스트에 전이 로드되지 않으므로 별칭을 유지해도 무방하다.
+import { V2_ACCENT } from '../../utils/ComponentsV2'
 import { localizeUpgradeBooster } from '../../utils/enumLocale'
 
 /**
@@ -111,6 +115,11 @@ export interface FactoryInfoDTO {
   readonly type: FactoryType
   /** 현재 등급 1..10 */
   readonly grade: number
+  /**
+   * 서버 신뢰도 기준 유효 최대 등급(8 | 9 | 10). 제공되면 등급 라인을
+   * `G{grade} / {effectiveMaxGrade}` 로 표시한다. 근거: 이슈 #17 확정 결정 1.
+   */
+  readonly effectiveMaxGrade?: number
   /** 배치된 앵커 X */
   readonly anchorX: number
   /** 배치된 앵커 Y */
@@ -178,9 +187,14 @@ export function renderFactoryInfo(
         : '미공개'
       : `Lv.${catalogEntry.unlockLevel}`
 
+  const gradeValue =
+    factory.effectiveMaxGrade !== undefined
+      ? `G${factory.grade} / ${factory.effectiveMaxGrade}`
+      : `G${factory.grade}`
+
   const lines = [
     `**${fieldLabel('type', '종류')}:** ${catalogEntry.emoji} ${typeLabel} (${catalogEntry.tier})`,
-    `**${fieldLabel('grade', '등급')}:** G${factory.grade}`,
+    `**${fieldLabel('grade', '등급')}:** ${gradeValue}`,
     `**${fieldLabel('position', '좌표')}:** (${factory.anchorX}, ${factory.anchorY})`,
     `**${fieldLabel('mode', '모드')}:** ${modeLabel}`,
     `**${fieldLabel('unlock', '해금 레벨')}:** ${unlockValue}`

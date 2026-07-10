@@ -12,7 +12,7 @@ import {
   InteractionHandlerTypes
 } from '@sapphire/framework'
 import { fetchT, type TFunction } from '@sapphire/plugin-i18next'
-import { buildCost } from '@idle/game-core'
+import { ABSOLUTE_MAX_GRADE, buildCost } from '@idle/game-core'
 import { simpleContainer, V2_ACCENT, v2Flags } from '@utils/ComponentsV2'
 import { appendQuestCompletions } from '@utils/questNotifier'
 import type { ButtonInteraction } from 'discord.js'
@@ -142,7 +142,8 @@ export class FactoryActionButtonHandler extends InteractionHandler {
         boosterChoiceAvailable
       } = await FactoryService.upgrade(db, {
         userId: interaction.user.id,
-        factoryId
+        factoryId,
+        guildId: interaction.guildId
       })
       const landIndex = await this.getLandIndex(factoryId)
       const payload = await buildLandViewPayload(db, {
@@ -254,8 +255,18 @@ function resolveFactoryErrorBody(
       return t('game:common.error.userNotFound')
     case 'WAREHOUSE_FULL':
       return t('game:common.error.warehouseFull')
-    case 'MAX_GRADE':
-      return t('game:factory.upgrade.error.maxGrade')
+    case 'MAX_GRADE': {
+      const det = (err.details ?? {}) as { maxGrade?: number }
+      return t('game:factory.upgrade.error.maxGrade', {
+        maxGrade: det.maxGrade ?? ABSOLUTE_MAX_GRADE
+      })
+    }
+    case 'CREDIT_RESTRICTED': {
+      const det = (err.details ?? {}) as { credit?: number | null }
+      return t('game:common.error.creditRestricted', {
+        credit: det.credit ?? '?'
+      })
+    }
     case 'INSUFFICIENT_MONEY': {
       const det = (err.details ?? {}) as {
         required?: string

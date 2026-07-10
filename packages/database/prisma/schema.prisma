@@ -168,16 +168,17 @@ model User {
 
 /// Discord 서버. id 는 snowflake. 퇴장 추적을 위해 leftAt 유지.
 model Guild {
-  id           String    @id
-  name         String
-  lang         String    @default("ko")
-  credit       Int       @default(1000) // 신뢰도 0~2000 (docs/07)
-  vault        BigInt    @default(0) // 서버 금고
-  weeklyDAU    Int       @default(0)
-  taxSurcharge Float     @default(0) // 관리자 가산치 0~0.20
-  flag         BigInt    @default(1)
-  joinedAt     DateTime  @default(now())
-  leftAt       DateTime? // 봇 퇴장 시각 — 30일 경과 시 분배 풀로
+  id                String    @id
+  name              String
+  lang              String    @default("ko")
+  credit            Int       @default(1000) // 신뢰도 0~2000 (docs/07)
+  vault             BigInt    @default(0) // 서버 금고
+  weeklyDAU         Int       @default(0)
+  taxSurcharge      Float     @default(0) // 관리자 가산치 0~0.20
+  flag              BigInt    @default(1)
+  joinedAt          DateTime  @default(now())
+  leftAt            DateTime? // 봇 퇴장 시각 — 30일 경과 시 분배 풀로
+  announceChannelId String? // 글로벌 이벤트(신뢰도·재분배·긴급지원금) 공지 채널 (docs/07)
 
   factories       Factory[]
   stocks          Stock[]
@@ -386,12 +387,18 @@ model Stock {
   sharesOutstanding Int         @default(100)
   lastTickAt        DateTime    @default(now())
   weeklyProfit      BigInt      @default(0) // 배당 산정용 (주 1회 정산으로 리셋)
+  /// 배당률 1만분율 — 기본 1000 (= 10%, docs/design/08-stock.md §배당 시스템
+  /// "배당 재원 = 주간 수익의 10%").
+  dividendRatePpm   Int         @default(1000)
   listedAt          DateTime    @default(now())
 
-  factory  Factory          @relation(fields: [factoryId], references: [id], onDelete: Cascade)
-  guild    Guild?           @relation(fields: [guildId], references: [id], onDelete: SetNull)
-  holdings StockHolding[]
-  ticks    StockPriceTick[]
+  factory    Factory          @relation(fields: [factoryId], references: [id], onDelete: Cascade)
+  guild      Guild?           @relation(fields: [guildId], references: [id], onDelete: SetNull)
+  holdings   StockHolding[]
+  ticks      StockPriceTick[]
+  tradeLogs  TradeLog[]
+  dividends  StockDividend[]
+  profitLogs StockProfitLog[]
 
   @@index([market])
   @@index([guildId])
@@ -399,10 +406,13 @@ model Stock {
 
 /// 유저의 종목별 보유 주식
 model StockHolding {
-  id      String @id @default(cuid())
-  userId  String
-  stockId String
-  shares  Int    @default(0)
+  id          String @id @default(cuid())
+  userId      String
+  stockId     String
+  shares      Int    @default(0)
+  /// 가중평균 매수단가 — 매수 시마다 재계산, shares 가 0 이 되면 0 으로 리셋
+  /// (docs/design/08-stock.md §관련 스키마 `StockHolding.avgBuyPrice`).
+  avgBuyPrice BigInt @default(0)
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   stock Stock @relation(fields: [stockId], references: [id], onDelete: Cascade)
@@ -420,6 +430,36 @@ model StockPriceTick {
   stock Stock @relation(fields: [stockId], references: [id], onDelete: Cascade)
 
   @@index([stockId, tickAt])
+}
+
+/// 주간 배당 정산 헤더 — (stockId, weekStart) unique 가 멱등성 앵커 (D14).
+/// 배당 잡이 2회 실행돼도 두 번째 삽입이 P2002 로 실패해 종목 트랜잭션 전체가
+/// 롤백된다 (weeklySettlement 패턴, docs/design/08-stock.md §배당 시스템).
+/// weekStart 는 정산 대상 주의 시작(직전 일요일 00:00 KST 의 UTC 순간).
+model StockDividend {
+  id        String   @id @default(cuid())
+  stockId   String
+  weekStart DateTime
+  totalPaid BigInt   @default(0)
+  createdAt DateTime @default(now())
+
+  stock Stock @relation(fields: [stockId], references: [id], onDelete: Cascade)
+
+  @@unique([stockId, weekStart])
+}
+
+/// 상장 공장 수익 적립 로그 — 수확 시점 평가액(수확 수량 × 글로벌 현재가)을
+/// 행 단위로 기록한다 (D8). 주가 tick 의 last24hProfit/avg7dProfit 집계와
+/// 배당 재원 검증에 사용 (docs/design/08-stock.md §주가 변동·§배당 시스템).
+model StockProfitLog {
+  id        String   @id @default(cuid())
+  stockId   String
+  amount    BigInt
+  createdAt DateTime @default(now())
+
+  stock Stock @relation(fields: [stockId], references: [id], onDelete: Cascade)
+
+  @@index([stockId, createdAt])
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -451,6 +491,9 @@ model TradeLog {
   guildId    String?
   kind       TradeKind
   material   MaterialType?
+  /// 주식 거래(STOCK_BUY/STOCK_SELL/DIVIDEND) 대상 종목. 그 외 kind 는 null.
+  /// rate limit(1시간 6회, D11)·주가 tick 수급 집계(D9)의 카운트 키.
+  stockId    String?
   amount     BigInt        @default(0)
   price      BigInt        @default(0)
   createdAt  DateTime      @default(now())
@@ -458,6 +501,7 @@ model TradeLog {
   fromUser User?  @relation("TradeFrom", fields: [fromUserId], references: [id], onDelete: SetNull)
   toUser   User?  @relation("TradeTo", fields: [toUserId], references: [id], onDelete: SetNull)
   guild    Guild? @relation("GuildTrades", fields: [guildId], references: [id], onDelete: SetNull)
+  stock    Stock? @relation(fields: [stockId], references: [id], onDelete: SetNull)
 
   @@index([fromUserId, createdAt])
   @@index([toUserId, createdAt])
@@ -466,6 +510,9 @@ model TradeLog {
   // 반복 상대 XP 감쇠 카운트 전용 인덱스 — 쿼리 필터(fromUserId·toUserId·kind 동등 +
   // createdAt 범위)와 순서 일치. MARKET_SELL 외 kind 가 적재돼도 유효하다.
   @@index([fromUserId, toUserId, kind, createdAt])
+  // 주가 tick 수급 집계(stockId·kind 동등 + createdAt 범위, D9)와
+  // rate limit 카운트(D11) 전용 인덱스.
+  @@index([stockId, kind, createdAt])
 }
 
 /// 주 1회 세금 정산 (docs/07) — 유저×주 단위 헤더 레코드.

@@ -28,6 +28,8 @@ const TABLES = [
   'Stock',
   'StockHolding',
   'StockPriceTick',
+  'StockDividend',
+  'StockProfitLog',
   'TradeLog',
   'WeeklySettlement',
   'WeeklySettlementLine',

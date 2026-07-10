@@ -16,7 +16,7 @@ import {
   LAND_MOVE_PICK_SELECT_PREFIX,
   buildMoveDestPickSelectPayload,
   listMoveAnchors
-} from '../../commands/game/landMove'
+} from '../../utils/landMove'
 import {
   assertInteractionOwner,
   parseOwnerPrefixedCustomId

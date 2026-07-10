@@ -13,9 +13,11 @@
 
 import { Command } from '@sapphire/framework'
 import { fetchT } from '@sapphire/plugin-i18next'
+import { ChannelType, PermissionFlagsBits } from 'discord.js'
 import { simpleV2Payload, V2_ACCENT, v2Flags } from '@utils/ComponentsV2'
 import { buildServerVaultContainer } from '@structures/renderers'
 import { WeeklySettlementService } from '../../services/weeklySettlement'
+import { resolveAnnounceAction } from '../../utils/announceAction'
 
 export class ServerCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -27,6 +29,7 @@ export class ServerCommand extends Command {
   ) {
     const sub = interaction.options.getSubcommand(true)
     if (sub === 'vault') return this.handleVault(interaction)
+    if (sub === 'announce') return this.handleAnnounce(interaction)
     return this.replyUnknown(interaction)
   }
 
@@ -75,6 +78,119 @@ export class ServerCommand extends Command {
     })
   }
 
+  /**
+   * `/server announce` — 글로벌 이벤트 공지 채널 지정·해제·조회 (ephemeral).
+   *
+   * 순수 결정 로직은 `resolveAnnounceAction` 에 위임하고, 여기서는
+   * discord/DB 상태 수집·부작용(권한 검사·DB 갱신)·로케일 응답만 담당한다.
+   * 응답은 전부 Components v2 ephemeral. 채널 지정 시 `Guild.announceChannelId`
+   * 를 갱신하고, `clear` 시 `null` 로 되돌린다.
+   */
+  private async handleAnnounce(
+    interaction: Command.ChatInputCommandInteraction
+  ) {
+    const { db } = this.container
+    const t = await fetchT(interaction)
+
+    const clear = interaction.options.getBoolean('clear') ?? false
+    const channel = interaction.options.getChannel('channel')
+    const hasManage =
+      interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) ??
+      false
+
+    const guildRow = interaction.guildId
+      ? await db.guild.findUnique({ where: { id: interaction.guildId } })
+      : null
+
+    const isTextable = channel
+      ? channel.type === ChannelType.GuildText ||
+        channel.type === ChannelType.GuildAnnouncement
+      : false
+
+    const result = resolveAnnounceAction({
+      inGuild: Boolean(interaction.guildId),
+      hasManage,
+      guildExists: guildRow !== null,
+      clear,
+      channelId: channel?.id ?? null,
+      isTextable,
+      currentChannelId: guildRow?.announceChannelId ?? null
+    })
+
+    switch (result.action) {
+      case 'guildOnly':
+        return this.replyAnnounce(
+          interaction,
+          V2_ACCENT.warn,
+          t('game:server.vault.error.guildOnly')
+        )
+      case 'notAdmin':
+        return this.replyAnnounce(
+          interaction,
+          V2_ACCENT.warn,
+          t('embeds:guildSettings.error.notAdmin')
+        )
+      case 'notRegistered':
+        return this.replyAnnounce(
+          interaction,
+          V2_ACCENT.warn,
+          t('game:server.vault.error.notRegistered')
+        )
+      case 'notTextable':
+        return this.replyAnnounce(
+          interaction,
+          V2_ACCENT.warn,
+          t('game:server.announce.channel.notTextable')
+        )
+      case 'cleared':
+        await db.guild.update({
+          where: { id: interaction.guildId! },
+          data: { announceChannelId: null }
+        })
+        return this.replyAnnounce(
+          interaction,
+          V2_ACCENT.success,
+          t('game:server.announce.channel.cleared')
+        )
+      case 'set':
+        await db.guild.update({
+          where: { id: interaction.guildId! },
+          data: { announceChannelId: result.channelId }
+        })
+        return this.replyAnnounce(
+          interaction,
+          V2_ACCENT.success,
+          t('game:server.announce.channel.set')
+        )
+      case 'current':
+        return this.replyAnnounce(
+          interaction,
+          V2_ACCENT.info,
+          t('game:server.announce.channel.current', {
+            channelId: result.channelId
+          })
+        )
+      case 'none':
+      default:
+        return this.replyAnnounce(
+          interaction,
+          V2_ACCENT.info,
+          t('game:server.announce.channel.none')
+        )
+    }
+  }
+
+  /**
+   * `/server announce` 공통 ephemeral Components v2 응답 헬퍼.
+   */
+  private replyAnnounce(
+    interaction: Command.ChatInputCommandInteraction,
+    accent: number,
+    body: string
+  ) {
+    return interaction.reply(simpleV2Payload({ accent, body, ephemeral: true }))
+  }
+
   private async replyUnknown(interaction: Command.ChatInputCommandInteraction) {
     const t = await fetchT(interaction)
     return interaction.reply(
@@ -99,6 +215,36 @@ export class ServerCommand extends Command {
             .setNameLocalization('ko', '금고')
             .setDescription('Show the server vault status.')
             .setDescriptionLocalization('ko', '서버 금고 현황을 봅니다.')
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName('announce')
+            .setNameLocalization('ko', '공지채널')
+            .setDescription('Set the global event announcement channel.')
+            .setDescriptionLocalization(
+              'ko',
+              '글로벌 이벤트 공지 채널을 지정합니다.'
+            )
+            .addChannelOption((opt) =>
+              opt
+                .setName('channel')
+                .setNameLocalization('ko', '채널')
+                .setDescription('Channel to announce global events in.')
+                .setDescriptionLocalization('ko', '공지를 보낼 채널')
+                .addChannelTypes(ChannelType.GuildText)
+                .setRequired(false)
+            )
+            .addBooleanOption((opt) =>
+              opt
+                .setName('clear')
+                .setNameLocalization('ko', '해제')
+                .setDescription('Clear the current announcement channel.')
+                .setDescriptionLocalization(
+                  'ko',
+                  '현재 공지 채널을 해제합니다.'
+                )
+                .setRequired(false)
+            )
         )
     )
   }
