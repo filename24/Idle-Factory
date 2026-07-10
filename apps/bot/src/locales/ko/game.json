@@ -41,7 +41,10 @@
       "confirmYes": "철거",
       "confirmCancel": "취소",
       "success": "🧨 {{emoji}} {{type}} 공장을 철거했어요. (+{{refund}} 💰, 잔액 {{remaining}} 💰)",
-      "cancelled": "철거를 취소했어요."
+      "cancelled": "철거를 취소했어요.",
+      "error": {
+        "listed": "상장된 공장은 철거할 수 없어요. 주주들의 지분이 사라지기 때문이에요. (상장폐지는 아직 지원되지 않아요)"
+      }
     }
   },
   "harvest": {
@@ -527,6 +530,87 @@
         "title": "⚠️ 세금 미납 신뢰도 패널티",
         "body": "세금 미납으로 서버 신뢰도가 **{{penalty}}** 만큼 감소했어요. (현재 **{{credit}} pt**) 정산 세금을 납부해 주세요."
       }
+    }
+  },
+  "stock": {
+    "ipo": {
+      "success": "📈 {{factory}} 공장을 상장했어요!",
+      "priceInfo": "기본가 **{{base}}원** · 희망가 {{requested}}원 · 최종 **{{final}}원**",
+      "clampedNote": "-# 희망가 {{requested}}원이 허용 범위(기본가의 30~70%)를 벗어나 {{final}}원으로 조정됐어요.",
+      "footer": "발행 주수 {{shares}}주 · 주당 IPO 가격 {{price}}원",
+      "error": {
+        "priceOutOfRange": "IPO 희망가는 1원 이상이어야 해요.",
+        "factoryNotFound": "본인 소유의 공장이 아니거나 찾을 수 없어요.",
+        "alreadyListed": "이 공장은 이미 상장돼 있어요.",
+        "conditionNotMet": "아직 상장 조건을 충족하지 못했어요:\n{{failures}}",
+        "condition": {
+          "LEVEL": "• 레벨 25 이상",
+          "FACTORY_COUNT": "• 공장 5개 이상 보유",
+          "TOTAL_ASSETS": "• 총자산 1억원 이상",
+          "RECENT_30D_TRADES": "• 최근 30일 거래 10회 이상"
+        }
+      }
+    },
+    "buy": {
+      "success": "📥 {{stock}} {{shares}}주를 매수했어요.",
+      "footer": "체결가 주당 {{price}}원 · 총 {{total}}원 · 보유 {{holding}}주 (평단 {{avg}}원)",
+      "error": {
+        "floatExhausted": "유통 가능한 물량을 초과했어요. 매수 가능한 주식이 부족해요.",
+        "insufficientMoney": "자금이 부족해요. 필요: {{required}}원 / 보유: {{have}}원"
+      }
+    },
+    "sell": {
+      "success": "📤 {{stock}} {{shares}}주를 매도했어요.",
+      "footer": "체결가 주당 {{price}}원 · 총 {{total}}원 수령 · 잔여 {{remaining}}주",
+      "levelUp": "🎉 레벨 업! 이제 **Lv.{{level}}** 이에요. (+{{xp}} XP)",
+      "error": {
+        "insufficientShares": "보유 주식이 부족해요. 요청: {{requested}}주 / 보유: {{have}}주"
+      }
+    },
+    "info": {
+      "title": "{{factory}} 주식",
+      "priceLine": "**현재가:** {{price}}원  {{trend}} {{change}}",
+      "sparkLine": "-# 최근 24시간: `{{spark}}`",
+      "sparkEmpty": "-# 아직 가격 기록이 없어요.",
+      "chartAlt": "{{factory}} 최근 7일 가격 그래프",
+      "holdingLine": "**보유 지분:** {{shares}} / {{outstanding}}주 ({{percent}})",
+      "avgLine": "**평균 매수단가:** {{avg}}원",
+      "pnlLine": "**평가 손익:** {{pnl}}원  {{pnlTrend}} {{pnlChange}}",
+      "noHolding": "-# 이 종목을 보유하고 있지 않아요.",
+      "metaLine": "**상장자:** {{issuer}} · **상장가:** {{ipo}}원 · **배당률:** {{dividend}}%",
+      "buyButton": "💵 매수",
+      "sellButton": "💸 매도",
+      "footer": "발행 {{outstanding}}주 · 유통 {{held}}주 · 상장 <t:{{listedUnix}}:R>"
+    },
+    "market": {
+      "title": "📊 서버 주식 시세",
+      "pageInfo": "상장 종목 {{count}}개 · {{page}}/{{pages}} 페이지 · 자세히·매수 버튼으로 확인해요",
+      "empty": "-# 아직 상장된 종목이 없어요. `/stock ipo` 로 공장을 상장해 보세요.",
+      "row": "**{{factory}}** · **{{price}}원** {{trend}} {{change}} · 보유 {{holding}}주",
+      "detailButton": "📊 자세히",
+      "buyButton": "💵 매수",
+      "nav": {
+        "prev": "◀ 이전",
+        "refresh": "🔄 새로고침",
+        "next": "다음 ▶"
+      },
+      "modal": {
+        "title": "{{factory}} 매수",
+        "sharesLabel": "매수 주수",
+        "sharesPlaceholder": "예: 10"
+      },
+      "sellModal": {
+        "title": "{{factory}} 매도",
+        "sharesLabel": "매도 주수",
+        "sharesPlaceholder": "예: 5"
+      }
+    },
+    "error": {
+      "notFound": "해당 종목을 찾을 수 없어요.",
+      "selfTrade": "본인이 상장한 종목은 매매할 수 없어요.",
+      "levelGate": "주식 매매는 레벨 {{required}}부터 가능해요. (현재 Lv.{{level}})",
+      "rateLimited": "거래가 너무 잦아요. 잠시 후 다시 시도해주세요. (1시간 최대 {{max}}회)",
+      "invalidQuantity": "수량은 1 이상의 정수여야 해요."
     }
   }
 }

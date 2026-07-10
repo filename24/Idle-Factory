@@ -413,6 +413,47 @@ describe('FactoryService', () => {
       }
     })
 
+    it('blocks destroying a listed factory (FACTORY_LISTED)', async () => {
+      const { user } = await seedUser('u-destroy-listed', { money: 5_000n })
+      const { factory } = await FactoryService.build(testPrisma, {
+        userId: user.id,
+        landIndex: 1,
+        type: 'FARM',
+        anchorX: 0,
+        anchorY: 0
+      })
+      // 상장 종목 시드 — 철거 시 Cascade 로 주주 지분이 증발하므로 차단 (#18).
+      await testPrisma.stock.create({
+        data: {
+          factoryId: factory.id,
+          market: 'SERVER',
+          ipoPrice: 1_000n,
+          currentPrice: 1_000n
+        }
+      })
+
+      await expect(
+        FactoryService.destroy(testPrisma, {
+          userId: user.id,
+          factoryId: factory.id
+        })
+      ).rejects.toMatchObject({
+        name: 'ServiceError',
+        code: 'FACTORY_LISTED'
+      })
+
+      // 공장·종목 모두 보존 — 환불도 발생하지 않는다.
+      const kept = await testPrisma.factory.findUnique({
+        where: { id: factory.id }
+      })
+      expect(kept).not.toBeNull()
+      expect(await testPrisma.stock.count()).toBe(1)
+      const after = await testPrisma.user.findUniqueOrThrow({
+        where: { id: user.id }
+      })
+      expect(after.money).toBe(4_000n) // 빌드 후 잔액 그대로 (환불 없음).
+    })
+
     it('throws FACTORY_NOT_FOUND for a factory owned by another user', async () => {
       const { user: a } = await seedUser('u-destroy-a', { money: 5_000n })
       await seedUser('u-destroy-b', { money: 5_000n })

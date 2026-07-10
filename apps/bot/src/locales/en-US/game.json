@@ -41,7 +41,10 @@
       "confirmYes": "Destroy",
       "confirmCancel": "Cancel",
       "success": "🧨 {{emoji}} {{type}} factory destroyed. (+{{refund}} 💰, balance {{remaining}} 💰)",
-      "cancelled": "Destruction cancelled."
+      "cancelled": "Destruction cancelled.",
+      "error": {
+        "listed": "You can't destroy a listed factory — shareholders would lose their shares. (Delisting isn't supported yet.)"
+      }
     }
   },
   "harvest": {
@@ -527,6 +530,87 @@
         "title": "⚠️ Unpaid Tax Credit Penalty",
         "body": "Unpaid taxes reduced your server credit by **{{penalty}}** (now **{{credit}} pt**). Please pay your settled taxes."
       }
+    }
+  },
+  "stock": {
+    "ipo": {
+      "success": "📈 Listed your **{{factory}}** as a stock!",
+      "priceInfo": "Base **{{base}}** · Desired {{requested}} · Final **{{final}}**",
+      "clampedNote": "-# Your desired price {{requested}} was outside the allowed band (30–70% of base) and was adjusted to {{final}}.",
+      "footer": "{{shares}} shares issued · IPO price {{price}} per share",
+      "error": {
+        "priceOutOfRange": "The IPO price must be at least 1.",
+        "factoryNotFound": "That factory isn't yours or could not be found.",
+        "alreadyListed": "This factory is already listed.",
+        "conditionNotMet": "You don't meet the listing requirements yet:\n{{failures}}",
+        "condition": {
+          "LEVEL": "• Level 25 or higher",
+          "FACTORY_COUNT": "• Own at least 5 factories",
+          "TOTAL_ASSETS": "• Total assets of 100,000,000 or more",
+          "RECENT_30D_TRADES": "• At least 10 trades in the last 30 days"
+        }
+      }
+    },
+    "buy": {
+      "success": "📥 Bought {{shares}} shares of {{stock}}.",
+      "footer": "Filled at {{price}} per share · Total {{total}} · Holding {{holding}} (avg {{avg}})",
+      "error": {
+        "floatExhausted": "Not enough shares available. The tradable float is exhausted.",
+        "insufficientMoney": "Not enough money. Need: {{required}} / Have: {{have}}"
+      }
+    },
+    "sell": {
+      "success": "📤 Sold {{shares}} shares of {{stock}}.",
+      "footer": "Filled at {{price}} per share · Received {{total}} · {{remaining}} shares left",
+      "levelUp": "🎉 Level up! You're now **Lv.{{level}}**. (+{{xp}} XP)",
+      "error": {
+        "insufficientShares": "Not enough shares. Requested: {{requested}} / Have: {{have}}"
+      }
+    },
+    "info": {
+      "title": "{{factory}} Stock",
+      "priceLine": "**Price:** {{price}}  {{trend}} {{change}}",
+      "sparkLine": "-# Last 24h: `{{spark}}`",
+      "sparkEmpty": "-# No price history yet.",
+      "chartAlt": "{{factory}} price chart, last 7 days",
+      "holdingLine": "**Your shares:** {{shares}} / {{outstanding}} ({{percent}})",
+      "avgLine": "**Avg buy price:** {{avg}}",
+      "pnlLine": "**Unrealized P&L:** {{pnl}}  {{pnlTrend}} {{pnlChange}}",
+      "noHolding": "-# You don't hold this stock.",
+      "metaLine": "**Issuer:** {{issuer}} · **IPO:** {{ipo}} · **Dividend:** {{dividend}}%",
+      "buyButton": "💵 Buy",
+      "sellButton": "💸 Sell",
+      "footer": "{{outstanding}} issued · {{held}} held · listed <t:{{listedUnix}}:R>"
+    },
+    "market": {
+      "title": "📊 Server Stock Market",
+      "pageInfo": "{{count}} listed · page {{page}}/{{pages}} · use Details / Buy",
+      "empty": "-# No stocks are listed yet. Try `/stock ipo` to list a factory.",
+      "row": "**{{factory}}** · **{{price}}** {{trend}} {{change}} · holding {{holding}}",
+      "detailButton": "📊 Details",
+      "buyButton": "💵 Buy",
+      "nav": {
+        "prev": "◀ Prev",
+        "refresh": "🔄 Refresh",
+        "next": "Next ▶"
+      },
+      "modal": {
+        "title": "Buy {{factory}}",
+        "sharesLabel": "Shares to buy",
+        "sharesPlaceholder": "e.g. 10"
+      },
+      "sellModal": {
+        "title": "Sell {{factory}}",
+        "sharesLabel": "Shares to sell",
+        "sharesPlaceholder": "e.g. 5"
+      }
+    },
+    "error": {
+      "notFound": "That stock could not be found.",
+      "selfTrade": "You can't trade a stock you listed yourself.",
+      "levelGate": "Stock trading unlocks at level {{required}}. (Currently Lv.{{level}})",
+      "rateLimited": "You're trading too frequently. Please try again shortly. (max {{max}}/hour)",
+      "invalidQuantity": "Quantity must be an integer of at least 1."
     }
   }
 }

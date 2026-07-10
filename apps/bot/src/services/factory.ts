@@ -315,6 +315,15 @@ export const FactoryService = {
     })
   },
 
+  /**
+   * 공장을 철거하고 빌드 비용의 50%를 환불한다.
+   *
+   * 상장된 공장은 철거를 차단한다(`FACTORY_LISTED`) — Factory 삭제 시
+   * Stock/StockHolding 이 Cascade 로 함께 삭제되어 주주 지분이 무보상으로
+   * 증발하기 때문. 상장폐지 플로우는 Phase 5+ (#18).
+   *
+   * @throws {ServiceError} `FACTORY_NOT_FOUND` / `FACTORY_LISTED`
+   */
   async destroy(
     prisma: PrismaClient,
     params: DestroyParams
@@ -324,6 +333,18 @@ export const FactoryService = {
       const factory = await tx.factory.findUnique({ where: { id: factoryId } })
       if (!factory || factory.userId !== userId)
         throw new ServiceError('FACTORY_NOT_FOUND')
+
+      // 상장 공장 철거 차단 — Stock/StockHolding Cascade 삭제로 주주 지분이
+      // 무보상 증발하는 것을 막는다 (#18 리뷰 확정, 상장폐지는 Phase 5+).
+      const listed = await tx.stock.findUnique({
+        where: { factoryId },
+        select: { id: true }
+      })
+      if (listed) {
+        throw new ServiceError('FACTORY_LISTED', undefined, {
+          stockId: listed.id
+        })
+      }
 
       const slot = await tx.slot.findFirst({
         where: { factoryId },

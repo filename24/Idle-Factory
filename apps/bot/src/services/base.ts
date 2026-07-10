@@ -19,6 +19,10 @@ export type ServiceErrorCode =
   | 'SLOT_ALREADY_UNLOCKED'
   | 'OUT_OF_BOUNDS'
   | 'FACTORY_NOT_FOUND'
+  // - FACTORY_LISTED: 상장된 공장은 철거 불가 — Factory 삭제 시 Stock/
+  //   StockHolding 이 Cascade 로 함께 지워져 주주 지분이 무보상 증발하는 것을
+  //   막는다. 상장폐지(자발적 delisting) 플로우는 Phase 5+ (#18).
+  | 'FACTORY_LISTED'
   | 'LEVEL_LOCKED'
   | 'MAX_GRADE'
   | 'CREDIT_RESTRICTED'
@@ -51,6 +55,27 @@ export type ServiceErrorCode =
   // - DAILY_LIMIT_EXCEEDED: 레벨 구간별 일일 총 한도 초과 (KST 자정 리셋).
   | 'MATERIAL_NOT_DIRECT_BUYABLE'
   | 'DAILY_LIMIT_EXCEEDED'
+  // 주식 (docs/design/08-stock.md, #18)
+  // - STOCK_NOT_FOUND: 대상 종목(Stock 행) 없음.
+  // - STOCK_SELF_TRADE: 자기 상장 종목 매매 시도 (§사기 방지 "자기거래 금지").
+  // - STOCK_INSUFFICIENT_SHARES: 매도 수량 > 보유 주수.
+  // - STOCK_LISTING_CONDITION_NOT_MET: 상장 조건 미달 — details.failures 에
+  //   `ListingConditionFailure[]` (§상장 조건, D6).
+  // - STOCK_ALREADY_LISTED: 해당 공장이 이미 상장됨 (Stock.factoryId unique).
+  // - STOCK_FLOAT_EXHAUSTED: 유통 상한 초과 — sum(보유 주수)+매수량 > 발행 주수 (D3).
+  // - STOCK_RATE_LIMITED: 동일 유저×동일 종목 1시간 매수+매도 합산 6회 초과 (D11).
+  // - STOCK_IPO_PRICE_OUT_OF_RANGE: IPO 희망가가 1 미만 — 30~70% 밴드 밖 값은
+  //   거부가 아니라 클램프한다 (D7 확정). 이 코드는 클램프 불능 입력 전용.
+  // - STOCK_LEVEL_GATE: 매매 참여 레벨(Lv.10) 미달 (docs/design/09-level-xp.md §해금, D6).
+  | 'STOCK_NOT_FOUND'
+  | 'STOCK_SELF_TRADE'
+  | 'STOCK_INSUFFICIENT_SHARES'
+  | 'STOCK_LISTING_CONDITION_NOT_MET'
+  | 'STOCK_ALREADY_LISTED'
+  | 'STOCK_FLOAT_EXHAUSTED'
+  | 'STOCK_RATE_LIMITED'
+  | 'STOCK_IPO_PRICE_OUT_OF_RANGE'
+  | 'STOCK_LEVEL_GATE'
   // 서버 신뢰도 기능 제한 (docs/design/07-global-system.md §신뢰도 효과, 이슈 #17)
   // - CREDIT_LISTING_BLOCKED: 활동 서버 신뢰도 < 700 → 유저 상점 등록 차단 (07 L55,
   //   확정 결정 7). RESTRICTED(<300) 도 이 게이트에 자동 포함된다.
@@ -110,6 +135,23 @@ function isRetriableWriteConflict(err: unknown): boolean {
     err !== null &&
     'code' in err &&
     (err as { code?: unknown }).code === RETRIABLE_TX_CODE
+  )
+}
+
+/**
+ * 주어진 에러가 Prisma P2002(unique constraint violation)인지 판별한다.
+ *
+ * `isRetriableWriteConflict` 와 동일한 이유로 `instanceof` 대신 `code` 기반
+ * 덕타이핑을 쓴다 — 번들링·모노레포 중복 설치에도 견고하다. 동시 더블 서브밋
+ * (예: IPO 중복 상장, 배당 헤더 경합)을 도메인 에러/멱등 스킵으로 변환할 때
+ * 공용으로 사용한다.
+ */
+export function isUniqueViolation(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'code' in err &&
+    (err as { code?: unknown }).code === 'P2002'
   )
 }
 
