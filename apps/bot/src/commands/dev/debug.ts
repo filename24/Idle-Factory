@@ -19,6 +19,8 @@
  *  - `set-grade <factory> <grade>`        — 공장 등급을 절대값으로 설정(부스터 분기 UI·MAX_GRADE 테스트용, #19)
  *  - `set-booster <factory> <booster>`    — 공장 업그레이드 부스터를 설정/해제(RARE 드롭·생산 배수 테스트용, #19)
  *  - `give-raw-booster [amount]`          — 창고에 RAW_BOOSTER 자재 지급(원자재 부스터 투입 테스트용, #19)
+ *  - `advance-harvest <factory> <tick>`   — 공장 lastHarvestAt 를 tick 만큼 과거로 당김(수확 tick 즉시 대기, #19)
+ *  - `harvest-now <factory> <tick>`       — 위 백데이트 + 해당 공장 즉시 수확 실행(RARE 드롭·생산 배수 관측, #19)
  *
  * 게이팅(이중 방어):
  *  1. `preconditions: ['OwnerOnly']` — owner 만 실행 (`OwnerOnly.ts`).
@@ -28,8 +30,13 @@
  */
 
 import { Command } from '@sapphire/framework'
-import { fetchT } from '@sapphire/plugin-i18next'
-import type { MaterialType, FactoryType, UpgradeBooster } from '@idle/game-core'
+import { fetchT, type TFunction } from '@sapphire/plugin-i18next'
+import type {
+  MaterialType,
+  FactoryType,
+  UpgradeBooster,
+  MaterialBag
+} from '@idle/game-core'
 import {
   ABSOLUTE_MAX_GRADE,
   FACTORY_CATALOG,
@@ -56,9 +63,15 @@ import {
   DEBUG_RAW_BOOSTER_DEFAULT_AMOUNT,
   parseBoosterOption
 } from '../../utils/debugFactoryOptions'
+import {
+  MAX_ADVANCE_TICKS,
+  computeBackdatedHarvestAt,
+  formatTickDuration
+} from '../../utils/debugTickTemplates'
 import { MATERIAL_CHOICES } from '../game/market'
 import { MarketService, taxRateForDuration } from '../../services/market'
 import { RewardService } from '../../services/reward'
+import { HarvestService } from '../../services/harvest'
 import { UserService } from '../../services/user'
 import { runInTx } from '../../services/base'
 import { runWeeklySettlement } from '../../scheduled-tasks/weekly-settlement'
@@ -245,6 +258,10 @@ export class DebugCommand extends Command {
         return this.setBooster(interaction)
       case 'give-raw-booster':
         return this.giveRawBooster(interaction)
+      case 'advance-harvest':
+        return this.advanceHarvest(interaction)
+      case 'harvest-now':
+        return this.harvestNow(interaction)
       default:
         return interaction.reply(
           simpleV2Payload({
@@ -878,6 +895,113 @@ export class DebugCommand extends Command {
     )
   }
 
+  /**
+   * 내 공장의 `lastHarvestAt` 을 `tick × TICK_MS` 만큼 과거로 당긴다.
+   *
+   * 수확 tick 은 실시간 10분/tick 으로만 누적되므로, 이 백데이트로 원하는 tick 수를
+   * 즉시 "대기" 상태로 만든다. 이후 `/harvest`(또는 `harvest-now`) 한 번이면 그 tick 이
+   * 실현돼 RARE 드롭·생산 배수를 관측할 수 있다. 대기 tick 을 정확히 `tick` 으로
+   * **덮어쓴다**(누적 아님). 근거: `production.ts` §TICK_MS, #19.
+   */
+  private async advanceHarvest(
+    interaction: Command.ChatInputCommandInteraction
+  ) {
+    const { db } = this.container
+    const t = await fetchT(interaction)
+    const factoryId = interaction.options.getString('factory', true)
+    const ticks = interaction.options.getInteger('tick', true)
+    const userId = interaction.user.id
+
+    const factory = await db.factory.findFirst({
+      where: { id: factoryId, userId },
+      select: { id: true, type: true }
+    })
+    if (!factory) return this.replyFactoryNotFound(interaction, factoryId)
+
+    const backdatedAt = computeBackdatedHarvestAt(new Date(), ticks)
+    await db.factory.update({
+      where: { id: factory.id },
+      data: { lastHarvestAt: backdatedAt }
+    })
+
+    return interaction.reply(
+      simpleV2Payload({
+        accent: V2_ACCENT.success,
+        title: '⏪ 수확 시계 되감기',
+        body: [
+          `**${localizeFactoryType(t, factory.type)}** 공장의 마지막 수확 시각을 **${formatTickDuration(ticks)} 전**으로 당겼어요.`,
+          `다음 \`/harvest\` 실행 시 최대 **${ticks} tick** 이 즉시 실현돼요.`
+        ].join('\n'),
+        footer: `공장 id: ${factory.id}`,
+        ephemeral: true
+      })
+    )
+  }
+
+  /**
+   * `advance-harvest` 백데이트 + 해당 공장 즉시 수확(`harvestOne`)을 한 번에 실행한다.
+   *
+   * 실제 수확 파이프라인(부스터·창고 클램프·XP·RARE 드롭)을 그대로 태우므로,
+   * RARE 드롭·생산/소비 배수를 결정적으로 관측할 수 있다. 재료 부족·창고 여유에
+   * 따라 실현 tick 이 요청보다 적을 수 있어 둘 다 표시한다. #19.
+   */
+  private async harvestNow(interaction: Command.ChatInputCommandInteraction) {
+    const { db } = this.container
+    const t = await fetchT(interaction)
+    const factoryId = interaction.options.getString('factory', true)
+    const ticks = interaction.options.getInteger('tick', true)
+    const userId = interaction.user.id
+
+    const factory = await db.factory.findFirst({
+      where: { id: factoryId, userId },
+      select: { id: true, type: true }
+    })
+    if (!factory) return this.replyFactoryNotFound(interaction, factoryId)
+
+    // 다수 tick 수확이 3초를 넘길 수 있으므로 먼저 defer(ephemeral).
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+
+    const backdatedAt = computeBackdatedHarvestAt(new Date(), ticks)
+    await db.factory.update({
+      where: { id: factory.id },
+      data: { lastHarvestAt: backdatedAt }
+    })
+    const result = await HarvestService.harvestOne(db, {
+      userId,
+      factoryId: factory.id
+    })
+
+    const summary = result.factories.find((f) => f.factoryId === factory.id)
+    const realized = summary?.ticks ?? 0
+    const producedText = summary ? this.formatBag(summary.produced, t) : ''
+    const rawDrop = summary?.produced?.RAW_BOOSTER ?? 0n
+
+    const lines = [
+      `**${localizeFactoryType(t, factory.type)}** 공장을 즉시 수확했어요 — 실현 **${realized} tick** (요청 ${ticks}).`,
+      producedText
+        ? `생산: ${producedText}`
+        : '생산 없음 (재료 부족/창고 가득/대상 없음).',
+      rawDrop > 0n
+        ? `🔺 RARE 드롭: **RAW_BOOSTER ×${rawDrop.toString()}**`
+        : null,
+      result.leveledUp ? `🎉 레벨업 → Lv.${result.newLevel}` : null
+    ].filter((l): l is string => l !== null)
+
+    return interaction.editReply(
+      v2EditPayload([
+        simpleContainer(V2_ACCENT.success, '🌾 즉시 수확', lines.join('\n'))
+      ])
+    )
+  }
+
+  /** MaterialBag 을 `자재 ×수량 · …` 표시 문자열로 변환한다(0 이하 제외). */
+  private formatBag(bag: MaterialBag, t: TFunction): string {
+    return (Object.entries(bag) as Array<[MaterialType, bigint]>)
+      .filter(([, amt]) => amt > 0n)
+      .map(([mat, amt]) => `${localizeMaterial(t, mat)} ×${amt.toString()}`)
+      .join(' · ')
+  }
+
   public override registerApplicationCommands(registry: Command.Registry) {
     const materialChoices = MATERIAL_CHOICES.map((m) => ({
       name: m,
@@ -1249,6 +1373,66 @@ export class DebugCommand extends Command {
                   )
                   .setMinValue(1)
                   .setRequired(false)
+              )
+          )
+          .addSubcommand((sub) =>
+            sub
+              .setName('advance-harvest')
+              .setDescription("Rewind a factory's harvest clock by N ticks.")
+              .setDescriptionLocalization(
+                'ko',
+                '공장 수확 시계를 N tick 만큼 과거로 당깁니다.'
+              )
+              .addStringOption((opt) =>
+                opt
+                  .setName('factory')
+                  .setDescription('Your factory')
+                  .setDescriptionLocalization('ko', '내 공장')
+                  .setRequired(true)
+                  .setAutocomplete(true)
+              )
+              .addIntegerOption((opt) =>
+                opt
+                  .setName('tick')
+                  .setDescription('Ticks to advance (pick a preset or type)')
+                  .setDescriptionLocalization(
+                    'ko',
+                    '당길 tick 수 (프리셋 선택 또는 직접 입력)'
+                  )
+                  .setMinValue(1)
+                  .setMaxValue(MAX_ADVANCE_TICKS)
+                  .setAutocomplete(true)
+                  .setRequired(true)
+              )
+          )
+          .addSubcommand((sub) =>
+            sub
+              .setName('harvest-now')
+              .setDescription('Advance N ticks then harvest the factory now.')
+              .setDescriptionLocalization(
+                'ko',
+                'N tick 을 당긴 뒤 공장을 즉시 수확합니다.'
+              )
+              .addStringOption((opt) =>
+                opt
+                  .setName('factory')
+                  .setDescription('Your factory')
+                  .setDescriptionLocalization('ko', '내 공장')
+                  .setRequired(true)
+                  .setAutocomplete(true)
+              )
+              .addIntegerOption((opt) =>
+                opt
+                  .setName('tick')
+                  .setDescription('Ticks to harvest (pick a preset or type)')
+                  .setDescriptionLocalization(
+                    'ko',
+                    '수확할 tick 수 (프리셋 선택 또는 직접 입력)'
+                  )
+                  .setMinValue(1)
+                  .setMaxValue(MAX_ADVANCE_TICKS)
+                  .setAutocomplete(true)
+                  .setRequired(true)
               )
           ),
       config.devGuildID ? { guildIds: [config.devGuildID] } : undefined

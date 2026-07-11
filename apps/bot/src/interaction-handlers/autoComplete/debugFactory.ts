@@ -1,9 +1,10 @@
 /**
  * `/debug` 의 `factory` 옵션 autocomplete 핸들러.
  *
- * `set-grade` / `set-booster` 두 서브커맨드가 공통으로 쓰는 `factory` 옵션에
- * 호출자 소유 공장을 후보로 제공한다. cuid 공장 id 는 손으로 입력하기 어려우므로
- * `FactoryService.searchOwnedForAutocomplete` 로 최신순 공장을 노출한다(값은 공장 id).
+ * `set-grade` / `set-booster` / `advance-harvest` / `harvest-now` 서브커맨드가
+ * 공통으로 쓰는 `factory` 옵션에 호출자 소유 공장을 후보로 제공한다. cuid 공장 id 는
+ * 손으로 입력하기 어려우므로 `FactoryService.searchOwnedForAutocomplete` 로 최신순
+ * 공장을 노출한다(값은 공장 id).
  */
 
 import {
@@ -24,7 +25,12 @@ import { formatDebugFactoryLabel } from '../../utils/debugFactoryOptions'
 const AUTOCOMPLETE_NAME_MAX = 100
 
 /** `factory` 옵션을 autocomplete 하는 `/debug` 서브커맨드 목록. */
-const FACTORY_OPTION_SUBCOMMANDS = new Set(['set-grade', 'set-booster'])
+const FACTORY_OPTION_SUBCOMMANDS = new Set([
+  'set-grade',
+  'set-booster',
+  'advance-harvest',
+  'harvest-now'
+])
 
 export class DebugFactoryAutocomplete extends InteractionHandler {
   public constructor(
