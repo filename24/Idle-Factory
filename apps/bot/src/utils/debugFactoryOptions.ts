@@ -1,7 +1,8 @@
 /**
- * `/debug` 공장 부스터 서브커맨드(set-grade/set-booster/give-raw-booster)의
- * 순수 옵션 파싱·라벨 헬퍼.
+ * 공장 옵션 관련 순수 파싱·라벨 헬퍼.
  *
+ * `/debug` 부스터 서브커맨드(set-booster/give-raw-booster)의 옵션 파싱과,
+ * `/debug`·`/factory` 양쪽 autocomplete 가 공유하는 공장 선택 라벨 포맷을 담는다.
  * Sapphire/discord.js/DB 의존 없이 순수 입력 → 순수 출력이라 단위 테스트에서
  * 별칭·목 없이 그대로 로드된다 (`apps/bot/CLAUDE.md` §Testing 의 별칭 제약 회피).
  */
@@ -33,8 +34,8 @@ export function parseBoosterOption(value: string): UpgradeBooster | null {
   return value === BOOSTER_OPTION_NONE ? null : (value as UpgradeBooster)
 }
 
-/** `formatDebugFactoryLabel` 입력 — 공장 요약 라벨 구성 필드. */
-export interface DebugFactoryLabelInput {
+/** `formatFactoryChoiceLabel` 입력 — 공장 요약 라벨 구성 필드. */
+export interface FactoryChoiceLabelInput {
   /** 로컬라이즈된 공장 종류 라벨(예: "농장") */
   readonly typeLabel: string
   /** 현재 등급 */
@@ -50,14 +51,21 @@ export interface DebugFactoryLabelInput {
 /**
  * 공장 요약을 autocomplete 라벨 문자열로 만든다.
  *
+ * `/factory`(upgrade/info/setmode/applybooster/destroy) 와 `/debug`(set-grade/
+ * set-booster/advance-harvest/harvest-now) 의 `factory`·`factory_id` 자동완성이
+ * 공유한다. 등급·부스터·원자재 투입 여부를 함께 보여 유저가 대상 공장을
+ * cuid 없이 식별하게 한다.
+ *
  * 형식: `{종류} G{등급} · {부스터|—}[ · 🧪] · #{id접미6}`.
  * 예) `농장 G3 · RARE · 🧪 · #ab12cd`, `광산 G1 · — · #ff00aa`.
- * 개발용 라벨이라 부스터는 raw enum 명(RARE/SPEED…)을 그대로 노출한다.
+ * 부스터는 raw enum 명(RARE/SPEED…)을 그대로 노출한다.
  *
  * @param input 라벨 구성 필드
  * @returns Discord autocomplete `name` 으로 쓸 문자열
  */
-export function formatDebugFactoryLabel(input: DebugFactoryLabelInput): string {
+export function formatFactoryChoiceLabel(
+  input: FactoryChoiceLabelInput
+): string {
   const boosterText = input.upgradeBooster ?? '—'
   const rawText = input.hasRawBooster ? ' · 🧪' : ''
   const idSuffix = input.id.slice(-ID_SUFFIX_LENGTH)

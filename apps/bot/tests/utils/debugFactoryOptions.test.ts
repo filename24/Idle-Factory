@@ -2,14 +2,14 @@
  * `/debug` 공장 부스터 서브커맨드 순수 헬퍼(`debugFactoryOptions`) 유닛 테스트.
  *
  * Sapphire/DB/별칭 의존이 없는 순수 모듈이라 목 없이 그대로 로드해 검증한다.
- * 대상: `parseBoosterOption`(NONE 센티넬 → null), `formatDebugFactoryLabel`(라벨 형식).
+ * 대상: `parseBoosterOption`(NONE 센티넬 → null), `formatFactoryChoiceLabel`(라벨 형식).
  */
 
 import { describe, expect, it } from 'vitest'
 import {
   BOOSTER_OPTION_NONE,
   DEBUG_RAW_BOOSTER_DEFAULT_AMOUNT,
-  formatDebugFactoryLabel,
+  formatFactoryChoiceLabel,
   parseBoosterOption
 } from '../../src/utils/debugFactoryOptions'
 
@@ -32,9 +32,9 @@ describe('DEBUG_RAW_BOOSTER_DEFAULT_AMOUNT', () => {
   })
 })
 
-describe('formatDebugFactoryLabel', () => {
+describe('formatFactoryChoiceLabel', () => {
   it('부스터·원자재 없는 공장은 "— · #접미" 형식으로 라벨링한다', () => {
-    const label = formatDebugFactoryLabel({
+    const label = formatFactoryChoiceLabel({
       typeLabel: '광산',
       grade: 1,
       upgradeBooster: null,
@@ -45,7 +45,7 @@ describe('formatDebugFactoryLabel', () => {
   })
 
   it('부스터 enum 명을 노출하고 원자재 투입 시 🧪 를 붙인다', () => {
-    const label = formatDebugFactoryLabel({
+    const label = formatFactoryChoiceLabel({
       typeLabel: '농장',
       grade: 3,
       upgradeBooster: 'RARE',
@@ -56,7 +56,7 @@ describe('formatDebugFactoryLabel', () => {
   })
 
   it('id 접미 6자만 노출한다', () => {
-    const label = formatDebugFactoryLabel({
+    const label = formatFactoryChoiceLabel({
       typeLabel: '제철소',
       grade: 5,
       upgradeBooster: 'SPEED',

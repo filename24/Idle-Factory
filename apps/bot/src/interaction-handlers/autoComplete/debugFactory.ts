@@ -19,7 +19,7 @@ import type {
 
 import { FactoryService } from '../../services/factory'
 import { localizeFactoryType } from '../../utils/enumLocale'
-import { formatDebugFactoryLabel } from '../../utils/debugFactoryOptions'
+import { formatFactoryChoiceLabel } from '../../utils/debugFactoryOptions'
 
 /** Discord autocomplete 응답 라벨 길이 한도. */
 const AUTOCOMPLETE_NAME_MAX = 100
@@ -66,7 +66,7 @@ export class DebugFactoryAutocomplete extends InteractionHandler {
 
     const data: ApplicationCommandOptionChoiceData[] = factories.map((f) => ({
       name: truncate(
-        formatDebugFactoryLabel({
+        formatFactoryChoiceLabel({
           typeLabel: localizeFactoryType(t, f.type),
           grade: f.grade,
           upgradeBooster: f.upgradeBooster,

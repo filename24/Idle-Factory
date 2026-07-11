@@ -7,6 +7,7 @@ import {
   type MaterialType
 } from '@idle/game-core'
 import type { ShortageMode } from '@idle/database'
+import type { AutocompleteInteraction } from 'discord.js'
 import { simpleV2Payload, V2_ACCENT, v2Flags } from '@utils/ComponentsV2'
 import {
   buildBoosterChoiceContainer,
@@ -22,6 +23,7 @@ import {
   localizeFactoryType,
   localizeShortageMode
 } from '../../utils/enumLocale'
+import { formatFactoryChoiceLabel } from '../../utils/debugFactoryOptions'
 
 /**
  * `/factory` 슬래시 커맨드 그룹.
@@ -63,9 +65,51 @@ export const FACTORY_CHOICES: readonly FactoryType[] = [
 /** `/factory setmode` 의 `mode` 선택지. */
 const SHORTAGE_MODES: readonly ShortageMode[] = ['PAUSE', 'AUTO_BUY', 'PARTIAL']
 
+/** Discord autocomplete 응답 라벨 길이 한도. */
+const AUTOCOMPLETE_NAME_MAX = 100
+
 export class FactoryCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
     super(context, { ...options })
+  }
+
+  /**
+   * `factory_id` 옵션 자동완성 — 호출자 소유 공장을 최신순으로 제안한다.
+   *
+   * cuid 공장 id 는 손으로 외워 입력하기 어려우므로, upgrade/info/setmode/
+   * applybooster/destroy 서브커맨드의 `factory_id` 를 등급·부스터·원자재 투입
+   * 여부가 담긴 라벨로 노출한다(값은 공장 id). `/debug` 자동완성과 동일한
+   * `FactoryService.searchOwnedForAutocomplete`·라벨을 재사용한다.
+   */
+  public override async autocompleteRun(interaction: AutocompleteInteraction) {
+    const focused = interaction.options.getFocused(true)
+    if (focused.name !== 'factory_id') return interaction.respond([])
+
+    const t = await fetchT(interaction)
+    const factories = await FactoryService.searchOwnedForAutocomplete(
+      this.container.db,
+      {
+        userId: interaction.user.id,
+        query: String(focused.value),
+        limit: 25
+      }
+    )
+
+    return interaction.respond(
+      factories.map((f) => ({
+        name: truncate(
+          formatFactoryChoiceLabel({
+            typeLabel: localizeFactoryType(t, f.type),
+            grade: f.grade,
+            upgradeBooster: f.upgradeBooster,
+            hasRawBooster: f.hasRawBooster,
+            id: f.id
+          }),
+          AUTOCOMPLETE_NAME_MAX
+        ),
+        value: f.id
+      }))
+    )
   }
 
   public override async chatInputRun(
@@ -571,6 +615,7 @@ export class FactoryCommand extends Command {
                 .setNameLocalization('ko', '공장id')
                 .setDescriptionLocalization('ko', '공장 ID')
                 .setRequired(true)
+                .setAutocomplete(true)
             )
         )
         .addSubcommand((sub) =>
@@ -586,6 +631,7 @@ export class FactoryCommand extends Command {
                 .setNameLocalization('ko', '공장id')
                 .setDescriptionLocalization('ko', '공장 ID')
                 .setRequired(true)
+                .setAutocomplete(true)
             )
         )
         .addSubcommand((sub) =>
@@ -604,6 +650,7 @@ export class FactoryCommand extends Command {
                 .setNameLocalization('ko', '공장id')
                 .setDescriptionLocalization('ko', '공장 ID')
                 .setRequired(true)
+                .setAutocomplete(true)
             )
             .addStringOption((o) =>
               o
@@ -635,6 +682,7 @@ export class FactoryCommand extends Command {
                 .setNameLocalization('ko', '공장id')
                 .setDescriptionLocalization('ko', '공장 ID')
                 .setRequired(true)
+                .setAutocomplete(true)
             )
         )
         .addSubcommand((sub) =>
@@ -653,8 +701,14 @@ export class FactoryCommand extends Command {
                 .setNameLocalization('ko', '공장id')
                 .setDescriptionLocalization('ko', '공장 ID')
                 .setRequired(true)
+                .setAutocomplete(true)
             )
         )
     )
   }
+}
+
+/** autocomplete 라벨을 한도 이내로 자른다(초과 시 말줄임). */
+function truncate(text: string, max: number): string {
+  return text.length <= max ? text : `${text.slice(0, max - 1)}…`
 }
