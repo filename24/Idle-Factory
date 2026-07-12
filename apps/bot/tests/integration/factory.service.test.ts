@@ -1,4 +1,5 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
+import type { FactoryType, UpgradeBooster } from '@idle/game-core'
 import { FactoryService } from '../../src/services/factory'
 import { ServiceError } from '../../src/services/base'
 import { createLandWithSlots } from '../../src/services/user'
@@ -297,6 +298,204 @@ describe('FactoryService', () => {
         })
       ).rejects.toMatchObject({ code: 'MAX_GRADE' })
     })
+
+    it('signals boosterChoiceAvailable only at choice grades (3/5/7/10)', async () => {
+      const { user, warehouse } = await seedUser('u-up-3', {
+        money: 100_000_000n
+      })
+      await ensureMaterial(warehouse.id, 'GRAIN', 1_000_000n)
+
+      const { factory } = await FactoryService.build(testPrisma, {
+        userId: user.id,
+        landIndex: 1,
+        type: 'FARM',
+        anchorX: 0,
+        anchorY: 0
+      })
+
+      // 1 → 2: 분기 등급 아님
+      const first = await FactoryService.upgrade(testPrisma, {
+        userId: user.id,
+        factoryId: factory.id
+      })
+      expect(first.factory.grade).toBe(2)
+      expect(first.boosterChoiceAvailable).toBe(false)
+
+      // 2 → 3: 분기 등급
+      const second = await FactoryService.upgrade(testPrisma, {
+        userId: user.id,
+        factoryId: factory.id
+      })
+      expect(second.factory.grade).toBe(3)
+      expect(second.boosterChoiceAvailable).toBe(true)
+    })
+  })
+
+  describe('chooseBooster', () => {
+    it('sets upgradeBooster at a choice grade and overwrites on re-choice', async () => {
+      const { user } = await seedUser('u-boost-1')
+      const { factory } = await FactoryService.build(testPrisma, {
+        userId: user.id,
+        landIndex: 1,
+        type: 'FARM',
+        anchorX: 0,
+        anchorY: 0
+      })
+      await testPrisma.factory.update({
+        where: { id: factory.id },
+        data: { grade: 3 }
+      })
+
+      const chosen = await FactoryService.chooseBooster(testPrisma, {
+        userId: user.id,
+        factoryId: factory.id,
+        booster: 'SPEED'
+      })
+      expect(chosen.upgradeBooster).toBe('SPEED')
+
+      // 같은 분기 등급에서 재선택 시 덮어쓴다.
+      const rechosen = await FactoryService.chooseBooster(testPrisma, {
+        userId: user.id,
+        factoryId: factory.id,
+        booster: 'SAVING'
+      })
+      expect(rechosen.upgradeBooster).toBe('SAVING')
+    })
+
+    it('throws BOOSTER_NOT_AVAILABLE outside choice grades', async () => {
+      const { user } = await seedUser('u-boost-2')
+      const { factory } = await FactoryService.build(testPrisma, {
+        userId: user.id,
+        landIndex: 1,
+        type: 'FARM',
+        anchorX: 0,
+        anchorY: 0
+      })
+      // grade 1 — 분기 등급 아님
+      await expect(
+        FactoryService.chooseBooster(testPrisma, {
+          userId: user.id,
+          factoryId: factory.id,
+          booster: 'SPEED'
+        })
+      ).rejects.toMatchObject({ code: 'BOOSTER_NOT_AVAILABLE' })
+    })
+
+    it('throws FACTORY_NOT_FOUND for a factory owned by another user', async () => {
+      const { user } = await seedUser('u-boost-3')
+      await seedUser('u-boost-3b')
+      const { factory } = await FactoryService.build(testPrisma, {
+        userId: user.id,
+        landIndex: 1,
+        type: 'FARM',
+        anchorX: 0,
+        anchorY: 0
+      })
+      await testPrisma.factory.update({
+        where: { id: factory.id },
+        data: { grade: 3 }
+      })
+      await expect(
+        FactoryService.chooseBooster(testPrisma, {
+          userId: 'u-boost-3b',
+          factoryId: factory.id,
+          booster: 'RARE'
+        })
+      ).rejects.toMatchObject({ code: 'FACTORY_NOT_FOUND' })
+    })
+  })
+
+  describe('applyRawBooster', () => {
+    async function seedFactoryWithBoosterStock(
+      id: string,
+      opts: { level?: number; boosterCount?: bigint } = {}
+    ) {
+      const { user, warehouse } = await seedUser(id, {
+        level: opts.level ?? 50
+      })
+      await ensureMaterial(warehouse.id, 'RAW_BOOSTER', opts.boosterCount ?? 1n)
+      const { factory } = await FactoryService.build(testPrisma, {
+        userId: user.id,
+        landIndex: 1,
+        type: 'FARM',
+        anchorX: 0,
+        anchorY: 0
+      })
+      return { user, warehouse, factory }
+    }
+
+    it('consumes one RAW_BOOSTER and sets hasRawBooster permanently', async () => {
+      const { user, warehouse, factory } =
+        await seedFactoryWithBoosterStock('u-raw-1')
+
+      const updated = await FactoryService.applyRawBooster(testPrisma, {
+        userId: user.id,
+        factoryId: factory.id
+      })
+      expect(updated.hasRawBooster).toBe(true)
+
+      const stack = await testPrisma.warehouseStack.findUniqueOrThrow({
+        where: {
+          warehouseId_material: {
+            warehouseId: warehouse.id,
+            material: 'RAW_BOOSTER'
+          }
+        }
+      })
+      expect(stack.count).toBe(0n)
+    })
+
+    it('throws LEVEL_LOCKED below Lv.50', async () => {
+      const { user, factory } = await seedFactoryWithBoosterStock('u-raw-2', {
+        level: 49
+      })
+      await expect(
+        FactoryService.applyRawBooster(testPrisma, {
+          userId: user.id,
+          factoryId: factory.id
+        })
+      ).rejects.toMatchObject({ code: 'LEVEL_LOCKED' })
+    })
+
+    it('throws INSUFFICIENT_MATERIAL without RAW_BOOSTER stock', async () => {
+      const { user, factory } = await seedFactoryWithBoosterStock('u-raw-3', {
+        boosterCount: 0n
+      })
+      await expect(
+        FactoryService.applyRawBooster(testPrisma, {
+          userId: user.id,
+          factoryId: factory.id
+        })
+      ).rejects.toMatchObject({ code: 'INSUFFICIENT_MATERIAL' })
+    })
+
+    it('throws RAW_BOOSTER_ALREADY_APPLIED on a second injection', async () => {
+      const { user, warehouse, factory } = await seedFactoryWithBoosterStock(
+        'u-raw-4',
+        { boosterCount: 2n }
+      )
+      await FactoryService.applyRawBooster(testPrisma, {
+        userId: user.id,
+        factoryId: factory.id
+      })
+      await expect(
+        FactoryService.applyRawBooster(testPrisma, {
+          userId: user.id,
+          factoryId: factory.id
+        })
+      ).rejects.toMatchObject({ code: 'RAW_BOOSTER_ALREADY_APPLIED' })
+
+      // 두 번째 시도는 재고를 소모하지 않는다.
+      const stack = await testPrisma.warehouseStack.findUniqueOrThrow({
+        where: {
+          warehouseId_material: {
+            warehouseId: warehouse.id,
+            material: 'RAW_BOOSTER'
+          }
+        }
+      })
+      expect(stack.count).toBe(1n)
+    })
   })
 
   describe('setMode', () => {
@@ -474,6 +673,128 @@ describe('FactoryService', () => {
         name: 'ServiceError',
         code: 'FACTORY_NOT_FOUND'
       })
+    })
+  })
+
+  describe('searchOwnedForAutocomplete', () => {
+    async function landIdOf(userId: string): Promise<string> {
+      const land = await testPrisma.land.findFirstOrThrow({
+        where: { userId }
+      })
+      return land.id
+    }
+
+    async function seedFactoryRow(
+      userId: string,
+      landId: string,
+      over: {
+        type?: FactoryType
+        anchorX?: number
+        createdAt?: Date
+        upgradeBooster?: UpgradeBooster
+        hasRawBooster?: boolean
+      } = {}
+    ) {
+      return testPrisma.factory.create({
+        data: {
+          userId,
+          landId,
+          type: over.type ?? 'FARM',
+          tier: 'T1',
+          anchorX: over.anchorX ?? 0,
+          anchorY: 0,
+          createdAt: over.createdAt,
+          upgradeBooster: over.upgradeBooster,
+          hasRawBooster: over.hasRawBooster ?? false
+        }
+      })
+    }
+
+    it('내 공장만 최신순으로 반환한다(타인 공장 제외)', async () => {
+      const { user } = await seedUser('u-ac-1')
+      const { user: other } = await seedUser('u-ac-2')
+      const landId = await landIdOf(user.id)
+      const otherLandId = await landIdOf(other.id)
+
+      const f1 = await seedFactoryRow(user.id, landId, {
+        type: 'FARM',
+        createdAt: new Date('2020-01-01T00:00:00Z')
+      })
+      const f2 = await seedFactoryRow(user.id, landId, {
+        type: 'MINE',
+        anchorX: 1,
+        createdAt: new Date('2020-01-02T00:00:00Z'),
+        upgradeBooster: 'RARE',
+        hasRawBooster: true
+      })
+      await seedFactoryRow(other.id, otherLandId, { type: 'LUMBER' })
+
+      const rows = await FactoryService.searchOwnedForAutocomplete(testPrisma, {
+        userId: user.id
+      })
+
+      expect(rows.map((r) => r.id)).toEqual([f2.id, f1.id])
+      expect(rows[0]).toMatchObject({
+        type: 'MINE',
+        upgradeBooster: 'RARE',
+        hasRawBooster: true
+      })
+    })
+
+    it('query 로 공장 종류(enum) 부분일치 필터링한다', async () => {
+      const { user } = await seedUser('u-ac-3')
+      const landId = await landIdOf(user.id)
+      await seedFactoryRow(user.id, landId, { type: 'FARM' })
+      const mine = await seedFactoryRow(user.id, landId, {
+        type: 'MINE',
+        anchorX: 1
+      })
+
+      const rows = await FactoryService.searchOwnedForAutocomplete(testPrisma, {
+        userId: user.id,
+        query: 'min'
+      })
+
+      expect(rows.map((r) => r.id)).toEqual([mine.id])
+    })
+
+    it('query 로 공장 id 부분일치 필터링한다', async () => {
+      const { user } = await seedUser('u-ac-4')
+      const landId = await landIdOf(user.id)
+      const target = await seedFactoryRow(user.id, landId, { type: 'FARM' })
+      await seedFactoryRow(user.id, landId, { type: 'MINE', anchorX: 1 })
+
+      const rows = await FactoryService.searchOwnedForAutocomplete(testPrisma, {
+        userId: user.id,
+        query: target.id.slice(-6)
+      })
+
+      expect(rows.map((r) => r.id)).toEqual([target.id])
+    })
+
+    it('limit 으로 반환 개수를 제한한다', async () => {
+      const { user } = await seedUser('u-ac-5')
+      const landId = await landIdOf(user.id)
+      await seedFactoryRow(user.id, landId, { anchorX: 0 })
+      await seedFactoryRow(user.id, landId, { anchorX: 1 })
+      await seedFactoryRow(user.id, landId, { anchorX: 2 })
+
+      const rows = await FactoryService.searchOwnedForAutocomplete(testPrisma, {
+        userId: user.id,
+        limit: 2
+      })
+
+      expect(rows).toHaveLength(2)
+    })
+
+    it('공장이 없으면 빈 배열을 반환한다', async () => {
+      await seedUser('u-ac-6')
+
+      const rows = await FactoryService.searchOwnedForAutocomplete(testPrisma, {
+        userId: 'u-ac-6'
+      })
+
+      expect(rows).toEqual([])
     })
   })
 })

@@ -11,6 +11,7 @@
 export const GAME_CORE_VERSION = '1.0.0'
 
 export * from './types'
+export * from './factories/booster'
 export * from './factories/catalog'
 export * from './factories/cost'
 export * from './factories/production'

@@ -29,8 +29,11 @@
         "position": "좌표",
         "mode": "모드",
         "nextCost": "다음 업그레이드",
-        "unlock": "해금 레벨"
-      }
+        "unlock": "해금 레벨",
+        "booster": "부스터",
+        "rawBooster": "원자재 부스터"
+      },
+      "boosterNone": "미선택"
     },
     "setMode": {
       "success": "공장 모드를 `{{mode}}`(으)로 변경했어요."
@@ -44,6 +47,29 @@
       "cancelled": "철거를 취소했어요.",
       "error": {
         "listed": "상장된 공장은 철거할 수 없어요. 주주들의 지분이 사라지기 때문이에요. (상장폐지는 아직 지원되지 않아요)"
+      }
+    },
+    "boosterChoice": {
+      "title": "G{{grade}} 달성 — 부스터 선택",
+      "body": "부스터 분기 등급에 도달했어요. 이 공장에 영구 적용할 특화 부스터를 골라 주세요. 분기 등급(3·5·7·10)에서 다시 선택하면 이전 부스터를 대체해요.",
+      "placeholder": "부스터를 선택하세요",
+      "desc": {
+        "SAVING": "소비 자재 -20% (T2/T3 추천)",
+        "RARE": "원료 부스터 저확률 드롭 (T1/T2 전용)",
+        "SPEED": "tick당 생산량 +15%",
+        "PROFIT": "최종 생산량 +10%"
+      },
+      "applied": "{{emoji}} **{{booster}}** 부스터를 적용했어요! 이 공장에 영구 지속돼요.",
+      "error": {
+        "notAvailable": "지금은 부스터를 선택할 수 없어요. 분기 등급(3·5·7·10)에서만 선택할 수 있어요."
+      }
+    },
+    "applyBooster": {
+      "success": "{{emoji}} {{type}} 공장에 원자재 부스터를 투입했어요! 등급 보너스가 영구히 ×1.2 돼요.",
+      "error": {
+        "levelLocked": "원자재 부스터는 Lv.{{level}}부터 투입할 수 있어요.",
+        "alreadyApplied": "이 공장에는 이미 원자재 부스터가 투입되어 있어요. (공장당 1회)",
+        "noRawBooster": "창고에 원료 부스터가 없어요. T1/T2 공장의 희귀 자재 증산형 부스터나 거래로 구해 보세요."
       }
     }
   },
@@ -220,6 +246,12 @@
     "ELECTRONIC": "전자제품",
     "FINISHED_FOOD": "완제 식품",
     "RAW_BOOSTER": "원료 부스터"
+  },
+  "booster": {
+    "SAVING": "자재 절감형",
+    "RARE": "희귀 자재 증산형",
+    "SPEED": "생산 속도형",
+    "PROFIT": "추가 수익형"
   },
   "quest": {
     "title": "📜 퀘스트",

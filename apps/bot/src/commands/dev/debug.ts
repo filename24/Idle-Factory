@@ -16,6 +16,11 @@
  *  - `set-weekly-profit <stock> <amount>` — 종목 주간수익을 절대값으로 설정(배당 정산 테스트용)
  *  - `set-stock-price <stock> <price>`    — 종목 현재가를 설정하고 tick 1건 삽입(서킷브레이커 테스트용)
  *  - `seed-stock-ticks <stock> [count] [base]` — 백데이트 시간별 tick 이력 주입(info 스파크라인 테스트용)
+ *  - `set-grade <factory> <grade>`        — 공장 등급을 절대값으로 설정(부스터 분기 UI·MAX_GRADE 테스트용, #19)
+ *  - `set-booster <factory> <booster>`    — 공장 업그레이드 부스터를 설정/해제(RARE 드롭·생산 배수 테스트용, #19)
+ *  - `give-raw-booster [amount]`          — 창고에 RAW_BOOSTER 자재 지급(원자재 부스터 투입 테스트용, #19)
+ *  - `advance-harvest <factory> <tick>`   — 공장 lastHarvestAt 를 tick 만큼 과거로 당김(수확 tick 즉시 대기, #19)
+ *  - `harvest-now <factory> <tick>`       — 위 백데이트 + 해당 공장 즉시 수확 실행(RARE 드롭·생산 배수 관측, #19)
  *
  * 게이팅(이중 방어):
  *  1. `preconditions: ['OwnerOnly']` — owner 만 실행 (`OwnerOnly.ts`).
@@ -25,9 +30,18 @@
  */
 
 import { Command } from '@sapphire/framework'
-import { fetchT } from '@sapphire/plugin-i18next'
-import type { MaterialType, FactoryType } from '@idle/game-core'
-import { FACTORY_CATALOG } from '@idle/game-core'
+import { fetchT, type TFunction } from '@sapphire/plugin-i18next'
+import type {
+  MaterialType,
+  FactoryType,
+  UpgradeBooster,
+  MaterialBag
+} from '@idle/game-core'
+import {
+  ABSOLUTE_MAX_GRADE,
+  FACTORY_CATALOG,
+  isBoosterChoiceGrade
+} from '@idle/game-core'
 import type { PrismaClient } from '@idle/database'
 import { MessageFlags } from 'discord.js'
 import {
@@ -39,12 +53,25 @@ import {
 import {
   localizeMaterial,
   localizeFactoryType,
+  localizeUpgradeBooster,
   materialChoiceLocalizations,
-  factoryTypeChoiceLocalizations
+  factoryTypeChoiceLocalizations,
+  boosterChoiceLocalizations
 } from '../../utils/enumLocale'
+import {
+  BOOSTER_OPTION_NONE,
+  DEBUG_RAW_BOOSTER_DEFAULT_AMOUNT,
+  parseBoosterOption
+} from '../../utils/debugFactoryOptions'
+import {
+  MAX_ADVANCE_TICKS,
+  computeBackdatedHarvestAt,
+  formatTickDuration
+} from '../../utils/debugTickTemplates'
 import { MATERIAL_CHOICES } from '../game/market'
 import { MarketService, taxRateForDuration } from '../../services/market'
 import { RewardService } from '../../services/reward'
+import { HarvestService } from '../../services/harvest'
 import { UserService } from '../../services/user'
 import { runInTx } from '../../services/base'
 import { runWeeklySettlement } from '../../scheduled-tasks/weekly-settlement'
@@ -225,6 +252,16 @@ export class DebugCommand extends Command {
         return this.setStockPrice(interaction)
       case 'seed-stock-ticks':
         return this.seedStockTicks(interaction)
+      case 'set-grade':
+        return this.setGrade(interaction)
+      case 'set-booster':
+        return this.setBooster(interaction)
+      case 'give-raw-booster':
+        return this.giveRawBooster(interaction)
+      case 'advance-harvest':
+        return this.advanceHarvest(interaction)
+      case 'harvest-now':
+        return this.harvestNow(interaction)
       default:
         return interaction.reply(
           simpleV2Payload({
@@ -718,6 +755,253 @@ export class DebugCommand extends Command {
     )
   }
 
+  /** 내 공장 id 미존재(또는 타인 공장) 시 공통 경고 응답. */
+  private replyFactoryNotFound(
+    interaction: Command.ChatInputCommandInteraction,
+    factoryId: string
+  ) {
+    return interaction.reply(
+      simpleV2Payload({
+        accent: V2_ACCENT.warn,
+        body: `\`${factoryId}\` 는 내 공장이 아니거나 존재하지 않아요.`,
+        ephemeral: true
+      })
+    )
+  }
+
+  /**
+   * 내 공장의 등급을 절대값으로 설정한다 (`Factory.grade` = grade).
+   *
+   * 부스터 분기 선택 UI 는 `/factory upgrade` 로 **새 등급**이 3/5/7/10 이 될 때만
+   * 뜨므로, 이 커맨드로 등급을 2/4/6/9 로 맞춘 뒤 업그레이드하면 UI 를 즉시
+   * 재현할 수 있다. MAX_GRADE·상한 도달 케이스 테스트에도 쓴다 (#19).
+   */
+  private async setGrade(interaction: Command.ChatInputCommandInteraction) {
+    const { db } = this.container
+    const t = await fetchT(interaction)
+    const factoryId = interaction.options.getString('factory', true)
+    const grade = interaction.options.getInteger('grade', true)
+    const userId = interaction.user.id
+
+    const factory = await db.factory.findFirst({
+      where: { id: factoryId, userId },
+      select: { id: true, type: true }
+    })
+    if (!factory) return this.replyFactoryNotFound(interaction, factoryId)
+
+    await db.factory.update({ where: { id: factory.id }, data: { grade } })
+
+    const nextIsBranch = isBoosterChoiceGrade(grade + 1)
+    const hint = nextIsBranch
+      ? `\`/factory upgrade\` 로 **G${grade + 1}** 도달 시 부스터 선택 UI 가 떠요.`
+      : '`/factory upgrade` 로 3/5/7/10등급에 도달하면 부스터 선택 UI 가 떠요.'
+
+    return interaction.reply(
+      simpleV2Payload({
+        accent: V2_ACCENT.success,
+        title: '🏭 공장 등급 설정',
+        body: [
+          `**${localizeFactoryType(t, factory.type)}** 공장 등급을 **G${grade}** 로 설정했어요.`,
+          hint
+        ].join('\n'),
+        footer: `공장 id: ${factory.id}`,
+        ephemeral: true
+      })
+    )
+  }
+
+  /**
+   * 내 공장의 업그레이드 부스터를 설정하거나 해제한다 (`Factory.upgradeBooster`).
+   *
+   * 분기 등급 게이트(`chooseBooster`)를 우회해 직접 세팅하므로, RARE 드롭(T1/T2
+   * 공장 + 수확)·생산 배수(SAVING/SPEED/PROFIT) 를 등급 조작 없이 바로 관찰할 수
+   * 있다. `NONE` 은 부스터 해제(null) (#19).
+   */
+  private async setBooster(interaction: Command.ChatInputCommandInteraction) {
+    const { db } = this.container
+    const t = await fetchT(interaction)
+    const factoryId = interaction.options.getString('factory', true)
+    const booster = parseBoosterOption(
+      interaction.options.getString('booster', true)
+    )
+    const userId = interaction.user.id
+
+    const factory = await db.factory.findFirst({
+      where: { id: factoryId, userId },
+      select: { id: true, type: true, tier: true }
+    })
+    if (!factory) return this.replyFactoryNotFound(interaction, factoryId)
+
+    await db.factory.update({
+      where: { id: factory.id },
+      data: { upgradeBooster: booster }
+    })
+
+    const boosterLabel = booster
+      ? localizeUpgradeBooster(t, booster)
+      : '없음(해제)'
+    // RARE 는 T1/T2 만 RAW_BOOSTER 드롭 대상(T3 드롭률 0) — QA 착오 방지 힌트.
+    const rareHint =
+      booster === 'RARE'
+        ? factory.tier === 'T3'
+          ? '\n-# ⚠️ T3 공장은 RARE 드롭 대상이 아니에요(드롭 확률 0). T1/T2 공장에서 테스트하세요.'
+          : '\n-# 수확(harvest)을 여러 tick 돌리면 RAW_BOOSTER 드롭을 관찰할 수 있어요.'
+        : ''
+
+    return interaction.reply(
+      simpleV2Payload({
+        accent: V2_ACCENT.rare,
+        title: '🔧 부스터 설정',
+        body: `**${localizeFactoryType(t, factory.type)}** 공장의 업그레이드 부스터를 **${boosterLabel}** 로 설정했어요.${rareHint}`,
+        footer: `공장 id: ${factory.id}`,
+        ephemeral: true
+      })
+    )
+  }
+
+  /**
+   * 내 창고에 원자재 부스터(`RAW_BOOSTER`) 자재를 지급한다.
+   *
+   * `RAW_BOOSTER` 는 직구매·마켓 대상이 아니라 `/debug material` 로 지급할 수
+   * 없으므로 전용 서브커맨드로 분리한다. `/factory applybooster` (Lv.50+) 투입
+   * 테스트의 사전 준비용 (#19).
+   */
+  private async giveRawBooster(
+    interaction: Command.ChatInputCommandInteraction
+  ) {
+    const { db } = this.container
+    const amount = BigInt(
+      interaction.options.getInteger('amount') ??
+        DEBUG_RAW_BOOSTER_DEFAULT_AMOUNT
+    )
+    const userId = interaction.user.id
+
+    await UserService.ensure(db, { discordId: userId })
+    await runInTx(db, (tx) =>
+      RewardService.grant(tx, userId, [
+        { kind: 'MATERIAL', material: 'RAW_BOOSTER', amount }
+      ])
+    )
+
+    return interaction.reply(
+      simpleV2Payload({
+        accent: V2_ACCENT.success,
+        title: '🧪 원자재 부스터 지급',
+        body: `원자재 부스터(**RAW_BOOSTER**) ×${amount.toString()} 를 창고에 지급했어요.`,
+        footer:
+          '`/factory applybooster` 로 공장에 투입해 보세요 (Lv.50+ 필요).',
+        ephemeral: true
+      })
+    )
+  }
+
+  /**
+   * 내 공장의 `lastHarvestAt` 을 `tick × TICK_MS` 만큼 과거로 당긴다.
+   *
+   * 수확 tick 은 실시간 10분/tick 으로만 누적되므로, 이 백데이트로 원하는 tick 수를
+   * 즉시 "대기" 상태로 만든다. 이후 `/harvest`(또는 `harvest-now`) 한 번이면 그 tick 이
+   * 실현돼 RARE 드롭·생산 배수를 관측할 수 있다. 대기 tick 을 정확히 `tick` 으로
+   * **덮어쓴다**(누적 아님). 근거: `production.ts` §TICK_MS, #19.
+   */
+  private async advanceHarvest(
+    interaction: Command.ChatInputCommandInteraction
+  ) {
+    const { db } = this.container
+    const t = await fetchT(interaction)
+    const factoryId = interaction.options.getString('factory', true)
+    const ticks = interaction.options.getInteger('tick', true)
+    const userId = interaction.user.id
+
+    const factory = await db.factory.findFirst({
+      where: { id: factoryId, userId },
+      select: { id: true, type: true }
+    })
+    if (!factory) return this.replyFactoryNotFound(interaction, factoryId)
+
+    const backdatedAt = computeBackdatedHarvestAt(new Date(), ticks)
+    await db.factory.update({
+      where: { id: factory.id },
+      data: { lastHarvestAt: backdatedAt }
+    })
+
+    return interaction.reply(
+      simpleV2Payload({
+        accent: V2_ACCENT.success,
+        title: '⏪ 수확 시계 되감기',
+        body: [
+          `**${localizeFactoryType(t, factory.type)}** 공장의 마지막 수확 시각을 **${formatTickDuration(ticks)} 전**으로 당겼어요.`,
+          `다음 \`/harvest\` 실행 시 최대 **${ticks} tick** 이 즉시 실현돼요.`
+        ].join('\n'),
+        footer: `공장 id: ${factory.id}`,
+        ephemeral: true
+      })
+    )
+  }
+
+  /**
+   * `advance-harvest` 백데이트 + 해당 공장 즉시 수확(`harvestOne`)을 한 번에 실행한다.
+   *
+   * 실제 수확 파이프라인(부스터·창고 클램프·XP·RARE 드롭)을 그대로 태우므로,
+   * RARE 드롭·생산/소비 배수를 결정적으로 관측할 수 있다. 재료 부족·창고 여유에
+   * 따라 실현 tick 이 요청보다 적을 수 있어 둘 다 표시한다. #19.
+   */
+  private async harvestNow(interaction: Command.ChatInputCommandInteraction) {
+    const { db } = this.container
+    const t = await fetchT(interaction)
+    const factoryId = interaction.options.getString('factory', true)
+    const ticks = interaction.options.getInteger('tick', true)
+    const userId = interaction.user.id
+
+    const factory = await db.factory.findFirst({
+      where: { id: factoryId, userId },
+      select: { id: true, type: true }
+    })
+    if (!factory) return this.replyFactoryNotFound(interaction, factoryId)
+
+    // 다수 tick 수확이 3초를 넘길 수 있으므로 먼저 defer(ephemeral).
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+
+    const backdatedAt = computeBackdatedHarvestAt(new Date(), ticks)
+    await db.factory.update({
+      where: { id: factory.id },
+      data: { lastHarvestAt: backdatedAt }
+    })
+    const result = await HarvestService.harvestOne(db, {
+      userId,
+      factoryId: factory.id
+    })
+
+    const summary = result.factories.find((f) => f.factoryId === factory.id)
+    const realized = summary?.ticks ?? 0
+    const producedText = summary ? this.formatBag(summary.produced, t) : ''
+    const rawDrop = summary?.produced?.RAW_BOOSTER ?? 0n
+
+    const lines = [
+      `**${localizeFactoryType(t, factory.type)}** 공장을 즉시 수확했어요 — 실현 **${realized} tick** (요청 ${ticks}).`,
+      producedText
+        ? `생산: ${producedText}`
+        : '생산 없음 (재료 부족/창고 가득/대상 없음).',
+      rawDrop > 0n
+        ? `🔺 RARE 드롭: **RAW_BOOSTER ×${rawDrop.toString()}**`
+        : null,
+      result.leveledUp ? `🎉 레벨업 → Lv.${result.newLevel}` : null
+    ].filter((l): l is string => l !== null)
+
+    return interaction.editReply(
+      v2EditPayload([
+        simpleContainer(V2_ACCENT.success, '🌾 즉시 수확', lines.join('\n'))
+      ])
+    )
+  }
+
+  /** MaterialBag 을 `자재 ×수량 · …` 표시 문자열로 변환한다(0 이하 제외). */
+  private formatBag(bag: MaterialBag, t: TFunction): string {
+    return (Object.entries(bag) as Array<[MaterialType, bigint]>)
+      .filter(([, amt]) => amt > 0n)
+      .map(([mat, amt]) => `${localizeMaterial(t, mat)} ×${amt.toString()}`)
+      .join(' · ')
+  }
+
   public override registerApplicationCommands(registry: Command.Registry) {
     const materialChoices = MATERIAL_CHOICES.map((m) => ({
       name: m,
@@ -729,6 +1013,24 @@ export class DebugCommand extends Command {
       name_localizations: factoryTypeChoiceLocalizations(f),
       value: f
     }))
+    const boosterValues: readonly UpgradeBooster[] = [
+      'SAVING',
+      'RARE',
+      'SPEED',
+      'PROFIT'
+    ]
+    const boosterChoices = [
+      ...boosterValues.map((b) => ({
+        name: b,
+        name_localizations: boosterChoiceLocalizations(b),
+        value: b as string
+      })),
+      {
+        name: 'NONE (clear)',
+        name_localizations: { ko: '없음(해제)' },
+        value: BOOSTER_OPTION_NONE
+      }
+    ]
 
     registry.registerChatInputCommand(
       (builder) =>
@@ -992,6 +1294,145 @@ export class DebugCommand extends Command {
                   .setDescriptionLocalization('ko', '기준가 (기본: 현재가)')
                   .setMinValue(1)
                   .setRequired(false)
+              )
+          )
+          .addSubcommand((sub) =>
+            sub
+              .setName('set-grade')
+              .setDescription("Set a factory's grade (booster-UI QA).")
+              .setDescriptionLocalization(
+                'ko',
+                '공장 등급을 설정합니다 (부스터 UI 테스트용).'
+              )
+              .addStringOption((opt) =>
+                opt
+                  .setName('factory')
+                  .setDescription('Your factory')
+                  .setDescriptionLocalization('ko', '내 공장')
+                  .setRequired(true)
+                  .setAutocomplete(true)
+              )
+              .addIntegerOption((opt) =>
+                opt
+                  .setName('grade')
+                  .setDescription(`Target grade (1-${ABSOLUTE_MAX_GRADE})`)
+                  .setDescriptionLocalization(
+                    'ko',
+                    `설정할 등급 (1~${ABSOLUTE_MAX_GRADE})`
+                  )
+                  .setMinValue(1)
+                  .setMaxValue(ABSOLUTE_MAX_GRADE)
+                  .setRequired(true)
+              )
+          )
+          .addSubcommand((sub) =>
+            sub
+              .setName('set-booster')
+              .setDescription("Set/clear a factory's upgrade booster.")
+              .setDescriptionLocalization(
+                'ko',
+                '공장 업그레이드 부스터를 설정/해제합니다.'
+              )
+              .addStringOption((opt) =>
+                opt
+                  .setName('factory')
+                  .setDescription('Your factory')
+                  .setDescriptionLocalization('ko', '내 공장')
+                  .setRequired(true)
+                  .setAutocomplete(true)
+              )
+              .addStringOption((opt) =>
+                opt
+                  .setName('booster')
+                  .setDescription('Upgrade booster (NONE clears)')
+                  .setDescriptionLocalization(
+                    'ko',
+                    '업그레이드 부스터 (NONE=해제)'
+                  )
+                  .setRequired(true)
+                  .addChoices(...boosterChoices)
+              )
+          )
+          .addSubcommand((sub) =>
+            sub
+              .setName('give-raw-booster')
+              .setDescription('Grant RAW_BOOSTER material to your warehouse.')
+              .setDescriptionLocalization(
+                'ko',
+                '창고에 원자재 부스터(RAW_BOOSTER) 자재를 지급합니다.'
+              )
+              .addIntegerOption((opt) =>
+                opt
+                  .setName('amount')
+                  .setDescription(
+                    `Amount (default: ${DEBUG_RAW_BOOSTER_DEFAULT_AMOUNT})`
+                  )
+                  .setDescriptionLocalization(
+                    'ko',
+                    `지급 수량 (기본: ${DEBUG_RAW_BOOSTER_DEFAULT_AMOUNT})`
+                  )
+                  .setMinValue(1)
+                  .setRequired(false)
+              )
+          )
+          .addSubcommand((sub) =>
+            sub
+              .setName('advance-harvest')
+              .setDescription("Rewind a factory's harvest clock by N ticks.")
+              .setDescriptionLocalization(
+                'ko',
+                '공장 수확 시계를 N tick 만큼 과거로 당깁니다.'
+              )
+              .addStringOption((opt) =>
+                opt
+                  .setName('factory')
+                  .setDescription('Your factory')
+                  .setDescriptionLocalization('ko', '내 공장')
+                  .setRequired(true)
+                  .setAutocomplete(true)
+              )
+              .addIntegerOption((opt) =>
+                opt
+                  .setName('tick')
+                  .setDescription('Ticks to advance (pick a preset or type)')
+                  .setDescriptionLocalization(
+                    'ko',
+                    '당길 tick 수 (프리셋 선택 또는 직접 입력)'
+                  )
+                  .setMinValue(1)
+                  .setMaxValue(MAX_ADVANCE_TICKS)
+                  .setAutocomplete(true)
+                  .setRequired(true)
+              )
+          )
+          .addSubcommand((sub) =>
+            sub
+              .setName('harvest-now')
+              .setDescription('Advance N ticks then harvest the factory now.')
+              .setDescriptionLocalization(
+                'ko',
+                'N tick 을 당긴 뒤 공장을 즉시 수확합니다.'
+              )
+              .addStringOption((opt) =>
+                opt
+                  .setName('factory')
+                  .setDescription('Your factory')
+                  .setDescriptionLocalization('ko', '내 공장')
+                  .setRequired(true)
+                  .setAutocomplete(true)
+              )
+              .addIntegerOption((opt) =>
+                opt
+                  .setName('tick')
+                  .setDescription('Ticks to harvest (pick a preset or type)')
+                  .setDescriptionLocalization(
+                    'ko',
+                    '수확할 tick 수 (프리셋 선택 또는 직접 입력)'
+                  )
+                  .setMinValue(1)
+                  .setMaxValue(MAX_ADVANCE_TICKS)
+                  .setAutocomplete(true)
+                  .setRequired(true)
               )
           ),
       config.devGuildID ? { guildIds: [config.devGuildID] } : undefined

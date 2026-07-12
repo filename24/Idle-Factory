@@ -8,8 +8,102 @@
  */
 
 import type { TFunction } from '@sapphire/plugin-i18next'
+import {
+  ActionRowBuilder,
+  ContainerBuilder,
+  SeparatorBuilder,
+  SeparatorSpacingSize,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
+  TextDisplayBuilder
+} from 'discord.js'
 import type { FactoryCatalogEntry } from '@idle/game-core'
-import type { FactoryType, MaterialType, ShortageMode } from '@idle/game-core'
+import type {
+  FactoryType,
+  MaterialType,
+  ShortageMode,
+  UpgradeBooster
+} from '@idle/game-core'
+// 상대경로 유지: 스케줄러(`scheduled-tasks/*`)가 이 파일의 `formatBigInt` 를 import 하므로
+// vitest 단위 테스트 그래프에 전이적으로 로드된다. vitest 는 `@utils` 별칭을 해석하지 못해
+// 별칭 import 시 렌더러가 로드 실패한다 (apps/bot/CLAUDE.md §Testing). 형제 렌더러는
+// 테스트에 전이 로드되지 않으므로 별칭을 유지해도 무방하다.
+import { V2_ACCENT } from '../../utils/ComponentsV2'
+import { localizeUpgradeBooster } from '../../utils/enumLocale'
+
+/**
+ * 부스터 분기 선택 Select customId prefix — `selects/factoryBoosterSelect.ts` 와 공유.
+ * 포맷: `factory:booster:<ownerId>:<factoryId>`, value 는 `UpgradeBooster`.
+ */
+export const FACTORY_BOOSTER_SELECT_PREFIX = 'factory:booster:'
+
+/**
+ * 부스터별 대표 이모지.
+ * 근거: `docs/design/03-factories.md` §업그레이드 부스터 선택 시스템 선택지 표.
+ */
+export const UPGRADE_BOOSTER_EMOJI: Readonly<Record<UpgradeBooster, string>> = {
+  SAVING: '🔻',
+  RARE: '🔺',
+  SPEED: '⚡',
+  PROFIT: '💰'
+}
+
+/** Select 옵션 순서 — 설계 문서 선택지 표 순서 그대로. */
+const BOOSTER_OPTIONS: readonly UpgradeBooster[] = [
+  'SAVING',
+  'RARE',
+  'SPEED',
+  'PROFIT'
+]
+
+/**
+ * 3/5/7/10등급 도달 시 노출하는 부스터 분기 선택 컨테이너를 만든다.
+ *
+ * 선택 확정은 `selects/factoryBoosterSelect.ts` 가
+ * `FactoryService.chooseBooster` 를 호출해 처리한다.
+ *
+ * @param params ownerId(소유자 검증용)·factoryId·도달 등급·i18n
+ * @returns 부스터 4지선다 Select 가 담긴 Container
+ */
+export function buildBoosterChoiceContainer(params: {
+  readonly ownerId: string
+  readonly factoryId: string
+  readonly grade: number
+  readonly t: TFunction
+}): ContainerBuilder {
+  const { ownerId, factoryId, grade, t } = params
+  const select = new StringSelectMenuBuilder()
+    .setCustomId(`${FACTORY_BOOSTER_SELECT_PREFIX}${ownerId}:${factoryId}`)
+    .setPlaceholder(t('game:factory.boosterChoice.placeholder'))
+    .addOptions(
+      BOOSTER_OPTIONS.map((booster) =>
+        new StringSelectMenuOptionBuilder()
+          .setValue(booster)
+          .setLabel(localizeUpgradeBooster(t, booster))
+          .setDescription(t(`game:factory.boosterChoice.desc.${booster}`))
+          .setEmoji(UPGRADE_BOOSTER_EMOJI[booster])
+      )
+    )
+
+  return new ContainerBuilder()
+    .setAccentColor(V2_ACCENT.rare)
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        `# **${t('game:factory.boosterChoice.title', { grade })}**`
+      )
+    )
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(t('game:factory.boosterChoice.body'))
+    )
+    .addSeparatorComponents(
+      new SeparatorBuilder()
+        .setDivider(true)
+        .setSpacing(SeparatorSpacingSize.Small)
+    )
+    .addActionRowComponents(
+      new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select)
+    )
+}
 
 /**
  * 공장 렌더링 입력 DTO.
@@ -32,6 +126,10 @@ export interface FactoryInfoDTO {
   readonly anchorY: number
   /** 원료 부족 시 동작 모드 */
   readonly shortageMode: ShortageMode
+  /** 선택된 업그레이드 부스터 (미선택 null, 미제공 시 라인 생략) */
+  readonly upgradeBooster?: UpgradeBooster | null
+  /** 원자재 부스터 투입 여부 (미제공 시 라인 생략) */
+  readonly hasRawBooster?: boolean
 }
 
 /**
@@ -101,6 +199,22 @@ export function renderFactoryInfo(
     `**${fieldLabel('mode', '모드')}:** ${modeLabel}`,
     `**${fieldLabel('unlock', '해금 레벨')}:** ${unlockValue}`
   ]
+
+  if (factory.upgradeBooster !== undefined) {
+    const boosterValue = factory.upgradeBooster
+      ? `${UPGRADE_BOOSTER_EMOJI[factory.upgradeBooster]} ${
+          t
+            ? localizeUpgradeBooster(t, factory.upgradeBooster)
+            : factory.upgradeBooster
+        }`
+      : t
+        ? t('game:factory.info.boosterNone', { defaultValue: '미선택' })
+        : '미선택'
+    lines.push(`**${fieldLabel('booster', '부스터')}:** ${boosterValue}`)
+  }
+  if (factory.hasRawBooster) {
+    lines.push(`**${fieldLabel('rawBooster', '원자재 부스터')}:** 🧪 ×1.2`)
+  }
 
   if (nextCost !== null) {
     lines.push(

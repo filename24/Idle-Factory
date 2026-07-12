@@ -1,13 +1,15 @@
-import type { FactoryType, ShortageMode } from '@idle/database'
+import type { FactoryType, ShortageMode, UpgradeBooster } from '@idle/database'
 import {
   BASE_MAX_GRADE,
   FACTORY_CATALOG,
+  RAW_BOOSTER_UNLOCK_LEVEL,
   buildCost,
   canPlace,
   creditXpBonusBps,
   effectiveMaxGrade,
   getCreditTier,
   getOccupiedCells,
+  isBoosterChoiceGrade,
   upgradeMaterialCost,
   upgradeMoneyCost,
   xpForEvent,
@@ -127,6 +129,17 @@ export interface UpgradeParams {
   readonly guildId?: string | null
 }
 
+export interface ChooseBoosterParams {
+  readonly userId: string
+  readonly factoryId: string
+  readonly booster: UpgradeBooster
+}
+
+export interface ApplyRawBoosterParams {
+  readonly userId: string
+  readonly factoryId: string
+}
+
 export interface SetModeParams {
   readonly userId: string
   readonly factoryId: string
@@ -142,6 +155,8 @@ export interface FactoryInfoDTO {
   readonly width: number
   readonly height: number
   readonly shortageMode: ShortageMode
+  readonly upgradeBooster: UpgradeBooster | null
+  readonly hasRawBooster: boolean
   readonly nextUpgradeCost: {
     readonly money: bigint | null
     readonly material: { material: string; amount: bigint } | null
@@ -451,7 +466,98 @@ export const FactoryService = {
         toGrade: updated.grade,
         type: factory.type
       })
-      return { factory: updated, quest }
+      // 3/5/7/10 등급 도달 시 부스터 분기 선택 UI 노출 신호
+      // (docs/design/03-factories.md §업그레이드 부스터 선택 시스템, #19).
+      return {
+        factory: updated,
+        quest,
+        boosterChoiceAvailable: isBoosterChoiceGrade(updated.grade)
+      }
+    })
+  },
+
+  /**
+   * 부스터 분기 선택 확정 — `Factory.upgradeBooster` 갱신.
+   *
+   * 현재 등급이 분기 등급(3/5/7/10)일 때만 허용한다. 이미 다음 등급으로
+   * 넘어간 뒤 남아 있는 오래된 선택 메뉴의 재사용을 막기 위한 방어이며,
+   * 분기 등급에서 다시 선택하면 이전 값을 덮어쓴다 (단일 부스터 경로 —
+   * docs/design/03-factories.md §선택 규칙).
+   */
+  async chooseBooster(prisma: PrismaClient, params: ChooseBoosterParams) {
+    const { userId, factoryId, booster } = params
+    return runInTx(prisma, async (tx) => {
+      const factory = await tx.factory.findUnique({ where: { id: factoryId } })
+      if (!factory || factory.userId !== userId) {
+        throw new ServiceError('FACTORY_NOT_FOUND')
+      }
+      if (!isBoosterChoiceGrade(factory.grade)) {
+        throw new ServiceError('BOOSTER_NOT_AVAILABLE', undefined, {
+          grade: factory.grade
+        })
+      }
+      return tx.factory.update({
+        where: { id: factoryId },
+        data: { upgradeBooster: booster }
+      })
+    })
+  },
+
+  /**
+   * 원자재 부스터(`RAW_BOOSTER`) 투입 — 창고에서 1개 차감 후
+   * `Factory.hasRawBooster = true` (영구, 공장당 1회).
+   *
+   * 해금 조건: 유저 Lv.50 (docs/design/03-factories.md §🧪 원자재 부스터).
+   */
+  async applyRawBooster(prisma: PrismaClient, params: ApplyRawBoosterParams) {
+    const { userId, factoryId } = params
+    return runInTx(prisma, async (tx) => {
+      const factory = await tx.factory.findUnique({ where: { id: factoryId } })
+      if (!factory || factory.userId !== userId) {
+        throw new ServiceError('FACTORY_NOT_FOUND')
+      }
+      if (factory.hasRawBooster) {
+        throw new ServiceError('RAW_BOOSTER_ALREADY_APPLIED')
+      }
+
+      const user = await tx.user.findUnique({ where: { id: userId } })
+      if (!user) throw new ServiceError('USER_NOT_FOUND')
+      if (user.level < RAW_BOOSTER_UNLOCK_LEVEL) {
+        throw new ServiceError('LEVEL_LOCKED', undefined, {
+          level: RAW_BOOSTER_UNLOCK_LEVEL
+        })
+      }
+
+      const warehouse = await tx.warehouse.findUnique({ where: { userId } })
+      if (!warehouse) {
+        throw new ServiceError('INSUFFICIENT_MATERIAL', undefined, {
+          material: 'RAW_BOOSTER',
+          amount: 1n
+        })
+      }
+      const stack = await tx.warehouseStack.findUnique({
+        where: {
+          warehouseId_material: {
+            warehouseId: warehouse.id,
+            material: 'RAW_BOOSTER'
+          }
+        }
+      })
+      if (!stack || stack.count < 1n) {
+        throw new ServiceError('INSUFFICIENT_MATERIAL', undefined, {
+          material: 'RAW_BOOSTER',
+          amount: 1n
+        })
+      }
+      await tx.warehouseStack.update({
+        where: { id: stack.id },
+        data: { count: { decrement: 1n } }
+      })
+
+      return tx.factory.update({
+        where: { id: factoryId },
+        data: { hasRawBooster: true }
+      })
     })
   },
 
@@ -478,6 +584,8 @@ export const FactoryService = {
       width: factory.width,
       height: factory.height,
       shortageMode: factory.shortageMode,
+      upgradeBooster: factory.upgradeBooster,
+      hasRawBooster: factory.hasRawBooster,
       unlockLevel: entry.unlockLevel,
       effectiveMaxGrade: maxGrade,
       nextUpgradeCost: canUpgrade
@@ -487,6 +595,52 @@ export const FactoryService = {
           }
         : { money: null, material: null }
     }
+  },
+
+  /**
+   * 유저 소유 공장을 autocomplete 후보로 조회한다(읽기 전용).
+   *
+   * `/debug set-grade`·`set-booster` 의 `factory` 옵션이 cuid 를 손으로 입력하지
+   * 않도록, 호출자 소유 공장을 최신순으로 노출한다. `query` 가 있으면 공장 id
+   * 또는 종류(enum 명) 부분일치로 거른다. 유저의 공장 수는 토지·슬롯으로
+   * 상한이 있어 작으므로 후보 fetch 후 메모리에서 필터링한다.
+   *
+   * @param prisma PrismaClient
+   * @param params `userId`(소유자)·`query`(부분일치, 선택)·`limit`(기본 25)
+   * @returns 라벨 구성에 필요한 최소 필드 배열(최신순, 최대 `limit`개)
+   */
+  async searchOwnedForAutocomplete(
+    prisma: PrismaClient,
+    params: { userId: string; query?: string; limit?: number }
+  ): Promise<
+    Array<{
+      id: string
+      type: FactoryType
+      grade: number
+      upgradeBooster: UpgradeBooster | null
+      hasRawBooster: boolean
+    }>
+  > {
+    const { userId, query, limit = 25 } = params
+    const rows = await prisma.factory.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        type: true,
+        grade: true,
+        upgradeBooster: true,
+        hasRawBooster: true
+      }
+    })
+    const q = query?.trim().toLowerCase()
+    const filtered = q
+      ? rows.filter(
+          (f) =>
+            f.id.toLowerCase().includes(q) || f.type.toLowerCase().includes(q)
+        )
+      : rows
+    return filtered.slice(0, limit)
   },
 
   async setMode(prisma: PrismaClient, params: SetModeParams) {
