@@ -12,11 +12,14 @@ import {
   InteractionHandlerTypes
 } from '@sapphire/framework'
 import { fetchT, type TFunction } from '@sapphire/plugin-i18next'
-import { buildCost } from '@idle/game-core'
+import { ABSOLUTE_MAX_GRADE, buildCost } from '@idle/game-core'
 import { simpleContainer, V2_ACCENT, v2Flags } from '@utils/ComponentsV2'
 import { appendQuestCompletions } from '@utils/questNotifier'
 import type { ButtonInteraction } from 'discord.js'
-import { formatBigInt } from '@structures/renderers'
+import {
+  buildBoosterChoiceContainer,
+  formatBigInt
+} from '@structures/renderers'
 import {
   FACTORY_ACTION_BUTTON_PREFIX,
   buildDestroyConfirmPayload,
@@ -133,9 +136,14 @@ export class FactoryActionButtonHandler extends InteractionHandler {
   ): Promise<void> {
     const { db } = this.container
     try {
-      const { factory: updated, quest } = await FactoryService.upgrade(db, {
+      const {
+        factory: updated,
+        quest,
+        boosterChoiceAvailable
+      } = await FactoryService.upgrade(db, {
         userId: interaction.user.id,
-        factoryId
+        factoryId,
+        guildId: interaction.guildId
       })
       const landIndex = await this.getLandIndex(factoryId)
       const payload = await buildLandViewPayload(db, {
@@ -157,6 +165,26 @@ export class FactoryActionButtonHandler extends InteractionHandler {
         flags: v2Flags(false)
       }
       await interaction.followUp(appendQuestCompletions(followBase, quest, t))
+      // 분기 등급(3/5/7/10) 도달 시 부스터 4지선다 followUp (#19).
+      // 업그레이드는 이미 커밋됐으므로 followUp 실패가 성공 흐름을
+      // 경고 응답으로 오염시키지 않도록 개별 격리한다.
+      if (boosterChoiceAvailable) {
+        try {
+          await interaction.followUp({
+            components: [
+              buildBoosterChoiceContainer({
+                ownerId: interaction.user.id,
+                factoryId,
+                grade: updated.grade,
+                t
+              })
+            ],
+            flags: v2Flags(false)
+          })
+        } catch (followUpErr) {
+          this.container.logger.error(followUpErr)
+        }
+      }
     } catch (err) {
       await this.replyWarn(
         interaction,
@@ -227,8 +255,18 @@ function resolveFactoryErrorBody(
       return t('game:common.error.userNotFound')
     case 'WAREHOUSE_FULL':
       return t('game:common.error.warehouseFull')
-    case 'MAX_GRADE':
-      return t('game:factory.upgrade.error.maxGrade')
+    case 'MAX_GRADE': {
+      const det = (err.details ?? {}) as { maxGrade?: number }
+      return t('game:factory.upgrade.error.maxGrade', {
+        maxGrade: det.maxGrade ?? ABSOLUTE_MAX_GRADE
+      })
+    }
+    case 'CREDIT_RESTRICTED': {
+      const det = (err.details ?? {}) as { credit?: number | null }
+      return t('game:common.error.creditRestricted', {
+        credit: det.credit ?? '?'
+      })
+    }
     case 'INSUFFICIENT_MONEY': {
       const det = (err.details ?? {}) as {
         required?: string

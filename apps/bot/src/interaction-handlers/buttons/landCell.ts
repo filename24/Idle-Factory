@@ -143,7 +143,11 @@ export class LandCellButtonHandler extends InteractionHandler {
         })
         return
       }
-      const info = await FactoryService.info(db, factoryRow.id)
+      const info = await FactoryService.info(
+        db,
+        factoryRow.id,
+        interaction.guildId
+      )
       const nextCost =
         info.nextUpgradeCost.money !== null &&
         info.nextUpgradeCost.material !== null

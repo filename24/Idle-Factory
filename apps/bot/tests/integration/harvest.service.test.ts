@@ -1,6 +1,7 @@
 import { TICK_MS, xpForEvent } from '@idle/game-core'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 import { HarvestService } from '../../src/services/harvest'
+import { computeBackdatedHarvestAt } from '../../src/utils/debugTickTemplates'
 import { closeDb, resetDb, testPrisma } from './setup'
 
 const THIRTY_MIN_MS = 30 * 60 * 1000
@@ -374,5 +375,41 @@ describe('HarvestService.harvestOne', () => {
       name: 'ServiceError',
       code: 'FACTORY_NOT_FOUND'
     })
+  })
+})
+
+// `/debug advance-harvest`·`harvest-now` 가 세팅하는 상태를 그대로 재현:
+// computeBackdatedHarvestAt 로 lastHarvestAt 을 과거로 당긴 뒤 harvestOne 이
+// 요청 tick 을 실현하는지 검증한다.
+describe('debug advance-harvest 흐름', () => {
+  beforeEach(async () => {
+    await resetDb()
+  })
+
+  afterAll(async () => {
+    await closeDb()
+  })
+
+  it('백데이트한 lastHarvestAt 만큼 harvestOne 이 tick 을 실현한다', async () => {
+    const { land } = await seedBase({ discordId: 'u-adv-1' })
+    const factory = await placeFactory({
+      userId: 'u-adv-1',
+      landId: land.id,
+      type: 'FARM',
+      tier: 'T1',
+      anchorX: 0,
+      anchorY: 0,
+      // 6 tick = 1시간 전으로 백데이트 (advance-harvest tick:6 과 동일)
+      lastHarvestAt: computeBackdatedHarvestAt(new Date(), 6)
+    })
+
+    const result = await HarvestService.harvestOne(testPrisma, {
+      userId: 'u-adv-1',
+      factoryId: factory.id
+    })
+
+    const summary = result.factories.find((f) => f.factoryId === factory.id)!
+    expect(summary.ticks).toBe(6)
+    expect(summary.produced.GRAIN).toBe(180n) // FARM 30/tick × 6
   })
 })

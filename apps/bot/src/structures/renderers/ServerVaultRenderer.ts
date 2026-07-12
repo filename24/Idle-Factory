@@ -16,6 +16,7 @@ import {
   TextDisplayBuilder
 } from 'discord.js'
 import type { Guild as GuildRow } from '@idle/database'
+import { getCreditTier } from '@idle/game-core'
 import type { TFunction } from '@sapphire/plugin-i18next'
 import { V2_ACCENT } from '@utils/ComponentsV2'
 import type { GuildSettlementSummary } from '../../services/weeklySettlement'
@@ -27,7 +28,7 @@ import { formatBigInt } from './FactoryRenderer'
  * 레이아웃:
  *   Container (info accent)
  *     ├── 제목 (`# **🏦 서버 금고**`)
- *     ├── 잔액·가산세·신뢰도(자리만)·주간 DAU 키-값 라인
+ *     ├── 잔액·가산세·신뢰도(구간·증감 안내)·주간 DAU 키-값 라인
  *     ├── Separator
  *     └── 최근 정산 요약 (없으면 "아직 정산 이력이 없어요")
  *
@@ -47,13 +48,18 @@ export function buildServerVaultContainer(
     )
   )
 
+  // 신뢰도 구간(티어)을 계산해 구간 라벨과 증감/효과 안내를 함께 노출한다 (#17).
+  const tier = getCreditTier(guildRow.credit)
   const statusLines = [
     t('game:server.vault.balance', { balance: formatBigInt(guildRow.vault) }),
     t('game:server.vault.surcharge', {
       surcharge: (guildRow.taxSurcharge * 100).toFixed(0)
     }),
-    // 신뢰도는 #17 에서 실적용 — 현재는 저장값(기본 1000)만 노출하는 자리.
-    t('game:server.vault.credit', { credit: guildRow.credit }),
+    t('game:server.vault.credit', {
+      credit: guildRow.credit,
+      tier: t(`game:server.vault.creditTier.${tier}`)
+    }),
+    t('game:server.vault.creditHint'),
     t('game:server.vault.weeklyDau', { dau: guildRow.weeklyDAU })
   ]
   container.addTextDisplayComponents(

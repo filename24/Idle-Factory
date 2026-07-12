@@ -30,7 +30,7 @@ import {
   buildLockedSlotPickSelectPayload,
   type LandControlAction
 } from '../../commands/game/land'
-import { buildMoveFactoryPickSelectPayload } from '../../commands/game/landMove'
+import { buildMoveFactoryPickSelectPayload } from '../../utils/landMove'
 import {
   assertInteractionOwner,
   parseOwnerPrefixedCustomId

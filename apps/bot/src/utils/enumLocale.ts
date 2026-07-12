@@ -8,7 +8,12 @@
  */
 
 import type { TFunction } from '@sapphire/plugin-i18next'
-import type { FactoryType, MaterialType, ShortageMode } from '@idle/game-core'
+import type {
+  FactoryType,
+  MaterialType,
+  ShortageMode,
+  UpgradeBooster
+} from '@idle/game-core'
 import koGame from '../locales/ko/game.json'
 
 /** `FARM` → "농장" / "Farm". */
@@ -26,8 +31,17 @@ export function localizeShortageMode(t: TFunction, mode: ShortageMode): string {
   return t(`game:shortageMode.${mode}`, { defaultValue: mode })
 }
 
+/** `SAVING` → "자재 절감형" / "Material Saver". */
+export function localizeUpgradeBooster(
+  t: TFunction,
+  booster: UpgradeBooster
+): string {
+  return t(`game:booster.${booster}`, { defaultValue: booster })
+}
+
 const KO_MATERIAL = koGame.material as Record<string, string | undefined>
 const KO_FACTORY_TYPE = koGame.factoryType as Record<string, string | undefined>
+const KO_BOOSTER = koGame.booster as Record<string, string | undefined>
 
 /**
  * 슬래시 커맨드 choice 의 `name_localizations` 에 끼워 넣을 한국어 매핑.
@@ -47,5 +61,13 @@ export function factoryTypeChoiceLocalizations(
   type: FactoryType
 ): { ko: string } | undefined {
   const ko = KO_FACTORY_TYPE[type]
+  return ko ? { ko } : undefined
+}
+
+/** UpgradeBooster 슬래시 choice 한국어 라벨 매핑(`/debug set-booster` 용). */
+export function boosterChoiceLocalizations(
+  booster: UpgradeBooster
+): { ko: string } | undefined {
+  const ko = KO_BOOSTER[booster]
   return ko ? { ko } : undefined
 }
