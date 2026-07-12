@@ -20,7 +20,7 @@ export function DocsSidebar({ tree, currentPath }: DocsSidebarProps) {
 function SidebarNode({ node, currentPath }: { node: PageTreeNode; currentPath: string }) {
   if (node.type === 'separator') {
     return (
-      <div className="text-mute mt-5 mb-1 px-2 text-xs font-medium tracking-[0.18em] uppercase">
+      <div className="text-mute mt-5 mb-1 px-2 text-xs font-medium tracking-wider uppercase">
         {node.name}
       </div>
     )
@@ -32,7 +32,7 @@ function SidebarNode({ node, currentPath }: { node: PageTreeNode; currentPath: s
         {node.index ? (
           <SidebarLink href={node.index.url} label={String(node.name)} currentPath={currentPath} />
         ) : (
-          <div className="text-mute mb-1 px-2 py-1 text-xs font-medium tracking-[0.18em] uppercase">
+          <div className="text-mute mb-1 px-2 py-1 text-xs font-medium tracking-wider uppercase">
             {node.name}
           </div>
         )}
@@ -66,11 +66,10 @@ function SidebarLink({
   return (
     <Link
       href={href}
+      aria-current={isActive ? 'page' : undefined}
       className={[
-        'relative mb-0.5 block rounded-lg px-2 py-1.5 text-sm transition-colors duration-100',
-        isActive
-          ? 'bg-elevated text-ink font-medium before:absolute before:top-1 before:bottom-1 before:-left-3 before:w-px before:bg-white/40 before:content-[""]'
-          : 'text-charcoal hover:bg-elevated hover:text-ink',
+        'focus-visible:ring-ring focus-visible:ring-offset-canvas mb-0.5 block rounded px-2 py-1.5 text-sm no-underline transition-colors duration-100 outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+        isActive ? 'bg-elevated text-ink font-medium' : 'text-mute hover:text-ink',
       ].join(' ')}
     >
       {label}

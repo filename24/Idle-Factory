@@ -27,8 +27,8 @@ export default async function DocsLayout({ children }: Props) {
         </div>
       </aside>
 
-      {/* 컨텐츠 */}
-      <main className="min-w-0 flex-1 py-10 lg:pl-10">{children}</main>
+      {/* 컨텐츠 (루트 layout.tsx가 이미 <main> 랜드마크를 제공하므로 여기선 div) */}
+      <div className="min-w-0 flex-1 py-10 lg:pl-10">{children}</div>
     </div>
   )
 }
