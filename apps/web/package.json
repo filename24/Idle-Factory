@@ -10,7 +10,9 @@
     "typecheck": "fumadocs-mdx && tsc --noEmit",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest"
   },
   "dependencies": {
     "@base-ui/react": "1.4.1",
@@ -49,6 +51,7 @@
     "prettier": "^3.8.3",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "tailwindcss": "^4.2.2",
-    "tsconfig": "workspace:^"
+    "tsconfig": "workspace:^",
+    "vitest": "^2.1.9"
   }
 }

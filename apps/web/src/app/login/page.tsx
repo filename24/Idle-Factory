@@ -3,6 +3,7 @@ import { LogIn } from 'lucide-react'
 import { LoginButton } from './LoginButton'
 import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
+import { safeInternalPath } from '@/lib/href'
 
 interface Props {
   searchParams: Promise<{ callbackUrl?: string }>
@@ -11,9 +12,11 @@ interface Props {
 /** Discord OAuth 로그인 페이지 — 세션 존재 시 대시보드로 리다이렉트 */
 export default async function LoginPage({ searchParams }: Props) {
   const { callbackUrl } = await searchParams
+  // 오픈 리다이렉트 방지 — 외부 URL 은 /dashboard 로 폴백.
+  const safeCallback = safeInternalPath(callbackUrl)
 
   const session = await auth.api.getSession({ headers: await headers() })
-  if (session) redirect(callbackUrl ?? '/dashboard')
+  if (session) redirect(safeCallback)
 
   return (
     <section
@@ -34,7 +37,7 @@ export default async function LoginPage({ searchParams }: Props) {
           </p>
         </div>
         <div className="mt-8">
-          <LoginButton callbackUrl={callbackUrl} />
+          <LoginButton callbackUrl={safeCallback} />
         </div>
       </div>
     </section>
