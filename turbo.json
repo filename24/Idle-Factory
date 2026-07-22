@@ -78,9 +78,21 @@
       "dependsOn": ["db:generate", "^build"],
       "cache": true
     },
+    "bot#test": {
+      "dependsOn": ["db:generate", "^build"],
+      "cache": false
+    },
     "test:unit": {
       "dependsOn": ["db:generate", "^build"],
       "cache": true
+    },
+    "test:integration": {
+      "dependsOn": ["db:generate", "^build"],
+      "cache": false
+    },
+    "test:coverage": {
+      "dependsOn": ["db:generate", "^build"],
+      "cache": false
     },
     "db:generate": {
       "cache": false
