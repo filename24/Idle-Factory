@@ -18,7 +18,7 @@ export default async function DocsLayout({ children }: Props) {
   return (
     <div className="mx-auto flex max-w-6xl gap-0 px-4 sm:px-6">
       {/* 사이드바 */}
-      <aside className="hidden w-56 shrink-0 border-r border-[var(--color-border)] lg:block">
+      <aside className="border-hairline hidden w-56 shrink-0 border-r lg:block">
         <div className="sticky top-14 max-h-[calc(100dvh-3.5rem)] overflow-y-auto">
           <div className="p-3">
             <DocsSearch />
@@ -27,8 +27,8 @@ export default async function DocsLayout({ children }: Props) {
         </div>
       </aside>
 
-      {/* 컨텐츠 */}
-      <main className="min-w-0 flex-1 py-10 lg:pl-10">{children}</main>
+      {/* 컨텐츠 (루트 layout.tsx가 이미 <main> 랜드마크를 제공하므로 여기선 div) */}
+      <div className="min-w-0 flex-1 py-10 lg:pl-10">{children}</div>
     </div>
   )
 }

@@ -1,8 +1,8 @@
 'use client'
 
+import { LogIn, LogOut } from 'lucide-react'
 import { useSession, signIn, signOut } from '@/lib/auth-client'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -15,40 +15,50 @@ export function HeaderAuth() {
   const { data: session, isPending } = useSession()
 
   if (isPending) {
-    return <div className="h-6 w-6 animate-pulse rounded-full bg-[var(--color-elevated)]" />
+    return <div className="bg-elevated h-6 w-6 animate-pulse rounded-full" />
   }
 
   if (session?.user) {
     return (
       <DropdownMenu>
-        <DropdownMenuTrigger className="group flex items-center gap-2 outline-none">
+        <DropdownMenuTrigger
+          aria-label={session.user.name ? `${session.user.name} 계정 메뉴` : '계정 메뉴'}
+          className="group focus-visible:ring-ring focus-visible:ring-offset-canvas flex items-center gap-2 rounded outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+        >
           <Avatar
             size="sm"
-            className="ring-2 ring-transparent transition-all group-hover:ring-[var(--color-gold-dim)]"
+            className="ring-hairline-strong ring-0 transition-all group-hover:ring-2"
           >
             <AvatarImage src={session.user.image ?? undefined} alt={session.user.name ?? ''} />
-            <AvatarFallback className="bg-[var(--color-elevated)] text-[var(--color-gold)]">
+            <AvatarFallback className="bg-elevated text-ink">
               {(session.user.name ?? '?').charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <span className="hidden text-sm text-[var(--color-muted-foreground)] transition-colors group-hover:text-[var(--color-foreground)] sm:block">
+          <span className="text-mute group-hover:text-ink hidden text-sm transition-colors sm:block">
             {session.user.name}
           </span>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem onClick={() => signOut()}>로그아웃</DropdownMenuItem>
+        <DropdownMenuContent align="end" className="border-hairline-strong bg-surface w-48">
+          <DropdownMenuItem
+            onClick={() => signOut()}
+            className="text-body hover:bg-elevated focus:bg-elevated gap-2"
+          >
+            <LogOut aria-hidden="true" className="size-4" />
+            로그아웃
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     )
   }
 
   return (
-    <Button
-      variant="default"
-      size="sm"
+    <button
+      type="button"
       onClick={() => signIn.social({ provider: 'discord', callbackURL: '/dashboard' })}
+      className="border-hairline-strong bg-canvas text-ink hover:bg-elevated focus-visible:ring-ring focus-visible:ring-offset-canvas inline-flex h-9 items-center justify-center gap-2 rounded border px-4 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
     >
+      <LogIn aria-hidden="true" className="size-4" />
       로그인
-    </Button>
+    </button>
   )
 }

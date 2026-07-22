@@ -3,132 +3,105 @@
 
 @custom-variant dark (&:is(.dark *));
 
-:root {
-  --background: oklch(0.985 0 0);
-  --foreground: oklch(0.205 0 0);
-  --card: oklch(0.97 0 0);
-  --card-foreground: oklch(0.205 0 0);
-  --popover: oklch(0.97 0 0);
-  --popover-foreground: oklch(0.205 0 0);
-  --primary: oklch(0.666 0.179 58.318);
-  --primary-foreground: oklch(0.985 0.001 106.423);
-  --secondary: oklch(0.985 0.001 106.423);
-  --secondary-foreground: oklch(0.268 0.007 34.298);
-  --muted: oklch(0.923 0.003 48.717);
-  --muted-foreground: oklch(0.216 0.006 56.043);
-  --accent: oklch(0.985 0.001 106.423);
-  --accent-foreground: oklch(0.374 0.01 67.558);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0.001 106.423);
-  --border: oklch(0.869 0.005 56.366);
-  --input: oklch(0.709 0.01 56.259);
-  --ring: oklch(0.666 0.179 58.318);
-  --chart-1: oklch(0.666 0.179 58.318);
-  --chart-2: oklch(0.705 0.213 47.604);
-  --chart-3: oklch(0.795 0.184 86.047);
-  --chart-4: oklch(0.637 0.237 25.331);
-  --chart-5: oklch(0.656 0.241 354.308);
-  --sidebar: oklch(0.985 0.001 106.423);
-  --sidebar-foreground: oklch(0.268 0.007 34.298);
-  --sidebar-primary: oklch(0.2046 0 0);
-  --sidebar-primary-foreground: oklch(0.666 0.179 58.318);
-  --sidebar-accent: oklch(0.985 0.001 106.423);
-  --sidebar-accent-foreground: oklch(0.268 0.007 34.298);
-  --sidebar-border: oklch(0.869 0.005 56.366);
-  --sidebar-ring: oklch(0.666 0.179 58.318);
-  --font-sans: Geist Mono, monospace;
-  --font-serif: Geist Mono, monospace;
-  --font-mono: Geist Mono, monospace;
-  --radius: 0rem;
-  --shadow-x: 0px;
-  --shadow-y: 1px;
-  --shadow-blur: 0px;
-  --shadow-spread: 0px;
-  --shadow-opacity: 0;
-  --shadow-color: hsl(0 0% 0%);
-  --shadow-2xs: 0px 1px 0px 0px hsl(0 0% 0% / 0);
-  --shadow-xs: 0px 1px 0px 0px hsl(0 0% 0% / 0);
-  --shadow-sm: 0px 1px 0px 0px hsl(0 0% 0% / 0), 0px 1px 2px -1px hsl(0 0% 0% / 0);
-  --shadow: 0px 1px 0px 0px hsl(0 0% 0% / 0), 0px 1px 2px -1px hsl(0 0% 0% / 0);
-  --shadow-md: 0px 1px 0px 0px hsl(0 0% 0% / 0), 0px 2px 4px -1px hsl(0 0% 0% / 0);
-  --shadow-lg: 0px 1px 0px 0px hsl(0 0% 0% / 0), 0px 4px 6px -1px hsl(0 0% 0% / 0);
-  --shadow-xl: 0px 1px 0px 0px hsl(0 0% 0% / 0), 0px 8px 10px -1px hsl(0 0% 0% / 0);
-  --shadow-2xl: 0px 1px 0px 0px hsl(0 0% 0% / 0);
+/*
+ * ── Idle Factory 디자인 시스템 ──
+ * DESIGN.md(OpenCode 터미널 네이티브) 기준. 웜 다크 캔버스(#171717) 위 오프화이트 텍스트(#fdfcfc),
+ * 단일 모노스페이스 서체("one font, one voice"), 4px 샤프 라운드, 완전 플랫(그림자/그라디언트/블러 없음).
+ * 깊이는 보더 + 배경 명도 차이로만 표현. 시맨틱 색은 Apple HIG(파랑/빨강/초록/주황).
+ * 다크 단일 레지스터 — :root == .dark 동일 값(웜 다크가 곧 브랜드 캔버스).
+ */
+:root,
+.dark {
+  /* shadcn 시맨틱 토큰 → DESIGN.md 매핑 */
+  --background: #171717; /* colors.canvas — 웜 니어블랙 (rgb 23,23,23) */
+  --foreground: #fdfcfc; /* colors.foreground — 웜 오프화이트 */
+  --card: #1e1b1b; /* 살짝 뜬 서피스 */
+  --card-foreground: #fdfcfc;
+  --popover: #211d1d;
+  --popover-foreground: #fdfcfc;
+  --primary: #007aff; /* Apple 시스템 블루 — 기본 액션/포커스 */
+  --primary-foreground: #fdfcfc;
+  --secondary: #302c2c; /* colors.surface — 다크 서피스 */
+  --secondary-foreground: #fdfcfc;
+  --muted: #211d1d;
+  --muted-foreground: #9a9898; /* colors.muted — 미드 그레이 (보조 텍스트) */
+  --accent: #302c2c;
+  --accent-foreground: #fdfcfc;
+  --destructive: #ff3b30; /* Apple 시스템 레드 */
+  --destructive-foreground: #fdfcfc;
+  --border: #2b2626; /* 기본 헤어라인 (웜 다크 디바이더) */
+  --input: #646262; /* colors.hairline — 강한 아웃라인 */
+  --ring: #007aff; /* 포커스 링 = 액센트 블루 */
+  --chart-1: #007aff;
+  --chart-2: #30d158;
+  --chart-3: #ff9f0a;
+  --chart-4: #ff3b30;
+  --chart-5: #ffbf00;
+  --sidebar: #1a1717;
+  --sidebar-foreground: #d8d5d5;
+  --sidebar-primary: #007aff;
+  --sidebar-primary-foreground: #fdfcfc;
+  --sidebar-accent: #302c2c;
+  --sidebar-accent-foreground: #fdfcfc;
+  --sidebar-border: #2b2626;
+  --sidebar-ring: #007aff;
+
+  /* 폰트 스택 — 단일 모노스페이스: IBM Plex Mono(라틴/코드) → 나눔고딕코딩(한글) → 시스템 모노 */
+  --font-mono:
+    var(--font-plex-mono), 'Nanum Gothic Coding', ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --font-sans: var(--font-mono); /* one voice — sans도 모노로 */
+  --font-display: var(--font-mono);
+  --font-serif: var(--font-mono);
+
+  /* DESIGN.md rounded — 4px 유니버설, 인풋만 6px */
+  --radius: 0.25rem;
+
+  /* DESIGN.md는 그림자를 쓰지 않음 — 모든 그림자 토큰 무력화 (보더로만 깊이 표현) */
+  --shadow-2xs: 0 0 #0000;
+  --shadow-xs: 0 0 #0000;
+  --shadow-sm: 0 0 #0000;
+  --shadow: 0 0 #0000;
+  --shadow-md: 0 0 #0000;
+  --shadow-lg: 0 0 #0000;
+  --shadow-xl: 0 0 #0000;
+  --shadow-2xl: 0 0 #0000;
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 
-  /* ── 게임 커스텀 디자인 토큰 (라이트) ── */
-  --color-canvas: oklch(98.5% 0.004 80);
-  --color-surface: oklch(96% 0.006 75);
-  --color-elevated: oklch(92% 0.009 70);
-  --color-gold: oklch(68% 0.18 55);
-  --color-gold-dim: oklch(60% 0.16 55);
-  --color-gold-subtle: oklch(97% 0.04 65);
-  --color-success: oklch(56% 0.18 145);
-  --color-danger: oklch(54% 0.22 25);
-}
+  /* ── 서피스 (DESIGN.md colors.surface / dark-mode 토큰) ── */
+  --color-canvas: #171717; /* 페이지 배경 */
+  --color-surface: #1e1b1b; /* 미묘한 상승 서피스 */
+  --color-elevated: #302c2c; /* 카드/패널/호버 (Dark Surface) */
+  --color-deep: #100e0e; /* 터미널/코드 웰 배경 (캔버스보다 어둡게) */
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.97 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.97 0.001 106.424);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.97 0.001 106.424);
-  --primary: oklch(0.666 0.179 58.318);
-  --primary-foreground: oklch(0.97 0.001 106.424);
-  --secondary: oklch(0.268 0.007 34.298);
-  --secondary-foreground: oklch(0.97 0.001 106.424);
-  --muted: oklch(0.216 0.006 56.043);
-  --muted-foreground: oklch(0.709 0.01 56.259);
-  --accent: oklch(0.374 0.01 67.558);
-  --accent-foreground: oklch(0.97 0.001 106.424);
-  --destructive: oklch(0.505 0.213 27.518);
-  --destructive-foreground: oklch(0.97 0.001 106.424);
-  --border: oklch(0.374 0.01 67.558);
-  --input: oklch(0.268 0.007 34.298);
-  --ring: oklch(0.473 0.137 46.201);
-  --chart-1: oklch(0.555 0.163 48.998);
-  --chart-2: oklch(0.553 0.195 38.402);
-  --chart-3: oklch(0.554 0.135 66.442);
-  --chart-4: oklch(0.505 0.213 27.518);
-  --chart-5: oklch(0.525 0.223 3.958);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.97 0.001 106.424);
-  --sidebar-primary: oklch(0.555 0.163 48.998);
-  --sidebar-primary-foreground: oklch(0.97 0.001 106.424);
-  --sidebar-accent: oklch(0.268 0.007 34.298);
-  --sidebar-accent-foreground: oklch(0.97 0.001 106.424);
-  --sidebar-border: oklch(0.374 0.01 67.558);
-  --sidebar-ring: oklch(0.473 0.137 46.201);
-  --font-sans: Geist Mono, monospace;
-  --font-serif: Geist Mono, monospace;
-  --font-mono: Geist Mono, monospace;
-  --radius: 0rem;
-  --shadow-x: 0px;
-  --shadow-y: 1px;
-  --shadow-blur: 0px;
-  --shadow-spread: 0px;
-  --shadow-opacity: 0;
-  --shadow-color: hsl(0 0% 0%);
-  --shadow-2xs: 0px 1px 0px 0px hsl(0 0% 0% / 0);
-  --shadow-xs: 0px 1px 0px 0px hsl(0 0% 0% / 0);
-  --shadow-sm: 0px 1px 0px 0px hsl(0 0% 0% / 0), 0px 1px 2px -1px hsl(0 0% 0% / 0);
-  --shadow: 0px 1px 0px 0px hsl(0 0% 0% / 0), 0px 1px 2px -1px hsl(0 0% 0% / 0);
-  --shadow-md: 0px 1px 0px 0px hsl(0 0% 0% / 0), 0px 2px 4px -1px hsl(0 0% 0% / 0);
-  --shadow-lg: 0px 1px 0px 0px hsl(0 0% 0% / 0), 0px 4px 6px -1px hsl(0 0% 0% / 0);
-  --shadow-xl: 0px 1px 0px 0px hsl(0 0% 0% / 0), 0px 8px 10px -1px hsl(0 0% 0% / 0);
-  --shadow-2xl: 0px 1px 0px 0px hsl(0 0% 0% / 0);
+  /* ── 텍스트 계조 (DESIGN.md colors.foreground/muted) ── */
+  --color-ink: #fdfcfc; /* 1차 텍스트 */
+  --color-body: #e6e3e3; /* 본문 카피 */
+  --color-charcoal: #b0adad; /* 보조 텍스트 (밝은) */
+  --color-mute: #9a9898; /* 보조 텍스트/라벨 (Mid Gray) */
+  --color-ash: #6e6e73; /* 흐린 메타/캡션 */
 
-  /* ── 게임 커스텀 디자인 토큰 (다크) ── */
-  --color-canvas: oklch(14.5% 0 0);
-  --color-surface: oklch(19% 0.005 60);
-  --color-elevated: oklch(25% 0.008 60);
-  --color-gold: oklch(72% 0.18 55);
-  --color-gold-dim: oklch(64% 0.16 55);
-  --color-gold-subtle: oklch(21% 0.06 55);
-  --color-success: oklch(62% 0.2 145);
-  --color-danger: oklch(58% 0.24 25);
+  /* ── 헤어라인 (그림자 대체, 플랫 깊이) ── */
+  --color-hairline: #2b2626; /* 기본 디바이더 */
+  --color-hairline-strong: #646262; /* 강한 컨테이너 아웃라인 (Border Outline) */
+  --color-divider-soft: #211d1d; /* 아주 미묘한 구분선 */
+
+  /* ── Apple HIG 시맨틱 색 (솔리드로 사용 가능, 3단계 상호작용) ── */
+  --color-accent-blue: #007aff;
+  --color-accent-blue-hover: #0056b3;
+  --color-accent-blue-active: #004085;
+  --color-accent-blue-btn: #0071e3; /* 흰 텍스트 버튼 배경 — WCAG AA(4.7:1) 확보용 (a11y) */
+  --color-accent-red: #ff3b30;
+  --color-accent-red-hover: #d70015;
+  --color-accent-red-active: #a50011;
+  --color-accent-green: #30d158;
+  --color-accent-orange: #ff9f0a;
+  --color-accent-orange-hover: #cc7f08;
+  --color-accent-orange-active: #995f06;
+  --color-accent-yellow: #ffbf00; /* 코드윈도우 트래픽라이트 중앙 (비시맨틱) */
+  --color-link: #0a84ff; /* 다크 튜닝 블루 — 본문 링크/인라인코드, canvas 4.9:1 (a11y) */
+  --color-link-hover: #4aa0ff; /* 링크 호버는 다크에서 '밝게'(대비 상승) */
 }
 
 @theme inline {
@@ -165,14 +138,43 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  /* DESIGN.md 커스텀 토큰 → Tailwind 유틸리티 (bg-canvas, text-ink, border-hairline 등) */
+  --color-canvas: var(--color-canvas);
+  --color-surface: var(--color-surface);
+  --color-elevated: var(--color-elevated);
+  --color-deep: var(--color-deep);
+  --color-ink: var(--color-ink);
+  --color-body: var(--color-body);
+  --color-charcoal: var(--color-charcoal);
+  --color-mute: var(--color-mute);
+  --color-ash: var(--color-ash);
+  --color-hairline: var(--color-hairline);
+  --color-hairline-strong: var(--color-hairline-strong);
+  --color-divider-soft: var(--color-divider-soft);
+  --color-accent-blue: var(--color-accent-blue);
+  --color-accent-blue-hover: var(--color-accent-blue-hover);
+  --color-accent-blue-btn: var(--color-accent-blue-btn);
+  --color-accent-blue-active: var(--color-accent-blue-active);
+  --color-accent-red: var(--color-accent-red);
+  --color-accent-red-hover: var(--color-accent-red-hover);
+  --color-accent-green: var(--color-accent-green);
+  --color-accent-orange: var(--color-accent-orange);
+  --color-accent-orange-hover: var(--color-accent-orange-hover);
+  --color-accent-yellow: var(--color-accent-yellow);
+  --color-link: var(--color-link);
+  --color-link-hover: var(--color-link-hover);
+
   --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  /* 4px 유니버설, 인풋만 6px (rounded-md) */
+  --radius-sm: calc(var(--radius) - 1px); /* 3px */
+  --radius-md: calc(var(--radius) + 2px); /* 6px — 인풋 */
+  --radius-lg: var(--radius); /* 4px */
+  --radius-xl: var(--radius); /* 4px */
+  --radius-2xl: var(--radius); /* 4px */
 
   --shadow-2xs: var(--shadow-2xs);
   --shadow-xs: var(--shadow-xs);
@@ -190,20 +192,47 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-mono);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  /* 디스플레이 헤드라인 — 모노스페이스 700, 약간 타이트한 트래킹 (DESIGN.md heading-1: 38px/700/1.5) */
+  .font-display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  /* 텍스트 셀렉션 — 웜 액센트 워시 */
+  ::selection {
+    background: rgba(0, 122, 255, 0.28);
+    color: #fdfcfc;
   }
 }
 
-/* ── 문서 콘텐츠 타이포그래피 ── */
+/* 모션 최소화 선호 시 애니메이션/트랜지션 무력화 (DESIGN.md §15 prefers-reduced-motion) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── 문서 콘텐츠 타이포그래피 (모노스페이스, 밑줄 링크, 플랫) ── */
 .docs-content {
-  color: var(--foreground);
-  line-height: 1.75;
+  color: var(--color-body);
+  line-height: 1.6;
 }
 .docs-content h1:not([data-card] *),
 .docs-content h2:not([data-card] *),
 .docs-content h3:not([data-card] *),
 .docs-content h4:not([data-card] *) {
   font-weight: 700;
-  color: var(--foreground);
+  color: var(--color-ink);
+  letter-spacing: -0.01em;
   margin-top: 2em;
   margin-bottom: 0.75em;
 }
@@ -213,20 +242,21 @@
   padding-bottom: 0.5rem;
 }
 .docs-content h3:not([data-card] *) {
-  font-size: 1.25rem;
-  color: var(--primary);
+  font-size: 1.2rem;
+  color: var(--color-ink);
 }
 .docs-content p {
   margin-bottom: 1.25em;
-  color: var(--muted-foreground);
+  color: var(--color-body);
 }
 .docs-content a {
-  color: var(--primary);
+  color: var(--color-link);
   text-decoration: underline;
+  text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
 .docs-content a:hover {
-  color: var(--foreground);
+  color: var(--color-link-hover);
 }
 .docs-content ul,
 .docs-content ol {
@@ -235,18 +265,20 @@
 }
 .docs-content li {
   margin-bottom: 0.4em;
-  color: var(--muted-foreground);
+  color: var(--color-body);
 }
 .docs-content code {
   background: var(--muted);
   border: 1px solid var(--border);
+  border-radius: 4px;
   padding: 0.15em 0.4em;
   font-size: 0.875em;
-  color: var(--primary);
+  color: var(--color-link);
 }
 .docs-content pre {
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: var(--color-deep);
+  border: 1px solid var(--color-hairline-strong);
+  border-radius: 4px;
   padding: 1rem;
   overflow-x: auto;
   margin-bottom: 1.25em;
@@ -255,15 +287,14 @@
   background: none;
   border: none;
   padding: 0;
-  color: var(--foreground);
+  color: var(--color-body);
   font-size: 0.875rem;
 }
 .docs-content blockquote {
-  border-left: 3px solid var(--primary);
+  border-left: 2px solid var(--color-accent-blue);
   padding-left: 1rem;
   margin: 1.5em 0;
-  color: var(--muted-foreground);
-  font-style: italic;
+  color: var(--color-mute);
 }
 .docs-content table {
   width: 100%;
@@ -275,14 +306,15 @@
   padding: 0.5rem 0.75rem;
   text-align: left;
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 700;
   border-bottom: 1px solid var(--border);
+  color: var(--color-ink);
 }
 .docs-content td {
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
   border-bottom: 1px solid var(--border);
-  color: var(--muted-foreground);
+  color: var(--color-body);
 }
 .docs-content hr {
   border: none;
@@ -327,8 +359,8 @@ article.prose p:is(.font-medium) {
   background: var(--background);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: var(--color-hairline-strong);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-foreground);
+  background: var(--color-mute);
 }

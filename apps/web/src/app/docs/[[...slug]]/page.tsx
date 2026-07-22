@@ -25,10 +25,12 @@ export default async function DocsPage({ params }: Props) {
   const { body: MDX } = page.data
 
   return (
-    <article className="prose prose-invert max-w-3xl">
-      <h1 className="mb-2 text-3xl font-bold text-[var(--color-foreground)]">{page.data.title}</h1>
+    <article className="max-w-3xl">
+      <h1 className="font-display text-ink mb-2 text-3xl leading-[1.05] break-keep">
+        {page.data.title}
+      </h1>
       {page.data.description && (
-        <p className="mb-8 text-[var(--color-muted-foreground)]">{page.data.description}</p>
+        <p className="text-mute mb-8 break-keep">{page.data.description}</p>
       )}
       <div className="docs-content">
         <MDX components={mdxComponents} />
