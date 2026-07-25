@@ -112,6 +112,23 @@ jobs:
       - name: Run unit tests
         run: pnpm exec turbo run test:unit ${{ github.event_name == 'pull_request' && '--affected' || '' }}
 
+      # game-core is the single source of truth for money and production
+      # formulas, so it carries its own 80% coverage gate (issue #21). It has no
+      # DB dependency, which is why the gate lives in this DB-free job rather
+      # than alongside the bot's services gate below. Not `--affected`: the
+      # threshold must hold on every PR, not only when the package is touched.
+      - name: Run game-core coverage gate
+        run: pnpm exec turbo run test:coverage --filter=@idle/game-core
+
+      - name: Upload game-core coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: game-core-coverage
+          path: packages/game-core/coverage
+          if-no-files-found: ignore
+          retention-days: 14
+
   test-integration:
     name: Test (integration + services coverage)
     runs-on: ubuntu-latest
@@ -158,6 +175,20 @@ jobs:
 
       - name: Apply database migrations
         run: pnpm --filter @idle/database run db:migrate:deploy
+
+      # Release checklist (issue #21): catch a schema change that never got a
+      # migration. The live DB has just been brought up to the latest migration,
+      # so diffing it against schema.prisma must yield an empty patch —
+      # `--exit-code` returns 2 when a difference exists. Without this a
+      # schema-only edit passes CI and then breaks `migrate deploy` in
+      # production, where there is no `db push` escape hatch.
+      - name: Check for missing migrations (schema drift)
+        run: |
+          pnpm --filter @idle/database exec prisma migrate diff \
+            --from-config-datasource \
+            --to-schema prisma/schema.prisma \
+            --exit-code \
+          || (echo "::error::schema.prisma differs from the migrated database. Run 'pnpm --filter @idle/database db:migrate:dev' and commit the migration." && exit 1)
 
       # cache:false on the turbo task guarantees the live-DB suite never gets
       # skipped by a cache hit. `^build` + db:generate build @idle/database and
