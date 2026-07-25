@@ -39,7 +39,18 @@ export type IConfig = {
   repository?: string
 } & { logger: LoggerConfig } & { bot: BotConfig } & {
   report: ErrorReportConfig
-} & { i18n: i18nConfig } & { redis: RedisConfig }
+} & { i18n: i18nConfig } & { redis: RedisConfig } & { admin: AdminConfig }
+
+/**
+ * 운영 툴 설정 (#21 결정 6).
+ */
+export interface AdminConfig {
+  /**
+   * 감사 로그 알림용 디스코드 채널 웹후크 URL.
+   * 빈 문자열이면 알림을 보내지 않는다 (DB 기록은 그대로 수행).
+   */
+  auditWebhookUrl: string
+}
 
 /**
  * Redis 접속 설정.

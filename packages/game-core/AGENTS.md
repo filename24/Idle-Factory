@@ -109,10 +109,19 @@ comes from `summary.json`'s `meta.artifactName` so the rule
 (`src/simulation/artifact.ts`) has a single source of truth.
 
 Verification targets and their sources live in `src/simulation/targets.ts`.
-Several of them currently **fail on purpose** — they record real gaps between
-the design docs and the numbers (open contradictions 7 and 11 in
-`docs/design/00-onboarding.md`). When a design decision resolves one, update
-both the doc and `tests/simulation/targets.test.ts` in the same change.
+All of them pass as of #21 — contradictions 7 and 11 in
+`docs/design/00-onboarding.md` were closed by explicit design decisions, and the
+warehouse bottleneck was fixed by per-material volume coefficients. Targets that
+express observation rather than a goal (tier profit multiples, inflation, minted
+per factory-tick) are reported as **reference metrics** with `pass: true`; do not
+turn them back into gates without a design decision behind the threshold. When a
+formula changes, update the doc and `tests/simulation/targets.test.ts` in the
+same change.
+
+The package carries its own coverage gate (`pnpm test:coverage`, 80% floor, run
+in CI's unit job). Inflation is reported as a **geometric** mean over three
+windows — never an arithmetic mean of daily rates, which the weekly settlement
+swing corrupts (see `geometricInflation`).
 
 ## Runtime Deps
 

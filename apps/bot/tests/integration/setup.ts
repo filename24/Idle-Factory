@@ -36,7 +36,8 @@ const TABLES = [
   'GuildDailyActivity',
   'InactiveServerPool',
   'Notice',
-  'UserQuest'
+  'UserQuest',
+  'AdminAuditLog'
 ] as const
 
 let client: DatabaseClient | null = null
