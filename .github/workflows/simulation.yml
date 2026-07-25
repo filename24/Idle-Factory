@@ -1,0 +1,105 @@
+########################################################################################
+# 경제 밸런스 시뮬레이션 (#31)                                                          #
+#--------------------------------------------------------------------------------------#
+# 수동 실행 전용 워크플로. game-core 순수 함수만 조립해 유저 M명 × N일 경제를           #
+# 10분 tick 으로 돌리고, 설계 목표치(300~400원/tick·33분 손익분기·창고 16시간)와        #
+# 대조한 리포트를 낸다.                                                                 #
+#                                                                                       #
+#  - 리포트(mermaid 차트 포함)는 job summary 에 마크다운으로 그대로 렌더된다.           #
+#  - 원시 데이터(CSV·JSON)는 `[브랜치]-[커밋 해시]` 이름의 아티팩트로 올라간다.         #
+#                                                                                       #
+# 아티팩트 이름은 스크립트가 산출한 `summary.json` 의 `meta.artifactName` 을 그대로     #
+# 쓴다 — 이름 규칙(`src/simulation/artifact.ts`)의 단일 진실원을 유지하기 위함이다.     #
+########################################################################################
+
+name: Economy Simulation
+
+on:
+  workflow_dispatch:
+    inputs:
+      users:
+        description: '스윕 기준선 유저 수'
+        required: false
+        default: '10'
+        type: string
+      days:
+        description: '스윕 기준선 기간(일)'
+        required: false
+        default: '7'
+        type: string
+      sweep:
+        description: '파라미터 민감도 스윕 수행'
+        required: false
+        default: true
+        type: boolean
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM || secrets.TURBO_TEAM }}
+  # Prisma generate 가 빌드 DAG 에 들어 있어 더미 URL 이 필요하다. 시뮬레이터
+  # 자체는 DB 를 쓰지 않는다 (game-core 는 Prisma 의존 금지).
+  DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+  HUSKY: '0'
+
+jobs:
+  simulate:
+    name: Run balance simulation
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        uses: ./.github/actions/pnpm-install
+        with:
+          cwd: '.'
+          enable-corepack: false
+
+      # 회귀 게이트를 먼저 돌린다 — 목표치 검증이 깨진 상태의 리포트를 올리면
+      # 숫자를 신뢰할 수 없다.
+      - name: Run simulation regression tests
+        run: pnpm --filter @idle/game-core exec vitest run tests/simulation
+
+      - name: Run simulation
+        run: |
+          pnpm --filter @idle/game-core exec tsx scripts/sim.ts \
+            --out "${GITHUB_WORKSPACE}/.sim-output" \
+            --users "${{ inputs.users }}" \
+            --days "${{ inputs.days }}" \
+            ${{ inputs.sweep && '--sweep' || '' }}
+
+      - name: Resolve artifact name
+        id: meta
+        run: |
+          NAME="$(jq -r '.meta.artifactName' .sim-output/summary.json)"
+          if [ -z "$NAME" ] || [ "$NAME" = "null" ]; then
+            echo "::error::summary.json 에서 artifactName 을 읽지 못했습니다."
+            exit 1
+          fi
+          echo "name=${NAME}" >> "$GITHUB_OUTPUT"
+          echo "아티팩트 이름: ${NAME}"
+
+      - name: Publish report to job summary
+        run: cat .sim-output/report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload simulation data
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.meta.outputs.name }}
+          path: .sim-output/
+          if-no-files-found: error
+          retention-days: 30

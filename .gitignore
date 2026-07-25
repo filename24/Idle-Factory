@@ -30,4 +30,4 @@ packages/database/src/generated/
 .DS_Store
 
 # pnpm
-.pnp.*
+.pnp.*.sim-output/
