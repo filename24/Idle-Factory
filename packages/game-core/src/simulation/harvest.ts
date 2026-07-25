@@ -13,7 +13,7 @@ import { getFactoryEntry } from '../factories/catalog'
 import { upgradeMaterialCost } from '../factories/cost'
 import { computeFactoryYield, MAX_TICKS_PER_HARVEST } from '../factories/production'
 import type { FactoryState, MaterialBag, MaterialType } from '../types'
-import { computeFree, upgradeCostOf } from '../warehouse/capacity'
+import { capacityOf, computeUsed, upgradeCostOf } from '../warehouse/capacity'
 import type { MutableUser } from './state'
 
 /** 업그레이드 출발 등급 상한 — 9→10 이 마지막 (`factories/cost.ts` 규약). */
@@ -80,11 +80,19 @@ export function harvestUser(user: MutableUser, tick: number): HarvestOutcome {
   let choked = false
   let unitsProduced = 0n
 
+  // 창고 사용량을 루프 진입 시 한 번만 합산하고 이후에는 증감으로 추적한다.
+  // 공장마다 `computeFree` 를 부르면 재고 전체를 매번 다시 더하게 되는데,
+  // 하드코어 프로파일은 10분마다 접속하므로 이 재계산이 시뮬레이션 비용을
+  // 지배한다. 결과는 재계산과 동일하다 — `computeFree` 도 `capacity - used` 를
+  // 0 으로 클램프할 뿐이다.
+  const capacity = capacityOf(user.warehouseGrade)
+  let used = computeUsed(user.stacks)
+
   for (const factory of user.factories) {
     const elapsed = Math.min(tick - factory.lastHarvestTick, MAX_TICKS_PER_HARVEST)
     if (elapsed <= 0) continue
 
-    const warehouseFree = computeFree(user.warehouseGrade, user.stacks)
+    const warehouseFree = used >= capacity ? 0n : capacity - used
     const result = computeFactoryYield({
       factory: toFactoryState(factory.type, factory.grade),
       availableMaterials: user.stacks,
@@ -103,9 +111,11 @@ export function harvestUser(user: MutableUser, tick: number): HarvestOutcome {
 
     for (const [material, amount] of Object.entries(result.consumed)) {
       subtractFromBag(user.stacks, material as MaterialType, amount)
+      used -= amount
     }
     for (const [material, amount] of Object.entries(result.produced)) {
       addToBag(user.stacks, material as MaterialType, amount)
+      used += amount
       unitsProduced += amount
     }
 

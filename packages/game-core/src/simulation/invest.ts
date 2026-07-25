@@ -55,25 +55,46 @@ export interface InvestOutcome {
   readonly warehouseUpgrades: number
 }
 
-/** 유저가 현재 점유 중인 토지 칸 수. */
-function usedCells(user: MutableUser): number {
-  let cells = 0
-  for (const factory of user.factories) {
-    const { size } = getFactoryEntry(factory.type)
-    cells += size.width * size.height
-  }
-  return cells
+/**
+ * 신축 판단에 필요한 파생 상태 — 재투자 루프 동안 캐시한다.
+ *
+ * 이 세 값은 전부 `user.factories` 를 순회해야 나온다. 재투자 루프는 한 세션에
+ * 최대 {@link MAX_ACTIONS_PER_SESSION} 회 도는데, 매 반복마다 다시 만들면
+ * 공장 수 × 카탈로그 크기만큼의 순회가 반복된다. 하드코어 프로파일은 10분마다
+ * 재투자를 시도하므로 이 재계산이 시뮬레이션 시간을 지배한다.
+ */
+interface BuildContext {
+  /** 보유 공장이 산출하는 자재 집합 — T2/T3 원료 자급 판정용. */
+  readonly producible: Set<MaterialType>
+  /** 공장 종류별 보유 수 — 같은 종류 반복 건설을 감쇠하는 데 쓴다. */
+  readonly owned: Map<FactoryType, number>
+  /** 현재 점유 중인 토지 칸 수. */
+  usedCells: number
 }
 
-/** 유저가 생산 가능한(= 보유 공장이 산출하는) 자재 집합. */
-function producibleMaterials(user: MutableUser): Set<MaterialType> {
-  const out = new Set<MaterialType>()
+/** 유저의 현재 공장 목록에서 {@link BuildContext} 를 만든다. */
+function createBuildContext(user: MutableUser): BuildContext {
+  const producible = new Set<MaterialType>()
+  const owned = new Map<FactoryType, number>()
+  let cells = 0
+
   for (const factory of user.factories) {
     const entry = getFactoryEntry(factory.type)
-    out.add(entry.output)
-    for (const secondary of entry.secondaryOutputs) out.add(secondary.material)
+    producible.add(entry.output)
+    for (const secondary of entry.secondaryOutputs) producible.add(secondary.material)
+    owned.set(factory.type, (owned.get(factory.type) ?? 0) + 1)
+    cells += entry.size.width * entry.size.height
   }
-  return out
+  return { producible, owned, usedCells: cells }
+}
+
+/** 신축 반영 — 컨텍스트를 증분 갱신한다(전체 재계산 회피). */
+function applyBuildToContext(ctx: BuildContext, type: FactoryType): void {
+  const entry = getFactoryEntry(type)
+  ctx.producible.add(entry.output)
+  for (const secondary of entry.secondaryOutputs) ctx.producible.add(secondary.material)
+  ctx.owned.set(type, (ctx.owned.get(type) ?? 0) + 1)
+  ctx.usedCells += entry.size.width * entry.size.height
 }
 
 /**
@@ -123,13 +144,7 @@ function spendMaterial(user: MutableUser, material: MaterialType, amount: bigint
  *    T1 이 없으면 지을 수 없기 때문이다. 이 감쇠가 없으면 전 유저가 단일
  *    최고수익 T1 만 채워 티어 진행이 영구히 막힌다.
  */
-function pickBuildTarget(user: MutableUser, budget: bigint): FactoryType | null {
-  const producible = producibleMaterials(user)
-  const owned = new Map<FactoryType, number>()
-  for (const factory of user.factories) {
-    owned.set(factory.type, (owned.get(factory.type) ?? 0) + 1)
-  }
-
+function pickBuildTarget(user: MutableUser, budget: bigint, ctx: BuildContext): FactoryType | null {
   let best: FactoryType | null = null
   let bestScore = 0n
 
@@ -141,13 +156,13 @@ function pickBuildTarget(user: MutableUser, budget: bigint): FactoryType | null 
       const { material, amount } = entry.buildMaterialCost
       if (!hasMaterial(user, material, amount)) continue
     }
-    if (entry.recipe.some((req) => !producible.has(req.material))) continue
+    if (entry.recipe.some((req) => !ctx.producible.has(req.material))) continue
 
     const profit = expectedTickProfit(type)
     if (profit <= 0n) continue
 
     const cells = BigInt(entry.size.width * entry.size.height)
-    const score = profit / cells / BigInt((owned.get(type) ?? 0) + 1)
+    const score = profit / cells / BigInt((ctx.owned.get(type) ?? 0) + 1)
     if (score > bestScore) {
       bestScore = score
       best = type
@@ -195,24 +210,24 @@ function pickUpgradeTarget(
 function pickReplacement(
   user: MutableUser,
   budget: bigint,
+  ctx: BuildContext,
 ): { victim: MutableUser['factories'][number]; target: FactoryType } | null {
   const candidates = user.factories.filter((f) => f.grade === 1)
   if (candidates.length === 0) return null
 
   // 철거 환급을 예산에 미리 더해 보고 후보를 찾는다.
   for (const victim of candidates) {
-    const victimCells =
-      BigInt(getFactoryEntry(victim.type).size.width) *
-      BigInt(getFactoryEntry(victim.type).size.height)
+    const victimEntry = getFactoryEntry(victim.type)
+    const victimCells = BigInt(victimEntry.size.width * victimEntry.size.height)
     const victimScore = expectedTickProfit(victim.type) / victimCells
     const refund = destroyRefund(victim.type)
-    const target = pickBuildTarget(user, budget + refund)
+    const target = pickBuildTarget(user, budget + refund, ctx)
     if (!target || target === victim.type) continue
 
     const entry = getFactoryEntry(target)
     const targetCells = BigInt(entry.size.width * entry.size.height)
     // 교체로 확보되는 칸(철거분 + 기존 여유)이 후보를 수용해야 한다.
-    const freeAfter = BigInt(USABLE_CELLS - usedCells(user)) + victimCells
+    const freeAfter = BigInt(USABLE_CELLS - ctx.usedCells) + victimCells
     if (targetCells > freeAfter) continue
 
     const targetScore = expectedTickProfit(target) / targetCells
@@ -263,6 +278,8 @@ export function reinvest(user: MutableUser, tick: number): InvestOutcome {
   let upgraded = 0
   let warehouseUpgrades = 0
 
+  const ctx = createBuildContext(user)
+
   for (let action = 0; action < MAX_ACTIONS_PER_SESSION; action += 1) {
     if (budget <= 0n) break
 
@@ -278,8 +295,8 @@ export function reinvest(user: MutableUser, tick: number): InvestOutcome {
     }
 
     // 2. 빈 칸이 있으면 신축.
-    const freeCells = USABLE_CELLS - usedCells(user)
-    const buildTarget = freeCells > 0 ? pickBuildTarget(user, budget) : null
+    const freeCells = USABLE_CELLS - ctx.usedCells
+    const buildTarget = freeCells > 0 ? pickBuildTarget(user, budget, ctx) : null
     if (buildTarget) {
       const entry = getFactoryEntry(buildTarget)
       if (entry.size.width * entry.size.height <= freeCells) {
@@ -295,6 +312,7 @@ export function reinvest(user: MutableUser, tick: number): InvestOutcome {
           grade: 1,
           lastHarvestTick: tick,
         })
+        applyBuildToContext(ctx, buildTarget)
         budget -= cost
         spentOnFactories += cost
         built += 1
@@ -305,7 +323,7 @@ export function reinvest(user: MutableUser, tick: number): InvestOutcome {
 
     // 3. 칸이 꽉 찼고 더 나은 공장이 열렸으면 등급1 공장을 갈아 끼운다.
     if (freeCells <= 0) {
-      const swap = pickReplacement(user, budget)
+      const swap = pickReplacement(user, budget, ctx)
       if (swap) {
         const refund = destroyRefund(swap.victim.type)
         user.money += refund
@@ -331,6 +349,14 @@ export function reinvest(user: MutableUser, tick: number): InvestOutcome {
         spentOnFactories += cost - refund
         built += 1
         xp += xpForEvent({ kind: 'BUILD', cost })
+        // 철거로 자급 가능 자재가 줄어들 수 있어 컨텍스트를 통째로 다시 만든다.
+        // 교체는 드물게 일어나므로 재계산 비용이 문제되지 않는다.
+        const fresh = createBuildContext(user)
+        ctx.producible.clear()
+        for (const material of fresh.producible) ctx.producible.add(material)
+        ctx.owned.clear()
+        for (const [type, count] of fresh.owned) ctx.owned.set(type, count)
+        ctx.usedCells = fresh.usedCells
         continue
       }
     }

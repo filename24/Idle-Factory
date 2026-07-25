@@ -92,6 +92,12 @@ so the charts reflect the requested size. It also becomes the sweep baseline.
 Without this wiring the two flags would only affect the sweep — and would be
 ignored entirely when `--sweep` is absent.
 
+Both flags are clamped (2,000 users / 180 days) and the CI job has a 30-minute
+timeout. Runtime is linear in `users × days`: roughly 53 s for 1,000 users over
+60 days, 5 min at the clamp. Keep it that way — the buyer matching in `sell.ts`
+samples a fixed number of candidates precisely so this stays linear; reverting
+it to a full `users.filter(...)` scan makes the whole simulation O(N²).
+
 The script lives in `scripts/`, **not** `src/`, because it needs `node:fs` and
 this package must stay dependency-free. `tsup` only bundles `src/`, so the
 script never ships.

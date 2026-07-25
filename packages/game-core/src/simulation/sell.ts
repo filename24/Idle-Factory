@@ -46,11 +46,29 @@ const EMPTY_OUTCOME: SellOutcome = {
 }
 
 /**
+ * 구매자 탐색 시도 횟수.
+ *
+ * 전체 유저를 훑는 대신 무작위로 이만큼만 찔러 본다. 자격을 갖춘 유저가 전체의
+ * 10% 만 되어도 8회 안에 한 명이 걸릴 확률은 약 57%, 30% 면 94% 다.
+ */
+const MAX_BUYER_PROBES = 8
+
+/**
  * 유저 상점 거래의 구매자를 고른다.
  *
  * 조건: 판매자 본인 제외 + 대금 지불 능력 + 자재를 받을 창고 여유.
- * 후보가 없으면 `null` — 호출자는 그 물량을 재고로 되돌린다(등록 만료 회수의
+ * 못 찾으면 `null` — 호출자는 그 물량을 재고로 되돌린다(등록 만료 회수의
  * 근사, `MarketService` 의 만료 경로에 대응).
+ *
+ * **전수 탐색을 하지 않는다.** 이전 구현은 거래마다 `users.filter(...)` 로 전체
+ * 유저를 훑고 후보마다 `computeFree` 로 재고를 다시 합산했다. 거래 건수 자체가
+ * 유저 수에 비례하므로 총비용이 O(N²) 이 되어, 유저가 2배 늘 때 실행 시간이
+ * 4배로 뛰었다(200→400명 실측 2.7초→11.3초).
+ *
+ * 무작위 표본 추출은 성능만을 위한 근사가 아니다 — 실제 상점도 "자격 있는 전체
+ * 구매자 중 균등 추첨"이 아니라 "먼저 매물을 본 사람이 산다". 표본이 모두
+ * 실패하면 미체결로 남는데, 이는 구매력이 마른 시장에서 매물이 실제로 만료
+ * 회수되는 것과 같은 결과다.
  *
  * @param seller 판매자
  * @param users 전체 유저
@@ -66,12 +84,16 @@ function pickBuyer(
   quantity: bigint,
   rng: Rng,
 ): MutableUser | null {
-  const candidates = users.filter(
-    (u) =>
-      u.id !== seller.id && u.money >= price && computeFree(u.warehouseGrade, u.stacks) >= quantity,
-  )
-  if (candidates.length === 0) return null
-  return candidates[Math.floor(rng.next() * candidates.length)]!
+  if (users.length <= 1) return null
+
+  for (let probe = 0; probe < MAX_BUYER_PROBES; probe += 1) {
+    const candidate = users[Math.floor(rng.next() * users.length)]!
+    if (candidate.id === seller.id) continue
+    if (candidate.money < price) continue
+    if (computeFree(candidate.warehouseGrade, candidate.stacks) < quantity) continue
+    return candidate
+  }
+  return null
 }
 
 /**
