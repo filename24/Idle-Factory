@@ -44,23 +44,40 @@ interface CliOptions {
   readonly days: number
 }
 
+/**
+ * 유저 수 상한.
+ *
+ * 실행 시간은 유저 수에 선형으로 늘어난다(구매자 매칭을 표본 추출로 바꾼 뒤).
+ * 1,000명 × 60일이 약 53초이므로 이 상한에서도 CI 잡이 몇 분 안에 끝난다.
+ * 상한이 없으면 오타 하나로 잡이 몇 시간씩 돌 수 있다.
+ */
+const MAX_USERS = 2_000
+
+/** 기간 상한 (일). tick 수가 `days × 144` 로 선형 증가한다. */
+const MAX_DAYS = 180
+
 /** CLI 인자를 파싱한다. 알 수 없는 플래그는 무시한다. */
 function parseArgs(argv: readonly string[]): CliOptions {
   const valueOf = (flag: string): string | undefined => {
     const index = argv.indexOf(flag)
     return index >= 0 ? argv[index + 1] : undefined
   }
-  const numberOf = (flag: string, fallback: number): number => {
+  const numberOf = (flag: string, fallback: number, max: number): number => {
     const raw = valueOf(flag)
     const parsed = raw === undefined ? Number.NaN : Number.parseInt(raw, 10)
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback
+    if (!Number.isFinite(parsed) || parsed <= 0) return fallback
+    if (parsed > max) {
+      process.stdout.write(`  ⚠ ${flag} ${parsed} → ${max} 로 제한합니다 (상한).\n`)
+      return max
+    }
+    return parsed
   }
 
   return {
     outDir: valueOf('--out') ?? '.sim-output',
     sweep: argv.includes('--sweep'),
-    users: numberOf('--users', 10),
-    days: numberOf('--days', 7),
+    users: numberOf('--users', 10, MAX_USERS),
+    days: numberOf('--days', 7, MAX_DAYS),
   }
 }
 

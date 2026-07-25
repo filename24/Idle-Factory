@@ -52,6 +52,10 @@ jobs:
   simulate:
     name: Run balance simulation
     runs-on: ubuntu-latest
+    # 폭주 방지. 상한 입력(유저 2,000명 × 180일)도 이 안에 들어온다 —
+    # 스크립트가 입력을 클램프하므로 정상 실행이 여기에 걸릴 일은 없고,
+    # 무한 루프성 회귀만 여기서 끊긴다.
+    timeout-minutes: 30
     permissions:
       contents: read
     steps:
