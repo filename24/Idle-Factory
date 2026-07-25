@@ -31,6 +31,7 @@ import {
   standardScenarios,
   summarize,
   sweepCsv,
+  type ReportMeta,
   type SimResult,
   type SweepPoint,
 } from '../src'
@@ -94,7 +95,7 @@ function writeArtifacts(
   outDir: string,
   results: readonly SimResult[],
   sweep: readonly SweepPoint[],
-  meta: { branch: string; commit: string; generatedAt: string; artifactName: string },
+  meta: ReportMeta & { artifactName: string },
 ): string[] {
   mkdirSync(outDir, { recursive: true })
   const written: string[] = []
@@ -141,20 +142,29 @@ function main(): void {
   process.stdout.write(`▶ 경제 밸런스 시뮬레이션 — ${name}\n`)
 
   const started = Date.now()
-  const results = standardScenarios().map((scenario) => runSimulation(scenario))
 
-  const baseline = buildScenario({ userCount: options.users, days: options.days })
-  const sweep = options.sweep ? runSweep(baseline) : []
+  // `--users`/`--days` 로 만든 시나리오를 실제로 돌리고 리포트의 **대표
+  // 시나리오**로 지정한다. 이 시나리오를 결과 목록에 넣지 않으면 입력이
+  // 스윕 기준선에만 쓰여, `--sweep` 없이 실행할 때 두 값이 통째로 무시된다.
+  const featured = buildScenario({
+    userCount: options.users,
+    days: options.days,
+    suffix: 'cli',
+  })
+  const results = [featured, ...standardScenarios()].map((scenario) => runSimulation(scenario))
+  const sweep = options.sweep ? runSweep(featured) : []
 
   const written = writeArtifacts(options.outDir, results, sweep, {
     branch,
     commit,
     generatedAt: new Date().toISOString(),
     artifactName: name,
+    featuredScenarioId: featured.id,
+    runParams: `유저 ${options.users}명 · ${options.days}일 · 스윕 ${options.sweep ? 'ON' : 'OFF'}`,
   })
 
   const elapsed = ((Date.now() - started) / 1000).toFixed(1)
-  process.stdout.write(`  시나리오 ${results.length}건`)
+  process.stdout.write(`  대표 시나리오 \`${featured.id}\` · 시나리오 ${results.length}건`)
   process.stdout.write(options.sweep ? ` · 스윕 ${sweep.length}건` : '')
   process.stdout.write(` · ${elapsed}s\n`)
   for (const path of written) process.stdout.write(`  · ${path}\n`)

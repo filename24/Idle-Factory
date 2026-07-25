@@ -82,9 +82,15 @@ Consumers must build this package at least once (Turbo `^build` handles it) befo
 
 ### Balance simulator
 
-`pnpm sim [--out <dir>] [--sweep] [--users <n>] [--days <n>]` runs the standard
-scenario matrix and writes `report.md` (markdown + mermaid charts), five CSV
-files, and `summary.json` into `.sim-output/` (git-ignored).
+`pnpm sim [--out <dir>] [--sweep] [--users <n>] [--days <n>]` writes `report.md`
+(markdown + mermaid charts), five CSV files, and `summary.json` into
+`.sim-output/` (git-ignored).
+
+`--users`/`--days` build a **featured scenario** that is run alongside the fixed
+`standardScenarios()` matrix and passed to the report as `featuredScenarioId`,
+so the charts reflect the requested size. It also becomes the sweep baseline.
+Without this wiring the two flags would only affect the sweep — and would be
+ignored entirely when `--sweep` is absent.
 
 The script lives in `scripts/`, **not** `src/`, because it needs `node:fs` and
 this package must stay dependency-free. `tsup` only bundles `src/`, so the

@@ -18,12 +18,12 @@ on:
   workflow_dispatch:
     inputs:
       users:
-        description: '스윕 기준선 유저 수'
+        description: '대표 시나리오 유저 수 (차트·스윕 기준선에 사용)'
         required: false
         default: '10'
         type: string
       days:
-        description: '스윕 기준선 기간(일)'
+        description: '대표 시나리오 기간(일)'
         required: false
         default: '7'
         type: string
