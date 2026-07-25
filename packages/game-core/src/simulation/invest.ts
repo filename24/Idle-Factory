@@ -1,0 +1,293 @@
+/**
+ * 시뮬레이션 재투자 단계 — 창고/공장 신축·업그레이드 지출.
+ *
+ * 여기서 나가는 돈은 전부 **소각(burn)** 이다. 건설·업그레이드 비용은 어떤
+ * 유저에게도 이전되지 않고 시스템으로 사라지므로, 글로벌 판매(발행)와 함께
+ * 통화량 곡선을 만드는 양대 축이다.
+ *
+ * 행동 모델(합리적 플레이어 근사):
+ *  1. 창고가 병목이면 창고부터 올린다 — 생산이 잘려 나가는 손실이 가장 크다.
+ *  2. 토지에 빈 칸이 있으면 신축한다 — 신축 1,000원에 300원/tick 대비
+ *     1→2 업그레이드는 3,000원에 +150원/tick 이라 초반 신축이 명백히 유리하다
+ *     (docs/design/03-factories.md §업그레이드 비용 = 신축비 × 3^N).
+ *  3. 빈 칸이 없으면 가장 싼 업그레이드를 집는다.
+ *
+ * 토지 확장(`land/expansion.ts`)은 v1 범위 밖이다 — 초기 3×3 고정
+ * (리포트 §모델 한계에 명시).
+ */
+
+import { FACTORY_CATALOG, getFactoryEntry } from '../factories/catalog'
+import { buildCost, upgradeMaterialCost, upgradeMoneyCost } from '../factories/cost'
+import { LAND_INITIAL_HEIGHT, LAND_INITIAL_WIDTH } from '../land/expansion'
+import { MARKET_BASE_PRICES } from '../market/basePrices'
+import type { FactoryType, MaterialType } from '../types'
+import { capacityOf, upgradeCostOf } from '../warehouse/capacity'
+import { applyXp, xpForEvent } from '../xp/level'
+import type { MutableUser } from './state'
+
+/** 창고가 점유하는 토지 칸 수. 근거: plans/idle-factory-master-plan.md §창고 "유저당 공용 1개(토지 1슬롯)". */
+const WAREHOUSE_CELLS = 1
+
+/** 초기 토지에서 공장이 쓸 수 있는 칸 수 — 3×3 에서 창고 1칸을 뺀 값. */
+export const USABLE_CELLS = LAND_INITIAL_WIDTH * LAND_INITIAL_HEIGHT - WAREHOUSE_CELLS
+
+/** 한 번의 재투자에서 시도할 최대 행동 수 — 무한 루프 방어. */
+const MAX_ACTIONS_PER_SESSION = 16
+
+/** 공장 최대 등급. */
+const MAX_GRADE = 10
+
+/** 재투자 단계 결과. */
+export interface InvestOutcome {
+  /** 소각된 화폐 총액 (= 공장 + 창고). */
+  readonly spent: bigint
+  /** 공장 신축·업그레이드에 쓴 금액. */
+  readonly spentOnFactories: bigint
+  /** 창고 업그레이드에 쓴 금액. */
+  readonly spentOnWarehouse: bigint
+  /** 지급된 XP 총량. */
+  readonly xp: bigint
+  /** 신축한 공장 수. */
+  readonly built: number
+  /** 업그레이드한 공장 수. */
+  readonly upgraded: number
+  /** 창고 업그레이드 횟수. */
+  readonly warehouseUpgrades: number
+}
+
+/** 유저가 현재 점유 중인 토지 칸 수. */
+function usedCells(user: MutableUser): number {
+  let cells = 0
+  for (const factory of user.factories) {
+    const { size } = getFactoryEntry(factory.type)
+    cells += size.width * size.height
+  }
+  return cells
+}
+
+/** 유저가 생산 가능한(= 보유 공장이 산출하는) 자재 집합. */
+function producibleMaterials(user: MutableUser): Set<MaterialType> {
+  const out = new Set<MaterialType>()
+  for (const factory of user.factories) {
+    const entry = getFactoryEntry(factory.type)
+    out.add(entry.output)
+    for (const secondary of entry.secondaryOutputs) out.add(secondary.material)
+  }
+  return out
+}
+
+/**
+ * 공장 종류의 tick 당 기대 순수익(기준가 환산)을 계산한다.
+ *
+ * `산출 × 기준가 − 원료 × 기준가`. 현재가가 아니라 기준가를 쓰는 이유는
+ * 건설 판단이 30분 단위 시세 진동에 흔들리지 않게 하기 위함이다 — 실제
+ * 플레이어도 순간 시세가 아니라 대략적 기대값으로 짓는다.
+ */
+function expectedTickProfit(type: FactoryType): bigint {
+  const entry = getFactoryEntry(type)
+  let profit = entry.baseProduction * MARKET_BASE_PRICES[entry.output]
+  for (const secondary of entry.secondaryOutputs) {
+    profit += secondary.amount * MARKET_BASE_PRICES[secondary.material]
+  }
+  for (const req of entry.recipe) {
+    profit -= req.amount * MARKET_BASE_PRICES[req.material]
+  }
+  return profit
+}
+
+/** 자재 보유량이 요구치 이상인지. */
+function hasMaterial(user: MutableUser, material: MaterialType, amount: bigint): boolean {
+  return (user.stacks[material] ?? 0n) >= amount
+}
+
+/** 자재를 차감한다(보유 확인은 호출자 책임). */
+function spendMaterial(user: MutableUser, material: MaterialType, amount: bigint): void {
+  const next = (user.stacks[material] ?? 0n) - amount
+  if (next > 0n) user.stacks[material] = next
+  else delete user.stacks[material]
+}
+
+/**
+ * 지금 지을 수 있는 공장 중 기대수익이 가장 높은 종류를 고른다.
+ *
+ * 조건: 레벨 해금(`unlockLevel`) + 예산 + 건설 원료 보유 + 레시피 원료를
+ * 자급할 수 있을 것. 마지막 조건이 없으면 원료 공급원 없는 T2/T3 를 지어
+ * 즉시 멈추는 비합리적 플레이가 된다.
+ */
+function pickBuildTarget(user: MutableUser, budget: bigint): FactoryType | null {
+  const producible = producibleMaterials(user)
+  let best: FactoryType | null = null
+  let bestProfit = 0n
+
+  for (const type of Object.keys(FACTORY_CATALOG) as FactoryType[]) {
+    const entry = FACTORY_CATALOG[type]
+    if (user.level < entry.unlockLevel) continue
+    if (entry.buildCost > budget) continue
+    if (entry.buildMaterialCost) {
+      const { material, amount } = entry.buildMaterialCost
+      if (!hasMaterial(user, material, amount)) continue
+    }
+    if (entry.recipe.some((req) => !producible.has(req.material))) continue
+
+    const profit = expectedTickProfit(type)
+    if (profit > bestProfit) {
+      bestProfit = profit
+      best = type
+    }
+  }
+  return best
+}
+
+/** 예산·원료로 감당 가능한 업그레이드 중 가장 싼 공장을 고른다. */
+function pickUpgradeTarget(
+  user: MutableUser,
+  budget: bigint,
+): MutableUser['factories'][number] | null {
+  let best: MutableUser['factories'][number] | null = null
+  let bestCost = 0n
+
+  for (const factory of user.factories) {
+    if (factory.grade >= MAX_GRADE) continue
+    const money = upgradeMoneyCost(factory.type, factory.grade)
+    if (money > budget) continue
+    const material = upgradeMaterialCost(factory.type, factory.grade)
+    if (!hasMaterial(user, material.material, material.amount)) continue
+    if (best === null || money < bestCost) {
+      best = factory
+      bestCost = money
+    }
+  }
+  return best
+}
+
+/** 창고 업그레이드를 시도한다. 성공 시 지출액, 실패 시 0n. */
+function tryUpgradeWarehouse(user: MutableUser, budget: bigint): bigint {
+  if (user.warehouseGrade >= MAX_GRADE) return 0n
+  const next = user.warehouseGrade + 1
+  const cost = upgradeCostOf(next)
+  if (cost.money > budget) return 0n
+  if (!hasMaterial(user, cost.material, cost.amount)) return 0n
+
+  user.money -= cost.money
+  spendMaterial(user, cost.material, cost.amount)
+  user.warehouseGrade = next
+  user.warehouseChoked = false
+  return cost.money
+}
+
+/**
+ * 유저의 재투자 판단을 수행한다.
+ *
+ * 예산은 `money × reinvestRatio`(floor). 남은 현금은 그대로 쌓여 총자산
+ * 누진세 구간을 밀어 올린다 — 세율이 자산 기준이라
+ * (docs/design/07-global-system.md §세율) 현금 보유 자체가 비용이 되는 구조가
+ * 시뮬레이션에 반영된다.
+ *
+ * @param user 대상 유저 (상태가 갱신된다)
+ * @param tick 현재 tick — 신축 공장의 `lastHarvestTick` 기준점
+ * @returns 재투자 결과 (소각액·XP·행동 수)
+ */
+export function reinvest(user: MutableUser, tick: number): InvestOutcome {
+  // 공장이 한 채도 없으면 전액을 투입한다. 초기 자금 1,000원은 애초에 첫 T1
+  // 공장(건설비 1,000원) 건설 용도로 지급되는 씨드머니라, 비율을 적용하면
+  // 영원히 첫 삽을 뜨지 못한다 (docs/design/00-onboarding.md §초기 지급
+  // "초기 자금 없이는 퀘스트를 시작조차 못하는 모순").
+  const ratioPercent =
+    user.factories.length === 0 ? 100n : BigInt(Math.round(user.profile.reinvestRatio * 100))
+  let budget = (user.money * ratioPercent) / 100n
+  let spentOnFactories = 0n
+  let spentOnWarehouse = 0n
+  let xp = 0n
+  let built = 0
+  let upgraded = 0
+  let warehouseUpgrades = 0
+
+  for (let action = 0; action < MAX_ACTIONS_PER_SESSION; action += 1) {
+    if (budget <= 0n) break
+
+    // 1. 창고 병목 해소 우선.
+    if (user.warehouseChoked) {
+      const cost = tryUpgradeWarehouse(user, budget)
+      if (cost > 0n) {
+        budget -= cost
+        spentOnWarehouse += cost
+        warehouseUpgrades += 1
+        continue
+      }
+    }
+
+    // 2. 빈 칸이 있으면 신축.
+    const freeCells = USABLE_CELLS - usedCells(user)
+    const buildTarget = freeCells > 0 ? pickBuildTarget(user, budget) : null
+    if (buildTarget) {
+      const entry = getFactoryEntry(buildTarget)
+      if (entry.size.width * entry.size.height <= freeCells) {
+        const cost = buildCost(buildTarget)
+        user.money -= cost
+        if (entry.buildMaterialCost) {
+          spendMaterial(user, entry.buildMaterialCost.material, entry.buildMaterialCost.amount)
+        }
+        user.factorySeq += 1
+        user.factories.push({
+          id: `${user.id}-f${user.factorySeq}`,
+          type: buildTarget,
+          grade: 1,
+          lastHarvestTick: tick,
+        })
+        budget -= cost
+        spentOnFactories += cost
+        built += 1
+        xp += xpForEvent({ kind: 'BUILD', cost })
+        continue
+      }
+    }
+
+    // 3. 그 외에는 가장 싼 업그레이드.
+    const upgradeTarget = pickUpgradeTarget(user, budget)
+    if (upgradeTarget) {
+      const money = upgradeMoneyCost(upgradeTarget.type, upgradeTarget.grade)
+      const material = upgradeMaterialCost(upgradeTarget.type, upgradeTarget.grade)
+      user.money -= money
+      spendMaterial(user, material.material, material.amount)
+      upgradeTarget.grade += 1
+      budget -= money
+      spentOnFactories += money
+      upgraded += 1
+      xp += xpForEvent({ kind: 'UPGRADE', cost: money })
+      continue
+    }
+
+    break
+  }
+
+  if (xp > 0n) {
+    const result = applyXp({ level: user.level, xpInLevel: user.xpInLevel }, xp)
+    user.level = result.progress.level
+    user.xpInLevel = result.progress.xpInLevel
+  }
+
+  return {
+    spent: spentOnFactories + spentOnWarehouse,
+    spentOnFactories,
+    spentOnWarehouse,
+    xp,
+    built,
+    upgraded,
+    warehouseUpgrades,
+  }
+}
+
+/**
+ * 창고가 가득 차기까지 남은 여유를 tick 으로 환산한다 — 병목 진단용.
+ *
+ * 목표치 "창고 1등급 ≈ 16시간"(docs/design/05-warehouse.md §설계 의도) 검증에
+ * 쓴다. 생산량이 0 이면 병목이 성립하지 않으므로 `null`.
+ *
+ * @param user 대상 유저
+ * @param unitsPerTick tick 당 총 생산 단위 수
+ * @returns 가득 차기까지의 tick 수 (없으면 null)
+ */
+export function ticksUntilWarehouseFull(user: MutableUser, unitsPerTick: bigint): number | null {
+  if (unitsPerTick <= 0n) return null
+  return Number(capacityOf(user.warehouseGrade) / unitsPerTick)
+}
