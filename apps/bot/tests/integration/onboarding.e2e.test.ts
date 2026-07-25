@@ -154,11 +154,22 @@ describe('신규 유저 온보딩 관통', () => {
     const harvest = await HarvestService.harvestAll(testPrisma, USER)
     expect(harvest.factories.length).toBeGreaterThan(0)
 
-    const stacks = await testPrisma.warehouseStack.findMany({
-      where: { warehouse: { userId: USER }, material: 'GRAIN' }
+    // 수확량은 실측값을 쓴다. `computeElapsedTicks` 는 백데이트 이후 경과 시간을
+    // 함께 세므로 스위트가 느리게 돌면 4 tick 보다 커질 수 있다. 하드코딩하면
+    // 부하에 따라 깨지는 테스트가 되므로 "최소 4 tick 분"만 단정한다.
+    const warehouse = await testPrisma.warehouse.findUniqueOrThrow({
+      where: { userId: USER }
     })
-    // 농장 등급1 은 30개/tick → 4 tick = 120개.
-    expect(stacks[0]!.count).toBe(120n)
+    const grain = await testPrisma.warehouseStack.findUniqueOrThrow({
+      where: {
+        warehouseId_material: {
+          warehouseId: warehouse.id,
+          material: 'GRAIN'
+        }
+      }
+    })
+    // 농장 등급1 = 30개/tick → 4 tick 이면 120개 이상.
+    expect(grain.count).toBeGreaterThanOrEqual(120n)
 
     await claim(USER, 'tutorial.2')
     expect(await statusOf(USER, 'tutorial.3')).toBe('IN_PROGRESS')
@@ -167,21 +178,21 @@ describe('신규 유저 온보딩 관통', () => {
     const sale = await MarketSellService.sellToGlobal(testPrisma, {
       userId: USER,
       material: 'GRAIN',
-      quantity: 120n,
+      quantity: grain.count,
       guildId: GUILD
     })
-    // 120개 × 10원 = 1,200원. 결정 2 의 "4 tick 이면 1,000원 부족분을 메운다"가
-    // 이론이 아니라 실제로 성립하는지가 이 단정이다.
     expect(sale.unitPrice).toBe(10n)
-    expect(sale.totalPaid).toBe(1_200n)
+    expect(sale.totalPaid).toBe(grain.count * 10n)
+    // 결정 2 의 핵심: 4 tick(40분) 수확분 판매만으로 1,000원 부족분을 넘는다.
+    expect(sale.totalPaid).toBeGreaterThanOrEqual(1_000n)
     expect(await statusOf(USER, 'tutorial.3')).toBe('COMPLETED')
 
     await claim(USER, 'tutorial.3')
 
     const cashBeforeUpgrade = await moneyOf(USER)
-    // 씨드 1,000 − 건설 1,000 + 판매 1,200 + 보상 2,000 = 3,200원.
+    // 씨드 1,000 − 건설 1,000 + 판매 대금 + 보상 2,000.
     expect(cashBeforeUpgrade).toBe(
-      SEED_MONEY - buildCost('FARM') + 1_200n + Q1_TO_Q3_REWARDS
+      SEED_MONEY - buildCost('FARM') + sale.totalPaid + Q1_TO_Q3_REWARDS
     )
     // 결정 2 의 핵심 주장: Q4 비용(3,000원)을 낼 수 있다.
     expect(cashBeforeUpgrade).toBeGreaterThanOrEqual(
