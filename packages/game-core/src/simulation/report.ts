@@ -26,6 +26,17 @@ export interface ReportMeta {
   readonly generatedAt?: string
   /** 아티팩트 파일명 규약 `[브랜치]-[커밋]`. */
   readonly artifactName?: string
+  /**
+   * 차트를 그릴 대표 시나리오 id.
+   *
+   * 지정하지 않으면 유저 수가 가장 많은 시나리오를 고른다. CLI·CI 입력으로
+   * 만든 시나리오를 여기에 넘겨야 **입력값이 리포트에 실제로 반영**된다 —
+   * 그렇지 않으면 고정 매트릭스 중 하나가 대표로 뽑혀 입력이 무시된 것처럼
+   * 보인다.
+   */
+  readonly featuredScenarioId?: string
+  /** 실행 파라미터 요약 — 어떤 입력으로 돌렸는지 리포트에 남긴다. */
+  readonly runParams?: string
 }
 
 /** 천 단위 구분 기호를 넣는다 (로캘 비의존). */
@@ -129,11 +140,17 @@ function tierTable(results: readonly SimResult[]): string {
 /**
  * 대표 시나리오를 고른다 — 차트는 하나의 시나리오만 그린다.
  *
- * 유저 수가 가장 많은 것을 고르되, 동률이면 기간이 긴 쪽을 쓴다. 다인·장기
- * 시나리오가 유저 상점 거래와 장기 인플레 추세를 모두 담기 때문이다.
+ * `featuredId` 가 주어지면 그 시나리오를 쓴다(CLI·CI 입력 반영 경로).
+ * 없거나 못 찾으면 유저 수가 가장 많은 것으로 대체하되, 동률이면 기간이 긴
+ * 쪽을 쓴다 — 다인·장기 시나리오가 유저 상점 거래와 장기 인플레 추세를 모두
+ * 담기 때문이다.
  */
-function pickFeatured(results: readonly SimResult[]): SimResult | null {
+function pickFeatured(results: readonly SimResult[], featuredId?: string): SimResult | null {
   if (results.length === 0) return null
+  if (featuredId) {
+    const match = results.find((result) => result.scenario.id === featuredId)
+    if (match) return match
+  }
   return [...results].sort((a, b) => {
     const users = b.scenario.userCount - a.scenario.userCount
     return users !== 0 ? users : b.scenario.days - a.scenario.days
@@ -154,7 +171,7 @@ export function renderReport(
   sweep: readonly SweepPoint[] = [],
 ): string {
   const staticChecks = checkStaticTargets()
-  const featured = pickFeatured(results)
+  const featured = pickFeatured(results, meta.featuredScenarioId)
   const simChecks = featured ? checkSimulated(featured) : []
   const allChecks = [...staticChecks, ...simChecks]
   const passed = allChecks.filter((check) => check.pass).length
@@ -173,6 +190,7 @@ export function renderReport(
   if (meta.commit) metaRows.push(`- **커밋**: \`${meta.commit}\``)
   if (meta.generatedAt) metaRows.push(`- **생성 시각**: ${meta.generatedAt}`)
   if (meta.artifactName) metaRows.push(`- **아티팩트**: \`${meta.artifactName}\``)
+  if (meta.runParams) metaRows.push(`- **실행 파라미터**: ${meta.runParams}`)
   if (metaRows.length > 0) {
     lines.push(...metaRows, '')
   }

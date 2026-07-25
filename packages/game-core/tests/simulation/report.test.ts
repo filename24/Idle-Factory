@@ -154,6 +154,31 @@ describe('renderReport', () => {
     expect(new Set(headings).size).toBe(headings.length)
   })
 
+  it('featuredScenarioId 로 차트 대상 시나리오를 지정할 수 있다', () => {
+    // CLI/CI 입력(--users, --days)이 리포트에 반영되는 경로. 지정이 없으면
+    // 고정 매트릭스 중 유저 수가 가장 많은 것이 뽑혀 입력이 무시된 것처럼 보인다.
+    const target = results.find((result) => result.scenario.profiles.length === 1)!
+    const rendered = renderReport(results, { featuredScenarioId: target.scenario.id })
+    expect(rendered).toContain(`대표 시나리오: \`${target.scenario.id}\``)
+  })
+
+  it('featuredScenarioId 가 없으면 유저 수가 가장 많은 시나리오를 고른다', () => {
+    const rendered = renderReport(results)
+    const biggest = [...results].sort((a, b) => b.scenario.userCount - a.scenario.userCount)[0]!
+    expect(rendered).toContain(`대표 시나리오: \`${biggest.scenario.id}\``)
+  })
+
+  it('존재하지 않는 featuredScenarioId 는 기본 선택으로 대체된다', () => {
+    const rendered = renderReport(results, { featuredScenarioId: 'nope' })
+    expect(rendered).toContain('대표 시나리오:')
+    expect(rendered).not.toContain('`nope`')
+  })
+
+  it('runParams 를 헤더에 남긴다', () => {
+    const rendered = renderReport(results, { runParams: '유저 42명 · 3일 · 스윕 ON' })
+    expect(rendered).toContain('**실행 파라미터**: 유저 42명 · 3일 · 스윕 ON')
+  })
+
   it('스윕 결과를 주면 민감도 절이 붙는다', () => {
     const sweep = runSweep(buildScenario({ userCount: 2, days: 1 }), [
       { key: 'taxSurcharge', label: '서버 가산세', values: [0, 0.2] },
