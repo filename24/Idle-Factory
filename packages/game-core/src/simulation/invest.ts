@@ -17,7 +17,7 @@
  */
 
 import { FACTORY_CATALOG, getFactoryEntry } from '../factories/catalog'
-import { buildCost, upgradeMaterialCost, upgradeMoneyCost } from '../factories/cost'
+import { buildCost, destroyRefund, upgradeMaterialCost, upgradeMoneyCost } from '../factories/cost'
 import { LAND_INITIAL_HEIGHT, LAND_INITIAL_WIDTH } from '../land/expansion'
 import { MARKET_BASE_PRICES } from '../market/basePrices'
 import type { FactoryType, MaterialType } from '../types'
@@ -108,16 +108,30 @@ function spendMaterial(user: MutableUser, material: MaterialType, amount: bigint
 }
 
 /**
- * 지금 지을 수 있는 공장 중 기대수익이 가장 높은 종류를 고른다.
+ * 지금 지을 수 있는 공장 중 점수가 가장 높은 종류를 고른다.
  *
  * 조건: 레벨 해금(`unlockLevel`) + 예산 + 건설 원료 보유 + 레시피 원료를
  * 자급할 수 있을 것. 마지막 조건이 없으면 원료 공급원 없는 T2/T3 를 지어
  * 즉시 멈추는 비합리적 플레이가 된다.
+ *
+ * 점수 = `기대수익 ÷ 점유 칸수 ÷ (이미 보유한 같은 종류 수 + 1)`.
+ *  - **칸으로 나누는 이유**: T3 는 2×2(4칸)를 먹으므로 공장 단위 수익만 보면
+ *    토지 기회비용이 감춰진다 (docs/design/11-land.md §배치).
+ *  - **보유 수로 나누는 이유**: 한 종류만 반복해서 짓는 것은 비합리적이다.
+ *    인접 시너지는 서로 다른 공장 쌍에서만 발생하고
+ *    (docs/design/11-land.md §인접 시너지), T2/T3 를 해금해도 원료를 자급할
+ *    T1 이 없으면 지을 수 없기 때문이다. 이 감쇠가 없으면 전 유저가 단일
+ *    최고수익 T1 만 채워 티어 진행이 영구히 막힌다.
  */
 function pickBuildTarget(user: MutableUser, budget: bigint): FactoryType | null {
   const producible = producibleMaterials(user)
+  const owned = new Map<FactoryType, number>()
+  for (const factory of user.factories) {
+    owned.set(factory.type, (owned.get(factory.type) ?? 0) + 1)
+  }
+
   let best: FactoryType | null = null
-  let bestProfit = 0n
+  let bestScore = 0n
 
   for (const type of Object.keys(FACTORY_CATALOG) as FactoryType[]) {
     const entry = FACTORY_CATALOG[type]
@@ -130,8 +144,12 @@ function pickBuildTarget(user: MutableUser, budget: bigint): FactoryType | null 
     if (entry.recipe.some((req) => !producible.has(req.material))) continue
 
     const profit = expectedTickProfit(type)
-    if (profit > bestProfit) {
-      bestProfit = profit
+    if (profit <= 0n) continue
+
+    const cells = BigInt(entry.size.width * entry.size.height)
+    const score = profit / cells / BigInt((owned.get(type) ?? 0) + 1)
+    if (score > bestScore) {
+      bestScore = score
       best = type
     }
   }
@@ -158,6 +176,49 @@ function pickUpgradeTarget(
     }
   }
   return best
+}
+
+/**
+ * 칸이 꽉 찼을 때 **철거 후 교체**가 이득인 조합을 찾는다.
+ *
+ * 이 경로가 없으면 초기 3×3 을 T1 으로 채운 순간 티어 전환이 영구히 막혀,
+ * T2/T3 해금(Lv.5/10)이 시뮬레이션에서 아무 의미가 없어진다. 실제 플레이어는
+ * 더 나은 공장이 열리면 갈아 끼운다.
+ *
+ * 보수적으로 **등급 1 공장만** 철거 대상으로 삼는다 — 업그레이드에 들어간
+ * 누적 투자비는 철거 환급(건설비의 50%, `destroyRefund`)으로 회수되지 않아
+ * 등급이 오른 공장을 미는 것은 명백한 손해이기 때문이다.
+ *
+ * 교체 판정은 **칸당 기대수익**으로 한다. 후보가 지금 것보다 확실히 나을 때만
+ * (마진 없이 동률이면 유지) 갈아 끼운다.
+ */
+function pickReplacement(
+  user: MutableUser,
+  budget: bigint,
+): { victim: MutableUser['factories'][number]; target: FactoryType } | null {
+  const candidates = user.factories.filter((f) => f.grade === 1)
+  if (candidates.length === 0) return null
+
+  // 철거 환급을 예산에 미리 더해 보고 후보를 찾는다.
+  for (const victim of candidates) {
+    const victimCells =
+      BigInt(getFactoryEntry(victim.type).size.width) *
+      BigInt(getFactoryEntry(victim.type).size.height)
+    const victimScore = expectedTickProfit(victim.type) / victimCells
+    const refund = destroyRefund(victim.type)
+    const target = pickBuildTarget(user, budget + refund)
+    if (!target || target === victim.type) continue
+
+    const entry = getFactoryEntry(target)
+    const targetCells = BigInt(entry.size.width * entry.size.height)
+    // 교체로 확보되는 칸(철거분 + 기존 여유)이 후보를 수용해야 한다.
+    const freeAfter = BigInt(USABLE_CELLS - usedCells(user)) + victimCells
+    if (targetCells > freeAfter) continue
+
+    const targetScore = expectedTickProfit(target) / targetCells
+    if (targetScore > victimScore) return { victim, target }
+  }
+  return null
 }
 
 /** 창고 업그레이드를 시도한다. 성공 시 지출액, 실패 시 0n. */
@@ -242,7 +303,39 @@ export function reinvest(user: MutableUser, tick: number): InvestOutcome {
       }
     }
 
-    // 3. 그 외에는 가장 싼 업그레이드.
+    // 3. 칸이 꽉 찼고 더 나은 공장이 열렸으면 등급1 공장을 갈아 끼운다.
+    if (freeCells <= 0) {
+      const swap = pickReplacement(user, budget)
+      if (swap) {
+        const refund = destroyRefund(swap.victim.type)
+        user.money += refund
+        budget += refund
+        user.factories = user.factories.filter((f) => f.id !== swap.victim.id)
+
+        const entry = getFactoryEntry(swap.target)
+        const cost = buildCost(swap.target)
+        user.money -= cost
+        if (entry.buildMaterialCost) {
+          spendMaterial(user, entry.buildMaterialCost.material, entry.buildMaterialCost.amount)
+        }
+        user.factorySeq += 1
+        user.factories.push({
+          id: `${user.id}-f${user.factorySeq}`,
+          type: swap.target,
+          grade: 1,
+          lastHarvestTick: tick,
+        })
+        budget -= cost
+        // 환급은 통화 발행이 아니라 이미 소각된 건설비의 부분 회수다.
+        // 순 소각액만 계상해야 화폐 회계 항등식이 유지된다.
+        spentOnFactories += cost - refund
+        built += 1
+        xp += xpForEvent({ kind: 'BUILD', cost })
+        continue
+      }
+    }
+
+    // 4. 그 외에는 가장 싼 업그레이드.
     const upgradeTarget = pickUpgradeTarget(user, budget)
     if (upgradeTarget) {
       const money = upgradeMoneyCost(upgradeTarget.type, upgradeTarget.grade)

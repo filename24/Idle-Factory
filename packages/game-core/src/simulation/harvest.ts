@@ -10,10 +10,17 @@
  */
 
 import { getFactoryEntry } from '../factories/catalog'
+import { upgradeMaterialCost } from '../factories/cost'
 import { computeFactoryYield, MAX_TICKS_PER_HARVEST } from '../factories/production'
 import type { FactoryState, MaterialBag, MaterialType } from '../types'
-import { computeFree } from '../warehouse/capacity'
+import { computeFree, upgradeCostOf } from '../warehouse/capacity'
 import type { MutableUser } from './state'
+
+/** 업그레이드 출발 등급 상한 — 9→10 이 마지막 (`factories/cost.ts` 규약). */
+const MAX_UPGRADE_FROM_GRADE = 9
+
+/** 창고 최대 등급 (`warehouse/capacity.ts` 용량표). */
+const MAX_WAREHOUSE_GRADE = 10
 
 /** 한 번의 수확 결과 요약. */
 export interface HarvestOutcome {
@@ -124,7 +131,7 @@ export function harvestUser(user: MutableUser, tick: number): HarvestOutcome {
  * @param user 대상 유저
  * @returns 자재 → 남겨 둘 수량
  */
-export function computeReserves(user: MutableUser): Map<MaterialType, bigint> {
+export function computeRecipeReserves(user: MutableUser): Map<MaterialType, bigint> {
   const reserves = new Map<MaterialType, bigint>()
   const horizon = BigInt(Math.max(1, user.profile.sessionIntervalTicks) * 2)
 
@@ -134,5 +141,39 @@ export function computeReserves(user: MutableUser): Map<MaterialType, bigint> {
       reserves.set(req.material, (reserves.get(req.material) ?? 0n) + need)
     }
   }
+  return reserves
+}
+
+/**
+ * **판매 보류량** — 레시피 예비량에 업그레이드용 자재까지 더한 것.
+ *
+ * 판매는 이 값을 넘는 재고만 처분한다. 업그레이드 자재를 빼놓지 않으면 판매가
+ * 창고를 전부 비워 버려 `upgradeMaterialCost` 를 영영 충족하지 못하고, 등급이
+ * 1 에 고정되어 "등급당 ×1.5 생산" 축이 시뮬레이션에서 통째로 사라진다
+ * (docs/design/03-factories.md §업그레이드 비용).
+ *
+ * 직구매(`replenishMaterials`)는 이 값을 쓰지 않는다 — 업그레이드 자재까지
+ * 돈 주고 사는 것은 합리적 플레이가 아니고, 실제로 그렇게 하면 초기 자금이
+ * 첫 공장 대신 창고 업그레이드용 목재에 소진된다.
+ *
+ * @param user 대상 유저
+ * @returns 자재 → 판매하지 않고 남겨 둘 수량
+ */
+export function computeReserves(user: MutableUser): Map<MaterialType, bigint> {
+  const reserves = computeRecipeReserves(user)
+  if (user.factories.length === 0) return reserves
+
+  for (const factory of user.factories) {
+    if (factory.grade > MAX_UPGRADE_FROM_GRADE) continue
+    const need = upgradeMaterialCost(factory.type, factory.grade)
+    reserves.set(need.material, (reserves.get(need.material) ?? 0n) + need.amount)
+  }
+
+  // 창고 다음 등급 업그레이드 자재 (docs/design/05-warehouse.md §업그레이드 비용).
+  if (user.warehouseGrade < MAX_WAREHOUSE_GRADE) {
+    const cost = upgradeCostOf(user.warehouseGrade + 1)
+    reserves.set(cost.material, (reserves.get(cost.material) ?? 0n) + cost.amount)
+  }
+
   return reserves
 }

@@ -221,6 +221,14 @@ export interface SimResult {
   readonly priceTrail: readonly PriceSample[]
   /** 소각 원인별 누적. */
   readonly burns: BurnBreakdown
+  /**
+   * 실제로 정산된 **공장·tick** 총합 (공장 1채가 1 tick 돈 것을 1로 센다).
+   *
+   * 목표치 "300~400원/tick"(docs/design/00-onboarding.md §밸런스 기준)은 공장
+   * 1채 기준이므로, 발행액을 이 값으로 나눠야 목표와 같은 차원이 된다.
+   * 유저·tick 으로 나누면 공장 채수만큼 부풀려진다.
+   */
+  readonly productionTicks: number
   /** 티어 해금 도달 기록. */
   readonly milestones: readonly TierMilestone[]
   /** 종료 시점 유저 상태. */

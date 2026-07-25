@@ -191,7 +191,7 @@ interface SessionContext {
 function runUserSession(
   user: MutableUser,
   ctx: SessionContext,
-): { minted: bigint; burned: bigint } {
+): { minted: bigint; burned: bigint; productionTicks: number } {
   let minted = 0n
   let burned = 0n
 
@@ -225,7 +225,7 @@ function runUserSession(
   ctx.burns.construction += invested.spentOnFactories
   ctx.burns.warehouse += invested.spentOnWarehouse
 
-  return { minted, burned }
+  return { minted, burned, productionTicks: harvest.ticksRealized }
 }
 
 /**
@@ -268,6 +268,7 @@ export function runSimulation(scenario: SimScenario): SimResult {
   let dayMinted = 0n
   let dayBurned = 0n
   let previousSupply = 0n
+  let productionTicks = 0
 
   for (let tick = 0; tick < totalTicks; tick += 1) {
     let minted = 0n
@@ -286,6 +287,7 @@ export function runSimulation(scenario: SimScenario): SimResult {
       const result = runUserSession(user, ctx)
       minted += result.minted
       burned += result.burned
+      productionTicks += result.productionTicks
       trackMilestones(trackers, user, tick)
     }
 
@@ -350,6 +352,7 @@ export function runSimulation(scenario: SimScenario): SimResult {
     daily,
     priceTrail,
     burns: burnBreakdown,
+    productionTicks,
     milestones,
     users: users.map(snapshotUser),
     market: snapshotMarket(market),

@@ -14,7 +14,7 @@
 import { directBuyDailyLimit, isDirectBuyMaterial } from '../economy/directBuy'
 import type { MaterialType } from '../types'
 import { computeFree } from '../warehouse/capacity'
-import { computeReserves } from './harvest'
+import { computeRecipeReserves } from './harvest'
 import type { MutableMarketEntry, MutableUser } from './state'
 
 /**
@@ -53,7 +53,9 @@ export function replenishMaterials(
   market: ReadonlyMap<MaterialType, MutableMarketEntry>,
   multiplier: number,
 ): DirectBuyOutcome {
-  const reserves = computeReserves(user)
+  // 레시피 원료만 대상 — 업그레이드/창고 자재까지 사면 초기 자금이 첫 공장
+  // 대신 부자재에 소진된다 (`computeReserves` 주석 참조).
+  const reserves = computeRecipeReserves(user)
   if (reserves.size === 0) return EMPTY
 
   const dailyRemaining = directBuyDailyLimit(user.level) - user.directBuyToday
