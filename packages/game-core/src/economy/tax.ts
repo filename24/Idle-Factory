@@ -136,3 +136,84 @@ export function calcWeeklyTax(revenue: bigint, rateBps: number): bigint {
   }
   return (revenue * BigInt(rateBps)) / PPM_DENOMINATOR
 }
+
+/**
+ * 유저 상점 등록 기간별 판매 세율 테이블 (1만분율).
+ *
+ * 근거: docs/design/06-market.md §기간별 세율 테이블
+ * | 1~3일 | 3% | · | 4~7일 | 5% | · | 8~14일 | 8% | · | 15~21일 | 12% | · | 22~30일 | 18% |
+ *
+ * "등록 기간을 길게 설정할수록 시장 선점 효과가 커지므로 세율을 누진 적용"
+ * 하는 구조라, 주간 자산 누진세(`WEEKLY_TAX_BRACKETS`)와는 과세 축이 다르다
+ * — 이쪽은 **기간**, 저쪽은 **자산** 기준이다.
+ *
+ * 경계 규약: 상한 **포함** [.., maxDays]. 문서 표기가 "1~3일 3%"처럼 닫힌
+ * 구간이므로 정확히 3일이면 3%, 4일이면 5% 다.
+ */
+export const LISTING_TAX_BRACKETS: ReadonlyArray<{
+  /** 구간 상한 일수 (포함). null 은 최고 구간(22~30일). */
+  readonly maxDays: number | null
+  /** 세율 (1만분율). 예: 3% → 300. */
+  readonly rateBps: number
+}> = [
+  { maxDays: 3, rateBps: 300 },
+  { maxDays: 7, rateBps: 500 },
+  { maxDays: 14, rateBps: 800 },
+  { maxDays: 21, rateBps: 1_200 },
+  { maxDays: null, rateBps: 1_800 },
+]
+
+/**
+ * 유저 상점 세율 상한 — 18% (1만분율). 최장 등록 기간(22~30일)의 세율.
+ * 근거: docs/design/06-market.md §기간별 세율 테이블.
+ */
+export const LISTING_TAX_MAX_BPS = 1_800
+
+/**
+ * 유저 상점 등록 기간(일)에 대응하는 판매 세율(1만분율)을 반환한다.
+ *
+ * `apps/bot/src/services/market.ts` 의 `taxRateForDuration`(float 반환)과
+ * **값이 동일해야 한다** — 그쪽은 `MarketListing.taxRate`(Float 컬럼)에 박히는
+ * 저장 경로라 float 를 유지하고, 이쪽은 밸런스 시뮬레이터(#31)가 DB 없이
+ * 세수를 집계하기 위한 정수(bps) 표현이다. 등가성은
+ * `tests/simulation/tax.listing.test.ts` 가 구간 경계마다 검증한다.
+ *
+ * @param days 등록 기간 (1 이상 정수)
+ * @returns 판매 세율 (1만분율, 300 ~ 1800)
+ * @throws {RangeError} days 가 1 미만이거나 정수가 아닌 경우
+ */
+export function listingTaxRateBps(days: number): number {
+  if (!Number.isInteger(days) || days < 1) {
+    throw new RangeError(`days must be an integer >= 1, got ${days}`)
+  }
+  for (const bracket of LISTING_TAX_BRACKETS) {
+    if (bracket.maxDays === null || days <= bracket.maxDays) return bracket.rateBps
+  }
+  // 도달 불가 — 마지막 구간이 maxDays=null. 타입 안전용 방어.
+  throw new RangeError(`no listing tax bracket for days ${days}`)
+}
+
+/**
+ * 유저 상점 총 판매액에 기간별 세율을 적용한 세액을 계산한다 (floor).
+ *
+ * `tax = salePrice × rateByDuration(days) / 10000`,
+ * `netRevenue = salePrice - tax` (docs/design/06-market.md §기간별 세율 테이블).
+ * 과세 베이스는 **총 판매액(수량 × 단가)** 이다 — 같은 문서의 "코드 기준" 주석이
+ * 지적한 `basePrice ×` 차원 오류를 반복하지 말 것.
+ *
+ * @param gross 총 판매액 (>= 0, 수량 × 단가)
+ * @param rateBps 기간별 세율 (1만분율, 0 ~ 1800)
+ * @returns 세액 (bigint, floor)
+ * @throws {RangeError} 입력 위반 시
+ */
+export function calcListingTax(gross: bigint, rateBps: number): bigint {
+  if (gross < 0n) {
+    throw new RangeError(`gross must be >= 0, got ${gross}`)
+  }
+  if (!Number.isInteger(rateBps) || rateBps < 0 || rateBps > LISTING_TAX_MAX_BPS) {
+    throw new RangeError(
+      `rateBps must be an integer in [0, ${LISTING_TAX_MAX_BPS}], got ${rateBps}`,
+    )
+  }
+  return (gross * BigInt(rateBps)) / PPM_DENOMINATOR
+}
