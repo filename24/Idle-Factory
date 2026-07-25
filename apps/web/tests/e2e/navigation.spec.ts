@@ -33,4 +33,17 @@ test.describe('헤더 내비게이션', () => {
   test('헤더에 "Idle Factory" 로고 텍스트가 표시되어야 한다', async ({ page }) => {
     await expect(page.locator('header').getByText('Idle Factory')).toBeVisible()
   })
+
+  test('"랭킹" 링크 클릭 시 /ranking 으로 이동해야 한다', async ({ page }) => {
+    const rankingLink = page.locator('header').getByRole('link', { name: '랭킹' })
+    await expect(rankingLink).toBeVisible()
+    await rankingLink.click()
+    await expect(page).toHaveURL(/\/ranking/)
+  })
+
+  test('헤더 "대시보드" 링크가 /dashboard/me 를 가리켜야 한다', async ({ page }) => {
+    // 데스크톱 뷰포트에서만 노출(max-sm:hidden) — href만 검증해 모바일 프로젝트에서도 안전
+    const dashLink = page.locator('header a[href="/dashboard/me"]')
+    await expect(dashLink).toHaveAttribute('href', '/dashboard/me')
+  })
 })

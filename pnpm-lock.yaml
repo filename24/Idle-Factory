@@ -216,7 +216,7 @@ importers:
         specifier: 19.2.3
         version: 19.2.3(@types/react@19.2.14)
       '@vitest/coverage-v8':
-        specifier: ^2.1.8
+        specifier: ^2.1.9
         version: 2.1.9(vitest@2.1.9(@types/node@22.19.17)(lightningcss@1.32.0))
       autoprefixer:
         specifier: ^10.5.0
@@ -246,7 +246,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/tsconfig
       vitest:
-        specifier: ^2.1.8
+        specifier: ^2.1.9
         version: 2.1.9(@types/node@22.19.17)(lightningcss@1.32.0)
 
   packages/api-types:
