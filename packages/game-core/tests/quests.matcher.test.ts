@@ -200,4 +200,18 @@ describe('matchEvent — WAREHOUSE_UPGRADED', () => {
     const ev: QuestEvent = { kind: 'WAREHOUSE_UPGRADED', toGrade: 4 }
     expect(matchEvent(def, ev).matched).toBe(false)
   })
+
+  it('Q5 는 한 번의 매칭으로 완료된다 — minTotal 과 target 이 중복되지 않는다 (#21)', () => {
+    // target 을 2 로 두면 "2채 보유 상태에서 2번 더 건설"(총 3채)이 되어
+    // i18n 문구("T1 공장을 2개 보유하세요")와 어긋난다.
+    expect(Q5.target).toBe(1n)
+    const result = matchEvent(Q5, {
+      kind: 'FACTORY_BUILT',
+      tier: 'T1',
+      type: 'FARM',
+      ownedAfter: 2,
+    })
+    expect(result.matched).toBe(true)
+    expect(result.matched && result.increment >= Q5.target).toBe(true)
+  })
 })
