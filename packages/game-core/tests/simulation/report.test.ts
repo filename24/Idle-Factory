@@ -257,9 +257,11 @@ describe('CSV 내보내기', () => {
     expect(dailyCsv(results).content.trim().split('\n')).toHaveLength(expected + 1)
   })
 
-  it('targets.csv 에 미달 항목의 근거가 들어간다', () => {
-    expect(targetsCsv(results).content).toContain('모순 7')
-    expect(targetsCsv(results).content).toContain('모순 11')
+  it('targets.csv 에 각 항목의 근거 문서가 들어간다', () => {
+    const content = targetsCsv(results).content
+    expect(content).toContain('#21 결정 3')
+    expect(content).toContain('#21 결정 2')
+    expect(content).toContain('docs/design/05-warehouse.md')
   })
 })
 

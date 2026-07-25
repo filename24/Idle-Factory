@@ -8,6 +8,7 @@ import {
   computeLandSynergies,
   getSpecialSlotBonus,
   getSynergyMultiplier,
+  unitsThatFit,
   TICK_MS,
   xpForEvent,
   type FactoryState,
@@ -294,9 +295,14 @@ async function harvestWhere(
         ticks: result.ticksRealized
       })
       if (rareDrop > 0n) {
-        const freeAfterProduce = computeFree(warehouse.grade, balance)
-        const credited =
-          rareDrop < freeAfterProduce ? rareDrop : freeAfterProduce
+        // 여유는 슬롯(부피) 단위이므로 담을 수 있는 개수로 환산해 비교한다
+        // (#21 결정 4). RAW_BOOSTER 는 계수 1 이지만 계수 변경에 안전하도록
+        // 헬퍼를 거친다.
+        const roomForBooster = unitsThatFit(
+          'RAW_BOOSTER',
+          computeFree(warehouse.grade, balance)
+        )
+        const credited = rareDrop < roomForBooster ? rareDrop : roomForBooster
         if (credited > 0n) {
           await applyMaterialDelta(tx, warehouse.id, 'RAW_BOOSTER', credited)
           balance.RAW_BOOSTER = (balance.RAW_BOOSTER ?? 0n) + credited

@@ -14,7 +14,7 @@
 
 import { calcListingTax, listingTaxRateBps } from '../economy/tax'
 import type { MaterialType } from '../types'
-import { computeFree } from '../warehouse/capacity'
+import { computeFree, volumeOf } from '../warehouse/capacity'
 import { computeReserves } from './harvest'
 import type { Rng } from './rng'
 import type { MutableMarketEntry, MutableUser } from './state'
@@ -73,6 +73,7 @@ const MAX_BUYER_PROBES = 8
  * @param seller 판매자
  * @param users 전체 유저
  * @param price 총 대금
+ * @param material 자재 종류 (창고 여유를 부피로 환산할 때 필요)
  * @param quantity 자재 수량
  * @param rng 결정론적 난수원
  * @returns 구매자 또는 null
@@ -81,16 +82,20 @@ function pickBuyer(
   seller: MutableUser,
   users: readonly MutableUser[],
   price: bigint,
+  material: MaterialType,
   quantity: bigint,
   rng: Rng,
 ): MutableUser | null {
   if (users.length <= 1) return null
 
+  // 창고 여유는 슬롯(부피) 단위이므로 개수를 부피로 환산해 비교한다 (#21 결정 4).
+  const requiredVolume = quantity * volumeOf(material)
+
   for (let probe = 0; probe < MAX_BUYER_PROBES; probe += 1) {
     const candidate = users[Math.floor(rng.next() * users.length)]!
     if (candidate.id === seller.id) continue
     if (candidate.money < price) continue
-    if (computeFree(candidate.warehouseGrade, candidate.stacks) < quantity) continue
+    if (computeFree(candidate.warehouseGrade, candidate.stacks) < requiredVolume) continue
     return candidate
   }
   return null
@@ -156,7 +161,7 @@ export function sellInventory(
     // 유저 상점 — 구매자에게서 판매자로 이전, 세율만큼 소각.
     if (shopQty > 0n) {
       const gross = entry.currentPrice * shopQty
-      const buyer = pickBuyer(seller, users, gross, shopQty, rng)
+      const buyer = pickBuyer(seller, users, gross, material, shopQty, rng)
       if (buyer) {
         const tax = calcListingTax(gross, listingRateBps)
         buyer.money -= gross

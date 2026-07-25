@@ -17,6 +17,7 @@ import {
   checkTierMultiplier,
   checkTutorialQuestFunding,
   checkWarehouseBottleneck,
+  checkWarehouseValueDensity,
   flowSeries,
   grossRevenuePerTick,
   netProfitPerTick,
@@ -59,42 +60,70 @@ describe('손익분기 33분', () => {
 describe('창고 1등급 병목 16시간', () => {
   const checks = checkWarehouseBottleneck()
 
-  it('농장 기준으로는 목표(16시간)를 충족한다', () => {
-    const farm = checks.find((check) => check.id === 'warehouse-farm')
-    expect(farm?.pass).toBe(true)
-    expect(farm?.actual).toBe('16.7시간')
+  it('T1 4종이 모두 목표 범위(12~20시간)에 든다', () => {
+    // 부피 계수 도입 전에는 광산 33.3h·유정 62.5h 로 목표를 크게 벗어났다.
+    // ORE ×2 / CRUDE_OIL ×5 계수가 개수 기준 용량의 왜곡을 보정한다 (#21 결정 4).
+    expect(checks).toHaveLength(4)
+    expect(checks.every((check) => check.pass)).toBe(true)
   })
 
-  it('산출 개수가 적은 광산·유정은 병목이 훨씬 늦게 온다 (설계 의도 미달)', () => {
-    // 창고 용량은 개수 기준이라 단가가 비싼 저(低)산출 공장은 창고를 늦게 채운다.
-    // "접속 유도" 설계가 이 공장들에는 작동하지 않는다는 뜻 — 밸런스 조정 근거.
-    expect(checks.find((check) => check.id === 'warehouse-mine')?.pass).toBe(false)
-    expect(checks.find((check) => check.id === 'warehouse-oil_well')?.actual).toBe('62.5시간')
+  it('공장별 포화 시간이 설계 의도대로 수렴한다', () => {
+    const actual = Object.fromEntries(checks.map((check) => [check.id, check.actual]))
+    expect(actual['warehouse-farm']).toBe('16.7시간')
+    expect(actual['warehouse-mine']).toBe('16.7시간')
+    expect(actual['warehouse-lumber']).toBe('20.0시간')
+    expect(actual['warehouse-oil_well']).toBe('12.5시간')
+  })
+
+  it('목표 초과 안내 note 가 더 이상 붙지 않는다', () => {
+    expect(checks.every((check) => check.note === undefined)).toBe(true)
   })
 })
 
-describe('모순 7 — T2/T3 수익 배수 재검증', () => {
+describe('모순 7 폐기 — 티어 수익 배수는 참고 지표다 (#21 결정 3)', () => {
   const checks = checkTierMultiplier()
 
-  it('문서의 "T1 대비 2~3배" 주장이 성립하지 않는다', () => {
-    expect(checks.every((check) => !check.pass)).toBe(true)
+  it('배수는 더 이상 합격/불합격을 가르지 않는다', () => {
+    // 폐기 근거: 칸 단위 2배를 맞추면 T3 공장 단위가 15.35배가 되어 같은 문서의
+    // "2~3배" 상한을 스스로 위반한다 — 두 지표를 동시에 만족시킬 수 없다.
+    expect(checks.every((check) => check.pass)).toBe(true)
+    expect(checks.every((check) => check.target.includes('참고 지표'))).toBe(true)
   })
 
-  it('T2 는 공장 단위로 T1 의 0.55배에 그친다', () => {
+  it('실측 배수는 회귀 감시용으로 계속 낸다', () => {
     expect(checks.find((c) => c.id === 'tier-multiplier-t2')?.actual).toBe('0.55배')
-  })
-
-  it('T3 는 2×2 점유 탓에 칸 단위로 T1 의 0.22배까지 떨어진다', () => {
     expect(checks.find((c) => c.id === 'tier-multiplier-per-cell-t3')?.actual).toBe('0.22배')
   })
 })
 
-describe('모순 11 — 튜토리얼 Q4 자금', () => {
-  it('Q4 시점 현금 2,000원으로 3,000원 업그레이드를 못 한다 (1,000원 부족)', () => {
+describe('티어의 새 가치 — 창고 1칸당 가치 (#21 결정 3·4)', () => {
+  const checks = checkWarehouseValueDensity()
+
+  it('T2·T3 는 T1 보다 창고 1칸을 값어치 있게 쓴다', () => {
+    expect(checks).toHaveLength(2)
+    expect(checks.every((check) => check.pass)).toBe(true)
+  })
+
+  it('부피 계수를 T1 에만 준 덕에 우위가 유지된다', () => {
+    // T1 평균 밀도: GRAIN 10/1, ORE 20/2, WOOD 15/1, CRUDE_OIL 50/5 → 평균 11.25
+    // T2 평균: STEEL 50, FUEL 80, PROCESSED_FOOD 25, FURNITURE 60 → 평균 53.75
+    const t2 = checks.find((c) => c.id === 'warehouse-value-density-t2')
+    expect(t2?.actual).toBe('4.78배')
+  })
+})
+
+describe('모순 11 — 튜토리얼 Q4 자금 (#21 결정 2)', () => {
+  it('부족분 1,000원을 수확·판매 4 tick(40분)으로 자력 조달한다', () => {
     const [check] = checkTutorialQuestFunding()
-    expect(check!.pass).toBe(false)
-    expect(check!.actual).toBe('2000원')
-    expect(check!.target).toBe('≥ 3000원')
+    expect(check!.pass).toBe(true)
+    expect(check!.actual).toBe('40분 (수확·판매 4 tick)')
+    expect(check!.target).toBe('≤ 60분')
+  })
+
+  it('보상만으로는 모자란다는 사실을 note 에 남긴다', () => {
+    const [check] = checkTutorialQuestFunding()
+    expect(check!.note).toContain('2000원')
+    expect(check!.note).toContain('1000원이 부족')
   })
 })
 

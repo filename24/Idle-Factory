@@ -402,11 +402,14 @@ export function reinvest(user: MutableUser, tick: number): InvestOutcome {
  * 목표치 "창고 1등급 ≈ 16시간"(docs/design/05-warehouse.md §설계 의도) 검증에
  * 쓴다. 생산량이 0 이면 병목이 성립하지 않으므로 `null`.
  *
+ * 인자는 개수가 아니라 **부피**(개수 × `volumeOf`)다 — 창고 용량이 슬롯
+ * 단위이기 때문이다 (#21 결정 4).
+ *
  * @param user 대상 유저
- * @param unitsPerTick tick 당 총 생산 단위 수
+ * @param volumePerTick tick 당 총 생산 부피 (슬롯)
  * @returns 가득 차기까지의 tick 수 (없으면 null)
  */
-export function ticksUntilWarehouseFull(user: MutableUser, unitsPerTick: bigint): number | null {
-  if (unitsPerTick <= 0n) return null
-  return Number(capacityOf(user.warehouseGrade) / unitsPerTick)
+export function ticksUntilWarehouseFull(user: MutableUser, volumePerTick: bigint): number | null {
+  if (volumePerTick <= 0n) return null
+  return Number(capacityOf(user.warehouseGrade) / volumePerTick)
 }

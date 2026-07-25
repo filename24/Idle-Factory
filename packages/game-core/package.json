@@ -24,9 +24,11 @@
     "test:unit": "vitest run",
     "test:watch": "vitest",
     "sim": "tsx scripts/sim.ts",
-    "sim:sweep": "tsx scripts/sim.ts --sweep"
+    "sim:sweep": "tsx scripts/sim.ts --sweep",
+    "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^2.1.8",
     "eslint-config-idle": "workspace:^",
     "tsconfig": "workspace:^",
     "tsup": "^8.5.1",
