@@ -161,9 +161,7 @@ describe('지표 집계', () => {
 
   it('profileSeries 는 단일 프로파일 시나리오만 받아들인다', () => {
     const single = ['HARDCORE', 'CASUAL', 'IDLE'].map((kind) =>
-      runSimulation(
-        buildScenario({ userCount: 1, days: 3, profiles: [kind as 'HARDCORE'] }),
-      ),
+      runSimulation(buildScenario({ userCount: 1, days: 3, profiles: [kind as 'HARDCORE'] })),
     )
     expect(profileSeries(single)).toHaveLength(3)
     // 혼합 시나리오는 곡선 하나로 요약할 수 없으므로 제외된다.

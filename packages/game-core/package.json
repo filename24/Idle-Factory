@@ -22,12 +22,15 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:unit": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "sim": "tsx scripts/sim.ts",
+    "sim:sweep": "tsx scripts/sim.ts --sweep"
   },
   "devDependencies": {
     "eslint-config-idle": "workspace:^",
     "tsconfig": "workspace:^",
     "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
     "typescript": "^6.0.3",
     "vitest": "^2.1.8"
   },

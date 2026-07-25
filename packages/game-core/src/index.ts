@@ -7,9 +7,7 @@
  * 참조: `docs/design/01-overview.md` ~ `docs/design/11-land.md`
  */
 
-/** 패키지 시맨틱 버전. 호환성 깨지는 변경 시에만 메이저를 올린다. */
-export const GAME_CORE_VERSION = '1.0.0'
-
+export * from './version'
 export * from './types'
 export * from './factories/booster'
 export * from './factories/catalog'
