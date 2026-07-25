@@ -107,11 +107,72 @@ jobs:
           cwd: '.'
           enable-corepack: false
 
-      # Integration tests (apps/bot/tests/integration) require a live Postgres
-      # and are intentionally excluded from CI. Run them locally against the
-      # dev docker stack via `pnpm --filter bot test:integration`.
+      # Integration tests run in the dedicated `test-integration` job below,
+      # which spins up a live Postgres. This job stays DB-free for speed.
       - name: Run unit tests
         run: pnpm exec turbo run test:unit ${{ github.event_name == 'pull_request' && '--affected' || '' }}
+
+  test-integration:
+    name: Test (integration + services coverage)
+    runs-on: ubuntu-latest
+    needs: [quality]
+    permissions:
+      contents: read
+    # Live Postgres for the bot's money-path integration suite. Named
+    # `*-dev` so tests/integration/setup.ts (which refuses any non-dev DB)
+    # is satisfied.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: idle
+          POSTGRES_PASSWORD: idle
+          POSTGRES_DB: idle-factory-dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U idle -d idle-factory-dev"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      # Job-level override of the dummy global URL. Must target a *-dev
+      # database or the integration setup throws on startup.
+      DATABASE_URL: postgresql://idle:idle@localhost:5432/idle-factory-dev?schema=public
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        uses: ./.github/actions/pnpm-install
+        with:
+          cwd: '.'
+          enable-corepack: false
+
+      - name: Apply database migrations
+        run: pnpm --filter @idle/database run db:migrate:deploy
+
+      # cache:false on the turbo task guarantees the live-DB suite never gets
+      # skipped by a cache hit. `^build` + db:generate build @idle/database and
+      # @idle/game-core (and the Prisma client) before the bot suite runs.
+      - name: Run integration tests with services coverage gate
+        run: pnpm exec turbo run test:coverage --filter=bot ${{ github.event_name == 'pull_request' && '--affected' || '' }}
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bot-coverage
+          path: apps/bot/coverage
+          if-no-files-found: ignore
+          retention-days: 14
 
   commitlint:
     name: Commit messages

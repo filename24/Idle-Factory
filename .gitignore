@@ -17,6 +17,9 @@ pids
 # Dist
 dist/
 
+# Coverage reports
+coverage/
+
 # Prisma v7 generated client
 packages/database/src/generated/
 

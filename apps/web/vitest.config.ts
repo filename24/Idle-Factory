@@ -8,5 +8,11 @@ export default defineConfig({
   test: {
     include: ['tests/unit/**/*.test.ts'],
     environment: 'node',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text-summary', 'text', 'html', 'lcov'],
+      reportsDirectory: './coverage',
+      include: ['src/lib/**/*.ts'],
+    },
   },
 })
