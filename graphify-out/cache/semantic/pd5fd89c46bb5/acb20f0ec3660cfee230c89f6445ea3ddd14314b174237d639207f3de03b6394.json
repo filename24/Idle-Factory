@@ -1,0 +1,29 @@
+{
+  "nodes": [
+    {
+      "id": "license_mozilla_public_license_2_0",
+      "label": "Mozilla Public License 2.0",
+      "file_type": "document",
+      "source_file": "License.md",
+      "source_location": null,
+      "source_url": "http://mozilla.org/MPL/2.0/",
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "File-level weak copyleft: modifications to Covered Software stay under MPL-2.0, but a Larger Work may be distributed under other terms, and MPL-2.0 code may additionally be distributed under GPL/LGPL/AGPL secondary licenses unless marked Incompatible."
+    }
+  ],
+  "edges": [
+    {
+      "source": "license_mozilla_public_license_2_0",
+      "target": "code_of_conduct_contributor_covenant",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.55,
+      "source_file": "License.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

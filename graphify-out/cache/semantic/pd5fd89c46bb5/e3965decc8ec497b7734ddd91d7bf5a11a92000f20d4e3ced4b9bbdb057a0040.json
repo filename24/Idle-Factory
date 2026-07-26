@@ -1,0 +1,94 @@
+{
+  "nodes": [
+    {
+      "id": "docs_design_08_stock_stock_system",
+      "label": "Stock Market System (server + global)",
+      "file_type": "concept",
+      "source_file": "docs/design/08-stock.md",
+      "source_location": "L1-L20",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_design_08_stock_ipo_listing_conditions",
+      "label": "IPO Listing Conditions & Price",
+      "file_type": "concept",
+      "source_file": "docs/design/08-stock.md",
+      "source_location": "L22-L56",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "All conditions ANDed and auto-verified with no admin approval. The listing user picks the final IPO price but is clamped to 30-70% of the computed default, preventing extreme over/under-valuation while preserving player agency."
+    },
+    {
+      "id": "docs_design_08_stock_price_tick_formula",
+      "label": "Hourly Stock Price Recalculation",
+      "file_type": "concept",
+      "source_file": "docs/design/08-stock.md",
+      "source_location": "L57-L70",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Price moves on demand pressure and profit delta with a daily +-30% circuit breaker. U-5 guard: totalVolume = 0 forces demandPressure = 0 and avg7dProfit = 0 forces profitDelta = 0. Not yet implemented."
+    },
+    {
+      "id": "docs_design_08_stock_dividend",
+      "label": "Weekly Dividend Distribution",
+      "file_type": "concept",
+      "source_file": "docs/design/08-stock.md",
+      "source_location": "L72-L87",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Paid weekly at the same Sunday-midnight moment as tax settlement from 10% of the company's weekly profit. Trading itself is fee-free because inflation control is handled by the progressive asset tax instead."
+    }
+  ],
+  "edges": [
+    {
+      "source": "docs_design_07_global_system_settlement_cycle",
+      "target": "docs_design_08_stock_dividend",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/08-stock.md",
+      "source_location": "L76",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_08_stock_ipo_listing_conditions",
+      "target": "docs_design_09_level_xp_level_unlocks",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/08-stock.md",
+      "source_location": "L35",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_08_stock_ipo_listing_conditions",
+      "target": "docs_design_07_global_system_credit_system",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/08-stock.md",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_08_stock_dividend",
+      "target": "docs_design_07_global_system_progressive_tax",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/08-stock.md",
+      "source_location": "L87",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

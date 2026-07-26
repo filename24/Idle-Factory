@@ -1,0 +1,122 @@
+{
+  "nodes": [
+    {
+      "id": "apps_web_src_app_terms_content_terms_of_service",
+      "label": "Idle Factory Terms of Service (Infinite Studio, 2025-04-25)",
+      "file_type": "document",
+      "source_file": "apps/web/src/app/terms/content.mdx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_src_app_terms_content_discord_oauth2_account",
+      "label": "Discord OAuth2 Account Info as Membership Basis",
+      "file_type": "concept",
+      "source_file": "apps/web/src/app/terms/content.mdx",
+      "source_location": "\uc81c2\uc870 / \uc81c10\uc870",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_src_app_terms_content_third_party_telemetry",
+      "label": "Third-Party Data Collection (Google Analytics, Sentry)",
+      "file_type": "concept",
+      "source_file": "apps/web/src/app/terms/content.mdx",
+      "source_location": "\uc81c13\uc870 (\uc815\ubcf4\uc758 \uc218\uc9d1 \ub4f1)",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_src_app_terms_content_game_currency_no_cash_out",
+      "label": "In-Game Currency Is Not Cash-Redeemable",
+      "file_type": "rationale",
+      "source_file": "apps/web/src/app/terms/content.mdx",
+      "source_location": "\uc81c15\uc870",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_src_app_terms_content_usage_restriction_policy",
+      "label": "Member Usage Restriction and Appeal Procedure",
+      "file_type": "concept",
+      "source_file": "apps/web/src/app/terms/content.mdx",
+      "source_location": "\uc81c16\uc870~\uc81c18\uc870",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "apps_web_src_app_terms_content_terms_of_service",
+      "target": "apps_web_src_app_terms_content_discord_oauth2_account",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/app/terms/content.mdx",
+      "source_location": "\uc81c2\uc870 (\uc6a9\uc5b4\uc758 \uc815\uc758) / \uc81c10\uc870 (\uc11c\ube44\uc2a4\uc758 \uc81c\uacf5)",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_src_app_terms_content_terms_of_service",
+      "target": "apps_web_src_app_terms_content_third_party_telemetry",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/app/terms/content.mdx",
+      "source_location": "\uc81c13\uc870 (\uc815\ubcf4\uc758 \uc218\uc9d1 \ub4f1)",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_src_app_terms_content_terms_of_service",
+      "target": "apps_web_src_app_terms_content_usage_restriction_policy",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/app/terms/content.mdx",
+      "source_location": "\uc81c16\uc870~\uc81c18\uc870",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_src_app_terms_content_game_currency_no_cash_out",
+      "target": "apps_web_content_docs_economy_materials_trading_inflation_defense",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.65,
+      "source_file": "apps/web/src/app/terms/content.mdx",
+      "source_location": "in-game currency is a closed economy with no real-money exit",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_src_app_terms_content_usage_restriction_policy",
+      "target": "apps_web_content_docs_economy_market_abuse_detection",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "apps/web/src/app/terms/content.mdx",
+      "source_location": "\uc81c9\uc870 \uae08\uc9c0\ud589\uc704 (\uac8c\uc784 \uc7ac\ud654\uc758 \ubd80\uc815 \uac70\ub798, \ubc84\uadf8 \uc545\uc6a9) enforced by market auto-detection",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_src_app_terms_content_discord_oauth2_account",
+      "target": "apps_web_content_docs_getting_started_intro_per_server_account",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "apps/web/src/app/terms/content.mdx",
+      "source_location": "Discord identity underpins the per-guild player account model",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

@@ -1,0 +1,297 @@
+{
+  "nodes": [
+    {
+      "id": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_json",
+      "label": "tsconfig.eslint.json",
+      "file_type": "code",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L1"
+    },
+    {
+      "id": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_extends",
+      "label": "extends",
+      "file_type": "code",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L2"
+    },
+    {
+      "id": "ref_tsconfig_json",
+      "label": "./tsconfig.json",
+      "file_type": "concept",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L2"
+    },
+    {
+      "id": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_compileroptions",
+      "label": "compilerOptions",
+      "file_type": "code",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L3"
+    },
+    {
+      "id": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_compileroptions_allowjs",
+      "label": "allowJs",
+      "file_type": "code",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L4"
+    },
+    {
+      "id": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_include",
+      "label": "include",
+      "file_type": "code",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "ref_ts",
+      "label": "*.ts",
+      "file_type": "concept",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "ref_tsx",
+      "label": "*.tsx",
+      "file_type": "concept",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "ref_js",
+      "label": "*.js",
+      "file_type": "concept",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "ref_jsx",
+      "label": ".jsx",
+      "file_type": "concept",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "ref_cjs",
+      "label": ".cjs",
+      "file_type": "concept",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "ref_mjs",
+      "label": "*.mjs",
+      "file_type": "concept",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "ref_src_ts",
+      "label": "src/**/*.ts",
+      "file_type": "concept",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "ref_src_js",
+      "label": "src/**/*.js",
+      "file_type": "concept",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "ref_src_cjs",
+      "label": "src/**/*.cjs",
+      "file_type": "concept",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "ref_src_mjs",
+      "label": "src/**/*.mjs",
+      "file_type": "concept",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_exclude",
+      "label": "exclude",
+      "file_type": "code",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L18"
+    },
+    {
+      "id": "ref_node_modules",
+      "label": "node_modules",
+      "file_type": "concept",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L18"
+    }
+  ],
+  "edges": [
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_json",
+      "target": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_extends",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_json",
+      "target": "ref_tsconfig_json",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L2",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_json",
+      "target": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_compileroptions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_compileroptions",
+      "target": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_compileroptions_allowjs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_json",
+      "target": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_include",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_include",
+      "target": "ref_ts",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_include",
+      "target": "ref_tsx",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_include",
+      "target": "ref_js",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_include",
+      "target": "ref_jsx",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_include",
+      "target": "ref_cjs",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_include",
+      "target": "ref_mjs",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_include",
+      "target": "ref_src_ts",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_include",
+      "target": "ref_src_js",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_include",
+      "target": "ref_src_cjs",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_include",
+      "target": "ref_src_mjs",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_json",
+      "target": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_exclude",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_eslint_exclude",
+      "target": "ref_node_modules",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.eslint.json",
+      "source_location": "L18",
+      "weight": 1.0,
+      "context": "import"
+    }
+  ]
+}

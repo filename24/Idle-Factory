@@ -1,0 +1,192 @@
+{
+  "nodes": [
+    {
+      "id": "docs_design_11_land_land_system",
+      "label": "Land System (grid, expansion vs purchase)",
+      "file_type": "concept",
+      "source_file": "docs/design/11-land.md",
+      "source_location": "L1-L22",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Grid is fixed at 4x4 because a Discord message allows 5 action rows of 5 buttons: 4 rows x 4 buttons = 16 cells fits exactly, leaving one row for controls. Expansion (buying locked slots inside a plot) is deliberately distinct from purchase (buying a whole new 4x4 plot)."
+    },
+    {
+      "id": "docs_design_11_land_slot_expansion_cost",
+      "label": "Slot Expansion Cost Formula (5,000 x 10^(N-1) x 2^(k-1))",
+      "file_type": "concept",
+      "source_file": "docs/design/11-land.md",
+      "source_location": "L24-L136",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Plot 1 is gold-only; plots 2+ additionally gate on level, with level anchors deliberately aligned to feature unlocks (Lv.5 T2, Lv.10 T3, Lv.25 listing, Lv.40 global stock, Lv.50 booster). Full expansion of plot 1 costs 635,000 \u2014 about 63% of the 1,000,000 price of plot 2, keeping expansion the cheaper first move."
+    },
+    {
+      "id": "docs_design_11_land_special_slots",
+      "label": "Special Slots (natural resource deposits)",
+      "file_type": "concept",
+      "source_file": "docs/design/11-land.md",
+      "source_location": "L148-L161",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_design_11_land_special_slot_generation",
+      "label": "Special Slot Generation Rules (U-7)",
+      "file_type": "concept",
+      "source_file": "docs/design/11-land.md",
+      "source_location": "L266-L285",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "15% per slot across all 16 cells including locked ones, max 2 of the same type per plot to avoid clustering, and no reroll so a new plot is the only way to redraw. Confirmed spec excludes (0,0) since the warehouse occupies it, but current code (generateSlotTypes) still draws all 16 because the Warehouse model has no slot coordinates yet."
+    },
+    {
+      "id": "docs_design_11_land_adjacency_synergy",
+      "label": "Adjacency Synergy (chain-adjacent bonus, +30% cap)",
+      "file_type": "concept",
+      "source_file": "docs/design/11-land.md",
+      "source_location": "L163-L178",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Adjacent factories in a supply-chain relationship gain production bonuses (T1<->T2 +10%, T2<->T3 +5%), summed but clamped to +30% per factory so layout matters without dominating."
+    },
+    {
+      "id": "docs_design_11_land_components_v2_grid",
+      "label": "Discord Components v2 Button Grid Visualization",
+      "file_type": "concept",
+      "source_file": "docs/design/11-land.md",
+      "source_location": "L180-L225",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Always renders 16 buttons; locked slots are disabled rather than hidden so the player can see the full expandable footprint. custom_id format is land:<landId>:slot:<index>."
+    },
+    {
+      "id": "docs_design_11_land_plot_purchase",
+      "label": "New Land Plot Purchase (Phase 2)",
+      "file_type": "concept",
+      "source_file": "docs/design/11-land.md",
+      "source_location": "L236-L253",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Cost 1,000,000 x 10^(N-2), max 5 plots. Each plot is an independent synergy group and gets an independent special-slot draw, and new plots also start at 3x3 so the expansion loop repeats."
+    },
+    {
+      "id": "docs_design_11_land_move_demolish",
+      "label": "Factory Move & Demolish Economics",
+      "file_type": "concept",
+      "source_file": "docs/design/11-land.md",
+      "source_location": "L255-L264",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Move costs 25% of build cost and keeps grade/contents; demolish refunds 50% of build cost but destroys grade, upgrade booster, and any raw booster. Both trigger adjacency-synergy recalculation."
+    }
+  ],
+  "edges": [
+    {
+      "source": "docs_design_09_level_xp_level_unlocks",
+      "target": "docs_design_11_land_slot_expansion_cost",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/11-land.md",
+      "source_location": "L88",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_11_land_special_slots",
+      "target": "docs_codemaps_game_core_special_slots_generator",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/11-land.md",
+      "source_location": "L356",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_11_land_special_slot_generation",
+      "target": "docs_design_05_warehouse_warehouse_system",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/11-land.md",
+      "source_location": "L274",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_11_land_adjacency_synergy",
+      "target": "docs_design_03_factories_three_tier_chain",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/11-land.md",
+      "source_location": "L165-L176",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_11_land_move_demolish",
+      "target": "docs_design_11_land_adjacency_synergy",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/11-land.md",
+      "source_location": "L264",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_11_land_move_demolish",
+      "target": "docs_design_03_factories_build_upgrade_cost",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/11-land.md",
+      "source_location": "L257-L260",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_11_land_plot_purchase",
+      "target": "docs_design_11_land_slot_expansion_cost",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/11-land.md",
+      "source_location": "L247",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_11_land_components_v2_grid",
+      "target": "docs_codemaps_backend_interaction_handlers",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/design/11-land.md",
+      "source_location": "L211",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_11_land_slot_expansion_cost",
+      "target": "docs_design_03_factories_build_upgrade_cost",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "docs/design/11-land.md",
+      "source_location": "L46-L57",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

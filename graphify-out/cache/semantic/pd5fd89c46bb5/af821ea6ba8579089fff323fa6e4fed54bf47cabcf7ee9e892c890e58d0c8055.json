@@ -1,0 +1,28 @@
+{
+  "nodes": [
+    {
+      "id": "packages_api_types_claude_symlink",
+      "label": "api-types CLAUDE.md (symlink to AGENTS.md)",
+      "file_type": "document",
+      "source_file": "packages/api-types/CLAUDE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "packages_api_types_claude_symlink",
+      "target": "packages_api_types_agents_api_types_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "packages/api-types/CLAUDE.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

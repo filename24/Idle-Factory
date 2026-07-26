@@ -1,0 +1,28 @@
+{
+  "nodes": [
+    {
+      "id": "apps_bot_claude_symlink",
+      "label": "apps/bot/CLAUDE.md (symlink to AGENTS.md)",
+      "file_type": "document",
+      "source_file": "apps/bot/CLAUDE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "apps_bot_claude_symlink",
+      "target": "apps_bot_agents_discord_bot_guide",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/bot/CLAUDE.md",
+      "source_location": "symlink target",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

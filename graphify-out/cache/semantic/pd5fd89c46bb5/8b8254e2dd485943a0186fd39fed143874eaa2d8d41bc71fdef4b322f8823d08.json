@@ -1,0 +1,133 @@
+{
+  "nodes": [
+    {
+      "id": "_agents_skills_shadcn_customization_customization_theming",
+      "label": "shadcn Customization & Theming",
+      "file_type": "document",
+      "source_file": ".agents/skills/shadcn/customization.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_customization_semantic_css_variable_tokens",
+      "label": "Semantic CSS Variable Token System (name / name-foreground)",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/customization.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_customization_oklch_color_format",
+      "label": "OKLCH Color Format",
+      "file_type": "concept",
+      "source_file": ".agents/skills/shadcn/customization.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_customization_dark_mode_class_toggle",
+      "label": "Class-Based Dark Mode Toggle (next-themes)",
+      "file_type": "concept",
+      "source_file": ".agents/skills/shadcn/customization.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_customization_custom_color_registration",
+      "label": "Custom Color Registration (Tailwind v3 vs v4)",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/customization.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_customization_component_customization_ladder",
+      "label": "Component Customization Ladder (variant \u2192 className \u2192 cva \u2192 wrapper)",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/customization.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "_agents_skills_shadcn_customization_customization_theming",
+      "target": "_agents_skills_shadcn_rules_styling_semantic_colors",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/customization.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_customization_semantic_css_variable_tokens",
+      "target": "_agents_skills_shadcn_customization_oklch_color_format",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/customization.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_customization_custom_color_registration",
+      "target": "_agents_skills_shadcn_customization_semantic_css_variable_tokens",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/customization.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_customization_custom_color_registration",
+      "target": "_agents_skills_shadcn_cli_info_command",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/customization.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_customization_dark_mode_class_toggle",
+      "target": "_agents_skills_shadcn_rules_styling_no_manual_dark_overrides",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": ".agents/skills/shadcn/customization.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_customization_component_customization_ladder",
+      "target": "_agents_skills_shadcn_rules_styling_classname_layout_only",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/customization.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

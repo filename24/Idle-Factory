@@ -1,0 +1,28 @@
+{
+  "nodes": [
+    {
+      "id": "docs_design_01_overview_project_overview",
+      "label": "Project Overview & Differentiators",
+      "file_type": "document",
+      "source_file": "docs/design/01-overview.md",
+      "source_location": "L1-L27",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "docs_design_01_overview_project_overview",
+      "target": "docs_design_02_core_loop_gameplay_loop",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/design/01-overview.md",
+      "source_location": "L16-L26",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

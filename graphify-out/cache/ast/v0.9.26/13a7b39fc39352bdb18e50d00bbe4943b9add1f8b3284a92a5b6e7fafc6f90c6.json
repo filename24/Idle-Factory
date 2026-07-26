@@ -1,0 +1,159 @@
+{
+  "nodes": [
+    {
+      "id": "home_coder_idle_factory_packages_tsconfig_node16_json",
+      "label": "node16.json",
+      "file_type": "code",
+      "source_file": "packages/tsconfig/node16.json",
+      "source_location": "L1"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_tsconfig_node16_schema",
+      "label": "$schema",
+      "file_type": "code",
+      "source_file": "packages/tsconfig/node16.json",
+      "source_location": "L2"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_tsconfig_node16_display",
+      "label": "display",
+      "file_type": "code",
+      "source_file": "packages/tsconfig/node16.json",
+      "source_location": "L3"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_tsconfig_node16_extends",
+      "label": "extends",
+      "file_type": "code",
+      "source_file": "packages/tsconfig/node16.json",
+      "source_location": "L4"
+    },
+    {
+      "id": "ref_base_json",
+      "label": "./base.json",
+      "file_type": "concept",
+      "source_file": "packages/tsconfig/node16.json",
+      "source_location": "L4"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_tsconfig_node16_compileroptions",
+      "label": "compilerOptions",
+      "file_type": "code",
+      "source_file": "packages/tsconfig/node16.json",
+      "source_location": "L5"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_tsconfig_node16_compileroptions_lib",
+      "label": "lib",
+      "file_type": "code",
+      "source_file": "packages/tsconfig/node16.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "ref_es2020",
+      "label": "ES2020",
+      "file_type": "concept",
+      "source_file": "packages/tsconfig/node16.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_tsconfig_node16_compileroptions_module",
+      "label": "module",
+      "file_type": "code",
+      "source_file": "packages/tsconfig/node16.json",
+      "source_location": "L7"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_tsconfig_node16_compileroptions_target",
+      "label": "target",
+      "file_type": "code",
+      "source_file": "packages/tsconfig/node16.json",
+      "source_location": "L8"
+    }
+  ],
+  "edges": [
+    {
+      "source": "home_coder_idle_factory_packages_tsconfig_node16_json",
+      "target": "home_coder_idle_factory_packages_tsconfig_node16_schema",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/tsconfig/node16.json",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_tsconfig_node16_json",
+      "target": "home_coder_idle_factory_packages_tsconfig_node16_display",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/tsconfig/node16.json",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_tsconfig_node16_json",
+      "target": "home_coder_idle_factory_packages_tsconfig_node16_extends",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/tsconfig/node16.json",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_tsconfig_node16_json",
+      "target": "ref_base_json",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/tsconfig/node16.json",
+      "source_location": "L4",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_packages_tsconfig_node16_json",
+      "target": "home_coder_idle_factory_packages_tsconfig_node16_compileroptions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/tsconfig/node16.json",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_tsconfig_node16_compileroptions",
+      "target": "home_coder_idle_factory_packages_tsconfig_node16_compileroptions_lib",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/tsconfig/node16.json",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_tsconfig_node16_compileroptions_lib",
+      "target": "ref_es2020",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/tsconfig/node16.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_packages_tsconfig_node16_compileroptions",
+      "target": "home_coder_idle_factory_packages_tsconfig_node16_compileroptions_module",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/tsconfig/node16.json",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_tsconfig_node16_compileroptions",
+      "target": "home_coder_idle_factory_packages_tsconfig_node16_compileroptions_target",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/tsconfig/node16.json",
+      "source_location": "L8",
+      "weight": 1.0
+    }
+  ]
+}

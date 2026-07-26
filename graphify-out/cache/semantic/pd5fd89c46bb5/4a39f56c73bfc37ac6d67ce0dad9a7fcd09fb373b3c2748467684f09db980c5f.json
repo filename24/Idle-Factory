@@ -1,0 +1,536 @@
+{
+  "nodes": [
+    {
+      "id": "plans_idle_factory_master_plan_master_plan",
+      "label": "Idle Factory Master Plan",
+      "file_type": "document",
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L1-L330",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Single reference document spanning vision, system design, architecture, implementation status, roadmap, and post-1.0, written from a full read of the 12 design docs plus a four-axis code audit."
+    },
+    {
+      "id": "plans_idle_factory_master_plan_d1_user_attribution",
+      "label": "Decision D-1: Activity-Server Attribution",
+      "file_type": "concept",
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L102",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Assets stay a single global account while tax and vault accrual follow the server where the sale happened; buffs follow the server where the command ran. Requires adding guildId to TradeLog and MarketListing, confirmed absent by audit."
+    },
+    {
+      "id": "plans_idle_factory_master_plan_d2_unlock_levels",
+      "label": "Decision D-2: T2/T3 Unlock at Lv.5/Lv.10",
+      "file_type": "concept",
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L103",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Current code (catalog.ts) plus docs 09 and 11 are treated as the truth; docs 00 and 10 stating Lv.10/25 are the ones corrected. General policy: code is truth, docs are adjusted."
+    },
+    {
+      "id": "plans_idle_factory_master_plan_d3_factory_roster",
+      "label": "Decision D-3: Remaining 5 Factories in Phase 2",
+      "file_type": "concept",
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L104",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Shipping oil well, refinery, furniture, electronics, and food alongside the global market completes the production chain and resolves the plastic supply gap that currently makes the car factory inoperable."
+    },
+    {
+      "id": "plans_idle_factory_master_plan_d4_deployment",
+      "label": "Decision D-4: Single VPS + Docker Compose Deployment",
+      "file_type": "concept",
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L105",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "bot, web, Postgres, and Redis as containers with GitHub Actions building GHCR images and running migrate deploy before the bot starts."
+    },
+    {
+      "id": "plans_idle_factory_master_plan_phase_2_economy_core",
+      "label": "Phase 2 \u2014 Economy Core Plan",
+      "file_type": "concept",
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L132-L147",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Ordered strictly by dependency: base prices seed global price fluctuation, which gates direct purchase (x2), asset valuation, weekly tax, and stock listing. Exit criteria require a new user to complete produce -> sell -> buy -> weekly tax with all 11 factories running."
+    },
+    {
+      "id": "plans_idle_factory_master_plan_scheduler_infrastructure",
+      "label": "Scheduler Infrastructure Migration (2.1)",
+      "file_type": "concept",
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L139",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Moving to @sapphire/plugin-scheduled-tasks (bullmq/Redis) with RedisStrategy defends against duplicate execution across shards and instances. Idempotent jobs run once at boot for catch-up; settlement and redistribution use a WeeklySettlement checkpoint to guard against duplicate periods. Must precede #15 because all six periodic jobs depend on it."
+    },
+    {
+      "id": "plans_idle_factory_master_plan_economy_balance_simulator",
+      "label": "Economy Balance Simulator",
+      "file_type": "concept",
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L181",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Because game-core is pure functions, N-day / M-user scenarios can be scripted to measure total currency, inflation rate, and tier arrival times. Explicitly built so tuning is evidence-based rather than by feel; also the source of truth for the deferred 'T2/T3 earn 2-3x T1' claim."
+    },
+    {
+      "id": "plans_idle_factory_master_plan_track_q_quality",
+      "label": "Track Q \u2014 Quality (CI integration tests, coverage gates)",
+      "file_type": "concept",
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L192-L197",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Highest priority because the market money path is currently not auto-verified before merge. Caveat: tests/integration/setup.ts forces a -dev suffix on DATABASE_URL, so the CI DB URL must match."
+    },
+    {
+      "id": "plans_idle_factory_master_plan_track_d_design_docs",
+      "label": "Track D \u2014 Design Document Cleanup",
+      "file_type": "concept",
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L199-L203",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Default policy is code-is-truth, docs adjusted, except where the doc contains an obvious error. Must reach a first pass before Phase 2 starts so implementation is not blocked by undefined specs U-1 through U-7."
+    },
+    {
+      "id": "plans_idle_factory_master_plan_track_w_web",
+      "label": "Track W \u2014 Web (dashboard, login 404 fix)",
+      "file_type": "concept",
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L205-L210",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Pulled forward from Phase 6 because the web app only reads the bot DB (no conflict with bot development) and the login -> /dashboard 404 is already user-visible."
+    },
+    {
+      "id": "plans_idle_factory_master_plan_track_i_infra",
+      "label": "Track I \u2014 Infrastructure & Deployment",
+      "file_type": "concept",
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L212-L217",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Existing apps/bot/Dockerfile is a node:16+yarn relic that cannot build; replacement uses node:20-slim + corepack + turbo prune --docker multistage running non-root. Backups plus one restore rehearsal are mandatory because losing economy data destroys game trust."
+    },
+    {
+      "id": "plans_idle_factory_master_plan_track_o_observability",
+      "label": "Track O \u2014 Observability",
+      "file_type": "concept",
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L219-L224",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Minimum set includes economy metrics (daily currency issued/burned, total supply, active users) specifically to detect inflation anomalies, plus health checks that catch a tick job failing to run."
+    },
+    {
+      "id": "plans_idle_factory_master_plan_design_debt",
+      "label": "Design Debt Register (11 contradictions, 8 undefined)",
+      "file_type": "concept",
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L228-L257",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Catalogs contradictions between docs and code (unlock levels, credit range, tax dimension error, warehouse cost table, special-slot enums, terminology) plus implementation blockers U-1..U-8 that must be settled before Phase 2 starts."
+    },
+    {
+      "id": "plans_idle_factory_master_plan_technical_debt",
+      "label": "Technical Debt Priority List",
+      "file_type": "concept",
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L261-L277",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Red items: integration tests absent from CI, Guild.taxSurcharge configured but never applied to any calculation, and missing guildId columns blocking D-1. Yellow: MarketListing.qty Int->BigInt, missing hot-path indexes, expireStale single-transaction loop, Float tax rate rounding policy."
+    },
+    {
+      "id": "plans_idle_factory_master_plan_risk_register",
+      "label": "Risk Register & Mitigations",
+      "file_type": "concept",
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L280-L289",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Economy balance collapse is treated as directly life-limiting for the game, so the simulator is built before 1.0. IP-based anti-fraud from the design docs is discarded as unobtainable and replaced with TradeLog graph analysis plus account-age signals."
+    }
+  ],
+  "edges": [
+    {
+      "source": "plans_idle_factory_master_plan_master_plan",
+      "target": "docs_design_01_overview_project_overview",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_master_plan",
+      "target": "docs_codemaps_architecture_three_layer_architecture",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L57",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_master_plan",
+      "target": "docs_design_10_open_questions_open_questions",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L107",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_d1_user_attribution",
+      "target": "docs_design_07_global_system_user_attribution_model",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L102",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_d2_unlock_levels",
+      "target": "docs_design_09_level_xp_level_unlocks",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L103",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_d3_factory_roster",
+      "target": "docs_design_03_factories_three_tier_chain",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L104",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_d4_deployment",
+      "target": "plans_idle_factory_master_plan_track_i_infra",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L105",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_phase_2_economy_core",
+      "target": "plans_idle_factory_master_plan_scheduler_infrastructure",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L139",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_phase_2_economy_core",
+      "target": "docs_design_06_market_global_market_price",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L141",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_phase_2_economy_core",
+      "target": "docs_design_04_economy_direct_purchase",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L142",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_phase_2_economy_core",
+      "target": "docs_design_07_global_system_settlement_cycle",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L143",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_phase_2_economy_core",
+      "target": "docs_design_07_global_system_total_asset_valuation",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L143",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_phase_2_economy_core",
+      "target": "docs_design_06_market_user_to_global_sale",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L141",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_scheduler_infrastructure",
+      "target": "docs_codemaps_dependencies_redis_cache",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L139",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_economy_balance_simulator",
+      "target": "docs_codemaps_game_core_game_core_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L181",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_design_debt",
+      "target": "docs_design_10_open_questions_open_questions",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L228-L257",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_design_debt",
+      "target": "docs_design_05_warehouse_capacity_grade_table",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L237",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_design_debt",
+      "target": "docs_design_06_market_user_shop",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L236",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_design_debt",
+      "target": "docs_design_00_onboarding_tutorial_quest_chain",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L244",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_track_d_design_docs",
+      "target": "plans_idle_factory_master_plan_design_debt",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L199-L203",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_technical_debt",
+      "target": "docs_design_07_global_system_progressive_tax",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L266",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_technical_debt",
+      "target": "plans_idle_factory_master_plan_d1_user_attribution",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L267",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_technical_debt",
+      "target": "docs_codemaps_data_indexes_constraints",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L269",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_technical_debt",
+      "target": "docs_codemaps_index_bigint_precision",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L268",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_risk_register",
+      "target": "docs_design_06_market_fraud_prevention",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L288",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_risk_register",
+      "target": "plans_idle_factory_master_plan_economy_balance_simulator",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L284",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_track_w_web",
+      "target": "plans_idle_factory_web_onboarding_docs_player_dashboard",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L208",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_track_w_web",
+      "target": "plans_idle_factory_web_onboarding_docs_bigint_serialization",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L208",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_track_w_web",
+      "target": "plans_idle_factory_web_onboarding_docs_web_onboarding_plan",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L208",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_track_q_quality",
+      "target": "docs_codemaps_dependencies_postgresql",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L194",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_track_i_infra",
+      "target": "docs_codemaps_dependencies_secret_management",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L215-L216",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_track_o_observability",
+      "target": "docs_design_04_economy_inflation_control",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md",
+      "source_location": "L223",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "phase_2_economy_dependency_chain",
+      "label": "Phase 2 Economy Implementation Dependency Chain",
+      "nodes": [
+        "plans_idle_factory_master_plan_scheduler_infrastructure",
+        "docs_design_00_onboarding_material_base_price",
+        "docs_design_06_market_global_market_price",
+        "docs_design_04_economy_direct_purchase",
+        "docs_design_07_global_system_total_asset_valuation",
+        "docs_design_07_global_system_settlement_cycle"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-master-plan.md"
+    }
+  ]
+}

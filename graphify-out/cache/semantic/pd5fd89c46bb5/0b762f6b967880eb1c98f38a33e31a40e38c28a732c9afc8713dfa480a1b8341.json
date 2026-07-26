@@ -1,0 +1,83 @@
+{
+  "nodes": [
+    {
+      "id": "_agents_skills_shadcn_rules_composition_items_inside_group",
+      "label": "Items Always Inside Their Group Component",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/composition.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_composition_overlay_component_selection",
+      "label": "Overlay Component Selection Matrix",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/composition.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_composition_dialog_title_accessibility",
+      "label": "Dialog/Sheet/Drawer Title Accessibility Requirement",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/composition.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_composition_card_full_composition",
+      "label": "Full Card Composition",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/composition.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_composition_button_loading_composition",
+      "label": "Button Loading via Spinner Composition (no isPending prop)",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/composition.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_composition_avatar_fallback",
+      "label": "Avatar Always Needs AvatarFallback",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/composition.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_composition_prefer_existing_components",
+      "label": "Prefer Existing Components Over Custom Markup",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/composition.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [],
+  "hyperedges": []
+}

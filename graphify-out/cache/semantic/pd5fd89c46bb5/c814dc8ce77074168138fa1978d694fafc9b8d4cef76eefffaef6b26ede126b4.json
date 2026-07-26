@@ -1,0 +1,127 @@
+{
+  "nodes": [
+    {
+      "id": "_agents_skills_agentation_self_driving_references_two_session_workflow_two_session_workflow",
+      "label": "Two-Session Self-Driving Workflow",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentation-self-driving/references/two-session-workflow.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_agentation_self_driving_references_two_session_workflow_critic_session",
+      "label": "Critic Session (Terminal 1)",
+      "file_type": "concept",
+      "source_file": ".agents/skills/agentation-self-driving/references/two-session-workflow.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_agentation_self_driving_references_two_session_workflow_fixer_session",
+      "label": "Fixer Session (Terminal 2)",
+      "file_type": "concept",
+      "source_file": ".agents/skills/agentation-self-driving/references/two-session-workflow.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_agentation_self_driving_references_two_session_workflow_mcp_annotation_relay",
+      "label": "MCP Annotation Relay (watch/resolve loop)",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/agentation-self-driving/references/two-session-workflow.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "_agents_skills_agentation_self_driving_references_two_session_workflow_two_session_workflow",
+      "target": "_agents_skills_agentation_self_driving_references_two_session_workflow_critic_session",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/agentation-self-driving/references/two-session-workflow.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_agentation_self_driving_references_two_session_workflow_two_session_workflow",
+      "target": "_agents_skills_agentation_self_driving_references_two_session_workflow_fixer_session",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/agentation-self-driving/references/two-session-workflow.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_agentation_self_driving_references_two_session_workflow_critic_session",
+      "target": "_agents_skills_agentation_self_driving_references_two_session_workflow_mcp_annotation_relay",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/agentation-self-driving/references/two-session-workflow.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_agentation_self_driving_references_two_session_workflow_fixer_session",
+      "target": "_agents_skills_agentation_self_driving_references_two_session_workflow_mcp_annotation_relay",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/agentation-self-driving/references/two-session-workflow.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_agentation_self_driving_references_two_session_workflow_critic_session",
+      "target": "_agents_skills_agentation_self_driving_skill_agentation_self_driving_mode",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/agentation-self-driving/references/two-session-workflow.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_agentation_self_driving_references_two_session_workflow_mcp_annotation_relay",
+      "target": "_agents_skills_agentation_skill_agentation_mcp_server",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/agentation-self-driving/references/two-session-workflow.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "agentation_autonomous_review_loop",
+      "label": "Agentation Autonomous Design-Review Loop",
+      "nodes": [
+        "_agents_skills_agentation_self_driving_skill_agentation_self_driving_mode",
+        "_agents_skills_agentation_self_driving_references_two_session_workflow_critic_session",
+        "_agents_skills_agentation_self_driving_references_two_session_workflow_fixer_session",
+        "_agents_skills_agentation_self_driving_references_two_session_workflow_mcp_annotation_relay",
+        "_agents_skills_agentation_skill_agentation_mcp_server"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/agentation-self-driving/references/two-session-workflow.md"
+    }
+  ]
+}

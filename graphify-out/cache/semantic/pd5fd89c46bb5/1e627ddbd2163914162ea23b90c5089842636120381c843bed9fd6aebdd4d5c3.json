@@ -1,0 +1,87 @@
+{
+  "nodes": [
+    {
+      "id": "docs_design_04_economy_direct_purchase",
+      "label": "Direct Material Purchase (x2 surcharge, daily cap)",
+      "file_type": "concept",
+      "source_file": "docs/design/04-economy.md",
+      "source_location": "L11-L40",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Priced at 2x the global market rate and capped daily by level so buying stays an emergency fallback and the normal loop remains factory production. The cap is summed across all material types to prevent diversification bypass."
+    },
+    {
+      "id": "docs_design_04_economy_inflation_control",
+      "label": "Four-Axis Inflation Control",
+      "file_type": "concept",
+      "source_file": "docs/design/04-economy.md",
+      "source_location": "L81-L86",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Money is withdrawn from circulation by taxes, upkeep, and rare-material purchase; the production loop is protected by purchase surcharge plus daily cap; trading is forced by T2/T3 recipes requiring other factories' output; and inactive-server vaults are redistributed after 30 days."
+    }
+  ],
+  "edges": [
+    {
+      "source": "docs_design_04_economy_direct_purchase",
+      "target": "docs_design_06_market_global_market_price",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/04-economy.md",
+      "source_location": "L37-L40",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_04_economy_inflation_control",
+      "target": "docs_design_07_global_system_inactive_server_redistribution",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/04-economy.md",
+      "source_location": "L86",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_04_economy_inflation_control",
+      "target": "docs_design_07_global_system_progressive_tax",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/04-economy.md",
+      "source_location": "L83",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_04_economy_inflation_control",
+      "target": "docs_design_04_economy_direct_purchase",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/04-economy.md",
+      "source_location": "L84",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "four_axis_inflation_control",
+      "label": "Four-Axis Inflation Control Mechanism",
+      "nodes": [
+        "docs_design_04_economy_inflation_control",
+        "docs_design_07_global_system_progressive_tax",
+        "docs_design_04_economy_direct_purchase",
+        "docs_design_03_factories_raw_booster",
+        "docs_design_07_global_system_inactive_server_redistribution"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/04-economy.md"
+    }
+  ]
+}

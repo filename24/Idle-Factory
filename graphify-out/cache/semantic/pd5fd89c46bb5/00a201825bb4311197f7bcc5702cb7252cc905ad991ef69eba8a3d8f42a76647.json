@@ -1,0 +1,51 @@
+{
+  "nodes": [
+    {
+      "id": "docs_design_05_warehouse_warehouse_system",
+      "label": "Shared Warehouse System",
+      "file_type": "concept",
+      "source_file": "docs/design/05-warehouse.md",
+      "source_location": "L1-L49",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "One shared warehouse per user with a unified capacity (1 material = 1 slot regardless of type), occupying a land slot and undemolishable. When full, all factories stop."
+    },
+    {
+      "id": "docs_design_05_warehouse_capacity_grade_table",
+      "label": "Warehouse Grade & Capacity Table (3,000 x 3^(g-1))",
+      "file_type": "concept",
+      "source_file": "docs/design/05-warehouse.md",
+      "source_location": "L51-L80",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Grade 1 (3,000 slots) is about 16 hours of one starter factory. As factory count grows the warehouse fills faster, creating natural upgrade pressure and encouraging frequent early logins. Upgrade money cost is NOT a flat x3 \u2014 it rises exactly x10 every two grades, and required material escalates wood -> steel -> car."
+    }
+  ],
+  "edges": [
+    {
+      "source": "docs_design_05_warehouse_capacity_grade_table",
+      "target": "docs_design_05_warehouse_warehouse_system",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/05-warehouse.md",
+      "source_location": "L71",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_05_warehouse_warehouse_system",
+      "target": "docs_design_11_land_land_system",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/05-warehouse.md",
+      "source_location": "L107",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

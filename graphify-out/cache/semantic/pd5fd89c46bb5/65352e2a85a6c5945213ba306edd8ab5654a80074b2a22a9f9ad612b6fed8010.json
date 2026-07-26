@@ -1,0 +1,247 @@
+{
+  "nodes": [
+    {
+      "id": "design_opencode_design_system",
+      "label": "OpenCode Brand design system",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Terminal-native design system documented in the Google Stitch DESIGN.md 9-section format, extended with iconography and document policies. Ships Button, Input, Table, Card, Badge, Tabs, Dialog."
+    },
+    {
+      "id": "design_berkeley_mono_typography",
+      "label": "Berkeley Mono single-typeface system",
+      "file_type": "rationale",
+      "source_file": "DESIGN.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "One monospace family for headings, body, buttons and navigation expresses an 'everything is code' identity; hierarchy comes from size and three weights (700/500/400) alone. Introducing a sans or serif voice would break the terminal-native identity."
+    },
+    {
+      "id": "design_warm_dark_palette",
+      "label": "Warm near-black palette (#171717 / #fdfcfc)",
+      "file_type": "rationale",
+      "source_file": "DESIGN.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Pure #000000 and #ffffff read as a generic cold dark theme. A reddish-warm near-black rgb(32,29,29) with warm off-white text, plus warm transparent borders rgba(15,0,0,0.12), gives the lived-in terminal warmth that distinguishes the brand."
+    },
+    {
+      "id": "design_apple_hig_semantic_colors",
+      "label": "Apple HIG semantic color set",
+      "file_type": "rationale",
+      "source_file": "DESIGN.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Blue #007aff, red #ff3b30, green #30d158, orange #ff9f0a are borrowed rather than invented because they are the signal colors developers already trust, adding status semantics without brand complexity. Each has a three-stage default -> hover -> active darkening."
+    },
+    {
+      "id": "design_flat_depth_system",
+      "label": "Flat, shadowless depth system",
+      "file_type": "rationale",
+      "source_file": "DESIGN.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Zero box-shadow tokens were detected in extraction; depth is expressed only through three border levels and background shifts between #171717 and #302c2c. Terminals do not cast shadows, so neither does the system. Radius is 4px everywhere (6px for inputs) to stay utilitarian."
+    },
+    {
+      "id": "design_dark_mode_tokens",
+      "label": "Dark mode token overrides",
+      "file_type": "concept",
+      "source_file": "DESIGN.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Dark tokens are scoped under .dark OR a prefers-color-scheme media query \u2014 never both, to keep one source of truth. Primary stays #171717 because the brand anchor must be theme-stable; shadows must be lightened and images given dark variants."
+    },
+    {
+      "id": "design_iconography_guidelines",
+      "label": "Iconography and SVG guidelines",
+      "file_type": "concept",
+      "source_file": "DESIGN.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "One icon library only (Lucide / Radix / Heroicons), inline SVG components rather than img tags so color and size are controllable, and currentColor fills so icons inherit theme color instead of hard-coding hex."
+    },
+    {
+      "id": "design_no_emoji_policy",
+      "label": "No-emoji document policy",
+      "file_type": "rationale",
+      "source_file": "DESIGN.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Emojis render inconsistently across platforms and break visual coherence, so status indicators use colored dots or icon components and section markers use text prefixes instead."
+    },
+    {
+      "id": "design_terminal_hero",
+      "label": "Terminal hero / CLI-install-as-marketing",
+      "file_type": "concept",
+      "source_file": "DESIGN.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "The hero is a full-width dark terminal window showing the real install command, which reinforces the CLI-first product identity better than a generic marketing headline."
+    },
+    {
+      "id": "design_opencode_brand_narrative",
+      "label": "OpenCode brand narrative (SST, Dax Raad)",
+      "file_type": "document",
+      "source_file": "DESIGN.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Open-source AI coding agent from the SST team; server-client architecture from day one so any frontend (terminal, desktop, web, mobile) can attach. Positioned as a serious developer tool respecting CLI heritage, never framed via generic Cursor comparisons."
+    }
+  ],
+  "edges": [
+    {
+      "source": "design_opencode_design_system",
+      "target": "design_berkeley_mono_typography",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "DESIGN.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "design_opencode_design_system",
+      "target": "design_warm_dark_palette",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "DESIGN.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "design_opencode_design_system",
+      "target": "design_apple_hig_semantic_colors",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "DESIGN.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "design_opencode_design_system",
+      "target": "design_flat_depth_system",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "DESIGN.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "design_opencode_design_system",
+      "target": "design_dark_mode_tokens",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "DESIGN.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "design_opencode_design_system",
+      "target": "design_iconography_guidelines",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "DESIGN.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "design_opencode_design_system",
+      "target": "design_no_emoji_policy",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "DESIGN.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "design_opencode_design_system",
+      "target": "design_opencode_brand_narrative",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "DESIGN.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "design_terminal_hero",
+      "target": "design_opencode_brand_narrative",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "DESIGN.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "design_no_emoji_policy",
+      "target": "design_iconography_guidelines",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "DESIGN.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "design_berkeley_mono_typography",
+      "target": "design_terminal_hero",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "DESIGN.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "design_opencode_design_system",
+      "target": "agents_idle_factory_repository_guide",
+      "relation": "conceptually_related_to",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.2,
+      "source_file": "DESIGN.md",
+      "source_location": null,
+      "weight": 0.4
+    }
+  ],
+  "hyperedges": []
+}

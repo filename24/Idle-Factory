@@ -1,0 +1,113 @@
+{
+  "nodes": [
+    {
+      "id": "_agents_skills_shadcn_rules_styling_semantic_colors",
+      "label": "Semantic Color Tokens Over Raw Tailwind Colors",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/styling.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_styling_classname_layout_only",
+      "label": "className for Layout Only",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/styling.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_styling_gap_over_space",
+      "label": "gap-* Over space-x-* / space-y-*",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/styling.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_styling_cn_utility",
+      "label": "cn() Utility for Conditional Classes",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/styling.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_styling_no_manual_zindex",
+      "label": "No Manual z-index on Overlay Components",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/styling.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_styling_no_manual_dark_overrides",
+      "label": "No Manual dark: Color Overrides",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/styling.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "_agents_skills_shadcn_rules_styling_semantic_colors",
+      "target": "_agents_skills_shadcn_customization_semantic_css_variable_tokens",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/rules/styling.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_rules_styling_no_manual_dark_overrides",
+      "target": "_agents_skills_shadcn_rules_styling_semantic_colors",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/rules/styling.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_rules_styling_no_manual_zindex",
+      "target": "_agents_skills_shadcn_rules_composition_overlay_component_selection",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": ".agents/skills/shadcn/rules/styling.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_rules_styling_classname_layout_only",
+      "target": "_agents_skills_shadcn_customization_component_customization_ladder",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/rules/styling.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

@@ -1,0 +1,181 @@
+{
+  "nodes": [
+    {
+      "id": "docs_design_03_factories_three_tier_chain",
+      "label": "3-Tier Production Chain (11 factories)",
+      "file_type": "concept",
+      "source_file": "docs/design/03-factories.md",
+      "source_location": "L1-L69",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_design_03_factories_production_tick",
+      "label": "10-Minute Production Tick",
+      "file_type": "concept",
+      "source_file": "docs/design/03-factories.md",
+      "source_location": "L71-L85",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Harvest is manual (/harvest) and production halts when the warehouse overflows, with no loss of the overflow \u2014 the stall is the pressure that drives warehouse upgrades and repeat logins."
+    },
+    {
+      "id": "docs_design_03_factories_grade_system",
+      "label": "Factory Grade System (1-10, x1.5 compounding)",
+      "file_type": "concept",
+      "source_file": "docs/design/03-factories.md",
+      "source_location": "L87-L110",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "x1.5 per grade is the idle-genre industry standard (Cookie Clicker, AdVenture Capitalist) and is explicitly flagged for post-MVP tuning."
+    },
+    {
+      "id": "docs_design_03_factories_build_upgrade_cost",
+      "label": "Build & Upgrade Cost Formulas",
+      "file_type": "concept",
+      "source_file": "docs/design/03-factories.md",
+      "source_location": "L112-L184",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Upgrade money cost = build_cost x 3^N and material cost = base x 2^(N-1). Per-tier base amounts (T1 20 / T2 10 / T3 5) are lowered as unit prices rise so the real burden is roughly equal across tiers. Build material requirements deliberately match each factory's own input so players can infer them from the recipe."
+    },
+    {
+      "id": "docs_design_03_factories_upgrade_booster",
+      "label": "Upgrade Booster Branch Selection",
+      "file_type": "concept",
+      "source_file": "docs/design/03-factories.md",
+      "source_location": "L186-L216",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Chosen at grades 3/5/7/10, one path per factory, resettable only at high money cost \u2014 creates a meaningful, semi-permanent specialization decision."
+    },
+    {
+      "id": "docs_design_03_factories_raw_booster",
+      "label": "Rare Raw Material Booster (RAW_BOOSTER, Lv.50)",
+      "file_type": "concept",
+      "source_file": "docs/design/03-factories.md",
+      "source_location": "L218-L251",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Permanent one-per-factory consumable dropped at 0.5-1% by T3 factories and tradable through all three channels. Acting as the economy's terminal sink, its permanent consumption is an explicit anti-inflation device."
+    },
+    {
+      "id": "docs_design_03_factories_shortage_mode",
+      "label": "Material Shortage Modes A/B/C",
+      "file_type": "concept",
+      "source_file": "docs/design/03-factories.md",
+      "source_location": "L253-L275",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_design_03_factories_mvp_scope",
+      "label": "MVP Factory Roster (6 of 11)",
+      "file_type": "concept",
+      "source_file": "docs/design/03-factories.md",
+      "source_location": "L277-L287",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Phase 1 ships 6 factories; the remaining 5 land in Phase 2 (confirmed 2026-07-03). Unlocking the refinery specifically opens plastic supply, which is currently the production bottleneck blocking car and electronics factories."
+    }
+  ],
+  "edges": [
+    {
+      "source": "docs_design_03_factories_production_tick",
+      "target": "docs_design_05_warehouse_warehouse_system",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/03-factories.md",
+      "source_location": "L76",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_03_factories_grade_system",
+      "target": "docs_design_07_global_system_credit_system",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/03-factories.md",
+      "source_location": "L93",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_03_factories_raw_booster",
+      "target": "docs_design_09_level_xp_level_unlocks",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/03-factories.md",
+      "source_location": "L224",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_03_factories_raw_booster",
+      "target": "docs_design_03_factories_grade_system",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/03-factories.md",
+      "source_location": "L227",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_03_factories_raw_booster",
+      "target": "docs_design_04_economy_inflation_control",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/03-factories.md",
+      "source_location": "L251",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_03_factories_shortage_mode",
+      "target": "docs_design_06_market_global_market_price",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/03-factories.md",
+      "source_location": "L260",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_03_factories_mvp_scope",
+      "target": "docs_design_09_level_xp_level_unlocks",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/03-factories.md",
+      "source_location": "L287",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_03_factories_mvp_scope",
+      "target": "plans_idle_factory_master_plan_d3_factory_roster",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/03-factories.md",
+      "source_location": "L287",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

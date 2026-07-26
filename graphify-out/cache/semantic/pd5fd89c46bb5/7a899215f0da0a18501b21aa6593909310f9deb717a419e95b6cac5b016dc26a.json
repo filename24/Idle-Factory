@@ -1,0 +1,160 @@
+{
+  "nodes": [
+    {
+      "id": "docs_design_07_global_system_global_system",
+      "label": "Global (Cross-Server) System",
+      "file_type": "concept",
+      "source_file": "docs/design/07-global-system.md",
+      "source_location": "L1-L24",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_design_07_global_system_user_attribution_model",
+      "label": "User Attribution Model (D-1)",
+      "file_type": "concept",
+      "source_file": "docs/design/07-global-system.md",
+      "source_location": "L26-L42",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Because the bot spans many servers, assets are a single global account while taxation attributes to the server where the sale occurred and buffs derive from the server where the command was run. No double taxation: the activity server is captured on TradeLog.guildId / MarketListing.guildId at transaction time, and both FKs use onDelete: SetNull to avoid ghost references when a guild leaves."
+    },
+    {
+      "id": "docs_design_07_global_system_credit_system",
+      "label": "Server Credit (Trust) System",
+      "file_type": "concept",
+      "source_file": "docs/design/07-global-system.md",
+      "source_location": "L44-L79",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Credit is 0-2,000 with a 1,000 default; weekly delta = floor(weeklyDAU x 0.5) - 10 so an inactive server naturally decays. Bands gate features, emergency support, factory grade caps (+1/+2), XP bonuses, and global stock access."
+    },
+    {
+      "id": "docs_design_07_global_system_progressive_tax",
+      "label": "Asset-Based Progressive Tax",
+      "file_type": "concept",
+      "source_file": "docs/design/07-global-system.md",
+      "source_location": "L81-L100",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Only realized sale revenue is taxed \u2014 production ticks are unrealized and exempt. Server admins may add 0 to +20%p surcharge on top of the 5-20% progressive bands, capping total tax at 40%."
+    },
+    {
+      "id": "docs_design_07_global_system_total_asset_valuation",
+      "label": "Total Asset Valuation Formula (U-2)",
+      "file_type": "concept",
+      "source_file": "docs/design/07-global-system.md",
+      "source_location": "L102-L114",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "cash + sum(warehouse qty x global current price) + sum(factory cumulative investment). Factories are valued at sunk cost rather than market re-appraisal to keep the calculation simple in v1. Tax bands, listing eligibility, and IPO base price all depend on this single value."
+    },
+    {
+      "id": "docs_design_07_global_system_settlement_cycle",
+      "label": "Weekly Settlement Cycle (U-6)",
+      "file_type": "concept",
+      "source_file": "docs/design/07-global-system.md",
+      "source_location": "L116-L128",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Anchored to Sunday 00:00 KST (registered as cron UTC Saturday 15:00). Users cannot move assets right before settlement, preventing avoidance. Vault proceeds split 50/50 between the global redistribution pool and the server's discretionary operations budget."
+    },
+    {
+      "id": "docs_design_07_global_system_inactive_server_redistribution",
+      "label": "Inactive Server Asset Redistribution",
+      "file_type": "concept",
+      "source_file": "docs/design/07-global-system.md",
+      "source_location": "L152-L191",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "After 30 days of bot absence assets move to a pool; returning within 30 days restores everything. Monthly distribution weights servers by weeklyDAU + log(totalAssets+1) and splits 70% to the server vault / 30% to active user wallets so both the server's operation and individual players feel the benefit."
+    }
+  ],
+  "edges": [
+    {
+      "source": "docs_design_07_global_system_user_attribution_model",
+      "target": "docs_design_07_global_system_progressive_tax",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/07-global-system.md",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_07_global_system_user_attribution_model",
+      "target": "docs_design_07_global_system_credit_system",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/07-global-system.md",
+      "source_location": "L34",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_07_global_system_progressive_tax",
+      "target": "docs_design_07_global_system_total_asset_valuation",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/07-global-system.md",
+      "source_location": "L104",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_07_global_system_total_asset_valuation",
+      "target": "docs_design_06_market_global_market_price",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/07-global-system.md",
+      "source_location": "L112",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_07_global_system_total_asset_valuation",
+      "target": "docs_design_08_stock_ipo_listing_conditions",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/07-global-system.md",
+      "source_location": "L104",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_07_global_system_settlement_cycle",
+      "target": "docs_design_07_global_system_progressive_tax",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/07-global-system.md",
+      "source_location": "L119",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_07_global_system_inactive_server_redistribution",
+      "target": "docs_design_07_global_system_credit_system",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/07-global-system.md",
+      "source_location": "L162",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

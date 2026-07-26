@@ -1,0 +1,82 @@
+{
+  "nodes": [
+    {
+      "id": "home_coder_idle_factory_husky_common_sh",
+      "label": "common.sh",
+      "file_type": "code",
+      "source_file": ".husky/common.sh",
+      "source_location": "L1",
+      "metadata": { "language": "bash", "kind": "file" }
+    },
+    {
+      "id": "home_coder_idle_factory_husky_common_sh__entry",
+      "label": "common.sh script",
+      "file_type": "code",
+      "source_file": ".husky/common.sh",
+      "source_location": "L1",
+      "metadata": { "language": "bash", "kind": "bash_entrypoint" }
+    },
+    {
+      "id": "home_coder_idle_factory_husky_common_command_exists",
+      "label": "command_exists()",
+      "file_type": "code",
+      "source_file": ".husky/common.sh",
+      "source_location": "L1",
+      "metadata": { "language": "bash", "kind": "bash_function" }
+    }
+  ],
+  "edges": [
+    {
+      "source": "home_coder_idle_factory_husky_common_sh",
+      "target": "home_coder_idle_factory_husky_common_sh__entry",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".husky/common.sh",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_husky_common_sh",
+      "target": "home_coder_idle_factory_husky_common_command_exists",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": ".husky/common.sh",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_husky_common_sh__entry",
+      "target": "home_coder_idle_factory_husky_common_command_exists",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": ".husky/common.sh",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "call"
+    }
+  ],
+  "raw_calls": [
+    {
+      "language": "bash",
+      "callee": "test",
+      "caller_nid": "home_coder_idle_factory_husky_common_sh__entry",
+      "source_file": ".husky/common.sh",
+      "source_location": "L6"
+    },
+    {
+      "language": "bash",
+      "callee": "exec",
+      "caller_nid": "home_coder_idle_factory_husky_common_sh__entry",
+      "source_file": ".husky/common.sh",
+      "source_location": "L7"
+    },
+    {
+      "language": "bash",
+      "callee": "command",
+      "caller_nid": "home_coder_idle_factory_husky_common_command_exists",
+      "source_file": ".husky/common.sh",
+      "source_location": "L2"
+    }
+  ],
+  "bash_sources": []
+}

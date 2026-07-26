@@ -1,0 +1,115 @@
+{
+  "nodes": [
+    {
+      "id": "_claude_skills_factory_slot_patterns_skill_factory_slot_patterns",
+      "label": "factory-slot-patterns Skill",
+      "file_type": "document",
+      "source_file": ".claude/skills/factory-slot-patterns/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_claude_skills_factory_slot_patterns_skill_locked_slot_skip",
+      "label": "Locked Slot Skip-First Rule",
+      "file_type": "rationale",
+      "source_file": ".claude/skills/factory-slot-patterns/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_claude_skills_factory_slot_patterns_skill_getspecialslotbonus",
+      "label": "getSpecialSlotBonus Special Slot Bonus Pattern",
+      "file_type": "rationale",
+      "source_file": ".claude/skills/factory-slot-patterns/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_claude_skills_factory_slot_patterns_skill_material_balance_tracking",
+      "label": "MaterialBag Balance Tracking Pattern",
+      "file_type": "rationale",
+      "source_file": ".claude/skills/factory-slot-patterns/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "_claude_skills_factory_slot_patterns_skill_factory_slot_patterns",
+      "target": "_claude_skills_factory_slot_patterns_skill_locked_slot_skip",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".claude/skills/factory-slot-patterns/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_claude_skills_factory_slot_patterns_skill_factory_slot_patterns",
+      "target": "_claude_skills_factory_slot_patterns_skill_getspecialslotbonus",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".claude/skills/factory-slot-patterns/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_claude_skills_factory_slot_patterns_skill_factory_slot_patterns",
+      "target": "_claude_skills_factory_slot_patterns_skill_material_balance_tracking",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".claude/skills/factory-slot-patterns/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_claude_skills_factory_slot_patterns_skill_getspecialslotbonus",
+      "target": "_claude_skills_factory_slot_patterns_skill_locked_slot_skip",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".claude/skills/factory-slot-patterns/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_claude_skills_factory_slot_patterns_skill_material_balance_tracking",
+      "target": "_claude_skills_factory_slot_patterns_skill_getspecialslotbonus",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": ".claude/skills/factory-slot-patterns/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "factory_harvest_calculation_flow",
+      "label": "Factory Harvest Calculation Flow",
+      "nodes": [
+        "_claude_skills_factory_slot_patterns_skill_locked_slot_skip",
+        "_claude_skills_factory_slot_patterns_skill_getspecialslotbonus",
+        "_claude_skills_factory_slot_patterns_skill_material_balance_tracking"
+      ],
+      "relation": "participate_in",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": ".claude/skills/factory-slot-patterns/SKILL.md"
+    }
+  ]
+}

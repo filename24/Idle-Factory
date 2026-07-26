@@ -1,0 +1,168 @@
+{
+  "nodes": [
+    {
+      "id": "docs_codemaps_index_codemaps_index",
+      "label": "Idle-Factory Codemaps Index",
+      "file_type": "document",
+      "source_file": "docs/CODEMAPS/INDEX.md",
+      "source_location": "L1-L205",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_index_discovery_workflow",
+      "label": "Codemap Discovery Workflow",
+      "file_type": "rationale",
+      "source_file": "docs/CODEMAPS/INDEX.md",
+      "source_location": "L168-L181",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Codemaps are kept token-lean (<1000 tokens each) and routed by question type so an agent loads only the map relevant to its task instead of scanning the whole repo. Every entry carries file:line references so the reader can jump straight to source."
+    },
+    {
+      "id": "docs_codemaps_index_korean_jsdoc",
+      "label": "Korean JSDoc Convention",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/INDEX.md",
+      "source_location": "L158",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "All exported source symbols carry Korean /** */ blocks because the team convention is Korean docs; AGENTS.md files stay English-only so they remain a shared human/AI contract."
+    },
+    {
+      "id": "docs_codemaps_index_bigint_precision",
+      "label": "BigInt Precision Convention",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/INDEX.md",
+      "source_location": "L162",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "All monetary/resource amounts use bigint to prevent floating-point precision loss in an economy where balances compound geometrically."
+    },
+    {
+      "id": "docs_codemaps_index_components_v2_convention",
+      "label": "Components v2 Mandatory Convention",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/INDEX.md",
+      "source_location": "L166",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Every Discord bot response must use the Components v2 API; legacy embeds are forbidden so UI stays uniform and future-proof."
+    },
+    {
+      "id": "docs_codemaps_index_immutability",
+      "label": "Immutability Convention",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/INDEX.md",
+      "source_location": "L164",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Values are never mutated; functions return new objects so domain calculations stay side-effect free and safe to share between bot and web."
+    }
+  ],
+  "edges": [
+    {
+      "source": "docs_codemaps_index_codemaps_index",
+      "target": "docs_codemaps_architecture_three_layer_architecture",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/INDEX.md",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_index_codemaps_index",
+      "target": "docs_codemaps_backend_command_structure",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/INDEX.md",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_index_codemaps_index",
+      "target": "docs_codemaps_data_prisma_schema",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/INDEX.md",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_index_codemaps_index",
+      "target": "docs_codemaps_game_core_game_core_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/INDEX.md",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_index_codemaps_index",
+      "target": "docs_codemaps_dependencies_external_dependencies",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/INDEX.md",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_index_discovery_workflow",
+      "target": "docs_codemaps_index_codemaps_index",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/INDEX.md",
+      "source_location": "L168-L181",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_index_bigint_precision",
+      "target": "docs_codemaps_data_bigint_fields",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/INDEX.md",
+      "source_location": "L162",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_index_components_v2_convention",
+      "target": "docs_design_11_land_components_v2_grid",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/CODEMAPS/INDEX.md",
+      "source_location": "L166",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_index_immutability",
+      "target": "docs_codemaps_game_core_game_core_package",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/CODEMAPS/INDEX.md",
+      "source_location": "L164",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

@@ -1,0 +1,30 @@
+{
+  "nodes": [
+    {
+      "id": "docker_compose_dev_postgres_dev",
+      "label": "Dev Postgres service (idle-factory-dev on 5433)",
+      "file_type": "code",
+      "source_file": "docker-compose.dev.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "postgres:16-alpine with user/password idle and DB idle-factory-dev, published on host port 5433 to avoid clashing with a local system Postgres on 5432. pg_isready healthcheck gates dependents."
+    },
+    {
+      "id": "docker_compose_dev_redis_dev",
+      "label": "Dev Redis service (port 6380)",
+      "file_type": "code",
+      "source_file": "docker-compose.dev.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "redis:7-alpine published on 6380 (not 6379) for the same host-port-collision reason as Postgres; backs the optional REDIS_URL path of DatabaseClient."
+    }
+  ],
+  "edges": [],
+  "hyperedges": []
+}

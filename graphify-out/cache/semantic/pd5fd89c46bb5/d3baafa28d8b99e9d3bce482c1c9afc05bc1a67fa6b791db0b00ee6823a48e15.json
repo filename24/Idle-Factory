@@ -1,0 +1,133 @@
+{
+  "nodes": [
+    {
+      "id": "_agents_skills_shadcn_rules_forms_fieldgroup_field_layout",
+      "label": "FieldGroup + Field Form Layout",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/forms.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_forms_inputgroup_composition",
+      "label": "InputGroup Composition (InputGroupInput / InputGroupAddon)",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/forms.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_forms_togglegroup_option_sets",
+      "label": "ToggleGroup for Option Sets (2\u20137 choices)",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/forms.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_forms_fieldset_fieldlegend",
+      "label": "FieldSet + FieldLegend Grouping",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/forms.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_forms_field_validation_states",
+      "label": "Field Validation States (data-invalid + aria-invalid)",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/forms.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_forms_form_control_selection",
+      "label": "Form Control Selection Guide",
+      "file_type": "document",
+      "source_file": ".agents/skills/shadcn/rules/forms.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "_agents_skills_shadcn_rules_forms_togglegroup_option_sets",
+      "target": "_agents_skills_shadcn_rules_base_vs_radix_togglegroup_api_differences",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/rules/forms.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_rules_forms_fieldgroup_field_layout",
+      "target": "_agents_skills_shadcn_rules_styling_gap_over_space",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/rules/forms.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_rules_forms_fieldset_fieldlegend",
+      "target": "_agents_skills_shadcn_rules_forms_fieldgroup_field_layout",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/rules/forms.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_rules_forms_field_validation_states",
+      "target": "_agents_skills_shadcn_rules_forms_fieldgroup_field_layout",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/rules/forms.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_rules_forms_form_control_selection",
+      "target": "_agents_skills_shadcn_skill_component_selection_table",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": ".agents/skills/shadcn/rules/forms.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_rules_forms_inputgroup_composition",
+      "target": "_agents_skills_shadcn_rules_icons_data_icon_attribute",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/rules/forms.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

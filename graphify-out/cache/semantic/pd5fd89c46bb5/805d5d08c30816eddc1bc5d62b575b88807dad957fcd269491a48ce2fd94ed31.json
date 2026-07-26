@@ -1,0 +1,59 @@
+{
+  "nodes": [
+    {
+      "id": "docs_design_10_open_questions_open_questions",
+      "label": "Open Questions Register",
+      "file_type": "document",
+      "source_file": "docs/design/10-open-questions.md",
+      "source_location": "L1-L88",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Tracks decisions by criticality (Critical before MVP, High post-MVP, Medium/Low post-release). All Critical and High items are marked resolved; the decision-dependency graph shows factory cost gates warehouse capacity and XP, which in turn gate level unlocks and the global system."
+    }
+  ],
+  "edges": [
+    {
+      "source": "docs_design_10_open_questions_open_questions",
+      "target": "docs_design_09_level_xp_level_unlocks",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/10-open-questions.md",
+      "source_location": "L34",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_10_open_questions_open_questions",
+      "target": "docs_design_06_market_user_shop",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/10-open-questions.md",
+      "source_location": "L26-L28",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_10_open_questions_open_questions",
+      "target": "docs_design_07_global_system_progressive_tax",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/10-open-questions.md",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_10_open_questions_open_questions",
+      "target": "docs_design_08_stock_ipo_listing_conditions",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/10-open-questions.md",
+      "source_location": "L47-L48",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

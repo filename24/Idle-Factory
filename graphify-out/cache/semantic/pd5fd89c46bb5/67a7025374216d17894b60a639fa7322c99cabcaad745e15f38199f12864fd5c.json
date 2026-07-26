@@ -1,0 +1,101 @@
+{
+  "nodes": [
+    {
+      "id": "_claude_skills_i18n_sync_skill_i18n_sync",
+      "label": "i18n-sync Skill",
+      "file_type": "document",
+      "source_file": ".claude/skills/i18n-sync/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_claude_skills_i18n_sync_skill_locale_key_dual_edit",
+      "label": "ko + en-US Simultaneous Locale Key Edit",
+      "file_type": "rationale",
+      "source_file": ".claude/skills/i18n-sync/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_claude_skills_i18n_sync_skill_emoji_token_propagation_order",
+      "label": "Emoji Token Propagation Order (renderer \u2192 locale \u2192 button \u2192 test)",
+      "file_type": "rationale",
+      "source_file": ".claude/skills/i18n-sync/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_claude_skills_i18n_sync_skill_interpolation_audit",
+      "label": "Interpolation Audit Script",
+      "file_type": "rationale",
+      "source_file": ".claude/skills/i18n-sync/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "_claude_skills_i18n_sync_skill_i18n_sync",
+      "target": "_claude_skills_i18n_sync_skill_locale_key_dual_edit",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".claude/skills/i18n-sync/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_claude_skills_i18n_sync_skill_i18n_sync",
+      "target": "_claude_skills_i18n_sync_skill_emoji_token_propagation_order",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".claude/skills/i18n-sync/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_claude_skills_i18n_sync_skill_i18n_sync",
+      "target": "_claude_skills_i18n_sync_skill_interpolation_audit",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".claude/skills/i18n-sync/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_claude_skills_i18n_sync_skill_emoji_token_propagation_order",
+      "target": "_claude_skills_i18n_sync_skill_locale_key_dual_edit",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".claude/skills/i18n-sync/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_claude_skills_i18n_sync_skill_emoji_token_propagation_order",
+      "target": "_claude_skills_componentsv2_builder_skill_button_style_selection",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": ".claude/skills/i18n-sync/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

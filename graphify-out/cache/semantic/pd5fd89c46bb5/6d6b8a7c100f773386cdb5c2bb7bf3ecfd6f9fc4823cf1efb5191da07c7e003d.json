@@ -1,0 +1,83 @@
+{
+  "nodes": [
+    {
+      "id": "code_of_conduct_contributor_covenant",
+      "label": "Contributor Covenant Code of Conduct",
+      "file_type": "document",
+      "source_file": "Code_Of_Conduct.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Reports go to filename@inft.kr; the CoC applies in all community spaces and whenever someone officially represents the project."
+    },
+    {
+      "id": "code_of_conduct_enforcement_guidelines",
+      "label": "Community Impact enforcement ladder",
+      "file_type": "concept",
+      "source_file": "Code_Of_Conduct.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Four graduated consequences \u2014 Correction, Warning, Temporary Ban, Permanent Ban \u2014 scale response to community impact rather than applying a single blanket sanction."
+    },
+    {
+      "id": "code_of_conduct_contributor_covenant_v2_source",
+      "label": "Contributor Covenant v2.0 (source)",
+      "file_type": "document",
+      "source_file": "Code_Of_Conduct.md",
+      "source_location": null,
+      "source_url": "https://www.contributor-covenant.org/version/2/0/code_of_conduct.html",
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "code_of_conduct_mozilla_enforcement_ladder",
+      "label": "Mozilla code of conduct enforcement ladder",
+      "file_type": "document",
+      "source_file": "Code_Of_Conduct.md",
+      "source_location": null,
+      "source_url": "https://github.com/mozilla/diversity",
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "code_of_conduct_contributor_covenant",
+      "target": "code_of_conduct_contributor_covenant_v2_source",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Code_Of_Conduct.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "code_of_conduct_enforcement_guidelines",
+      "target": "code_of_conduct_mozilla_enforcement_ladder",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Code_Of_Conduct.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "code_of_conduct_contributor_covenant",
+      "target": "code_of_conduct_enforcement_guidelines",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Code_Of_Conduct.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

@@ -1,0 +1,114 @@
+{
+  "nodes": [
+    {
+      "id": "docs_codemaps_dependencies_external_dependencies",
+      "label": "External Dependencies & Integrations",
+      "file_type": "document",
+      "source_file": "docs/CODEMAPS/dependencies.md",
+      "source_location": "L1-L244",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_dependencies_discord_api",
+      "label": "Discord API Integration",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/dependencies.md",
+      "source_location": "L61-L78",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_dependencies_postgresql",
+      "label": "PostgreSQL Primary Data Store",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/dependencies.md",
+      "source_location": "L80-L94",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_dependencies_redis_cache",
+      "label": "Optional Redis Cache Layer",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/dependencies.md",
+      "source_location": "L96-L108",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Redis is optional (DatabaseClient takes useRedis boolean) so local development and small deployments can run without it; it caches GlobalMarketPrice with a 30-min TTL matching the price refresh cycle."
+    },
+    {
+      "id": "docs_codemaps_dependencies_turbo_workspace",
+      "label": "Turbo + pnpm Workspace Configuration",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/dependencies.md",
+      "source_location": "L156-L191",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_dependencies_secret_management",
+      "label": "Secret & Environment Variable Management",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/dependencies.md",
+      "source_location": "L193-L231",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "docs_codemaps_dependencies_postgresql",
+      "target": "docs_codemaps_data_prisma_schema",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/dependencies.md",
+      "source_location": "L84",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_dependencies_redis_cache",
+      "target": "docs_design_06_market_global_market_price",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/dependencies.md",
+      "source_location": "L102",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_dependencies_discord_api",
+      "target": "docs_codemaps_index_components_v2_convention",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/dependencies.md",
+      "source_location": "L69",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_dependencies_turbo_workspace",
+      "target": "docs_codemaps_architecture_cross_package_dependencies",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/CODEMAPS/dependencies.md",
+      "source_location": "L156-L191",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

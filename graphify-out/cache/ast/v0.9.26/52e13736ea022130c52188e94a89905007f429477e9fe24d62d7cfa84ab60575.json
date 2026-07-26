@@ -1,0 +1,388 @@
+{
+  "nodes": [
+    {
+      "id": "home_coder_idle_factory_packages_eslint_config_idle_package_json",
+      "label": "package.json",
+      "file_type": "code",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L1"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_eslint_config_idle_package_name",
+      "label": "name",
+      "file_type": "code",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L2"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_eslint_config_idle_package_version",
+      "label": "version",
+      "file_type": "code",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L3"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_eslint_config_idle_package_private",
+      "label": "private",
+      "file_type": "code",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L4"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_eslint_config_idle_package_description",
+      "label": "description",
+      "file_type": "code",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L5"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_eslint_config_idle_package_main",
+      "label": "main",
+      "file_type": "code",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_eslint_config_idle_package_type",
+      "label": "type",
+      "file_type": "code",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L7"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_eslint_config_idle_package_engines",
+      "label": "engines",
+      "file_type": "code",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L8"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_eslint_config_idle_package_engines_node",
+      "label": "node",
+      "file_type": "code",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L9"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies",
+      "label": "dependencies",
+      "file_type": "code",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L11"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies_ianvs_prettier_plugin_sort_imports",
+      "label": "@ianvs/prettier-plugin-sort-imports",
+      "file_type": "code",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L12"
+    },
+    {
+      "id": "ianvs_prettier_plugin_sort_imports",
+      "label": "@ianvs/prettier-plugin-sort-imports",
+      "file_type": "concept",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L12"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies_eslint",
+      "label": "eslint",
+      "file_type": "code",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L13"
+    },
+    {
+      "id": "eslint",
+      "label": "eslint",
+      "file_type": "concept",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L13"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies_eslint_config_prettier",
+      "label": "eslint-config-prettier",
+      "file_type": "code",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L14"
+    },
+    {
+      "id": "eslint_config_prettier",
+      "label": "eslint-config-prettier",
+      "file_type": "concept",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L14"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies_eslint_plugin_prettier",
+      "label": "eslint-plugin-prettier",
+      "file_type": "code",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L15"
+    },
+    {
+      "id": "eslint_plugin_prettier",
+      "label": "eslint-plugin-prettier",
+      "file_type": "concept",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L15"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies_prettier",
+      "label": "prettier",
+      "file_type": "code",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L16"
+    },
+    {
+      "id": "prettier",
+      "label": "prettier",
+      "file_type": "concept",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L16"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies_typescript",
+      "label": "typescript",
+      "file_type": "code",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L17"
+    },
+    {
+      "id": "typescript",
+      "label": "typescript",
+      "file_type": "concept",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L17"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies_typescript_eslint",
+      "label": "typescript-eslint",
+      "file_type": "code",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L18"
+    },
+    {
+      "id": "typescript_eslint",
+      "label": "typescript-eslint",
+      "file_type": "concept",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L18"
+    }
+  ],
+  "edges": [
+    {
+      "source": "home_coder_idle_factory_packages_eslint_config_idle_package_json",
+      "target": "home_coder_idle_factory_packages_eslint_config_idle_package_name",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_eslint_config_idle_package_json",
+      "target": "home_coder_idle_factory_packages_eslint_config_idle_package_version",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_eslint_config_idle_package_json",
+      "target": "home_coder_idle_factory_packages_eslint_config_idle_package_private",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_eslint_config_idle_package_json",
+      "target": "home_coder_idle_factory_packages_eslint_config_idle_package_description",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_eslint_config_idle_package_json",
+      "target": "home_coder_idle_factory_packages_eslint_config_idle_package_main",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_eslint_config_idle_package_json",
+      "target": "home_coder_idle_factory_packages_eslint_config_idle_package_type",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_eslint_config_idle_package_json",
+      "target": "home_coder_idle_factory_packages_eslint_config_idle_package_engines",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_eslint_config_idle_package_engines",
+      "target": "home_coder_idle_factory_packages_eslint_config_idle_package_engines_node",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_eslint_config_idle_package_json",
+      "target": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies",
+      "target": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies_ianvs_prettier_plugin_sort_imports",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies_ianvs_prettier_plugin_sort_imports",
+      "target": "ianvs_prettier_plugin_sort_imports",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L12",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies",
+      "target": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies_eslint",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies_eslint",
+      "target": "eslint",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L13",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies",
+      "target": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies_eslint_config_prettier",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies_eslint_config_prettier",
+      "target": "eslint_config_prettier",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L14",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies",
+      "target": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies_eslint_plugin_prettier",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies_eslint_plugin_prettier",
+      "target": "eslint_plugin_prettier",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L15",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies",
+      "target": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies_prettier",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies_prettier",
+      "target": "prettier",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L16",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies",
+      "target": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies_typescript",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies_typescript",
+      "target": "typescript",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L17",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies",
+      "target": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies_typescript_eslint",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_eslint_config_idle_package_dependencies_typescript_eslint",
+      "target": "typescript_eslint",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/eslint-config-idle/package.json",
+      "source_location": "L18",
+      "weight": 1.0,
+      "context": "import"
+    }
+  ]
+}

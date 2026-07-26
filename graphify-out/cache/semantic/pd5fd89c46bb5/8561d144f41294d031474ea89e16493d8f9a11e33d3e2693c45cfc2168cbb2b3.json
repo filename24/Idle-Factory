@@ -1,0 +1,284 @@
+{
+  "nodes": [
+    {
+      "id": "_github_workflows_main_ci_workflow",
+      "label": "CI workflow",
+      "file_type": "code",
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Runs on push to stable/main/refactor/** and on every PR. Concurrency cancels in-progress runs on all refs except stable and main, so protected-branch history always gets a complete run. Turbo remote cache credentials are exported once at workflow level for every job that calls `turbo run`."
+    },
+    {
+      "id": "_github_workflows_main_quality_job",
+      "label": "CI job: Lint, format & typecheck",
+      "file_type": "code",
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Gate job that all other heavy jobs depend on. Checks out with fetch-depth 2 so `turbo run --affected` can resolve a merge base; --affected is applied only on pull_request events."
+    },
+    {
+      "id": "_github_workflows_main_prisma_job",
+      "label": "CI job: Prisma schema validation",
+      "file_type": "code",
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Runs @idle/database db:validate then re-runs `prisma format` and fails on any git diff, making formatted schema.prisma a hard CI requirement rather than a review-time nit."
+    },
+    {
+      "id": "_github_workflows_main_test_job",
+      "label": "CI job: unit tests",
+      "file_type": "code",
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Deliberately DB-free for speed \u2014 integration suites are isolated in the separate test-integration job that provisions Postgres."
+    },
+    {
+      "id": "_github_workflows_main_test_integration_job",
+      "label": "CI job: integration tests + services coverage gate",
+      "file_type": "code",
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Spins up postgres:16-alpine as a service, applies migrations with db:migrate:deploy, then runs `turbo run test:coverage --filter=bot`. The turbo task is cache:false so a cache hit can never silently skip the live-DB suite. Coverage is uploaded as the bot-coverage artifact with if: always()."
+    },
+    {
+      "id": "_github_workflows_main_dev_db_naming_guard",
+      "label": "Integration DB must be named *-dev",
+      "file_type": "rationale",
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "tests/integration/setup.ts refuses to run against any database whose name does not end in -dev, as a safety interlock against truncating a real database. CI therefore names the service DB idle-factory-dev and overrides DATABASE_URL at job level to point at it."
+    },
+    {
+      "id": "_github_workflows_main_dummy_database_url",
+      "label": "Dummy DATABASE_URL for CI Prisma generate",
+      "file_type": "rationale",
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "db:generate sits inside the build DAG, so every job that builds needs DATABASE_URL present. A throwaway postgresql://ci:ci@localhost:5432/ci value satisfies the generator without it ever reaching a real database."
+    },
+    {
+      "id": "_github_workflows_main_commitlint_job",
+      "label": "CI job: commit message validation",
+      "file_type": "code",
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "PR-only job checked out with fetch-depth 0 so commitlint can walk the full base..head commit range."
+    },
+    {
+      "id": "_github_workflows_main_build_job",
+      "label": "CI job: Build",
+      "file_type": "code",
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Runs `turbo run build --summarize` so the turboSummary composite action has a run JSON to render into the job summary."
+    }
+  ],
+  "edges": [
+    {
+      "source": "_github_workflows_main_quality_job",
+      "target": "_github_actions_pnpm_install_action_pnpm_install",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_github_workflows_main_prisma_job",
+      "target": "_github_actions_pnpm_install_action_pnpm_install",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_github_workflows_main_test_integration_job",
+      "target": "_github_actions_pnpm_install_action_pnpm_install",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_github_workflows_main_build_job",
+      "target": "_github_actions_turbosummary_action_turbo_summary",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_github_workflows_main_ci_workflow",
+      "target": "_github_workflows_main_quality_job",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_github_workflows_main_ci_workflow",
+      "target": "_github_workflows_main_dummy_database_url",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_github_workflows_main_test_job",
+      "target": "_github_workflows_main_quality_job",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_github_workflows_main_test_integration_job",
+      "target": "_github_workflows_main_quality_job",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_github_workflows_main_build_job",
+      "target": "_github_workflows_main_quality_job",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_github_workflows_main_test_integration_job",
+      "target": "_github_workflows_main_dev_db_naming_guard",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_github_workflows_main_test_integration_job",
+      "target": "docker_compose_dev_postgres_dev",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_github_workflows_main_prisma_job",
+      "target": "packages_database_agents_database_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_github_workflows_main_test_integration_job",
+      "target": "packages_database_agents_migrations_over_db_push",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_github_workflows_main_commitlint_job",
+      "target": "agents_conventional_commits",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_github_workflows_main_ci_workflow",
+      "target": "agents_turbo_task_graph",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": ".github/workflows/main.yml",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "ci_pipeline_flow",
+      "label": "CI pipeline: shared install action gating quality, prisma, test, integration and build jobs",
+      "nodes": [
+        "_github_actions_pnpm_install_action_pnpm_install",
+        "_github_workflows_main_quality_job",
+        "_github_workflows_main_prisma_job",
+        "_github_workflows_main_test_job",
+        "_github_workflows_main_test_integration_job",
+        "_github_workflows_main_build_job",
+        "_github_workflows_main_commitlint_job",
+        "_github_actions_turbosummary_action_turbo_summary"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".github/workflows/main.yml"
+    }
+  ]
+}

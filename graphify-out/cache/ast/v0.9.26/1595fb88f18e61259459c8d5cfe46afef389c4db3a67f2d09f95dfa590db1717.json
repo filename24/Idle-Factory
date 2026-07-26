@@ -1,0 +1,808 @@
+{
+  "nodes": [
+    {
+      "id": "home_coder_idle_factory_packages_database_package_json",
+      "label": "package.json",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L1"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_name",
+      "label": "name",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L2"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_version",
+      "label": "version",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L3"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_private",
+      "label": "private",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L4"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_description",
+      "label": "description",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L5"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_scripts",
+      "label": "scripts",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_scripts_build",
+      "label": "build",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L7"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_scripts_lint",
+      "label": "lint",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L8"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_scripts_format",
+      "label": "format",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L9"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_scripts_typecheck",
+      "label": "typecheck",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L10"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_scripts_studio",
+      "label": "studio",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L11"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_scripts_db_format",
+      "label": "db:format",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L12"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_scripts_db_validate",
+      "label": "db:validate",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L13"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_scripts_db_migrate_deploy",
+      "label": "db:migrate:deploy",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L14"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_scripts_db_migrate_dev",
+      "label": "db:migrate:dev",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L15"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_scripts_db_generate",
+      "label": "db:generate",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L16"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_scripts_db_push",
+      "label": "db:push",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L17"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_main",
+      "label": "main",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L19"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_module",
+      "label": "module",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L20"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_typings",
+      "label": "typings",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L21"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_exports",
+      "label": "exports",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L22"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_exports_import",
+      "label": "import",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L23"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_exports_require",
+      "label": "require",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L24"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_exports_types",
+      "label": "types",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L25"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_files",
+      "label": "files",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L27"
+    },
+    {
+      "id": "ref_dist",
+      "label": "dist",
+      "file_type": "concept",
+      "source_file": "packages/database/package.json",
+      "source_location": "L27"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_dependencies",
+      "label": "dependencies",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L30"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_dependencies_prisma_adapter_pg",
+      "label": "@prisma/adapter-pg",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L31"
+    },
+    {
+      "id": "prisma_adapter_pg",
+      "label": "@prisma/adapter-pg",
+      "file_type": "concept",
+      "source_file": "packages/database/package.json",
+      "source_location": "L31"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_dependencies_prisma_client",
+      "label": "@prisma/client",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L32"
+    },
+    {
+      "id": "prisma_client",
+      "label": "@prisma/client",
+      "file_type": "concept",
+      "source_file": "packages/database/package.json",
+      "source_location": "L32"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_dependencies_ioredis",
+      "label": "ioredis",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L33"
+    },
+    {
+      "id": "ioredis",
+      "label": "ioredis",
+      "file_type": "concept",
+      "source_file": "packages/database/package.json",
+      "source_location": "L33"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_devdependencies",
+      "label": "devDependencies",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L35"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_devdependencies_dotenv",
+      "label": "dotenv",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L36"
+    },
+    {
+      "id": "dotenv",
+      "label": "dotenv",
+      "file_type": "concept",
+      "source_file": "packages/database/package.json",
+      "source_location": "L36"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_devdependencies_eslint_config_idle",
+      "label": "eslint-config-idle",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L37"
+    },
+    {
+      "id": "eslint_config_idle",
+      "label": "eslint-config-idle",
+      "file_type": "concept",
+      "source_file": "packages/database/package.json",
+      "source_location": "L37"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_devdependencies_prisma",
+      "label": "prisma",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L38"
+    },
+    {
+      "id": "prisma",
+      "label": "prisma",
+      "file_type": "concept",
+      "source_file": "packages/database/package.json",
+      "source_location": "L38"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_devdependencies_tsconfig",
+      "label": "tsconfig",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L39"
+    },
+    {
+      "id": "tsconfig",
+      "label": "tsconfig",
+      "file_type": "concept",
+      "source_file": "packages/database/package.json",
+      "source_location": "L39"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_devdependencies_tsup",
+      "label": "tsup",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L40"
+    },
+    {
+      "id": "tsup",
+      "label": "tsup",
+      "file_type": "concept",
+      "source_file": "packages/database/package.json",
+      "source_location": "L40"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_devdependencies_tsx",
+      "label": "tsx",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L41"
+    },
+    {
+      "id": "tsx",
+      "label": "tsx",
+      "file_type": "concept",
+      "source_file": "packages/database/package.json",
+      "source_location": "L41"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_devdependencies_typescript",
+      "label": "typescript",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L42"
+    },
+    {
+      "id": "typescript",
+      "label": "typescript",
+      "file_type": "concept",
+      "source_file": "packages/database/package.json",
+      "source_location": "L42"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_engines",
+      "label": "engines",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L44"
+    },
+    {
+      "id": "home_coder_idle_factory_packages_database_package_engines_node",
+      "label": "node",
+      "file_type": "code",
+      "source_file": "packages/database/package.json",
+      "source_location": "L45"
+    }
+  ],
+  "edges": [
+    {
+      "source": "home_coder_idle_factory_packages_database_package_json",
+      "target": "home_coder_idle_factory_packages_database_package_name",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_json",
+      "target": "home_coder_idle_factory_packages_database_package_version",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_json",
+      "target": "home_coder_idle_factory_packages_database_package_private",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_json",
+      "target": "home_coder_idle_factory_packages_database_package_description",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_json",
+      "target": "home_coder_idle_factory_packages_database_package_scripts",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_scripts",
+      "target": "home_coder_idle_factory_packages_database_package_scripts_build",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_scripts",
+      "target": "home_coder_idle_factory_packages_database_package_scripts_lint",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_scripts",
+      "target": "home_coder_idle_factory_packages_database_package_scripts_format",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_scripts",
+      "target": "home_coder_idle_factory_packages_database_package_scripts_typecheck",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_scripts",
+      "target": "home_coder_idle_factory_packages_database_package_scripts_studio",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_scripts",
+      "target": "home_coder_idle_factory_packages_database_package_scripts_db_format",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_scripts",
+      "target": "home_coder_idle_factory_packages_database_package_scripts_db_validate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_scripts",
+      "target": "home_coder_idle_factory_packages_database_package_scripts_db_migrate_deploy",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_scripts",
+      "target": "home_coder_idle_factory_packages_database_package_scripts_db_migrate_dev",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_scripts",
+      "target": "home_coder_idle_factory_packages_database_package_scripts_db_generate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_scripts",
+      "target": "home_coder_idle_factory_packages_database_package_scripts_db_push",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_json",
+      "target": "home_coder_idle_factory_packages_database_package_main",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_json",
+      "target": "home_coder_idle_factory_packages_database_package_module",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_json",
+      "target": "home_coder_idle_factory_packages_database_package_typings",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_json",
+      "target": "home_coder_idle_factory_packages_database_package_exports",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_exports",
+      "target": "home_coder_idle_factory_packages_database_package_exports_import",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_exports",
+      "target": "home_coder_idle_factory_packages_database_package_exports_require",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_exports",
+      "target": "home_coder_idle_factory_packages_database_package_exports_types",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_json",
+      "target": "home_coder_idle_factory_packages_database_package_files",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_files",
+      "target": "ref_dist",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L27",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_json",
+      "target": "home_coder_idle_factory_packages_database_package_dependencies",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_dependencies",
+      "target": "home_coder_idle_factory_packages_database_package_dependencies_prisma_adapter_pg",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_dependencies_prisma_adapter_pg",
+      "target": "prisma_adapter_pg",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L31",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_dependencies",
+      "target": "home_coder_idle_factory_packages_database_package_dependencies_prisma_client",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L32",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_dependencies_prisma_client",
+      "target": "prisma_client",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L32",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_dependencies",
+      "target": "home_coder_idle_factory_packages_database_package_dependencies_ioredis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_dependencies_ioredis",
+      "target": "ioredis",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L33",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_json",
+      "target": "home_coder_idle_factory_packages_database_package_devdependencies",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L35",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_devdependencies",
+      "target": "home_coder_idle_factory_packages_database_package_devdependencies_dotenv",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_devdependencies_dotenv",
+      "target": "dotenv",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L36",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_devdependencies",
+      "target": "home_coder_idle_factory_packages_database_package_devdependencies_eslint_config_idle",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L37",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_devdependencies_eslint_config_idle",
+      "target": "eslint_config_idle",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L37",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_devdependencies",
+      "target": "home_coder_idle_factory_packages_database_package_devdependencies_prisma",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_devdependencies_prisma",
+      "target": "prisma",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L38",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_devdependencies",
+      "target": "home_coder_idle_factory_packages_database_package_devdependencies_tsconfig",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_devdependencies_tsconfig",
+      "target": "tsconfig",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L39",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_devdependencies",
+      "target": "home_coder_idle_factory_packages_database_package_devdependencies_tsup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_devdependencies_tsup",
+      "target": "tsup",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L40",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_devdependencies",
+      "target": "home_coder_idle_factory_packages_database_package_devdependencies_tsx",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_devdependencies_tsx",
+      "target": "tsx",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L41",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_devdependencies",
+      "target": "home_coder_idle_factory_packages_database_package_devdependencies_typescript",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L42",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_devdependencies_typescript",
+      "target": "typescript",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L42",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_json",
+      "target": "home_coder_idle_factory_packages_database_package_engines",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L44",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_packages_database_package_engines",
+      "target": "home_coder_idle_factory_packages_database_package_engines_node",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/database/package.json",
+      "source_location": "L45",
+      "weight": 1.0
+    }
+  ]
+}

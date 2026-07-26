@@ -1,0 +1,28 @@
+{
+  "nodes": [
+    {
+      "id": "packages_eslint_config_idle_claude_symlink",
+      "label": "eslint-config-idle CLAUDE.md (symlink to AGENTS.md)",
+      "file_type": "document",
+      "source_file": "packages/eslint-config-idle/CLAUDE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "packages_eslint_config_idle_claude_symlink",
+      "target": "packages_eslint_config_idle_agents_eslint_config_idle",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "packages/eslint-config-idle/CLAUDE.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

@@ -1,0 +1,138 @@
+{
+  "nodes": [
+    {
+      "id": "apps_web_content_docs_advanced_level_growth_xp_sources",
+      "label": "XP Sources (tick +5, market sale +20, trade +15, build/upgrade capped 1,000)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/advanced/level-growth.mdx",
+      "source_location": "\uacbd\ud5d8\uce58 \ud68d\ub4dd",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_advanced_level_growth_level_formula",
+      "label": "Level-Up Formula (cumulative XP = 100 \u00d7 N^2.2)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/advanced/level-growth.mdx",
+      "source_location": "\ub808\ubca8\uc5c5 \uacf5\uc2dd",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_advanced_level_growth_level_unlocks",
+      "label": "Level Unlock Gates (Lv.1/5/10/25/40/50)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/advanced/level-growth.mdx",
+      "source_location": "\ub808\ubca8\ubcc4 \ud574\uae08 \uae30\ub2a5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_advanced_level_growth_xp_abuse_prevention",
+      "label": "XP Abuse Prevention (repeat-partner decay, burst trades, alt accounts)",
+      "file_type": "rationale",
+      "source_file": "apps/web/content/docs/advanced/level-growth.mdx",
+      "source_location": "XP \uc5b4\ubdf0\uc9d5 \ubc29\uc9c0",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "apps_web_content_docs_economy_materials_trading_raw_booster",
+      "target": "apps_web_content_docs_advanced_level_growth_level_unlocks",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/advanced/level-growth.mdx",
+      "source_location": "Lv.50 \u2014 \uc6d0\ub8cc \ubd80\uc2a4\ud130 \uc0ac\uc6a9 \uac00\ub2a5",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_economy_stock_market_ipo_requirements",
+      "target": "apps_web_content_docs_advanced_level_growth_level_unlocks",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/advanced/level-growth.mdx",
+      "source_location": "Lv.25 \u2014 \uc8fc\uc2dd \uc0c1\uc7a5(IPO) \uc790\uaca9",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_advanced_level_growth_level_formula",
+      "target": "apps_web_content_docs_advanced_level_growth_xp_sources",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/advanced/level-growth.mdx",
+      "source_location": "\ub204\uc801 XP(N) = 100 \u00d7 N^2.2 consumes XP earned from the sources table",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_advanced_level_growth_level_unlocks",
+      "target": "apps_web_content_docs_facilities_factories_t2_processing_factories",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/advanced/level-growth.mdx",
+      "source_location": "Lv.5 \u2014 T2 \uacf5\uc7a5 \uac74\uc124 (\uc81c\ucca0\uc18c\u00b7\uc815\uc720\uc18c\u00b7\uc81c\ubd84\uc18c\u00b7\uac00\uad6c\uacf5\uc7a5)",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_advanced_level_growth_level_unlocks",
+      "target": "apps_web_content_docs_facilities_factories_t3_finished_factories",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/advanced/level-growth.mdx",
+      "source_location": "Lv.10 \u2014 T3 \uacf5\uc7a5 \uac74\uc124 + \uc11c\ubc84 \uc8fc\uc2dd \uac70\ub798 \ucc38\uc5ec",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_advanced_level_growth_level_unlocks",
+      "target": "apps_web_content_docs_economy_stock_market_global_stock_access",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/advanced/level-growth.mdx",
+      "source_location": "Lv.40 \u2014 \uae00\ub85c\ubc8c \uc8fc\uc2dd \ucc38\uc5ec (\uc11c\ubc84 \uc2e0\ub8b0\ub3c4 1,500+)",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_advanced_level_growth_xp_abuse_prevention",
+      "target": "apps_web_content_docs_advanced_level_growth_xp_sources",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/advanced/level-growth.mdx",
+      "source_location": "XP \uc5b4\ubdf0\uc9d5 \ubc29\uc9c0",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "idle_factory_level_and_trust_gating",
+      "label": "Level + Server-Trust Gating of Advanced Systems",
+      "nodes": [
+        "apps_web_content_docs_advanced_level_growth_level_unlocks",
+        "apps_web_content_docs_advanced_server_guild_server_trust",
+        "apps_web_content_docs_economy_stock_market_ipo_requirements",
+        "apps_web_content_docs_economy_stock_market_global_stock_access",
+        "apps_web_content_docs_economy_materials_trading_raw_booster",
+        "apps_web_content_docs_economy_market_user_shop"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/advanced/level-growth.mdx"
+    }
+  ]
+}

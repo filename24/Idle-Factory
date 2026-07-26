@@ -1,0 +1,168 @@
+{
+  "nodes": [
+    {
+      "id": "docs_codemaps_data_prisma_schema",
+      "label": "Prisma Schema Data Model",
+      "file_type": "document",
+      "source_file": "docs/CODEMAPS/data.md",
+      "source_location": "L1-L189",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_data_entity_relationships",
+      "label": "Core Entity Relationships (User/Land/Slot/Factory)",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/data.md",
+      "source_location": "L7-L26",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_data_factorytype_enum",
+      "label": "FactoryType Enum (11 types, 3 tiers)",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/data.md",
+      "source_location": "L104-L110",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_data_materialtype_enum",
+      "label": "MaterialType Enum (13 types)",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/data.md",
+      "source_location": "L112-L119",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_data_slottype_enum",
+      "label": "SlotType Enum (6 special slot types)",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/data.md",
+      "source_location": "L121-L130",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_data_upgradebooster_enum",
+      "label": "UpgradeBooster Enum (SAVING/RARE/SPEED/PROFIT)",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/data.md",
+      "source_location": "L132-L139",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_data_shortagemode_enum",
+      "label": "ShortageMode Enum (PAUSE/AUTO_BUY/PARTIAL)",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/data.md",
+      "source_location": "L141-L147",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_data_bigint_fields",
+      "label": "BigInt Field Inventory",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/data.md",
+      "source_location": "L149-L161",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "money/xp/price/count/exp are BigInt to avoid precision loss; all clients must handle BigInt -> string -> BigInt round-trips because JSON cannot serialize BigInt natively."
+    },
+    {
+      "id": "docs_codemaps_data_indexes_constraints",
+      "label": "Unique Constraints and Performance Indexes",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/data.md",
+      "source_location": "L73-L100",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Composite uniques (Land userId+index, Slot landId+x+y, WarehouseStack warehouseId+material) enforce game rules at the DB layer rather than only in application code."
+    }
+  ],
+  "edges": [
+    {
+      "source": "docs_codemaps_data_entity_relationships",
+      "target": "docs_codemaps_data_indexes_constraints",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/data.md",
+      "source_location": "L73-L100",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_data_factorytype_enum",
+      "target": "docs_codemaps_game_core_type_contracts",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/data.md",
+      "source_location": "L102",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_data_materialtype_enum",
+      "target": "docs_codemaps_game_core_type_contracts",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/data.md",
+      "source_location": "L102",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_data_slottype_enum",
+      "target": "docs_codemaps_game_core_special_slots_generator",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/data.md",
+      "source_location": "L121-L130",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_data_shortagemode_enum",
+      "target": "docs_design_03_factories_shortage_mode",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/CODEMAPS/data.md",
+      "source_location": "L141-L147",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_data_upgradebooster_enum",
+      "target": "docs_design_03_factories_upgrade_booster",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/CODEMAPS/data.md",
+      "source_location": "L132-L139",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

@@ -1,0 +1,172 @@
+{
+  "nodes": [
+    {
+      "id": "docs_codemaps_architecture_three_layer_architecture",
+      "label": "Three-Layer System Architecture",
+      "file_type": "document",
+      "source_file": "docs/CODEMAPS/architecture.md",
+      "source_location": "L5-L31",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_architecture_service_boundaries",
+      "label": "Service Boundary Definitions",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/architecture.md",
+      "source_location": "L33-L41",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Bot handles Discord I/O, Services hold business logic, Database owns persistence, Game-Core is pure calculation. The split lets game-core be reused by both bot and future web without dragging in I/O dependencies."
+    },
+    {
+      "id": "docs_codemaps_architecture_factory_build_data_flow",
+      "label": "Factory Build Data Flow",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/architecture.md",
+      "source_location": "L43-L62",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_architecture_cross_package_dependencies",
+      "label": "Cross-Package Dependency Matrix",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/architecture.md",
+      "source_location": "L72-L91",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "game-core and api-types are declared to have zero external imports so they remain safe to import from both bot and web, and so game-core can mirror Prisma enums without depending on Prisma."
+    },
+    {
+      "id": "docs_codemaps_architecture_configuration_flow",
+      "label": "Startup Configuration Flow",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/architecture.md",
+      "source_location": "L100-L111",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "config.ts validates required env vars via requireEnv at startup so missing secrets fail fast rather than surfacing as runtime errors mid-game."
+    }
+  ],
+  "edges": [
+    {
+      "source": "docs_codemaps_architecture_three_layer_architecture",
+      "target": "docs_codemaps_backend_command_structure",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/architecture.md",
+      "source_location": "L115",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_architecture_three_layer_architecture",
+      "target": "docs_codemaps_data_prisma_schema",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/architecture.md",
+      "source_location": "L115",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_architecture_three_layer_architecture",
+      "target": "docs_codemaps_game_core_game_core_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/architecture.md",
+      "source_location": "L115",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_architecture_service_boundaries",
+      "target": "docs_codemaps_architecture_three_layer_architecture",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/architecture.md",
+      "source_location": "L33-L41",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_architecture_factory_build_data_flow",
+      "target": "docs_codemaps_backend_factoryservice",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/architecture.md",
+      "source_location": "L50",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_architecture_factory_build_data_flow",
+      "target": "docs_codemaps_game_core_land_layout",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/architecture.md",
+      "source_location": "L51",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_architecture_factory_build_data_flow",
+      "target": "docs_codemaps_game_core_cost_calculations",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/architecture.md",
+      "source_location": "L52",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_architecture_cross_package_dependencies",
+      "target": "docs_codemaps_game_core_type_contracts",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/architecture.md",
+      "source_location": "L87",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_architecture_configuration_flow",
+      "target": "docs_codemaps_dependencies_secret_management",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/CODEMAPS/architecture.md",
+      "source_location": "L100-L111",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "factory_build_transaction_flow",
+      "label": "Factory Build End-to-End Flow",
+      "nodes": [
+        "docs_codemaps_backend_command_structure",
+        "docs_codemaps_backend_factoryservice",
+        "docs_codemaps_game_core_land_layout",
+        "docs_codemaps_game_core_cost_calculations",
+        "docs_codemaps_backend_transaction_pattern",
+        "docs_codemaps_index_components_v2_convention"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/architecture.md"
+    }
+  ]
+}

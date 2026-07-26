@@ -1,0 +1,50 @@
+{
+  "nodes": [
+    {
+      "id": "apps_web_content_docs_facilities_warehouse_capacity_formula",
+      "label": "Warehouse Capacity Formula (3,000 \u00d7 3^(N-1))",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/facilities/warehouse.mdx",
+      "source_location": "\ub4f1\uae09\ubcc4 \uc218\uc6a9\ub7c9",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_facilities_warehouse_full_production_halt",
+      "label": "Warehouse-Full Production Halt (materials preserved)",
+      "file_type": "rationale",
+      "source_file": "apps/web/content/docs/facilities/warehouse.mdx",
+      "source_location": "\ucc3d\uace0 \ud3ec\ud654 \uc8fc\uc758",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_facilities_warehouse_immovable_placement",
+      "label": "Warehouse Is Immovable and Non-Demolishable",
+      "file_type": "rationale",
+      "source_file": "apps/web/content/docs/facilities/warehouse.mdx",
+      "source_location": "\ucc3d\uace0 \uae30\ubcf8 \uaddc\uce59",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "apps_web_content_docs_facilities_warehouse_capacity_formula",
+      "target": "apps_web_content_docs_facilities_factories_grade_upgrade",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "apps/web/content/docs/facilities/warehouse.mdx",
+      "source_location": "both scale as base \u00d7 ratio^(Grade-1)",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

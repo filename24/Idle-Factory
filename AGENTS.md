@@ -110,3 +110,20 @@ Each workspace has its own `AGENTS.md` (with `CLAUDE.md` as a symlink) covering 
 - Secrets go in `.env` (bot) or GitHub Actions secrets. Never commit tokens.
 - `apps/bot/src/config.ts` validates `BOT_TOKEN` at startup via `requireEnv`; missing env vars throw early.
 - Do not disable Husky/commitlint hooks to land work — fix the root cause.
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+Rules:
+
+- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost). The post-commit hook does this automatically in the background.
+
+Repo-specific caveats:
+
+- **Always query in English.** Node labels are AST-extracted identifiers, file names, and English doc headings, so Korean keywords match almost nothing: only 8 of ~3,000 nodes contain Hangul, and their entire Korean vocabulary is 20 tokens — the slash-command names (`토지 공장 수확 창고 시장 프로필`) and factory names (`농장 광산 벌목장 유전 제철소 정유소 제분소 가구공장 자동차 전자 식품`). Anything else in Korean, including `"생산량 계산"` or `"레벨 해금"`, returns `No matching nodes found`. Use `"production"` and `"level unlock"` instead.
+- `graphify-out/` is only partly tracked: `cache/ast` and `cache/semantic` are committed so teammates and CI reuse the extraction (no LLM re-spend), while `graph.json`, `graph.html`, and `GRAPH_REPORT.md` are gitignored as regenerable. After a fresh clone, run `graphify update .` once to materialize the graph from the committed cache.
+- The `graph.json` union merge driver is registered in local git config, not in the repo. Each clone must run `graphify hook install` once to get it, plus the post-commit/post-checkout hooks.

@@ -1,0 +1,274 @@
+{
+  "nodes": [
+    {
+      "id": "plans_idle_factory_web_onboarding_docs_web_onboarding_plan",
+      "label": "Web Onboarding + Fumadocs Plan",
+      "file_type": "document",
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L1-L32",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Eight steps with an explicit dependency graph; Steps 4 and 6 are forced serial because both touch layout.tsx and globals.css."
+    },
+    {
+      "id": "plans_idle_factory_web_onboarding_docs_better_auth",
+      "label": "better-auth Discord OAuth Integration",
+      "file_type": "concept",
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L285-L458",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Chosen over next-auth because it is framework-independent, bundles a Prisma adapter, officially supports the Discord social provider, and is TypeScript-first for session types. Route handler must declare runtime = 'nodejs' since Prisma cannot run on Edge; the middleware instead uses betterFetch for Edge-compatible session checks."
+    },
+    {
+      "id": "plans_idle_factory_web_onboarding_docs_auth_prisma_models",
+      "label": "Auth* Prisma Models (name-collision workaround)",
+      "file_type": "concept",
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L88-L165",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "better-auth wants user/session/account/verification tables, but the game schema already owns User. Models are prefixed AuthUser/AuthSession/AuthAccount/AuthVerification with @@map(\"auth_*\") so no existing model changes. AuthAccount.accountId holds the Discord snowflake, which is the join key back to the game User."
+    },
+    {
+      "id": "plans_idle_factory_web_onboarding_docs_databaseclient_singleton",
+      "label": "DatabaseClient globalThis Singleton",
+      "file_type": "concept",
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L339-L348",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "CRITICAL review finding: without a globalThis singleton, Next.js HMR and serverless invocations leak database connections on every reload."
+    },
+    {
+      "id": "plans_idle_factory_web_onboarding_docs_bigint_serialization",
+      "label": "serializeBigInt RSC->Client Boundary Helper",
+      "file_type": "concept",
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L519-L567",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Prisma BigInt fields (User.money, Factory.flag) make JSON.stringify throw at the Server->Client Component boundary, so values are converted to Number/String before crossing. Listed as an invariant: never pass raw BigInt to a Client Component."
+    },
+    {
+      "id": "plans_idle_factory_web_onboarding_docs_design_system",
+      "label": "Industrial / Dark Luxury Web Design System",
+      "file_type": "concept",
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L205-L282",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Dark metallic surfaces with gold/orange accents chosen to match the factory theme (furnace, gold), using Pretendard Variable for Korean typography and oklch color tokens."
+    },
+    {
+      "id": "plans_idle_factory_web_onboarding_docs_fumadocs_integration",
+      "label": "Fumadocs /docs Integration",
+      "file_type": "concept",
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L599-L681",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Compatibility with Tailwind v4 is verified before install because fumadocs-ui historically shipped Tailwind v3-era CSS; the documented fallback is fumadocs-core headless plus a custom layout built on the Step 2 design system."
+    },
+    {
+      "id": "plans_idle_factory_web_onboarding_docs_player_dashboard",
+      "label": "Player Dashboard & Onboarding Routes",
+      "file_type": "concept",
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L508-L596",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plans_idle_factory_web_onboarding_docs_docs_content_map",
+      "label": "Design Doc -> Player MDX Content Map",
+      "file_type": "concept",
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L685-L751",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Internal designer docs are rewritten from the player's perspective: developer terms (Prisma, tick) removed, formulas simplified. 10-open-questions.md is deliberately excluded so unfinished information is never exposed to players."
+    }
+  ],
+  "edges": [
+    {
+      "source": "plans_idle_factory_web_onboarding_docs_web_onboarding_plan",
+      "target": "plans_idle_factory_web_onboarding_docs_better_auth",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L285",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_web_onboarding_docs_web_onboarding_plan",
+      "target": "plans_idle_factory_web_onboarding_docs_fumadocs_integration",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L599",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_web_onboarding_docs_web_onboarding_plan",
+      "target": "plans_idle_factory_web_onboarding_docs_design_system",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L205",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_web_onboarding_docs_better_auth",
+      "target": "plans_idle_factory_web_onboarding_docs_auth_prisma_models",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L302-L307",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_web_onboarding_docs_better_auth",
+      "target": "plans_idle_factory_web_onboarding_docs_databaseclient_singleton",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L357",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_web_onboarding_docs_auth_prisma_models",
+      "target": "docs_codemaps_data_prisma_schema",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L92",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_web_onboarding_docs_auth_prisma_models",
+      "target": "docs_codemaps_data_entity_relationships",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L302-L307",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_web_onboarding_docs_databaseclient_singleton",
+      "target": "docs_codemaps_dependencies_postgresql",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L339-L348",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_web_onboarding_docs_bigint_serialization",
+      "target": "docs_codemaps_data_bigint_fields",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L519-L523",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_web_onboarding_docs_player_dashboard",
+      "target": "plans_idle_factory_web_onboarding_docs_bigint_serialization",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L570",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_web_onboarding_docs_player_dashboard",
+      "target": "docs_design_00_onboarding_tutorial_quest_chain",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L524",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_web_onboarding_docs_docs_content_map",
+      "target": "docs_readme_design_docs_index",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L704-L716",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_web_onboarding_docs_docs_content_map",
+      "target": "docs_design_10_open_questions_open_questions",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L700",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_web_onboarding_docs_docs_content_map",
+      "target": "plans_idle_factory_web_onboarding_docs_fumadocs_integration",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L687",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_web_onboarding_docs_design_system",
+      "target": "plans_idle_factory_web_onboarding_docs_fumadocs_integration",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L612",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_web_onboarding_docs_bigint_serialization",
+      "target": "docs_codemaps_index_bigint_precision",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "plans/idle-factory-web-onboarding-docs.md",
+      "source_location": "L519-L567",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

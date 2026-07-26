@@ -1,0 +1,29 @@
+{
+  "nodes": [
+    {
+      "id": "claude_repository_guide_symlink",
+      "label": "Root CLAUDE.md (symlink to AGENTS.md)",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Repo convention: content lives in AGENTS.md and CLAUDE.md is a symlink pointing at it, so both agent toolchains read one file."
+    }
+  ],
+  "edges": [
+    {
+      "source": "claude_repository_guide_symlink",
+      "target": "agents_idle_factory_repository_guide",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "CLAUDE.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

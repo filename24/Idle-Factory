@@ -1,0 +1,103 @@
+{
+  "nodes": [
+    {
+      "id": "_agents_skills_shadcn_rules_base_vs_radix_aschild_vs_render",
+      "label": "asChild (radix) vs render (base) Composition",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/base-vs-radix.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_base_vs_radix_nativebutton_false",
+      "label": "nativeButton={false} for Non-Button Renders",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/base-vs-radix.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_base_vs_radix_select_api_differences",
+      "label": "Select API Differences (items prop, placeholder, positioning)",
+      "file_type": "concept",
+      "source_file": ".agents/skills/shadcn/rules/base-vs-radix.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_base_vs_radix_togglegroup_api_differences",
+      "label": "ToggleGroup API Differences (multiple vs type)",
+      "file_type": "concept",
+      "source_file": ".agents/skills/shadcn/rules/base-vs-radix.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_base_vs_radix_slider_api_differences",
+      "label": "Slider API Differences (scalar vs array)",
+      "file_type": "concept",
+      "source_file": ".agents/skills/shadcn/rules/base-vs-radix.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_base_vs_radix_accordion_api_differences",
+      "label": "Accordion API Differences (type/collapsible vs multiple)",
+      "file_type": "concept",
+      "source_file": ".agents/skills/shadcn/rules/base-vs-radix.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "_agents_skills_shadcn_rules_base_vs_radix_aschild_vs_render",
+      "target": "_agents_skills_shadcn_cli_info_command",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/rules/base-vs-radix.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_rules_base_vs_radix_nativebutton_false",
+      "target": "_agents_skills_shadcn_rules_base_vs_radix_aschild_vs_render",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/rules/base-vs-radix.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_rules_base_vs_radix_select_api_differences",
+      "target": "_agents_skills_shadcn_rules_composition_items_inside_group",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": ".agents/skills/shadcn/rules/base-vs-radix.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

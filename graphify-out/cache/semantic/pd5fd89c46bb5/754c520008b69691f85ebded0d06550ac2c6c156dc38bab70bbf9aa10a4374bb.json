@@ -1,0 +1,91 @@
+{
+  "nodes": [
+    {
+      "id": "apps_web_content_docs_facilities_land_slots_land_grid",
+      "label": "Land Grid (4\u00d74, 16 slots, factory footprint sizes)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/facilities/land-slots.mdx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_facilities_land_slots_special_slots",
+      "label": "Special Terrain Slots (~15% of slots, +20~30% bonus)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/facilities/land-slots.mdx",
+      "source_location": "\ud2b9\uc218 \uc2ac\ub86f",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_facilities_land_slots_adjacency_synergy",
+      "label": "Adjacency Synergy Bonuses (max +30% stacked)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/facilities/land-slots.mdx",
+      "source_location": "\uc778\uc811 \uc2dc\ub108\uc9c0",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_facilities_land_slots_land_expansion",
+      "label": "Land Expansion (Phase 2, up to 5 lands, isolated synergy groups)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/facilities/land-slots.mdx",
+      "source_location": "\ud1a0\uc9c0 \ud655\uc7a5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "apps_web_content_docs_facilities_land_slots_special_slots",
+      "target": "apps_web_content_docs_facilities_land_slots_adjacency_synergy",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/facilities/land-slots.mdx",
+      "source_location": "\ud83d\udca7\uc218\uc6d0 slot also feeds the adjacency bonus table",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_facilities_land_slots_adjacency_synergy",
+      "target": "apps_web_content_docs_facilities_factories_t2_processing_factories",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/facilities/land-slots.mdx",
+      "source_location": "\uad11\uc0b0\u2194\uc81c\ucca0\uc18c, \uc720\uc804\u2194\uc815\uc720\uc18c, \ub18d\uc7a5\u2194\uc81c\ubd84\uc18c, \ubc8c\ubaa9\uc7a5\u2194\uac00\uad6c\uacf5\uc7a5",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_facilities_land_slots_land_expansion",
+      "target": "apps_web_content_docs_facilities_land_slots_adjacency_synergy",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/facilities/land-slots.mdx",
+      "source_location": "\uac01 \ud1a0\uc9c0\ub294 \ub3c5\ub9bd\ub41c \uc778\uc811 \uc2dc\ub108\uc9c0 \uadf8\ub8f9",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_facilities_land_slots_land_grid",
+      "target": "apps_web_content_docs_facilities_warehouse_immovable_placement",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/facilities/land-slots.mdx",
+      "source_location": "\ucc3d\uace0\ub294 \uc774\ub3d9\u00b7\ucca0\uac70 \ubd88\uac00\uc774\ubbc0\ub85c \ucd08\ubc18 \ubc30\uce58 \uc704\uce58\uac00 \uc601\uad6c\uc801",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

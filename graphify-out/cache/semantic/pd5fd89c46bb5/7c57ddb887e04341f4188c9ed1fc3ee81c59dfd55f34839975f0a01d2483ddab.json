@@ -1,0 +1,108 @@
+{
+  "nodes": [
+    {
+      "id": "apps_web_content_docs_index_player_guide",
+      "label": "Idle Factory Player Guide (docs index)",
+      "file_type": "document",
+      "source_file": "apps/web/content/docs/index.mdx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "apps_web_content_docs_index_player_guide",
+      "target": "apps_web_content_docs_getting_started_intro_idle_factory",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/index.mdx",
+      "source_location": "Card href=/docs/getting-started/intro",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_index_player_guide",
+      "target": "apps_web_content_docs_getting_started_how_to_start_core_loop",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/index.mdx",
+      "source_location": "Card href=/docs/getting-started/how-to-start",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_index_player_guide",
+      "target": "apps_web_content_docs_getting_started_tutorial_quests_quest_chain",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/index.mdx",
+      "source_location": "Card href=/docs/getting-started/tutorial-quests",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_index_player_guide",
+      "target": "apps_web_content_docs_facilities_factories_production_tick",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/index.mdx",
+      "source_location": "Card href=/docs/facilities/factories",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_index_player_guide",
+      "target": "apps_web_content_docs_facilities_warehouse_capacity_formula",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/index.mdx",
+      "source_location": "Card href=/docs/facilities/warehouse",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_index_player_guide",
+      "target": "apps_web_content_docs_facilities_land_slots_special_slots",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/index.mdx",
+      "source_location": "Card href=/docs/facilities/land-slots",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_index_player_guide",
+      "target": "apps_web_content_docs_economy_market_global_market_price",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/index.mdx",
+      "source_location": "Card href=/docs/economy/market",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_index_player_guide",
+      "target": "apps_web_content_docs_economy_materials_trading_material_catalog",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/index.mdx",
+      "source_location": "Card href=/docs/economy/materials-trading",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_index_player_guide",
+      "target": "apps_web_content_docs_economy_stock_market_ipo_requirements",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/index.mdx",
+      "source_location": "Card href=/docs/economy/stock-market",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

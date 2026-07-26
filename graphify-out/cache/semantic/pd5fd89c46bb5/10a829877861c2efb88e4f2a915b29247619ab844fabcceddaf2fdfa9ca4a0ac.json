@@ -1,0 +1,185 @@
+{
+  "nodes": [
+    {
+      "id": "_agents_skills_agentation_self_driving_skill_agentation_self_driving_mode",
+      "label": "Agentation Self-Driving Mode",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentation-self-driving/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_agentation_self_driving_skill_headed_browser_requirement",
+      "label": "Always-Headed Browser Requirement",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/agentation-self-driving/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_agentation_self_driving_skill_coordinate_click_sequence",
+      "label": "Coordinate-Based Click Sequence (mouse move/down/up)",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/agentation-self-driving/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_agentation_self_driving_skill_ref_selector_limitation",
+      "label": "@ref vs CSS Selector Command Split",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/agentation-self-driving/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_agentation_self_driving_skill_toolbar_expansion_state_check",
+      "label": "State-Aware Toolbar Expansion Check",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/agentation-self-driving/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_agentation_self_driving_skill_annotation_verification_loop",
+      "label": "Annotation Count Verification Loop",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/agentation-self-driving/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_agentation_self_driving_skill_critique_style",
+      "label": "Design Critique Style Rules",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/agentation-self-driving/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_agentation_self_driving_skill_agent_browser_pitfalls",
+      "label": "agent-browser Pitfalls Table",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentation-self-driving/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "_agents_skills_agentation_self_driving_skill_agentation_self_driving_mode",
+      "target": "_agents_skills_agentation_self_driving_references_two_session_workflow_two_session_workflow",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/agentation-self-driving/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_agentation_self_driving_skill_agentation_self_driving_mode",
+      "target": "_agents_skills_agentation_skill_agentation_setup",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/agentation-self-driving/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_agentation_self_driving_skill_agentation_self_driving_mode",
+      "target": "_agents_skills_agentation_self_driving_skill_headed_browser_requirement",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/agentation-self-driving/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_agentation_self_driving_skill_coordinate_click_sequence",
+      "target": "_agents_skills_agentation_self_driving_skill_agentation_self_driving_mode",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/agentation-self-driving/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_agentation_self_driving_skill_agent_browser_pitfalls",
+      "target": "_agents_skills_agentation_self_driving_skill_ref_selector_limitation",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/agentation-self-driving/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_agentation_self_driving_skill_agent_browser_pitfalls",
+      "target": "_agents_skills_agentation_self_driving_skill_coordinate_click_sequence",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/agentation-self-driving/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_agentation_self_driving_skill_annotation_verification_loop",
+      "target": "_agents_skills_agentation_self_driving_skill_coordinate_click_sequence",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/agentation-self-driving/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_agentation_self_driving_skill_toolbar_expansion_state_check",
+      "target": "_agents_skills_agentation_skill_agentation_component",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": ".agents/skills/agentation-self-driving/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_agentation_self_driving_skill_critique_style",
+      "target": "_agents_skills_agentation_self_driving_skill_agentation_self_driving_mode",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/agentation-self-driving/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

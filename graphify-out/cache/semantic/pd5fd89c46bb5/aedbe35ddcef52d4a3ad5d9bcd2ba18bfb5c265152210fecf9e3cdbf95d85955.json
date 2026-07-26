@@ -1,0 +1,53 @@
+{
+  "nodes": [
+    {
+      "id": "docs_design_09_level_xp_xp_gain",
+      "label": "XP Gain by Action",
+      "file_type": "concept",
+      "source_file": "docs/design/09-level-xp.md",
+      "source_location": "L1-L14",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Weights are skewed toward selling (+20) and trading (+15) over passive production (+5) to steer players into the trading economy. Build/upgrade XP is cost x 0.001 capped at 1,000 so late-game spend does not explode XP."
+    },
+    {
+      "id": "docs_design_09_level_xp_level_formula",
+      "label": "Level-Up Requirement Formula (100 x N^2.2)",
+      "file_type": "concept",
+      "source_file": "docs/design/09-level-xp.md",
+      "source_location": "L16-L37",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "N^2.2 is steeper than N^2 in the late game specifically to suppress high-level inflation. There is no daily XP cap \u2014 farming is instead controlled by the formula's caps and the fraud-prevention logic."
+    },
+    {
+      "id": "docs_design_09_level_xp_level_unlocks",
+      "label": "Level Unlock Gates (Lv.1/5/10/25/40/50)",
+      "file_type": "concept",
+      "source_file": "docs/design/09-level-xp.md",
+      "source_location": "L39-L59",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Uniform scheme adopted 2026-07-03: T1 (incl. oil well) Lv.1 / all T2 Lv.5 / all T3 Lv.10, completing the 11-factory roster. The staggered alternative is deferred as a tuning option until the balance simulator provides evidence."
+    }
+  ],
+  "edges": [
+    {
+      "source": "docs_design_09_level_xp_level_unlocks",
+      "target": "docs_codemaps_game_core_factory_catalog",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/09-level-xp.md",
+      "source_location": "L59",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

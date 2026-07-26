@@ -1,0 +1,127 @@
+{
+  "nodes": [
+    {
+      "id": "home_coder_idle_factory_commitlintrc_json",
+      "label": ".commitlintrc.json",
+      "file_type": "code",
+      "source_file": ".commitlintrc.json",
+      "source_location": "L1"
+    },
+    {
+      "id": "home_coder_idle_factory_commitlintrc_schema",
+      "label": "$schema",
+      "file_type": "code",
+      "source_file": ".commitlintrc.json",
+      "source_location": "L2"
+    },
+    {
+      "id": "home_coder_idle_factory_commitlintrc_extends",
+      "label": "extends",
+      "file_type": "code",
+      "source_file": ".commitlintrc.json",
+      "source_location": "L3"
+    },
+    {
+      "id": "ref_commitlint_config_conventional",
+      "label": "@commitlint/config-conventional",
+      "file_type": "concept",
+      "source_file": ".commitlintrc.json",
+      "source_location": "L3"
+    },
+    {
+      "id": "home_coder_idle_factory_commitlintrc_rules",
+      "label": "rules",
+      "file_type": "code",
+      "source_file": ".commitlintrc.json",
+      "source_location": "L4"
+    },
+    {
+      "id": "home_coder_idle_factory_commitlintrc_rules_type_enum",
+      "label": "type-enum",
+      "file_type": "code",
+      "source_file": ".commitlintrc.json",
+      "source_location": "L5"
+    },
+    {
+      "id": "ref_always",
+      "label": "always",
+      "file_type": "concept",
+      "source_file": ".commitlintrc.json",
+      "source_location": "L5"
+    },
+    {
+      "id": "home_coder_idle_factory_commitlintrc_rules_scope_case",
+      "label": "scope-case",
+      "file_type": "code",
+      "source_file": ".commitlintrc.json",
+      "source_location": "L23"
+    }
+  ],
+  "edges": [
+    {
+      "source": "home_coder_idle_factory_commitlintrc_json",
+      "target": "home_coder_idle_factory_commitlintrc_schema",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".commitlintrc.json",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_commitlintrc_json",
+      "target": "home_coder_idle_factory_commitlintrc_extends",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".commitlintrc.json",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_commitlintrc_extends",
+      "target": "ref_commitlint_config_conventional",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": ".commitlintrc.json",
+      "source_location": "L3",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_commitlintrc_json",
+      "target": "home_coder_idle_factory_commitlintrc_rules",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".commitlintrc.json",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_commitlintrc_rules",
+      "target": "home_coder_idle_factory_commitlintrc_rules_type_enum",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".commitlintrc.json",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_commitlintrc_rules_type_enum",
+      "target": "ref_always",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": ".commitlintrc.json",
+      "source_location": "L5",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_commitlintrc_rules",
+      "target": "home_coder_idle_factory_commitlintrc_rules_scope_case",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".commitlintrc.json",
+      "source_location": "L23",
+      "weight": 1.0
+    }
+  ]
+}

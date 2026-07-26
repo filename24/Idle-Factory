@@ -1,0 +1,18 @@
+{
+  "nodes": [
+    {
+      "id": "_github_actions_turbosummary_action_turbo_summary",
+      "label": "Summarize Turborepo Output action",
+      "file_type": "code",
+      "source_file": ".github/actions/turboSummary/action.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Reads the newest .turbo/runs/*.json run summary and renders task table, cache hit counts and FULL TURBO status into $GITHUB_STEP_SUMMARY, so cache effectiveness is visible per CI run without opening logs. Requires the turbo step to have run with --summarize first."
+    }
+  ],
+  "edges": [],
+  "hyperedges": []
+}

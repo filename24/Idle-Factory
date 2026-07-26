@@ -1,0 +1,258 @@
+{
+  "nodes": [
+    {
+      "id": "_claude_skills_componentsv2_builder_skill_components_v2_builder",
+      "label": "Components v2 Builder Skill",
+      "file_type": "document",
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_claude_skills_componentsv2_builder_skill_iscomponentsv2_flag",
+      "label": "MessageFlags.IsComponentsV2 Requirement",
+      "file_type": "rationale",
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_claude_skills_componentsv2_builder_skill_legacy_embed_prohibition",
+      "label": "Legacy Embed Prohibition (EmbedBuilder/embeds/content banned)",
+      "file_type": "rationale",
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_claude_skills_componentsv2_builder_skill_accent_color_palette",
+      "label": "Accent Color Palette (blurple/green/yellow/red/fuchsia)",
+      "file_type": "rationale",
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_claude_skills_componentsv2_builder_skill_container_width_guarantee",
+      "label": "Container Width Guarantee Techniques",
+      "file_type": "rationale",
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_claude_skills_componentsv2_builder_skill_section_accessory_rule",
+      "label": "Section Accessory Rule (Button OR Thumbnail, one only)",
+      "file_type": "rationale",
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_claude_skills_componentsv2_builder_skill_button_style_selection",
+      "label": "Discord Button Style Selection Table",
+      "file_type": "rationale",
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_claude_skills_componentsv2_builder_skill_embed_to_v2_migration_map",
+      "label": "Embed \u2192 Components v2 Migration Map",
+      "file_type": "document",
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_claude_skills_componentsv2_builder_skill_pre_send_checklist",
+      "label": "Pre-Send Checklist",
+      "file_type": "rationale",
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_claude_skills_componentsv2_builder_skill_media_url_accessibility",
+      "label": "Accessible CDN URL Requirement for Thumbnail/MediaGallery",
+      "file_type": "rationale",
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_claude_skills_componentsv2_builder_skill_select_menu_update_pattern",
+      "label": "Select Menu interaction.update() Container Swap",
+      "file_type": "rationale",
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "_claude_skills_componentsv2_builder_skill_components_v2_builder",
+      "target": "_claude_skills_componentsv2_builder_skill_iscomponentsv2_flag",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_claude_skills_componentsv2_builder_skill_legacy_embed_prohibition",
+      "target": "_claude_skills_componentsv2_builder_skill_iscomponentsv2_flag",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_claude_skills_componentsv2_builder_skill_embed_to_v2_migration_map",
+      "target": "_claude_skills_componentsv2_builder_skill_legacy_embed_prohibition",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_claude_skills_componentsv2_builder_skill_pre_send_checklist",
+      "target": "_claude_skills_componentsv2_builder_skill_accent_color_palette",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_claude_skills_componentsv2_builder_skill_pre_send_checklist",
+      "target": "_claude_skills_componentsv2_builder_skill_container_width_guarantee",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_claude_skills_componentsv2_builder_skill_pre_send_checklist",
+      "target": "_claude_skills_componentsv2_builder_skill_media_url_accessibility",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_claude_skills_componentsv2_builder_skill_pre_send_checklist",
+      "target": "_claude_skills_componentsv2_builder_skill_button_style_selection",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_claude_skills_componentsv2_builder_skill_container_width_guarantee",
+      "target": "_claude_skills_componentsv2_builder_skill_section_accessory_rule",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_claude_skills_componentsv2_builder_skill_pre_send_checklist",
+      "target": "_claude_skills_i18n_sync_skill_locale_key_dual_edit",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_claude_skills_componentsv2_builder_skill_select_menu_update_pattern",
+      "target": "_claude_skills_componentsv2_builder_skill_iscomponentsv2_flag",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_claude_skills_componentsv2_builder_skill_accent_color_palette",
+      "target": "_agents_skills_shadcn_rules_styling_semantic_colors",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_claude_skills_componentsv2_builder_skill_button_style_selection",
+      "target": "_agents_skills_shadcn_rules_composition_overlay_component_selection",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.65,
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_claude_skills_componentsv2_builder_skill_media_url_accessibility",
+      "target": "_agents_skills_shadcn_rules_composition_avatar_fallback",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": ".claude/skills/componentsv2-builder/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

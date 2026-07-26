@@ -1,0 +1,91 @@
+{
+  "nodes": [
+    {
+      "id": "apps_web_content_docs_economy_stock_market_ipo_requirements",
+      "label": "Stock IPO Requirements (Lv.25, 5 factories, 1\uc5b5 assets, 10 trades)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/economy/stock-market.mdx",
+      "source_location": "\uc8fc\uc2dd \uc0c1\uc7a5 (IPO) \uc870\uac74",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_economy_stock_market_price_update",
+      "label": "Stock Price Update (hourly, \u00b130% daily circuit breaker)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/economy/stock-market.mdx",
+      "source_location": "\uc8fc\uac00 \ubcc0\ub3d9",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_economy_stock_market_weekly_dividend",
+      "label": "Weekly Dividend Payout (Sunday midnight, 10% of weekly profit)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/economy/stock-market.mdx",
+      "source_location": "\ubc30\ub2f9",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_economy_stock_market_global_stock_access",
+      "label": "Cross-Server Global Stock Access (Lv.40 + 1,500pt trust)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/economy/stock-market.mdx",
+      "source_location": "\uae00\ub85c\ubc8c \uc8fc\uc2dd (\uc11c\ubc84 \uac04)",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "apps_web_content_docs_economy_stock_market_global_stock_access",
+      "target": "apps_web_content_docs_advanced_server_guild_server_trust",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/economy/stock-market.mdx",
+      "source_location": "\uc11c\ubc84 \uc2e0\ub8b0\ub3c4 1,500pt \uc774\uc0c1 \uc870\uac74",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_economy_stock_market_price_update",
+      "target": "apps_web_content_docs_economy_market_global_market_price",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "apps/web/content/docs/economy/stock-market.mdx",
+      "source_location": "both are periodic demand-driven price recalculations with hard bounds",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_economy_stock_market_weekly_dividend",
+      "target": "apps_web_content_docs_advanced_server_guild_progressive_tax",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "apps/web/content/docs/economy/stock-market.mdx",
+      "source_location": "both settle at \ub9e4\uc8fc \uc77c\uc694\uc77c \uc790\uc815 (same weekly settlement job)",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_economy_stock_market_weekly_dividend",
+      "target": "apps_bot_agents_scheduled_tasks_pattern",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "apps/web/content/docs/economy/stock-market.mdx",
+      "source_location": "runWeeklySettlement delegate implements the Sunday-midnight payout",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

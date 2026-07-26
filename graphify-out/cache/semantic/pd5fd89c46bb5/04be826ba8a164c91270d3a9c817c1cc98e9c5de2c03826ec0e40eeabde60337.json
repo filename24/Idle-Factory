@@ -1,0 +1,101 @@
+{
+  "nodes": [
+    {
+      "id": "_agents_skills_shadcn_mcp_shadcn_mcp_server",
+      "label": "shadcn MCP Server",
+      "file_type": "document",
+      "source_file": ".agents/skills/shadcn/mcp.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_mcp_registry_configuration",
+      "label": "Registry Configuration ({name} URL template, ${VAR} headers)",
+      "file_type": "concept",
+      "source_file": ".agents/skills/shadcn/mcp.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_mcp_get_audit_checklist",
+      "label": "shadcn:get_audit_checklist MCP Tool",
+      "file_type": "concept",
+      "source_file": ".agents/skills/shadcn/mcp.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_mcp_search_items_in_registries",
+      "label": "shadcn:search_items_in_registries MCP Tool",
+      "file_type": "concept",
+      "source_file": ".agents/skills/shadcn/mcp.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "_agents_skills_shadcn_mcp_shadcn_mcp_server",
+      "target": "_agents_skills_shadcn_mcp_registry_configuration",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/mcp.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_mcp_registry_configuration",
+      "target": "_agents_skills_shadcn_cli_components_json",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/mcp.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_mcp_shadcn_mcp_server",
+      "target": "_agents_skills_shadcn_cli_info_command",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/mcp.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_mcp_search_items_in_registries",
+      "target": "_agents_skills_shadcn_cli_search_command",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": ".agents/skills/shadcn/mcp.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_mcp_get_audit_checklist",
+      "target": "_agents_skills_shadcn_skill_critical_rules",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": ".agents/skills/shadcn/mcp.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

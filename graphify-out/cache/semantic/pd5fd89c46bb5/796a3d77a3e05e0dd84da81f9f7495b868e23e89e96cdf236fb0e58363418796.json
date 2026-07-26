@@ -1,0 +1,111 @@
+{
+  "nodes": [
+    {
+      "id": "apps_web_content_docs_advanced_server_guild_server_trust",
+      "label": "Server Trust Score (0~2,000pt, weekly \u0394 = \u230aactive\u00d70.5\u230b \u2212 10)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/advanced/server-guild.mdx",
+      "source_location": "\uc11c\ubc84 \uc2e0\ub8b0\ub3c4",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_advanced_server_guild_progressive_tax",
+      "label": "Progressive Sales Tax (5~20%, weekly Sunday settlement)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/advanced/server-guild.mdx",
+      "source_location": "\uc138\uae08 \uc2dc\uc2a4\ud15c",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_advanced_server_guild_inactive_redistribution",
+      "label": "Inactive Server Asset Redistribution (30 days, monthly 1st)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/advanced/server-guild.mdx",
+      "source_location": "\ube44\ud65c\uc131 \uc11c\ubc84 \uc790\uc0b0 \uc7ac\ubd84\ubc30",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_advanced_server_guild_global_economy",
+      "label": "Unified Global Economy Across Discord Servers",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/advanced/server-guild.mdx",
+      "source_location": "\uae00\ub85c\ubc8c \uacbd\uc81c \ucc38\uc5ec",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "apps_web_content_docs_advanced_server_guild_inactive_redistribution",
+      "target": "apps_bot_agents_scheduled_tasks_pattern",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "apps/web/content/docs/advanced/server-guild.mdx",
+      "source_location": "\ub9e4\uc6d4 1\uc77c \uc790\uc815 \ucc98\ub9ac \u2194 runMonthlyRedistribution delegate",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_advanced_server_guild_server_trust",
+      "target": "apps_web_content_docs_advanced_server_guild_inactive_redistribution",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/advanced/server-guild.mdx",
+      "source_location": "\uc2e0\ub8b0\ub3c4 300pt \uc774\uc0c1\uc778 \ud65c\uc131 \uc11c\ubc84\uc5d0 \ubd84\ubc30",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_advanced_server_guild_progressive_tax",
+      "target": "apps_web_content_docs_advanced_server_guild_inactive_redistribution",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/advanced/server-guild.mdx",
+      "source_location": "\uc9d5\uc218\ub41c \uc138\uae08\uc758 \uc808\ubc18\uc740 \uae00\ub85c\ubc8c \uc7ac\ubd84\ubc30 \ud480\ub85c",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_advanced_server_guild_server_trust",
+      "target": "apps_web_content_docs_advanced_level_growth_xp_sources",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/advanced/server-guild.mdx",
+      "source_location": "\uc2e0\ub8b0\ub3c4 1,000+ \u2192 \uacbd\ud5d8\uce58 +10%, 1,500+ \u2192 +20%",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_advanced_server_guild_server_trust",
+      "target": "apps_web_content_docs_facilities_factories_grade_upgrade",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/advanced/server-guild.mdx",
+      "source_location": "\uacf5\uc7a5 \ucd5c\ub300 Grade +1 / +2 by trust tier",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_advanced_server_guild_global_economy",
+      "target": "apps_web_content_docs_getting_started_intro_per_server_account",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "apps/web/content/docs/advanced/server-guild.mdx",
+      "source_location": "per-server accounts but one shared global market",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

@@ -1,0 +1,38 @@
+{
+  "nodes": [
+    {
+      "id": "docs_design_02_core_loop_gameplay_loop",
+      "label": "Core Gameplay Loop",
+      "file_type": "concept",
+      "source_file": "docs/design/02-core-loop.md",
+      "source_location": "L1-L46",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "docs_design_02_core_loop_gameplay_loop",
+      "target": "docs_design_09_level_xp_xp_gain",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/02-core-loop.md",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_02_core_loop_gameplay_loop",
+      "target": "docs_design_05_warehouse_warehouse_system",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/02-core-loop.md",
+      "source_location": "L9-L12",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

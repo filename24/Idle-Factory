@@ -1,0 +1,101 @@
+{
+  "nodes": [
+    {
+      "id": "apps_web_content_docs_getting_started_intro_idle_factory",
+      "label": "Idle Factory \u2014 Discord Idle Industrial Management Game",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/getting-started/intro.mdx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_getting_started_intro_tier_chain",
+      "label": "Three-Stage Production Chain (T1 \u2192 T2 \u2192 T3)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/getting-started/intro.mdx",
+      "source_location": "3\ub2e8\uacc4 \uc0dd\uc0b0 \uc0ac\uc2ac",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_getting_started_intro_slash_commands",
+      "label": "Core Slash Commands (/\ud1a0\uc9c0 /\uacf5\uc7a5 /\uc218\ud655 /\ucc3d\uace0 /\uc2dc\uc7a5 /\ud504\ub85c\ud544)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/getting-started/intro.mdx",
+      "source_location": "\uc8fc\uc694 \ucee4\ub9e8\ub4dc",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_getting_started_intro_per_server_account",
+      "label": "Per-Server Independent Player Accounts",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/getting-started/intro.mdx",
+      "source_location": "\uac8c\uc784 \uc2dc\uc791 \uc804 \uc54c\uc544\ub450\uae30",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "apps_web_content_docs_getting_started_intro_idle_factory",
+      "target": "apps_web_content_docs_getting_started_intro_tier_chain",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/getting-started/intro.mdx",
+      "source_location": "3\ub2e8\uacc4 \uc0dd\uc0b0 \uc0ac\uc2ac",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_getting_started_intro_idle_factory",
+      "target": "apps_web_content_docs_getting_started_intro_slash_commands",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/getting-started/intro.mdx",
+      "source_location": "\uc8fc\uc694 \ucee4\ub9e8\ub4dc",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_getting_started_intro_idle_factory",
+      "target": "apps_web_content_docs_getting_started_intro_per_server_account",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/getting-started/intro.mdx",
+      "source_location": "\uac8c\uc784 \uc2dc\uc791 \uc804 \uc54c\uc544\ub450\uae30",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_getting_started_intro_slash_commands",
+      "target": "apps_bot_agents_discord_bot_guide",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "apps/web/content/docs/getting-started/intro.mdx",
+      "source_location": "slash commands documented here are implemented by apps/bot commands store",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_getting_started_intro_tier_chain",
+      "target": "apps_web_content_docs_economy_materials_trading_material_catalog",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "apps/web/content/docs/getting-started/intro.mdx",
+      "source_location": "same T1/T2/T3 tier taxonomy",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

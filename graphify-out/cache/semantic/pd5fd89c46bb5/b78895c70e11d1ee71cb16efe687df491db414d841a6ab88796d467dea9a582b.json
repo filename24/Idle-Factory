@@ -1,0 +1,48 @@
+{
+  "nodes": [
+    {
+      "id": "apps_web_content_docs_getting_started_tutorial_quests_quest_chain",
+      "label": "Five-Step Tutorial Quest Chain (5,000\uc6d0 total reward)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/getting-started/tutorial-quests.mdx",
+      "source_location": "\ud018\uc2a4\ud2b8 \uccb4\uc778",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "apps_web_content_docs_getting_started_how_to_start_seed_money",
+      "target": "apps_web_content_docs_getting_started_tutorial_quests_quest_chain",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/getting-started/tutorial-quests.mdx",
+      "source_location": "1,000\uc6d0 \ucd08\uae30 \uc9c0\uae09 + 5,000\uc6d0 \ud018\uc2a4\ud2b8 \ubcf4\uc0c1 = 6,000\uc6d0",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_getting_started_tutorial_quests_quest_chain",
+      "target": "apps_web_content_docs_facilities_factories_grade_upgrade",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/getting-started/tutorial-quests.mdx",
+      "source_location": "Quest 4 \u2014 \uacf5\uc7a5 Grade 1\u21922 \uc5c5\uadf8\ub808\uc774\ub4dc, 3,000\uc6d0",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_getting_started_tutorial_quests_quest_chain",
+      "target": "apps_web_content_docs_facilities_warehouse_capacity_formula",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/getting-started/tutorial-quests.mdx",
+      "source_location": "Card href=/docs/facilities/warehouse",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

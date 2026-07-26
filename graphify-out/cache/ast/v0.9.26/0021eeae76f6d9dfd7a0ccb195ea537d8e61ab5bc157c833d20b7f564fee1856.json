@@ -1,0 +1,110 @@
+{
+  "nodes": [
+    {
+      "id": "home_coder_idle_factory_husky_post_checkout",
+      "label": "post-checkout",
+      "file_type": "code",
+      "source_file": ".husky/post-checkout",
+      "source_location": "L1",
+      "metadata": { "language": "bash", "kind": "file" }
+    },
+    {
+      "id": "home_coder_idle_factory_husky_post_checkout__entry",
+      "label": "post-checkout script",
+      "file_type": "code",
+      "source_file": ".husky/post-checkout",
+      "source_location": "L1",
+      "metadata": { "language": "bash", "kind": "bash_entrypoint" }
+    },
+    {
+      "id": "home_coder_idle_factory_husky_post_checkout_pythonhashseed",
+      "label": "PYTHONHASHSEED",
+      "file_type": "code",
+      "source_file": ".husky/post-checkout",
+      "source_location": "L9",
+      "metadata": { "language": "bash", "kind": "code" }
+    },
+    {
+      "id": "home_coder_idle_factory_husky_post_checkout_graphify_rebuild_log",
+      "label": "GRAPHIFY_REBUILD_LOG",
+      "file_type": "code",
+      "source_file": ".husky/post-checkout",
+      "source_location": "L133",
+      "metadata": { "language": "bash", "kind": "code" }
+    }
+  ],
+  "edges": [
+    {
+      "source": "home_coder_idle_factory_husky_post_checkout",
+      "target": "home_coder_idle_factory_husky_post_checkout__entry",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".husky/post-checkout",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_husky_post_checkout",
+      "target": "home_coder_idle_factory_husky_post_checkout_pythonhashseed",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": ".husky/post-checkout",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_husky_post_checkout",
+      "target": "home_coder_idle_factory_husky_post_checkout_graphify_rebuild_log",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": ".husky/post-checkout",
+      "source_location": "L133",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "language": "bash",
+      "callee": "exit",
+      "caller_nid": "home_coder_idle_factory_husky_post_checkout__entry",
+      "source_file": ".husky/post-checkout",
+      "source_location": "L24"
+    },
+    {
+      "language": "bash",
+      "callee": "command",
+      "caller_nid": "home_coder_idle_factory_husky_post_checkout__entry",
+      "source_file": ".husky/post-checkout",
+      "source_location": "L121"
+    },
+    {
+      "language": "bash",
+      "callee": "python3",
+      "caller_nid": "home_coder_idle_factory_husky_post_checkout__entry",
+      "source_file": ".husky/post-checkout",
+      "source_location": "L121"
+    },
+    {
+      "language": "bash",
+      "callee": "python",
+      "caller_nid": "home_coder_idle_factory_husky_post_checkout__entry",
+      "source_file": ".husky/post-checkout",
+      "source_location": "L123"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "home_coder_idle_factory_husky_post_checkout__entry",
+      "source_file": ".husky/post-checkout",
+      "source_location": "L126"
+    },
+    {
+      "language": "bash",
+      "callee": "mkdir",
+      "caller_nid": "home_coder_idle_factory_husky_post_checkout__entry",
+      "source_file": ".husky/post-checkout",
+      "source_location": "L132"
+    }
+  ],
+  "bash_sources": []
+}

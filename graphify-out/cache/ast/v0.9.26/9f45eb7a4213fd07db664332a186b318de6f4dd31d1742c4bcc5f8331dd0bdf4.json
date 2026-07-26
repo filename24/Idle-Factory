@@ -1,0 +1,225 @@
+{
+  "nodes": [
+    {
+      "id": "home_coder_idle_factory_prettierrc_json",
+      "label": ".prettierrc.json",
+      "file_type": "code",
+      "source_file": ".prettierrc.json",
+      "source_location": "L1"
+    },
+    {
+      "id": "home_coder_idle_factory_prettierrc_plugins",
+      "label": "plugins",
+      "file_type": "code",
+      "source_file": ".prettierrc.json",
+      "source_location": "L2"
+    },
+    {
+      "id": "ref_ianvs_prettier_plugin_sort_imports",
+      "label": "@ianvs/prettier-plugin-sort-imports",
+      "file_type": "concept",
+      "source_file": ".prettierrc.json",
+      "source_location": "L2"
+    },
+    {
+      "id": "home_coder_idle_factory_prettierrc_importorderparserplugins",
+      "label": "importOrderParserPlugins",
+      "file_type": "code",
+      "source_file": ".prettierrc.json",
+      "source_location": "L3"
+    },
+    {
+      "id": "ref_typescript",
+      "label": "typescript",
+      "file_type": "concept",
+      "source_file": ".prettierrc.json",
+      "source_location": "L3"
+    },
+    {
+      "id": "ref_jsx",
+      "label": "jsx",
+      "file_type": "concept",
+      "source_file": ".prettierrc.json",
+      "source_location": "L3"
+    },
+    {
+      "id": "ref_decorators_legacy",
+      "label": "decorators-legacy",
+      "file_type": "concept",
+      "source_file": ".prettierrc.json",
+      "source_location": "L3"
+    },
+    {
+      "id": "home_coder_idle_factory_prettierrc_importordertypescriptversion",
+      "label": "importOrderTypeScriptVersion",
+      "file_type": "code",
+      "source_file": ".prettierrc.json",
+      "source_location": "L4"
+    },
+    {
+      "id": "home_coder_idle_factory_prettierrc_tabwidth",
+      "label": "tabWidth",
+      "file_type": "code",
+      "source_file": ".prettierrc.json",
+      "source_location": "L5"
+    },
+    {
+      "id": "home_coder_idle_factory_prettierrc_endofline",
+      "label": "endOfLine",
+      "file_type": "code",
+      "source_file": ".prettierrc.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "home_coder_idle_factory_prettierrc_printwidth",
+      "label": "printWidth",
+      "file_type": "code",
+      "source_file": ".prettierrc.json",
+      "source_location": "L7"
+    },
+    {
+      "id": "home_coder_idle_factory_prettierrc_singlequote",
+      "label": "singleQuote",
+      "file_type": "code",
+      "source_file": ".prettierrc.json",
+      "source_location": "L8"
+    },
+    {
+      "id": "home_coder_idle_factory_prettierrc_trailingcomma",
+      "label": "trailingComma",
+      "file_type": "code",
+      "source_file": ".prettierrc.json",
+      "source_location": "L9"
+    },
+    {
+      "id": "home_coder_idle_factory_prettierrc_semi",
+      "label": "semi",
+      "file_type": "code",
+      "source_file": ".prettierrc.json",
+      "source_location": "L10"
+    }
+  ],
+  "edges": [
+    {
+      "source": "home_coder_idle_factory_prettierrc_json",
+      "target": "home_coder_idle_factory_prettierrc_plugins",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".prettierrc.json",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_prettierrc_plugins",
+      "target": "ref_ianvs_prettier_plugin_sort_imports",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": ".prettierrc.json",
+      "source_location": "L2",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_prettierrc_json",
+      "target": "home_coder_idle_factory_prettierrc_importorderparserplugins",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".prettierrc.json",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_prettierrc_importorderparserplugins",
+      "target": "ref_typescript",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": ".prettierrc.json",
+      "source_location": "L3",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_prettierrc_importorderparserplugins",
+      "target": "ref_jsx",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": ".prettierrc.json",
+      "source_location": "L3",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_prettierrc_importorderparserplugins",
+      "target": "ref_decorators_legacy",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": ".prettierrc.json",
+      "source_location": "L3",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_prettierrc_json",
+      "target": "home_coder_idle_factory_prettierrc_importordertypescriptversion",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".prettierrc.json",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_prettierrc_json",
+      "target": "home_coder_idle_factory_prettierrc_tabwidth",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".prettierrc.json",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_prettierrc_json",
+      "target": "home_coder_idle_factory_prettierrc_endofline",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".prettierrc.json",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_prettierrc_json",
+      "target": "home_coder_idle_factory_prettierrc_printwidth",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".prettierrc.json",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_prettierrc_json",
+      "target": "home_coder_idle_factory_prettierrc_singlequote",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".prettierrc.json",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_prettierrc_json",
+      "target": "home_coder_idle_factory_prettierrc_trailingcomma",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".prettierrc.json",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_prettierrc_json",
+      "target": "home_coder_idle_factory_prettierrc_semi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".prettierrc.json",
+      "source_location": "L10",
+      "weight": 1.0
+    }
+  ]
+}

@@ -1,0 +1,240 @@
+{
+  "nodes": [
+    {
+      "id": "docs_codemaps_game_core_game_core_package",
+      "label": "packages/game-core Pure Domain Package",
+      "file_type": "document",
+      "source_file": "docs/CODEMAPS/game-core.md",
+      "source_location": "L1-L26",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Zero I/O dependencies keeps the package pure so identical formulas can run in the bot, the web app, and the balance simulator without duplication or divergence."
+    },
+    {
+      "id": "docs_codemaps_game_core_type_contracts",
+      "label": "Game-Core Type Contracts (FactoryState, SlotState, MaterialBag)",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/game-core.md",
+      "source_location": "L28-L69",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Enum-like string unions mirror Prisma enums by hand so game-core avoids importing @prisma/client and stays dependency-free."
+    },
+    {
+      "id": "docs_codemaps_game_core_factory_catalog",
+      "label": "FACTORY_CATALOG Specification",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/game-core.md",
+      "source_location": "L71-L115",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_game_core_cost_calculations",
+      "label": "Cost Formulas (build/upgrade/move/demolish/expansion)",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/game-core.md",
+      "source_location": "L117-L139",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "All costs return bigint for precision, consistent with the repo-wide BigInt convention."
+    },
+    {
+      "id": "docs_codemaps_game_core_production_calculation",
+      "label": "calculateProduction Tick Calculation",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/game-core.md",
+      "source_location": "L141-L194",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_game_core_warehouse_capacity",
+      "label": "Warehouse Capacity Formula (game-core)",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/game-core.md",
+      "source_location": "L196-L210",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_game_core_land_layout",
+      "label": "Land Layout Spatial Validation (canPlace/getOccupiedCells)",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/game-core.md",
+      "source_location": "L212-L230",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_game_core_special_slots_generator",
+      "label": "generateSpecialSlots Probability Generator",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/game-core.md",
+      "source_location": "L232-L253",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "RNG is injectable (rng?: () => number) so special-slot generation is deterministic under test while defaulting to Math.random in production."
+    },
+    {
+      "id": "docs_codemaps_game_core_xp_leveling",
+      "label": "XP & Leveling Functions (game-core)",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/game-core.md",
+      "source_location": "L255-L293",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "docs_codemaps_game_core_production_calculation",
+      "target": "docs_codemaps_game_core_factory_catalog",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/game-core.md",
+      "source_location": "L164",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_game_core_production_calculation",
+      "target": "docs_codemaps_game_core_type_contracts",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/game-core.md",
+      "source_location": "L153-L158",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_game_core_production_calculation",
+      "target": "docs_codemaps_game_core_land_layout",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/game-core.md",
+      "source_location": "L188-L194",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_game_core_game_core_package",
+      "target": "docs_design_03_factories_three_tier_chain",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/game-core.md",
+      "source_location": "L341",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_game_core_warehouse_capacity",
+      "target": "docs_design_05_warehouse_capacity_grade_table",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/game-core.md",
+      "source_location": "L342",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_game_core_special_slots_generator",
+      "target": "docs_design_11_land_special_slot_generation",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/game-core.md",
+      "source_location": "L343",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_game_core_xp_leveling",
+      "target": "docs_design_09_level_xp_level_formula",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/game-core.md",
+      "source_location": "L344",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_game_core_cost_calculations",
+      "target": "docs_design_03_factories_build_upgrade_cost",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/game-core.md",
+      "source_location": "L341",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_game_core_land_layout",
+      "target": "docs_design_11_land_land_system",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/game-core.md",
+      "source_location": "L343",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_game_core_warehouse_capacity",
+      "target": "docs_design_05_warehouse_capacity_grade_table",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/CODEMAPS/game-core.md",
+      "source_location": "L196-L210",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_game_core_production_calculation",
+      "target": "docs_design_03_factories_production_tick",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/CODEMAPS/game-core.md",
+      "source_location": "L141-L194",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_game_core_factory_catalog",
+      "target": "docs_design_03_factories_three_tier_chain",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/CODEMAPS/game-core.md",
+      "source_location": "L71-L115",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_game_core_land_layout",
+      "target": "docs_design_11_land_adjacency_synergy",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/CODEMAPS/game-core.md",
+      "source_location": "L224-L230",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

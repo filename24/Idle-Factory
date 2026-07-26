@@ -1,0 +1,40 @@
+{
+  "nodes": [
+    {
+      "id": "_github_actions_pnpm_install_action_pnpm_install",
+      "label": "PNPM install composite action",
+      "file_type": "code",
+      "source_file": ".github/actions/pnpm-install/action.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_github_actions_pnpm_install_action_pnpm_store_cache_rotation",
+      "label": "Monthly-rotated pnpm store cache key",
+      "file_type": "rationale",
+      "source_file": ".github/actions/pnpm-install/action.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Cache key embeds YEAR_MONTH plus a hash of pnpm-lock.yaml so the store cache is naturally evicted every month instead of growing unbounded; restore-keys fall back to the same month's prefix. HUSKY=0 is set during install so git hooks never run on CI runners. Pattern adopted from the belgattitude gist."
+    }
+  ],
+  "edges": [
+    {
+      "source": "_github_actions_pnpm_install_action_pnpm_install",
+      "target": "_github_actions_pnpm_install_action_pnpm_store_cache_rotation",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".github/actions/pnpm-install/action.yml",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

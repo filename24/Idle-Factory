@@ -1,0 +1,91 @@
+{
+  "nodes": [
+    {
+      "id": "apps_web_content_docs_economy_market_global_market_price",
+      "label": "Global Market Price Update (30-min, clamped 70%~200% of base)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/economy/market.mdx",
+      "source_location": "\uac00\uaca9 \ubcc0\ub3d9 \uc6d0\ub9ac",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_economy_market_user_shop",
+      "label": "User Shop (listing cap min(5+\u230alv/5\u230b,20), \u00b150% price band)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/economy/market.mdx",
+      "source_location": "\uc720\uc800 \uc0c1\uc810",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_economy_market_progressive_listing_fee",
+      "label": "Progressive Listing Fee by Duration (3%~18%)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/economy/market.mdx",
+      "source_location": "\uc218\uc218\ub8cc (\uae30\uac04\ubcc4 \ub204\uc9c4)",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_economy_market_abuse_detection",
+      "label": "Market Abuse Auto-Detection (same IP/alt accounts, price outliers)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/economy/market.mdx",
+      "source_location": "\uac70\ub798 \uc8fc\uc758\uc0ac\ud56d",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "apps_web_content_docs_economy_market_global_market_price",
+      "target": "apps_web_content_docs_economy_market_user_shop",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/economy/market.mdx",
+      "source_location": "user shop price bounded to \u00b150% of global market price",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_economy_market_user_shop",
+      "target": "apps_web_content_docs_economy_market_progressive_listing_fee",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/economy/market.mdx",
+      "source_location": "\uc218\uc218\ub8cc (\uae30\uac04\ubcc4 \ub204\uc9c4)",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_economy_market_user_shop",
+      "target": "apps_web_content_docs_advanced_level_growth_level_unlocks",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "apps/web/content/docs/economy/market.mdx",
+      "source_location": "listing cap = min(5 + \u230alevel/5\u230b, 20)",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_economy_market_abuse_detection",
+      "target": "apps_web_content_docs_advanced_level_growth_xp_abuse_prevention",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "apps/web/content/docs/economy/market.mdx",
+      "source_location": "same alt-account/burst-trade/price-outlier heuristics, different penalty",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

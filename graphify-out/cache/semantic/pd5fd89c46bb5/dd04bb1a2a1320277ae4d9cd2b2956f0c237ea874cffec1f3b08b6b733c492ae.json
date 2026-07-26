@@ -1,0 +1,113 @@
+{
+  "nodes": [
+    {
+      "id": "docs_design_00_onboarding_onboarding_flow",
+      "label": "New User Onboarding (/start grant)",
+      "file_type": "document",
+      "source_file": "docs/design/00-onboarding.md",
+      "source_location": "L1-L30",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "1,000 seed money is granted because tutorial quest 1 is itself building a 1,000-won T1 factory \u2014 without seed money the player could not even start the quest chain (chicken-and-egg)."
+    },
+    {
+      "id": "docs_design_00_onboarding_tutorial_quest_chain",
+      "label": "5-Step Tutorial Quest Chain",
+      "file_type": "concept",
+      "source_file": "docs/design/00-onboarding.md",
+      "source_location": "L18-L57",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Quests run strictly in order with no skipping so the player is walked through the entire core loop. Known defect (contradiction 11): quest 4 requires 3,000 won for an upgrade but the player holds only ~2,000 at that point, because quest 3 completes on market LISTING not on an actual sale."
+    },
+    {
+      "id": "docs_design_00_onboarding_material_base_price",
+      "label": "Material Base Price Table (T1/T2/T3)",
+      "file_type": "concept",
+      "source_file": "docs/design/00-onboarding.md",
+      "source_location": "L71-L107",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Base prices are set so every T1 factory converges to 300-400 won per tick, giving a uniform ~3.3-tick (33 min) break-even on the 1,000-won build cost. Direct-purchase price, upgrade cost sanity, and market clamps all derive from this table."
+    }
+  ],
+  "edges": [
+    {
+      "source": "docs_design_00_onboarding_tutorial_quest_chain",
+      "target": "docs_design_03_factories_build_upgrade_cost",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/00-onboarding.md",
+      "source_location": "L44",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_00_onboarding_tutorial_quest_chain",
+      "target": "plans_idle_factory_master_plan_economy_balance_simulator",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/00-onboarding.md",
+      "source_location": "L44",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_00_onboarding_material_base_price",
+      "target": "docs_design_06_market_global_market_price",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/00-onboarding.md",
+      "source_location": "L73",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_00_onboarding_material_base_price",
+      "target": "docs_design_04_economy_direct_purchase",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/00-onboarding.md",
+      "source_location": "L73",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_00_onboarding_onboarding_flow",
+      "target": "docs_design_11_land_special_slot_generation",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/00-onboarding.md",
+      "source_location": "L123",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_00_onboarding_onboarding_flow",
+      "target": "docs_design_07_global_system_global_system",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/00-onboarding.md",
+      "source_location": "L113",
+      "weight": 1.0
+    },
+    {
+      "source": "plans_idle_factory_master_plan_economy_balance_simulator",
+      "target": "docs_design_00_onboarding_material_base_price",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/00-onboarding.md",
+      "source_location": "L107",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

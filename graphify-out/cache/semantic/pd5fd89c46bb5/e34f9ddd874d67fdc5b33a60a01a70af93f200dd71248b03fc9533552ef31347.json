@@ -1,0 +1,272 @@
+{
+  "nodes": [
+    {
+      "id": "_agents_skills_shadcn_skill_shadcn_skill",
+      "label": "shadcn/ui Skill",
+      "file_type": "document",
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_skill_critical_rules",
+      "label": "shadcn Critical Rules (always enforced)",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_skill_compose_dont_reinvent",
+      "label": "Compose, Don't Reinvent Principle",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_skill_component_selection_table",
+      "label": "Component Selection Table",
+      "file_type": "document",
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_skill_project_context_key_fields",
+      "label": "Project Context Key Fields (aliases, isRSC, base, iconLibrary)",
+      "file_type": "concept",
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_skill_updating_components_smart_merge",
+      "label": "Updating Components Smart Merge Workflow",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_skill_preset_switching_workflow",
+      "label": "Preset Switching Workflow (overwrite/partial/merge/skip)",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_skill_third_party_import_rewrite",
+      "label": "Third-Party Registry Import Path Rewrite",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "_agents_skills_shadcn_skill_shadcn_skill",
+      "target": "_agents_skills_shadcn_rules_styling_semantic_colors",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_skill_critical_rules",
+      "target": "_agents_skills_shadcn_rules_styling_classname_layout_only",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_skill_critical_rules",
+      "target": "_agents_skills_shadcn_rules_forms_fieldgroup_field_layout",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_skill_critical_rules",
+      "target": "_agents_skills_shadcn_rules_composition_items_inside_group",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_skill_critical_rules",
+      "target": "_agents_skills_shadcn_rules_icons_data_icon_attribute",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_skill_critical_rules",
+      "target": "_agents_skills_shadcn_rules_base_vs_radix_aschild_vs_render",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_skill_shadcn_skill",
+      "target": "_agents_skills_shadcn_cli_shadcn_cli_reference",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_skill_shadcn_skill",
+      "target": "_agents_skills_shadcn_customization_customization_theming",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_skill_project_context_key_fields",
+      "target": "_agents_skills_shadcn_cli_info_command",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_skill_updating_components_smart_merge",
+      "target": "_agents_skills_shadcn_cli_dry_run_mode",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_skill_preset_switching_workflow",
+      "target": "_agents_skills_shadcn_cli_apply_command",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_skill_preset_switching_workflow",
+      "target": "_agents_skills_shadcn_cli_init_command",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_skill_preset_switching_workflow",
+      "target": "_agents_skills_shadcn_cli_preset_opacity_rule",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_skill_third_party_import_rewrite",
+      "target": "_agents_skills_shadcn_skill_project_context_key_fields",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_skill_compose_dont_reinvent",
+      "target": "_agents_skills_shadcn_rules_composition_prefer_existing_components",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_skill_component_selection_table",
+      "target": "_agents_skills_shadcn_rules_composition_overlay_component_selection",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": ".agents/skills/shadcn/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "shadcn_critical_rules_ruleset",
+      "label": "shadcn Critical Rules Enforced Ruleset",
+      "nodes": [
+        "_agents_skills_shadcn_skill_critical_rules",
+        "_agents_skills_shadcn_rules_styling_semantic_colors",
+        "_agents_skills_shadcn_rules_forms_fieldgroup_field_layout",
+        "_agents_skills_shadcn_rules_composition_items_inside_group",
+        "_agents_skills_shadcn_rules_icons_data_icon_attribute",
+        "_agents_skills_shadcn_rules_base_vs_radix_aschild_vs_render"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/SKILL.md"
+    }
+  ]
+}

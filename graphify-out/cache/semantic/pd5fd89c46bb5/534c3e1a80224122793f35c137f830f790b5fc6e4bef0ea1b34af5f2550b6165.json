@@ -1,0 +1,81 @@
+{
+  "nodes": [
+    {
+      "id": "_agents_skills_shadcn_rules_icons_data_icon_attribute",
+      "label": "data-icon Attribute for Button Icons",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/icons.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_icons_no_icon_sizing_classes",
+      "label": "No Sizing Classes on Icons Inside Components",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/icons.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_icons_icons_as_component_objects",
+      "label": "Pass Icons as Component Objects, Not String Keys",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/icons.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_shadcn_rules_icons_icon_library_config",
+      "label": "Configured iconLibrary Import Rule",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/shadcn/rules/icons.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "_agents_skills_shadcn_rules_icons_icon_library_config",
+      "target": "_agents_skills_shadcn_skill_project_context_key_fields",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/rules/icons.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_rules_icons_no_icon_sizing_classes",
+      "target": "_agents_skills_shadcn_rules_icons_data_icon_attribute",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/shadcn/rules/icons.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_shadcn_rules_icons_no_icon_sizing_classes",
+      "target": "_agents_skills_shadcn_rules_styling_classname_layout_only",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": ".agents/skills/shadcn/rules/icons.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

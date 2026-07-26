@@ -1,0 +1,169 @@
+{
+  "nodes": [
+    {
+      "id": "docs_design_06_market_global_market_price",
+      "label": "Global Market Price Fluctuation (30-min cycle)",
+      "file_type": "concept",
+      "source_file": "docs/design/06-market.md",
+      "source_location": "L29-L55",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Hybrid random noise (+-20%) plus a demand factor from recent sales, clamped to 70-200% of base price to prevent runaway extremes. U-5 guard: when avgSales = 0, demandFactor is forced to 0 so only noise applies (division-by-zero protection). The 30-min recalculation job is not yet implemented."
+    },
+    {
+      "id": "docs_design_06_market_user_to_global_sale",
+      "label": "User-to-Global Instant Sale (U-3)",
+      "file_type": "concept",
+      "source_file": "docs/design/06-market.md",
+      "source_location": "L57-L68",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Sells at 100% of current price with zero fee, deliberately symmetric to the x2 direct-purchase surcharge. Sold quantity feeds recentSales, applying downward pressure in the next price cycle. Unlimited quantity in v1; not yet implemented."
+    },
+    {
+      "id": "docs_design_06_market_user_shop",
+      "label": "User Shop Listing Rules",
+      "file_type": "concept",
+      "source_file": "docs/design/06-market.md",
+      "source_location": "L70-L101",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Base 3% fee to the server vault, listing cap 5 + floor(level/5) up to 20, price restricted to +-50% of global. Duration tax is progressive (3% -> 18% at 30 days) because long listings lock supply and distort prices; the progression forces inventory turnover."
+    },
+    {
+      "id": "docs_design_06_market_expiry_reclaim",
+      "label": "Listing Expiry/Cancel Reclaim (U-1)",
+      "file_type": "concept",
+      "source_file": "docs/design/06-market.md",
+      "source_location": "L103-L110",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Reclaimed materials are force-inserted ignoring warehouse capacity (no mailbox system), which is simpler than adding a separate holding store. The consequence is the warehouse may exceed capacity and production stays halted until the player frees space."
+    },
+    {
+      "id": "docs_design_06_market_fraud_prevention",
+      "label": "Market Fraud Prevention Rules",
+      "file_type": "concept",
+      "source_file": "docs/design/06-market.md",
+      "source_location": "L112-L130",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Blocks alt-account self-trading to farm XP and money via IP/account checks, repeat-trade rate limiting, abnormal price blocking, and new-account market restrictions."
+    },
+    {
+      "id": "docs_design_06_market_concurrency",
+      "label": "Market Concurrency & Consistency (U-4)",
+      "file_type": "concept",
+      "source_file": "docs/design/06-market.md",
+      "source_location": "L132-L139",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "All state changes run under runInTx at Serializable isolation with full-jitter retry (up to 5) on P2034 serialization/deadlock errors. Status and expiry are re-validated inside the purchase transaction to prevent double-selling, and self-purchase is rejected with SELF_PURCHASE."
+    }
+  ],
+  "edges": [
+    {
+      "source": "docs_design_06_market_user_shop",
+      "target": "docs_design_06_market_global_market_price",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/06-market.md",
+      "source_location": "L78",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_06_market_global_market_price",
+      "target": "docs_design_04_economy_direct_purchase",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/06-market.md",
+      "source_location": "L54",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_06_market_user_to_global_sale",
+      "target": "docs_design_06_market_global_market_price",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/06-market.md",
+      "source_location": "L65",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_06_market_expiry_reclaim",
+      "target": "docs_design_05_warehouse_warehouse_system",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/06-market.md",
+      "source_location": "L108",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_06_market_concurrency",
+      "target": "docs_codemaps_backend_baseservice",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/06-market.md",
+      "source_location": "L137",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_06_market_concurrency",
+      "target": "docs_codemaps_backend_transaction_pattern",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/design/06-market.md",
+      "source_location": "L136",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_06_market_user_shop",
+      "target": "docs_design_07_global_system_progressive_tax",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/design/06-market.md",
+      "source_location": "L74",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_06_market_global_market_price",
+      "target": "docs_design_08_stock_price_tick_formula",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/design/06-market.md",
+      "source_location": "L38-L55",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_design_06_market_fraud_prevention",
+      "target": "docs_design_09_level_xp_xp_gain",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/design/06-market.md",
+      "source_location": "L112-L119",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

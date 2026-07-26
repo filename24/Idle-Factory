@@ -1,0 +1,127 @@
+{
+  "nodes": [
+    {
+      "id": "apps_web_content_docs_economy_materials_trading_material_catalog",
+      "label": "Material Catalog (T1 raw / T2 processed / T3 finished base prices)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/economy/materials-trading.mdx",
+      "source_location": "\uc790\uc7ac \uc885\ub958",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_economy_materials_trading_raw_booster",
+      "label": "Raw Booster (T3 rare drop, \u00d71.2 Grade bonus at Lv.50+)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/economy/materials-trading.mdx",
+      "source_location": "\ud2b9\uc218 \uc790\uc7ac",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_economy_materials_trading_direct_buy",
+      "label": "Direct Buy (2\u00d7 market price, T1/T2 only, level-based daily cap)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/economy/materials-trading.mdx",
+      "source_location": "\uc9c1\uc811 \uad6c\ub9e4 (Direct Buy)",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_economy_materials_trading_inflation_defense",
+      "label": "Inflation Defense Sinks (tax, upkeep, buy markup, booster cost)",
+      "file_type": "rationale",
+      "source_file": "apps/web/content/docs/economy/materials-trading.mdx",
+      "source_location": "\uc778\ud50c\ub808\uc774\uc158 \ubc29\uc5b4",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "apps_web_content_docs_economy_materials_trading_material_catalog",
+      "target": "apps_web_content_docs_economy_market_global_market_price",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/economy/materials-trading.mdx",
+      "source_location": "Card href=/docs/economy/market",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_economy_materials_trading_material_catalog",
+      "target": "apps_web_content_docs_economy_stock_market_ipo_requirements",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/economy/materials-trading.mdx",
+      "source_location": "Card href=/docs/economy/stock-market",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_economy_materials_trading_direct_buy",
+      "target": "apps_web_content_docs_economy_market_global_market_price",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/economy/materials-trading.mdx",
+      "source_location": "\uc9c1\uc811 \uad6c\ub9e4 \uac00\uaca9\uc740 \uae00\ub85c\ubc8c \ub9c8\ucf13 \uac00\uaca9\uc758 2\ubc30",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_economy_materials_trading_inflation_defense",
+      "target": "apps_web_content_docs_economy_materials_trading_direct_buy",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/economy/materials-trading.mdx",
+      "source_location": "\uc9c1\uc811 \uad6c\ub9e4 \ub9c8\ud06c\uc5c5 = \uc2dc\uc7a5\uac00 2\ubc30 \u2192 \uc2dc\uc2a4\ud15c \uc720\uc785 \uc790\uae08 \uc99d\uac00",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_economy_materials_trading_inflation_defense",
+      "target": "apps_web_content_docs_advanced_server_guild_progressive_tax",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/economy/materials-trading.mdx",
+      "source_location": "\uc138\uae08 \uc9d5\uc218 \u2014 \ud310\ub9e4 \uc218\uc775\uc758 5~20% (\ub204\uc9c4 \uad6c\uc870)",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_economy_materials_trading_raw_booster",
+      "target": "apps_web_content_docs_facilities_factories_grade_upgrade",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/economy/materials-trading.mdx",
+      "source_location": "Lv.50 \uc774\uc0c1 \uacf5\uc7a5\uc5d0 \uc801\uc6a9 \uc2dc Grade \ubcf4\ub108\uc2a4 \u00d71.2",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "idle_factory_currency_sink_balance",
+      "label": "Currency Sinks Keeping the Global Economy Balanced",
+      "nodes": [
+        "apps_web_content_docs_economy_materials_trading_inflation_defense",
+        "apps_web_content_docs_advanced_server_guild_progressive_tax",
+        "apps_web_content_docs_economy_materials_trading_direct_buy",
+        "apps_web_content_docs_economy_market_progressive_listing_fee",
+        "apps_web_content_docs_facilities_factories_grade_upgrade"
+      ],
+      "relation": "participate_in",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "apps/web/content/docs/economy/materials-trading.mdx"
+    }
+  ]
+}

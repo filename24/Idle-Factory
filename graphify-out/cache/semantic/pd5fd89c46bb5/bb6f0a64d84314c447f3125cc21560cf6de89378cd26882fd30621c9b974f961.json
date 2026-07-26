@@ -1,0 +1,138 @@
+{
+  "nodes": [
+    {
+      "id": "docs_readme_design_docs_index",
+      "label": "Idle Factory Design Documents Index",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L1-L31",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "docs_readme_design_docs_index",
+      "target": "docs_design_00_onboarding_onboarding_flow",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/README.md",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_readme_design_docs_index",
+      "target": "docs_design_01_overview_project_overview",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/README.md",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_readme_design_docs_index",
+      "target": "docs_design_02_core_loop_gameplay_loop",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/README.md",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_readme_design_docs_index",
+      "target": "docs_design_03_factories_three_tier_chain",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/README.md",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_readme_design_docs_index",
+      "target": "docs_design_04_economy_direct_purchase",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/README.md",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_readme_design_docs_index",
+      "target": "docs_design_05_warehouse_warehouse_system",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/README.md",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_readme_design_docs_index",
+      "target": "docs_design_06_market_global_market_price",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/README.md",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_readme_design_docs_index",
+      "target": "docs_design_07_global_system_global_system",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/README.md",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_readme_design_docs_index",
+      "target": "docs_design_08_stock_stock_system",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/README.md",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_readme_design_docs_index",
+      "target": "docs_design_09_level_xp_xp_gain",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/README.md",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_readme_design_docs_index",
+      "target": "docs_design_10_open_questions_open_questions",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/README.md",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_readme_design_docs_index",
+      "target": "docs_design_11_land_land_system",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/README.md",
+      "source_location": "L20",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

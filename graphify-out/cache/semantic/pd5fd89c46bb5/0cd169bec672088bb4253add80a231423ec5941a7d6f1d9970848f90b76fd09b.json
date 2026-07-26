@@ -1,0 +1,267 @@
+{
+  "nodes": [
+    {
+      "id": "docs_codemaps_backend_command_structure",
+      "label": "Bot Slash Command Structure",
+      "file_type": "document",
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L5-L26",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_backend_baseservice",
+      "label": "BaseService (ServiceError, Tx, runInTx)",
+      "file_type": "document",
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L32-L40",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_backend_factoryservice",
+      "label": "FactoryService",
+      "file_type": "document",
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L42-L65",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_backend_harvestservice",
+      "label": "HarvestService",
+      "file_type": "document",
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L67-L80",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_backend_warehouseservice",
+      "label": "WarehouseService",
+      "file_type": "document",
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L82-L95",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_backend_landservice",
+      "label": "LandService",
+      "file_type": "document",
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L97-L112",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_backend_userservice",
+      "label": "UserService",
+      "file_type": "document",
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L114-L126",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_backend_interaction_handlers",
+      "label": "Button/Select/Modal Interaction Handlers",
+      "file_type": "document",
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L128-L151",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_codemaps_backend_transaction_pattern",
+      "label": "Prisma Transaction Pattern (runInTx)",
+      "file_type": "concept",
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L206-L229",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "All mutation operations wrap in a Prisma transaction so money deduction and entity creation commit atomically; a mid-flight failure cannot leave a user charged without a factory."
+    }
+  ],
+  "edges": [
+    {
+      "source": "docs_codemaps_backend_factoryservice",
+      "target": "docs_codemaps_backend_baseservice",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L64",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_backend_factoryservice",
+      "target": "docs_codemaps_game_core_land_layout",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L62",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_backend_factoryservice",
+      "target": "docs_codemaps_game_core_cost_calculations",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L63",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_backend_factoryservice",
+      "target": "docs_codemaps_data_shortagemode_enum",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L50",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_backend_factoryservice",
+      "target": "docs_codemaps_data_upgradebooster_enum",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L49",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_backend_harvestservice",
+      "target": "docs_codemaps_game_core_production_calculation",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L73-L80",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_backend_harvestservice",
+      "target": "docs_codemaps_backend_warehouseservice",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L73",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_backend_harvestservice",
+      "target": "docs_codemaps_backend_userservice",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L73",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_backend_warehouseservice",
+      "target": "docs_codemaps_game_core_warehouse_capacity",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L91-L95",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_backend_landservice",
+      "target": "docs_codemaps_data_slottype_enum",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L112",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_backend_userservice",
+      "target": "docs_codemaps_backend_landservice",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L119",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_backend_userservice",
+      "target": "docs_codemaps_backend_warehouseservice",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L119",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_backend_userservice",
+      "target": "docs_codemaps_game_core_xp_leveling",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L120-L126",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_backend_transaction_pattern",
+      "target": "docs_codemaps_backend_baseservice",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L211",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_backend_interaction_handlers",
+      "target": "docs_codemaps_backend_landservice",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L128-L151",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_codemaps_backend_userservice",
+      "target": "docs_design_09_level_xp_level_formula",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/CODEMAPS/backend.md",
+      "source_location": "L122-L126",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

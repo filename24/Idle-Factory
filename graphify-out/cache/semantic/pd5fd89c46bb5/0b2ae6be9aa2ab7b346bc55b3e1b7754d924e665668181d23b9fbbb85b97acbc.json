@@ -1,0 +1,81 @@
+{
+  "nodes": [
+    {
+      "id": "_agents_skills_agentation_skill_agentation_setup",
+      "label": "Agentation Setup Skill",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentation/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_agentation_skill_agentation_component",
+      "label": "Agentation React Toolbar Component",
+      "file_type": "concept",
+      "source_file": ".agents/skills/agentation/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_agentation_skill_node_env_development_guard",
+      "label": "NODE_ENV Development-Only Mount Guard",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/agentation/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "_agents_skills_agentation_skill_agentation_mcp_server",
+      "label": "agentation-mcp Server (port 4747)",
+      "file_type": "concept",
+      "source_file": ".agents/skills/agentation/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "_agents_skills_agentation_skill_agentation_setup",
+      "target": "_agents_skills_agentation_skill_agentation_component",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/agentation/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_agentation_skill_agentation_setup",
+      "target": "_agents_skills_agentation_skill_agentation_mcp_server",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/agentation/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_agents_skills_agentation_skill_node_env_development_guard",
+      "target": "_agents_skills_agentation_skill_agentation_component",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/agentation/SKILL.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

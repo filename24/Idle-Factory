@@ -1,0 +1,59 @@
+{
+  "nodes": [
+    {
+      "id": "apps_web_content_docs_getting_started_how_to_start_core_loop",
+      "label": "Core Gameplay Loop (build \u2192 produce \u2192 harvest \u2192 sell \u2192 reinvest)",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/getting-started/how-to-start.mdx",
+      "source_location": "\ud575\uc2ec \ub8e8\ud504",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "apps_web_content_docs_getting_started_how_to_start_seed_money",
+      "label": "Starting Seed Money (1,000\uc6d0) and 4\u00d74 Land",
+      "file_type": "concept",
+      "source_file": "apps/web/content/docs/getting-started/how-to-start.mdx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "apps_web_content_docs_getting_started_how_to_start_core_loop",
+      "target": "apps_web_content_docs_getting_started_tutorial_quests_quest_chain",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/getting-started/how-to-start.mdx",
+      "source_location": "Card href=/docs/getting-started/tutorial-quests",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_getting_started_how_to_start_core_loop",
+      "target": "apps_web_content_docs_facilities_factories_t1_raw_factories",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/getting-started/how-to-start.mdx",
+      "source_location": "Card href=/docs/facilities/factories",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_web_content_docs_getting_started_how_to_start_seed_money",
+      "target": "apps_web_content_docs_facilities_land_slots_land_grid",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/content/docs/getting-started/how-to-start.mdx",
+      "source_location": "4\u00d74 \ud1a0\uc9c0 (16\uc2ac\ub86f) \uc2dc\uc791",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

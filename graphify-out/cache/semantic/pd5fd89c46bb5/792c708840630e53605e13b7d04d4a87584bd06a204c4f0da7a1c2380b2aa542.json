@@ -1,0 +1,103 @@
+{
+  "nodes": [
+    {
+      "id": "_github_workflows_simulation_economy_simulation_workflow",
+      "label": "Economy Simulation workflow",
+      "file_type": "code",
+      "source_file": ".github/workflows/simulation.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Manual workflow_dispatch only (issue #31). Assembles pure game-core functions to run M users x N days on 10-minute ticks and compares against design targets (300-400 per tick, 33-minute break-even, 16-hour warehouse). Regression tests run before the simulation so a report is never published from a state where target verification is broken. 30-minute timeout exists to cut infinite-loop regressions, not normal runs, because the script clamps inputs."
+    },
+    {
+      "id": "_github_workflows_simulation_artifact_name_single_source",
+      "label": "Artifact name read from summary.json meta.artifactName",
+      "file_type": "rationale",
+      "source_file": ".github/workflows/simulation.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "The [branch]-[commit] naming rule lives in src/simulation/artifact.ts. CI resolves the name with jq from the emitted summary.json rather than reconstructing it in YAML, keeping a single source of truth; a missing/null value hard-fails the job."
+    },
+    {
+      "id": "_github_workflows_simulation_include_hidden_files",
+      "label": "include-hidden-files required for .sim-output artifact",
+      "file_type": "rationale",
+      "source_file": ".github/workflows/simulation.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "The output directory is dot-prefixed (.sim-output). upload-artifact v4 excludes hidden entries by default, so without include-hidden-files: true the upload fails with 'No files were found'."
+    }
+  ],
+  "edges": [
+    {
+      "source": "_github_workflows_simulation_economy_simulation_workflow",
+      "target": "_github_actions_pnpm_install_action_pnpm_install",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".github/workflows/simulation.yml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_github_workflows_simulation_economy_simulation_workflow",
+      "target": "packages_game_core_agents_balance_simulator",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".github/workflows/simulation.yml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_github_workflows_simulation_economy_simulation_workflow",
+      "target": "_github_workflows_simulation_artifact_name_single_source",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".github/workflows/simulation.yml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_github_workflows_simulation_economy_simulation_workflow",
+      "target": "_github_workflows_simulation_include_hidden_files",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".github/workflows/simulation.yml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_github_workflows_simulation_artifact_name_single_source",
+      "target": "packages_game_core_agents_artifact_naming_rule",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".github/workflows/simulation.yml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "_github_workflows_simulation_economy_simulation_workflow",
+      "target": "packages_game_core_agents_no_db_dependency",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".github/workflows/simulation.yml",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

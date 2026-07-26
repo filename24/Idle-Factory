@@ -1,0 +1,162 @@
+{
+  "nodes": [
+    {
+      "id": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_json",
+      "label": "tsconfig.json",
+      "file_type": "code",
+      "source_file": "turbo/generators/templates/package/tsconfig.json",
+      "source_location": "L1"
+    },
+    {
+      "id": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_extends",
+      "label": "extends",
+      "file_type": "code",
+      "source_file": "turbo/generators/templates/package/tsconfig.json",
+      "source_location": "L2"
+    },
+    {
+      "id": "ref_tsconfig_base_json",
+      "label": "tsconfig/base.json",
+      "file_type": "concept",
+      "source_file": "turbo/generators/templates/package/tsconfig.json",
+      "source_location": "L2"
+    },
+    {
+      "id": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_compileroptions",
+      "label": "compilerOptions",
+      "file_type": "code",
+      "source_file": "turbo/generators/templates/package/tsconfig.json",
+      "source_location": "L3"
+    },
+    {
+      "id": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_compileroptions_module",
+      "label": "module",
+      "file_type": "code",
+      "source_file": "turbo/generators/templates/package/tsconfig.json",
+      "source_location": "L4"
+    },
+    {
+      "id": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_include",
+      "label": "include",
+      "file_type": "code",
+      "source_file": "turbo/generators/templates/package/tsconfig.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "ref_src_ts",
+      "label": "src/**/*.ts",
+      "file_type": "concept",
+      "source_file": "turbo/generators/templates/package/tsconfig.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "ref_src_js",
+      "label": "src/**/*.js",
+      "file_type": "concept",
+      "source_file": "turbo/generators/templates/package/tsconfig.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "ref_src_cjs",
+      "label": "src/**/*.cjs",
+      "file_type": "concept",
+      "source_file": "turbo/generators/templates/package/tsconfig.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "ref_src_mjs",
+      "label": "src/**/*.mjs",
+      "file_type": "concept",
+      "source_file": "turbo/generators/templates/package/tsconfig.json",
+      "source_location": "L6"
+    }
+  ],
+  "edges": [
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_json",
+      "target": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_extends",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.json",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_json",
+      "target": "ref_tsconfig_base_json",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.json",
+      "source_location": "L2",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_json",
+      "target": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_compileroptions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.json",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_compileroptions",
+      "target": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_compileroptions_module",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.json",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_json",
+      "target": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_include",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.json",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_include",
+      "target": "ref_src_ts",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_include",
+      "target": "ref_src_js",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_include",
+      "target": "ref_src_cjs",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_coder_idle_factory_turbo_generators_templates_package_tsconfig_include",
+      "target": "ref_src_mjs",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "turbo/generators/templates/package/tsconfig.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "import"
+    }
+  ]
+}
