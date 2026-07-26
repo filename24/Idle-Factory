@@ -9,3 +9,6 @@ packages/database/src/generated/
 
 # Lockfiles
 pnpm-lock.yaml
+
+# graphify 캐시 — graphify가 minify로 쓰고 prettier가 펼쳐 매 커밋 포맷 충돌이 발생
+graphify-out/
