@@ -125,5 +125,8 @@ Rules:
 Repo-specific caveats:
 
 - **Always query in English.** Node labels are AST-extracted identifiers, file names, and English doc headings, so Korean keywords match almost nothing: only 8 of ~3,000 nodes contain Hangul, and their entire Korean vocabulary is 20 tokens — the slash-command names (`토지 공장 수확 창고 시장 프로필`) and factory names (`농장 광산 벌목장 유전 제철소 정유소 제분소 가구공장 자동차 전자 식품`). Anything else in Korean, including `"생산량 계산"` or `"레벨 해금"`, returns `No matching nodes found`. Use `"production"` and `"level unlock"` instead.
-- `graphify-out/` is only partly tracked: `cache/ast` and `cache/semantic` are committed so teammates and CI reuse the extraction (no LLM re-spend), while `graph.json`, `graph.html`, and `GRAPH_REPORT.md` are gitignored as regenerable. After a fresh clone, run `graphify update .` once to materialize the graph from the committed cache.
+- `graphify-out/` is only partly tracked: `cache/ast` and `cache/semantic` are committed so teammates and CI reuse the extraction, while `graph.json`, `graph.html`, `GRAPH_REPORT.md`, and `manifest.json` are gitignored as regenerable or churn-prone. After a fresh clone:
+  - `graphify update .` (~20s) gives a **code-only** graph. It is AST-only and does **not** read the semantic cache, so the doc layer (`conceptually_related_to`, `shares_data_with`) is missing.
+  - `/graphify . --update` in Claude Code restores the full graph including that doc layer, and costs **no LLM tokens** because the committed cache hits (measured: 83 of 85 doc files).
+- SQL files contribute nothing to the graph: `tree_sitter_sql` is not installed, so the 6 `.sql` migrations are skipped. Install with `pip install "graphifyy[sql]"` if migration structure matters.
 - The `graph.json` union merge driver is registered in local git config, not in the repo. Each clone must run `graphify hook install` once to get it, plus the post-commit/post-checkout hooks.
