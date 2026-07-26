@@ -47,3 +47,5 @@ graphify-out/reflections/
 graphify-out/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
 graphify-out/cache/stat-index.json
 graphify-out/cache/last_query_stamp
+# 매 재빌드마다 갱신돼 작업트리를 더럽히고 브랜치 전환을 막음. 캐시로부터 재생성됨
+graphify-out/manifest.json
