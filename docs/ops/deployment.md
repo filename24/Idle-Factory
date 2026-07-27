@@ -674,6 +674,43 @@ curl -i localhost:3000/api/health
 `/api/health` 는 DB 를 확인하지 않는 liveness 프로브다. 이것이 200 인데 페이지가
 깨진다면 DB 나 인증 설정 문제이고, 이것 자체가 응답하지 않으면 프로세스가 죽은 것이다.
 
+### bot 이 떠 있는데 명령에 응답하지 않는다
+
+로그가 여기서 멈춰 있다면 Discord 게이트웨이 연결이 끝나지 않은 것이다.
+
+```
+[ bot ] info Logging in bot...
+[INFO] ApplicationCommandRegistries: Initializing...
+[INFO] ApplicationCommandRegistries: Took 0ms to initialize.
+```
+
+`Took 0ms` 자체는 정상이다. Sapphire 는 ready 이전에 레지스트리만 준비하고 실제
+명령 등록은 로그인 이후에 한다. **`Logged in as ...` 가 찍혔는지**로 판단한다.
+
+게이트웨이 연결에 실패해도 discord.js 는 조용히 재시도하므로, 컨테이너는 계속
+Running 이고 재시작 카운트도 0 이다. 프로세스만 보면 정상으로 보인다.
+
+```bash
+# 1. 컨테이너에서 Discord API 에 닿는가 (가장 먼저 볼 것)
+docker exec idle-factory-prod-bot-1 node -e \
+  "fetch('https://discord.com/api/v10/gateway').then(r=>r.json()).then(console.log).catch(e=>console.error('FAIL',e.message))"
+
+# 2. 로그 전체
+docker logs idle-factory-prod-bot-1 --tail 100
+```
+
+- 1번이 실패 → 컨테이너 아웃바운드 문제(DNS, 방화벽, egress 정책)
+- 1번은 되는데 로그인이 안 됨 → `BOT_TOKEN` 이 잘못됐거나, Discord 개발자 포털의
+  인텐트 설정이 `config.ts` 와 어긋난 경우
+
+로그인은 됐는데(`Logged in as ...` 있음) 슬래시 명령만 안 보인다면 다른 문제다.
+`DEV_GUILD_ID` 가 비어 있으면 명령이 **글로벌**로 등록되는데, 이는 Discord 쪽
+전파에 최대 1시간이 걸린다. 즉시 확인하려면 테스트 길드 ID 를 넣어 길드 한정으로
+등록시킨다.
+
+배포 워크플로는 `Logged in as` 를 최대 120초 기다리므로, 이 상태로 배포하면
+초록불이 뜨지 않는다.
+
 ### bot 이 재시작을 반복한다
 
 ```bash
