@@ -558,6 +558,31 @@ Redis 는 백업 대상이 아니다. BullMQ 큐가 유실되면 예약 작업�
 
 ## 트러블슈팅
 
+### compose 명령이 `required variable ... is missing a value` 로 막힌다
+
+`.env.prod` 에 필수 값이 비어 있다는 뜻이다. 이 검증은 잘못된 설정으로 배포되는
+것을 막아 주지만, **장애 조사 중에는 로그 조회까지 함께 막는다.**
+
+컨테이너 이름은 `<프로젝트명>-<서비스>-<번호>` 로 결정적이므로, compose 를
+거치지 않고 직접 보면 된다.
+
+```bash
+docker logs idle-factory-prod-migrator-1 --tail 50
+docker logs idle-factory-prod-bot-1 --tail 50
+docker ps -a --filter name=idle-factory-prod
+```
+
+그다음 `.env.prod` 의 빈 값을 채운다. 어떤 변수가 필수인지는 `vps-sync.sh` 가
+알려준다.
+
+```bash
+cd /srv/idle-factory && ./scripts/vps-sync.sh
+```
+
+web 을 Vercel 로 옮겼더라도 `BETTER_AUTH_SECRET` 같은 web 전용 값을 **지우면
+안 된다.** compose 는 프로파일로 제외된 서비스의 변수까지 보간한다. 실제 시크릿일
+필요는 없으니 `unused` 같은 자리값을 넣어 둔다.
+
 ### SSH 접속이 실패한다
 
 배포 워크플로의 `Deploy over SSH` 스텝 로그를 본다.
@@ -666,6 +691,34 @@ DB 에 붙는다. 이 경우 `compose.prod.yml` 의 `postgres` 서비스를 빼�
 
 **Postgres 를 컨테이너로 유지한 채 web 만 Vercel 로 옮기는 조합은 권장하지
 않는다.** 위 네 가지를 모두 떠안게 된다.
+
+### Postgres 를 컨테이너로 둔 채 노출하는 경우
+
+권장하지는 않지만 그렇게 하기로 했다면, **접속 주소를 두 벌로 나눠야 한다.**
+이걸 헷갈리면 migrator 와 봇이 DB 에 붙지 못해 배포가 실패한다.
+
+| 어디서 쓰나                     | 값                                                                |
+| ------------------------------- | ----------------------------------------------------------------- |
+| VPS 의 `.env.prod` (컨테이너용) | `postgresql://idle:PW@postgres:5432/idle-factory`                 |
+| Vercel 환경변수 (외부용)        | `postgresql://idle:PW@<공인IP>:5444/idle-factory?sslmode=require` |
+
+**`.env.prod` 의 `DATABASE_URL` 에 공인 IP 를 넣으면 안 된다.** 봇·migrator
+컨테이너가 밖으로 나갔다 되돌아오는 경로를 타게 되는데, NAT 헤어핀을 지원하지
+않는 호스트에서는 그대로 접속 실패한다. 내부는 서비스명으로 그냥 붙는다.
+
+포트를 여는 것은 `.env.prod` 에서 명시적으로 선택한다.
+
+```bash
+DB_BIND=0.0.0.0     # 기본값은 127.0.0.1 (호스트 안에서만)
+DB_PORT=5444
+```
+
+열었다면 최소한 다음을 갖춘다.
+
+- `POSTGRES_PASSWORD` 를 충분히 길게 (`openssl rand -base64 24`)
+- 외부 접속 문자열에 `sslmode=require`
+- Vercel 은 egress IP 가 고정이 아니라 방화벽으로 출처를 좁힐 수 없다. 대신
+  `fail2ban` 등으로 반복 인증 실패를 차단하는 편이 현실적이다.
 
 ### 전환 절차
 
