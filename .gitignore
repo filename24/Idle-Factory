@@ -49,3 +49,6 @@ graphify-out/cache/stat-index.json
 graphify-out/cache/last_query_stamp
 # 매 재빌드마다 갱신돼 작업트리를 더럽히고 브랜치 전환을 막음. 캐시로부터 재생성됨
 graphify-out/manifest.json
+# 훅이 백그라운드 재빌드 중 생성하는 런타임 상태
+graphify-out/.pending_changes
+graphify-out/.rebuild.lock
