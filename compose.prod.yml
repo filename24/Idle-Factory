@@ -110,6 +110,12 @@ services:
       I18N_FALLBACK_LNG: ${I18N_FALLBACK_LNG:-en-US}
 
   web:
+    # web 을 Vercel 로 옮길 수 있게 프로파일로 감싼다. `.env.prod` 의
+    # COMPOSE_PROFILES 가 이 값을 포함할 때만 뜬다(템플릿 기본값에 들어 있다).
+    # Vercel 로 옮기려면 COMPOSE_PROFILES 를 비우고 WEB_ON_VERCEL=true 로 둔다 —
+    # 그러면 배포 워크플로도 web 이미지를 만들지 않고, web 부재를 사고가 아닌
+    # 의도로 판정한다. 자세한 절차는 docs/ops/deployment.md 참고.
+    profiles: ['self-hosted']
     image: ${IMAGE_REGISTRY:-ghcr.io/filename24}/idle-factory-web:${IMAGE_TAG:?IMAGE_TAG 가 비었다}
     restart: unless-stopped
     logging: *default-logging

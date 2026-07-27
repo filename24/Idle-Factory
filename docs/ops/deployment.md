@@ -595,6 +595,94 @@ Postgres 볼륨·백업·이미지 레이어가 같은 디스크에 있다. 백�
 DB 를 멈추게 하는 것이 이 구성의 가장 현실적인 장애 시나리오다. `BACKUP_RETENTION_DAYS`
 를 줄이거나 백업 디렉터리를 별도 볼륨으로 옮긴다.
 
+## web 을 Vercel 에서 돌리기
+
+기본 구성은 web 도 이 VPS 에서 컨테이너로 돈다. Vercel 로 옮길 수 있게 스위치를
+넣어 두었지만, **바꿔야 할 것은 배포 설정보다 데이터 경로다.** 먼저 그것을 읽고
+결정할 것.
+
+### 먼저 판단할 것 — DB 접근
+
+봇은 계속 이 VPS 에서 돌고, 봇과 web 은 같은 Postgres 를 쓴다. 지금 Postgres 는
+compose 내부 네트워크에만 있고 호스트 포트조차 열지 않는다. Vercel 함수가 여기에
+붙으려면 다음을 감수해야 한다.
+
+- **인터넷 노출** — Vercel 함수의 egress IP 는 고정이 아니다(Static IP 는 상위
+  플랜 기능). 따라서 방화벽으로 출처를 좁힐 수 없고, 사실상 Postgres 포트를 전체
+  개방한 뒤 TLS 와 비밀번호에만 의존하게 된다.
+- **연결 폭발** — serverless 인스턴스마다 커넥션을 열어 `max_connections` 를
+  넘긴다. PgBouncer transaction 풀링이 필요하고, Prisma 쪽 prepared statement
+  설정도 함께 조정해야 한다.
+- **레이턴시** — Vercel 리전과 VPS 가 멀면 쿼리마다 왕복 비용이 붙는다.
+- **마이그레이션 순서가 깨진다** — 지금은 compose 가 `migrator 완료 → web 시작`
+  을 강제해 스키마 불일치 창이 없다. Vercel 배포는 이 워크플로와 별도 타임라인이라
+  그 보장이 사라진다. web 이 새 스키마를 기대하는데 migrator 가 아직 안 돌았거나,
+  반대 상황이 생길 수 있다.
+
+그래서 현실적인 선택은 **DB 를 매니지드로 옮기는 것**이다(Neon, Supabase 등).
+연결 풀러가 내장돼 있고 Postgres 를 직접 노출할 필요가 없으며, VPS 의 봇도 같은
+DB 에 붙는다. 이 경우 `compose.prod.yml` 의 `postgres` 서비스를 빼고
+`DATABASE_URL` 만 외부로 돌리면 되지만, 백업 스크립트가 `compose exec postgres`
+에 의존하므로 함께 손봐야 한다(공급자 백업 기능으로 대체하거나 스크립트에서
+직접 접속하도록 수정).
+
+**Postgres 를 컨테이너로 유지한 채 web 만 Vercel 로 옮기는 조합은 권장하지
+않는다.** 위 네 가지를 모두 떠안게 된다.
+
+### 전환 절차
+
+DB 문제를 해결했다면 나머지는 스위치 세 개다.
+
+1. **리포지터리 Variables** 에 `WEB_ON_VERCEL=true` 를 추가한다.
+   배포 워크플로가 web 이미지를 만들지 않고, VPS 에 web 컨테이너가 없는 것을
+   사고가 아닌 의도로 판정한다.
+
+2. **`.env.prod`** 에서 프로파일을 비운다.
+
+   ```bash
+   COMPOSE_PROFILES=
+   ```
+
+   ⚠️ web 전용 값(`BETTER_AUTH_SECRET`·`BETTER_AUTH_URL`·`DISCORD_CLIENT_ID`·
+   `DISCORD_CLIENT_SECRET`)은 **줄을 지우지 말 것.** compose 는 프로파일로 제외된
+   서비스의 변수까지 보간하므로 비어 있으면 모든 compose 명령이 멈춘다. web 이
+   뜨지 않으니 진짜 시크릿일 필요는 없다 — `unused` 같은 자리값으로 두고 실제
+   값은 Vercel 환경변수에 넣는다.
+
+3. **Vercel 프로젝트** 를 만든다. 모노레포이므로 Root Directory 를 `apps/web` 로
+   지정한다. `next.config.js` 가 `VERCEL` 환경변수를 보고 `output: 'standalone'`
+   을 자동으로 끄므로 빌드 설정을 따로 만질 필요는 없다.
+
+   Vercel 환경변수에 넣을 값:
+
+   | 변수                            | 비고                                       |
+   | ------------------------------- | ------------------------------------------ |
+   | `DATABASE_URL`                  | 풀러 경유 주소. 위의 DB 판단 결과를 따른다 |
+   | `BETTER_AUTH_SECRET`            | VPS 와 같은 값이어야 기존 세션이 유지된다  |
+   | `BETTER_AUTH_URL`               | Vercel 도메인                              |
+   | `DISCORD_CLIENT_ID` / `_SECRET` | Discord 앱 자격증명                        |
+   | `NEXT_PUBLIC_APP_URL`           | 같은 오리진이면 비워 둔다                  |
+
+   Discord Dev Portal 의 Redirects 에 Vercel 도메인 콜백 URL 을 추가한다.
+
+4. VPS 에서 남아 있는 web 컨테이너를 내린다.
+
+   ```bash
+   cd /srv/idle-factory
+   docker compose --env-file .env.prod -f compose.prod.yml up -d --remove-orphans
+   ```
+
+   `--remove-orphans` 가 프로파일에서 빠진 web 컨테이너를 정리한다.
+
+5. 호스트 리버스 프록시에서 web 으로 향하던 설정을 제거하거나 Vercel 로 돌린다.
+
+### 되돌리기
+
+`apps/web/Dockerfile` 과 compose 의 web 서비스 정의는 그대로 남겨 둔다. Vercel 을
+쓰지 않게 되면 `WEB_ON_VERCEL` 변수를 지우고 `COMPOSE_PROFILES=self-hosted` 로
+되돌리면 끝이다. CI 의 이미지 빌드 가드는 Vercel 사용 여부와 무관하게 계속 web
+Dockerfile 을 검증하므로, 방치해도 썩지 않는다.
+
 ## 알려진 제약
 
 - **단일 VPS = SPOF.** 호스트가 죽으면 전체가 멈춘다. 복구 수단은 백업뿐이다.
