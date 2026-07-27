@@ -537,6 +537,57 @@ export const MarketService = {
   },
 
   /**
+   * 매물을 **소유자 확인 없이** 강제 회수한다 (운영 툴 전용, #21 결정 6).
+   *
+   * `cancel` 과 동작은 같고 `NOT_LISTING_OWNER` 검사만 없다. 회수 사유가
+   * "가격 이상치" 이므로 `CANCELED` 상태를 쓴다 — `EXPIRED` 는 기간 만료를
+   * 뜻해 사후 집계에서 구분이 안 된다.
+   *
+   * 호출자(`AdminService`)가 감사 로그를 남길 책임을 진다. 이 함수는 권한
+   * 검사를 하지 않으므로 `/admin` 의 OwnerOnly 게이트 밖에서 호출하면 안 된다.
+   *
+   * @param prisma Prisma 클라이언트
+   * @param listingId 회수할 매물 id
+   * @param guildId 회수 TradeLog 에 남길 활동 서버 (없으면 null)
+   * @returns 회수 결과 (갱신된 매물 + 되돌린 수량)
+   * @throws {ServiceError} `LISTING_NOT_FOUND` — 매물 없음
+   * @throws {ServiceError} `LISTING_NOT_ACTIVE` — 이미 판매·취소·만료됨
+   */
+  async forceRemove(
+    prisma: PrismaClient,
+    listingId: string,
+    guildId: string | null = null
+  ): Promise<MarketCancelResult> {
+    return runInTx(prisma, async (tx) => {
+      const listing = await tx.marketListing.findUnique({
+        where: { id: listingId }
+      })
+      if (!listing) throw new ServiceError('LISTING_NOT_FOUND')
+      if (listing.status !== 'ACTIVE') {
+        throw new ServiceError('LISTING_NOT_ACTIVE', undefined, {
+          status: listing.status
+        })
+      }
+
+      const updated = await returnStackAndMark(tx, listing, 'CANCELED')
+
+      await recordMarketTrade(tx, {
+        fromUserId: listing.sellerId,
+        toUserId: null,
+        material: listing.material,
+        amount: BigInt(listing.qty),
+        price: 0n,
+        guildId: guildId ?? listing.guildId
+      })
+
+      return {
+        listing: updated,
+        returned: { material: listing.material, quantity: BigInt(listing.qty) }
+      }
+    })
+  },
+
+  /**
    * 만료된 ACTIVE 매물을 일괄 회수한다 (스케줄러 전용).
    *
    * 만료 매물 수가 폭증하지 않는 한(Phase 2 기준) 단순 for-loop 로 처리.

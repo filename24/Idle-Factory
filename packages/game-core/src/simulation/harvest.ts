@@ -13,7 +13,7 @@ import { getFactoryEntry } from '../factories/catalog'
 import { upgradeMaterialCost } from '../factories/cost'
 import { computeFactoryYield, MAX_TICKS_PER_HARVEST } from '../factories/production'
 import type { FactoryState, MaterialBag, MaterialType } from '../types'
-import { capacityOf, computeUsed, upgradeCostOf } from '../warehouse/capacity'
+import { capacityOf, computeUsed, upgradeCostOf, volumeOf } from '../warehouse/capacity'
 import type { MutableUser } from './state'
 
 /** 업그레이드 출발 등급 상한 — 9→10 이 마지막 (`factories/cost.ts` 규약). */
@@ -109,13 +109,14 @@ export function harvestUser(user: MutableUser, tick: number): HarvestOutcome {
       continue
     }
 
+    // `used` 는 부피(슬롯) 누적이므로 개수에 계수를 곱해 증감한다 (#21 결정 4).
     for (const [material, amount] of Object.entries(result.consumed)) {
       subtractFromBag(user.stacks, material as MaterialType, amount)
-      used -= amount
+      used -= amount * volumeOf(material as MaterialType)
     }
     for (const [material, amount] of Object.entries(result.produced)) {
       addToBag(user.stacks, material as MaterialType, amount)
-      used += amount
+      used += amount * volumeOf(material as MaterialType)
       unitsProduced += amount
     }
 

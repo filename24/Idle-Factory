@@ -9,6 +9,7 @@
  */
 
 import type { FactoryState, MaterialBag, MaterialType, UpgradeBooster } from '../types'
+import { volumeOf } from '../warehouse/capacity'
 import { boosterConsumptionMultiplier, boosterProductionMultiplier } from './booster'
 import { getFactoryEntry } from './catalog'
 
@@ -145,30 +146,35 @@ function applyMultipliers(
   return scaleBigint(withSlot, synergyBonus)
 }
 
-/** 주어진 tick 수로 카탈로그 산출(주+부산물)을 계산. 내부 헬퍼. */
+/**
+ * 주어진 tick 수로 카탈로그 산출(주+부산물)을 계산. 내부 헬퍼.
+ *
+ * `totalVolume` 은 개수 합이 아니라 **부피 합**(개수 × `volumeOf`)이다 — 창고
+ * 여유가 슬롯 단위이므로 클램프 비교 대상도 부피여야 한다 (#21 결정 4).
+ */
 function computeOutputsForTicks(
   catalog: ReturnType<typeof getFactoryEntry>,
   ticks: number,
   mult: GradeMultiplier,
   slotBonus: number,
   synergyBonus: number,
-): { produced: MaterialBag; totalUnits: bigint } {
+): { produced: MaterialBag; totalVolume: bigint } {
   const produced: MaterialBag = {}
-  let totalUnits = 0n
-  if (ticks <= 0) return { produced, totalUnits }
+  let totalVolume = 0n
+  if (ticks <= 0) return { produced, totalVolume }
   const ticksBig = BigInt(ticks)
 
   const primary = applyMultipliers(catalog.baseProduction, ticksBig, mult, slotBonus, synergyBonus)
   addToBag(produced, catalog.output, primary)
-  totalUnits += primary
+  totalVolume += primary * volumeOf(catalog.output)
 
   for (const sec of catalog.secondaryOutputs) {
     const amount = applyMultipliers(sec.amount, ticksBig, mult, slotBonus, synergyBonus)
     addToBag(produced, sec.material, amount)
-    totalUnits += amount
+    totalVolume += amount * volumeOf(sec.material)
   }
 
-  return { produced, totalUnits }
+  return { produced, totalVolume }
 }
 
 /**
@@ -224,8 +230,8 @@ export function computeFactoryYield(params: ComputeFactoryYieldParams): FactoryY
   // First pass to inspect whether warehouse can hold the output.
   const firstPass = computeOutputsForTicks(catalog, elapsedTicks, mult, slotBonus, synergyBonus)
 
-  if (firstPass.totalUnits > warehouseFree) {
-    const perTick = computeOutputsForTicks(catalog, 1, mult, slotBonus, synergyBonus).totalUnits
+  if (firstPass.totalVolume > warehouseFree) {
+    const perTick = computeOutputsForTicks(catalog, 1, mult, slotBonus, synergyBonus).totalVolume
     if (perTick <= 0n) {
       return { ticksRealized: 0, produced: {}, consumed: {} }
     }

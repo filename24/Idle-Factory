@@ -1,10 +1,76 @@
 /**
- * 창고 용량·업그레이드 비용 계산.
+ * 창고 용량·부피 계수·업그레이드 비용 계산.
  *
- * 수치 출처: `docs/design/05-warehouse.md` §용량 표, §업그레이드 비용.
+ * 수치 출처: `docs/design/05-warehouse.md` §용량 표, §부피 계수, §업그레이드 비용.
  */
 
 import type { MaterialBag, MaterialType } from '../types'
+
+/**
+ * 자재 1 개가 차지하는 창고 슬롯 수 (부피 계수).
+ *
+ * 도입 배경 (#21 결정 1·4): 창고 용량은 **개수** 기준인데 T1 산출은 tick 당
+ * 300~400원이 되도록 *금액* 으로 정규화되어 있어(`market/basePrices.ts`),
+ * 단가가 비싼 저(低)산출 공장은 창고가 좀처럼 차지 않았다. 계수 도입 전 실측:
+ * 농장 16.7시간 / 목재소 20.0시간 / **광산 33.3시간 / 유정 62.5시간** — 뒤의
+ * 두 공장에는 "창고가 차면 접속하게 만든다"는 코어 루프 설계
+ * (`docs/design/05-warehouse.md` §설계 의도)가 아예 작동하지 않았다.
+ *
+ * T1 원자재 4종에만 계수를 주고 T2·T3 는 1 로 둔다. 계수를 단가 비례로 주면
+ * 원(₩)당 창고 점유가 전 자재 균일해져, 가공·완제품이 창고를 덜 잡는다는
+ * T2/T3 의 존재 이유(창고 1칸당 GRAIN 10원 vs ELECTRONIC 800원)를 지워 버리기
+ * 때문이다 (#21 결정 3 — 티어 수익 배수 대신 부피 효율을 T2/T3 의 가치로 확정).
+ *
+ * 계수 적용 후 등급1 창고 포화 (공장 1채 기준, 목표 16시간 ±25%):
+ * 농장 16.7h · 광산 16.7h · 목재소 20.0h · 유정 12.5h — 4종 모두 목표 범위.
+ *
+ * 정수만 쓴다 — 창고 계산은 전부 `bigint` 이고 소수 계수는 정밀도 손실 없이
+ * 곱할 수 없다 (패키지 규약: bigint first).
+ */
+export const MATERIAL_VOLUME: Readonly<Record<MaterialType, bigint>> = {
+  // T1 — 원자재. 단가가 높을수록 tick 당 산출 개수가 적어 계수로 보정한다.
+  GRAIN: 1n,
+  ORE: 2n,
+  WOOD: 1n,
+  CRUDE_OIL: 5n,
+  // T2 — 가공재. 계수 1 을 유지해 창고 효율 우위를 남긴다.
+  STEEL: 1n,
+  FUEL: 1n,
+  PLASTIC: 1n,
+  PROCESSED_FOOD: 1n,
+  FURNITURE: 1n,
+  // T3 — 완제품. 같은 이유로 1.
+  CAR: 1n,
+  ELECTRONIC: 1n,
+  FINISHED_FOOD: 1n,
+  // 특수 — T3 저확률 드롭.
+  RAW_BOOSTER: 1n,
+}
+
+/**
+ * 자재의 부피 계수를 반환한다.
+ *
+ * @param material 자재 종류
+ * @returns 1 개당 차지하는 슬롯 수 (bigint, >= 1)
+ */
+export function volumeOf(material: MaterialType): bigint {
+  return MATERIAL_VOLUME[material]
+}
+
+/**
+ * 주어진 여유 용량에 담을 수 있는 자재 **개수**.
+ *
+ * 창고 여유는 슬롯(부피) 단위이고 생산·드롭은 개수 단위라, 둘을 비교하는
+ * 모든 지점에서 이 변환이 필요하다.
+ *
+ * @param material 자재 종류
+ * @param free 남은 여유 용량 (슬롯)
+ * @returns 담을 수 있는 최대 개수 (bigint, 0 이상)
+ */
+export function unitsThatFit(material: MaterialType, free: bigint): bigint {
+  if (free <= 0n) return 0n
+  return free / volumeOf(material)
+}
 
 /**
  * 창고 업그레이드 단계별 비용 엔트리.
@@ -85,13 +151,19 @@ export function upgradeCostOf(toGrade: number): WarehouseUpgradeCost {
 }
 
 /**
- * 현재 창고에 쌓인 총량 (자원 종류 합).
+ * 현재 창고가 쓰고 있는 용량 — 자재별 **개수 × 부피 계수** 의 합.
+ *
+ * 개수 단순 합이 아니다: `MATERIAL_VOLUME` 이 도입된 뒤로 광석 1 개는 2 슬롯,
+ * 원유 1 개는 5 슬롯을 차지한다 (#21 결정 4).
  *
  * @param stacks 자원 묶음
- * @returns 사용 중 용량 (bigint)
+ * @returns 사용 중 용량 (슬롯, bigint)
  */
 export function computeUsed(stacks: MaterialBag): bigint {
-  return Object.values(stacks).reduce<bigint>((sum, value) => sum + (value ?? 0n), 0n)
+  return Object.entries(stacks).reduce<bigint>(
+    (sum, [material, value]) => sum + (value ?? 0n) * volumeOf(material as MaterialType),
+    0n,
+  )
 }
 
 /**

@@ -68,7 +68,12 @@ export const QUEST_CATALOG: Readonly<Record<string, QuestDef>> = Object.freeze({
     chain: { name: 'tutorial', order: 5 }, // 체인 종착 — next 없음
     title: 'game:quest.tutorial.5.title',
     description: 'game:quest.tutorial.5.description',
-    target: 2n,
+    // target 은 1 이다 (#21 최종 QA). "T1 공장 2개 보유" 조건은 트리거의
+    // `minTotal: 2n` 이 이미 표현한다 — `matchEvent` 가 `ownedAfter >= 2` 일
+    // 때만 매칭하고 증분 1 을 주므로, target 을 2 로 두면 **2채를 보유한 상태에서
+    // 다시 2번 더 건설**해야 완료된다(= 총 3채). 온보딩 관통 테스트
+    // (`apps/bot/tests/integration/onboarding.e2e.test.ts`)가 이 불일치를 잡았다.
+    target: 1n,
     rewards: [{ kind: 'MONEY', amount: 1_000n }],
     trigger: { kind: 'FACTORY_BUILT', tier: 'T1', minTotal: 2n },
   },

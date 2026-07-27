@@ -652,6 +652,42 @@ model Notice {
   @@index([postedAt])
 }
 
+/// 운영 커맨드(`/admin`) 감사 로그 — 누가·무엇을·왜 바꿨는지 (#21).
+///
+/// 신뢰도 직접 조작과 매물 강제 회수는 유저 자산에 영향을 주는 비가역 행위라
+/// 사후 추적이 가능해야 한다. 로그 파일로는 봇 재시작·로테이션 이후 조회가
+/// 불가능해 DB 를 진실원으로 둔다 (디스코드 웹후크 알림은 가시성 보조 수단).
+///
+/// FK 를 걸지 않는다: `actorId` 는 봇 owner 의 Discord snowflake 로 게임 `User`
+/// 행이 없을 수 있고, `targetGuildId` 는 봇이 탈퇴한 서버여도 이력을 보존해야
+/// 한다 (`MarketListing.guildId` 와 같은 판단).
+model AdminAuditLog {
+  id String @id @default(cuid())
+
+  /// 명령을 실행한 봇 owner 의 Discord 유저 snowflake.
+  actorId String
+  /// 행위 종류 — CREDIT_SET / CREDIT_ADJUST / LISTING_REMOVE.
+  action  String
+
+  /// 대상 서버 snowflake (신뢰도 조작 시). FK 없음.
+  targetGuildId String?
+  /// 대상 엔티티 id (매물 회수 시 `MarketListing.id`).
+  targetId      String?
+
+  /// 변경 전 값 — 숫자·상태 무엇이든 담기게 문자열로 보관.
+  beforeValue String?
+  /// 변경 후 값.
+  afterValue  String?
+  /// 운영자가 남긴 사유. `credit adjust` 는 필수 입력이다.
+  reason      String?
+
+  createdAt DateTime @default(now())
+
+  @@index([actorId, createdAt])
+  @@index([targetGuildId, createdAt])
+  @@index([action, createdAt])
+}
+
 // ──────────────────────────────────────────────────────────────
 // better-auth 전용 테이블 (웹 인증)
 // 게임 User 모델과 이름 충돌을 피하기 위해 Auth* prefix + @@map("auth_*") 사용

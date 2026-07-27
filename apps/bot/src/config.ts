@@ -89,6 +89,12 @@ const config: IConfig = {
   redis: {
     url: redisUrl
   },
+  admin: {
+    // 운영 감사 로그(#21 결정 6)를 흘려보낼 디스코드 채널 웹후크.
+    // 비어 있으면 DB 기록만 하고 알림은 보내지 않는다 — 운영 툴 자체는
+    // 웹후크 없이도 완전히 동작한다.
+    auditWebhookUrl: env('ADMIN_AUDIT_WEBHOOK_URL')
+  },
   i18n: {
     options: {
       defaultNS: 'common',

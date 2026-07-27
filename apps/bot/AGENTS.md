@@ -80,6 +80,30 @@ Current default (see `config.ts`): `GuildMessages` + `Guilds` only. Add intents 
 - **Global/server notifications go through `AnnounceService`** (`services/announce.ts`). Scheduled jobs and `/debug` dispatch server announcements to each guild's `Guild.announceChannelId` via `announce` / `announceMany`; it silently no-ops when the client or channel is unavailable, so it is safe to call from jobs and tests. Do not `channel.send` ad-hoc for global events. The channel is configured with `/server announce`.
 - Do not import from `@prisma/client` directly; use `@idle/database` when it is added as a dependency.
 
+## Operator Tooling — `/admin` vs `/debug`
+
+Two owner-only command families, deliberately separate:
+
+|             | `/debug`                                  | `/admin`                                               |
+| ----------- | ----------------------------------------- | ------------------------------------------------------ |
+| Purpose     | developer manipulates **their own** state | operator intervenes in **other users'/guilds'** assets |
+| Audit trail | none                                      | every change writes `AdminAuditLog`                    |
+| Subcommands | ~20 state setters                         | `credit set/adjust`, `market report/remove`            |
+
+Both are gated twice: `preconditions: ['OwnerOnly']` plus dev-guild-only
+registration when `DEV_GUILD_ID` is set.
+
+**Every mutation in `services/admin.ts` must write an audit row.** A change that
+lands without one defeats the point of the command family — the integration suite
+(`tests/integration/admin.service.test.ts`) asserts this for each operation,
+including that rejected input writes _no_ row.
+
+`ADMIN_AUDIT_WEBHOOK_URL` (optional) mirrors audit rows into a Discord channel for
+visibility. The DB is the source of truth: webhook delivery failures are logged
+and swallowed (`utils/adminAuditWebhook.ts`) and never roll back the operation.
+Channel webhooks are not application-owned, so the payload needs
+`withComponents: true` alongside the Components v2 flag.
+
 ## Scheduled Tasks
 
 `src/scheduled-tasks/` uses `@sapphire/plugin-scheduled-tasks` (BullMQ over Redis) — no `node-cron` / `setInterval`. Tasks do not run without `REDIS_URL`. Each task's delegate logic (e.g. `runWeeklySettlement`, `runDailyGlobal`, `runMonthlyRedistribution`) is exported as a pure `(prisma) => result` function so it is unit-testable and reusable outside the queue. `/debug run-scheduler` enumerates the live task store for autocomplete and dynamic dispatch, so new task pieces appear automatically; running it with no `task` runs every registered scheduler in sequence.

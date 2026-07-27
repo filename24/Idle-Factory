@@ -13,7 +13,7 @@
 
 import { directBuyDailyLimit, isDirectBuyMaterial } from '../economy/directBuy'
 import type { MaterialType } from '../types'
-import { computeFree } from '../warehouse/capacity'
+import { computeFree, unitsThatFit } from '../warehouse/capacity'
 import { computeRecipeReserves } from './harvest'
 import type { MutableMarketEntry, MutableUser } from './state'
 
@@ -81,7 +81,9 @@ export function replenishMaterials(
 
     const shortage = reserve - held
     const affordable = budget / unitPrice
-    const warehouseRoom = computeFree(user.warehouseGrade, user.stacks)
+    // 창고 여유는 슬롯(부피) 단위 — 담을 수 있는 **개수** 로 환산해야 다른
+    // 상한(부족분·예산·일일 한도)과 같은 단위로 비교된다 (#21 결정 4).
+    const warehouseRoom = unitsThatFit(material, computeFree(user.warehouseGrade, user.stacks))
     const cap = [shortage, affordable, BigInt(remaining), warehouseRoom].reduce((a, b) =>
       a < b ? a : b,
     )

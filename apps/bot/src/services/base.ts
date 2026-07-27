@@ -85,6 +85,14 @@ export type ServiceErrorCode =
   // - CREDIT_LISTING_BLOCKED: 활동 서버 신뢰도 < 700 → 유저 상점 등록 차단 (07 L55,
   //   확정 결정 7). RESTRICTED(<300) 도 이 게이트에 자동 포함된다.
   | 'CREDIT_LISTING_BLOCKED'
+  // 운영 툴 (#21 결정 6, `services/admin.ts`)
+  // - GUILD_NOT_FOUND: 대상 서버 행 없음 (봇이 들어간 적 없는 길드 id).
+  // - INVALID_CREDIT_VALUE: 신뢰도 절대값이 0~2000 밖이거나 정수가 아님.
+  // - AUDIT_REASON_REQUIRED: `credit adjust` 는 사유 없이 실행할 수 없다 —
+  //   상대 조정은 사유가 없으면 사후 검증이 불가능하다.
+  | 'GUILD_NOT_FOUND'
+  | 'INVALID_CREDIT_VALUE'
+  | 'AUDIT_REASON_REQUIRED'
 
 export class ServiceError extends Error {
   public readonly code: ServiceErrorCode
