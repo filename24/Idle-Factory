@@ -44,6 +44,21 @@ All config flows through `src/config.ts`:
 
 Copy `.env.example` to `.env` for local development. Never commit `.env`.
 
+**Adding a new environment variable is a three-file change.** Production injects
+variables explicitly — there is no `env_file` passthrough — so a value that exists
+only in `.env.prod` never reaches the container:
+
+1. read it in `src/config.ts` (or wherever it belongs)
+2. add it to `apps/bot/.env.example`
+3. add it to the `bot` service's `environment:` block in `compose.prod.yml`, and
+   document it in `.env.prod.example`
+
+Skipping step 3 fails silently in production. Note also that compose always
+injects the listed variables, so an unset one arrives as an **empty string**, not
+`undefined` — `env(key, fallback)` and `?? fallback` will not kick in. When the
+source has a meaningful default, mirror it in the compose default
+(`${VAR:-default}`) rather than leaving it blank.
+
 ## Scripts
 
 | Command          | Purpose                                              |

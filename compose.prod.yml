@@ -107,18 +107,36 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL:?DATABASE_URL 가 비었다}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      # ⚠️ 여기 나열한 변수만 컨테이너에 들어간다. `.env.prod` 에 값을 적어도
+      # 이 목록에 없으면 봇은 보지 못한다(env_file 통째 주입을 쓰지 않는 이유는
+      # 파일 맨 위 설계 결정 참고). apps/bot/src/config.ts 에 새 env 를 추가하면
+      # 이 목록도 함께 늘려야 한다.
       BOT_TOKEN: ${BOT_TOKEN:?BOT_TOKEN 가 비었다}
       BOT_NAME: ${BOT_NAME:-Idle Factory}
       BOT_OWNERS: ${BOT_OWNERS:-}
       BOT_SHARDING: ${BOT_SHARDING:-false}
+      # 아래 두 기본값은 config.ts 의 기본값과 일치시킨다. compose 는 변수를
+      # 항상 주입하므로, 비워 두면 빈 문자열이 들어가 config.ts 의 fallback 이
+      # 발동하지 않는다(`?? fallback` 은 빈 문자열을 값으로 취급한다).
+      BOT_PREFIX: ${BOT_PREFIX:-<@786891249005232179> }
+      BOT_COOLDOWN: ${BOT_COOLDOWN:-2000}
       BUILD_VERSION: ${BUILD_VERSION:-0.1.4}
       DEV_GUILD_ID: ${DEV_GUILD_ID:-}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       LOG_LEVEL: ${LOG_LEVEL:-chat}
       LOG_DEV: ${LOG_DEV:-false}
       REPORT_TYPE: ${REPORT_TYPE:-webhook}
       REPORT_WEBHOOK_URL: ${REPORT_WEBHOOK_URL:-}
+      # REPORT_TYPE=text 로 쓰려면 이 둘이 있어야 한다.
+      REPORT_TEXT_GUILD_ID: ${REPORT_TEXT_GUILD_ID:-}
+      REPORT_TEXT_CHANNEL_ID: ${REPORT_TEXT_CHANNEL_ID:-}
       ADMIN_AUDIT_WEBHOOK_URL: ${ADMIN_AUDIT_WEBHOOK_URL:-}
       I18N_FALLBACK_LNG: ${I18N_FALLBACK_LNG:-en-US}
+      # 봇이 약관·개인정보 링크를 만들 때 쓰는 웹앱 도메인(utils/Constants.ts).
+      # 기본값은 소스와 동일하게 둔다 — 빈 문자열을 주입하면 소스의 `?? 기본값`
+      # 이 발동하지 않아(빈 문자열은 null 이 아니다) 링크가 깨진다.
+      # web 을 다른 도메인(예: Vercel)으로 옮겼다면 이 값을 그 도메인으로 맞춘다.
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://idle.inft.kr}
 
   web:
     # web 을 Vercel 로 옮길 수 있게 프로파일로 감싼다. `.env.prod` 의
