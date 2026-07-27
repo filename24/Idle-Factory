@@ -9,7 +9,7 @@
     "start": "node build/index.js",
     "dev": "tsx watch --tsconfig tsconfig.json src/index.ts",
     "generate": "prisma generate",
-    "build": "tsup && cp -R src/locales build/locales",
+    "build": "tsup && cp -R src/locales build/locales && node scripts/verify-build.mjs",
     "typecheck": "tsc --noEmit",
     "update": "pnpm update -i",
     "lint": "eslint . --ext .ts",
