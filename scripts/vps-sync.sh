@@ -159,6 +159,22 @@ if [ -n "$MISSING" ]; then
   fi
 fi
 
+# DATABASE_URL 의 형태를 얕게 본다. compose 의 변수 검증은 "값이 있는지"만 보고
+# 내용은 확인하지 않으므로, 비밀번호에 URL 예약문자가 그대로 들어가도 배포
+# 직전까지 아무도 모른다. 특히 `/` 가 섞이면 그 지점에서 authority 가 끊겨
+# 포트 자리에 엉뚱한 문자열이 들어가고, Prisma 가 P1013 으로 죽는다.
+if [ -n "${DATABASE_URL:-}" ]; then
+  if ! printf '%s' "$DATABASE_URL" \
+    | grep -qE '^postgres(ql)?://[^:/@]+:[^@/]*@[^:/@]+:[0-9]+/'; then
+    log ""
+    log "★ DATABASE_URL 형태가 예상과 다르다:"
+    log "     postgresql://<user>:<password>@<host>:<port>/<db>"
+    log "  비밀번호에 '/' 나 '@' 가 들어 있으면 여기서 걸린다. URL 안전한 값으로"
+    log "  다시 만들 것: openssl rand -hex 32"
+    log "  (POSTGRES_PASSWORD 와 DATABASE_URL 을 함께 바꿔야 한다)"
+  fi
+fi
+
 # ── 최종 점검 ───────────────────────────────────────────────────────────
 if command -v docker > /dev/null && docker compose version > /dev/null 2>&1; then
   if docker compose --env-file .env.prod -f compose.prod.yml config --quiet 2>/dev/null; then

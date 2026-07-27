@@ -614,6 +614,44 @@ Variables 의 `DEPLOY_ARCH` 를 맞춘다(`aarch64` → `arm64`).
 
 GHCR 패키지가 private 이다. 위의 "GHCR 패키지 접근" 절을 따른다.
 
+### `P1013: invalid port number in database URL`
+
+`DATABASE_URL` 을 파싱하지 못했다는 뜻이다. 대개 **비밀번호에 `/` 가 들어간
+경우**다. `/` 를 만나는 순간 URL 의 authority 가 끝나 버려서, 포트 자리에
+비밀번호 조각이 들어간다.
+
+```
+postgresql://idle:ab/cd@postgres:5432/idle-factory
+                    ↑ 여기서 끊겨 포트가 'ab' 로 해석된다
+```
+
+`openssl rand -base64` 는 출력에 `/` 를 포함할 수 있어 이 사고를 만든다.
+**비밀번호는 URL 안전한 문자로 만든다.**
+
+```bash
+openssl rand -hex 32
+```
+
+고칠 때는 `POSTGRES_PASSWORD` 와 `DATABASE_URL` 을 **함께** 바꿔야 한다. 이미
+DB 가 그 비밀번호로 초기화된 뒤라면 컨테이너 안의 비밀번호도 함께 바꾼다.
+
+```bash
+cd /srv/idle-factory
+docker exec -it idle-factory-prod-postgres-1 \
+  psql -U "$POSTGRES_USER" -d postgres -c "ALTER USER <user> WITH PASSWORD '<새 비밀번호>';"
+```
+
+아직 데이터가 없는 첫 배포라면 볼륨을 지우고 다시 올리는 편이 간단하다.
+(**데이터가 있으면 절대 하지 말 것 — 볼륨이 삭제된다.**)
+
+```bash
+docker compose --env-file .env.prod -f compose.prod.yml down -v
+docker compose --env-file .env.prod -f compose.prod.yml up -d
+```
+
+`scripts/vps-sync.sh` 가 `DATABASE_URL` 형태를 점검해 이 문제를 배포 전에
+경고한다.
+
 ### migrator 가 실패한다
 
 ```bash
