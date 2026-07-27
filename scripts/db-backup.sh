@@ -75,9 +75,33 @@ SIZE="$(stat -c %s "$TMP_PATH")"
 # 별도 컨테이너에서 파일을 직접 읽게 한다. custom format 은 목록을 얻으려면
 # seek 이 필요해서 파이프(stdin)로 넘기면 실패하고, 프로덕션 컨테이너 안에
 # 임시 파일을 만들 이유도 없다.
-if ! docker run --rm -v "${BACKUP_DIR}:/backup:ro" "${DRILL_IMAGE:-postgres:16-alpine}" \
-  pg_restore --list "/backup/$(basename "$TMP_PATH")" > /dev/null 2>&1; then
+PG_IMAGE="${PG_IMAGE:-postgres:16-alpine}"
+list_dump() {
+  docker run --rm -v "${BACKUP_DIR}:/backup:ro" "$PG_IMAGE" \
+    pg_restore --list "/backup/$(basename "$TMP_PATH")" 2>/dev/null
+}
+
+if ! list_dump > /dev/null; then
   die "덤프 무결성 검증 실패 (pg_restore --list 가 읽지 못했다)"
+fi
+
+# 목록이 읽히는 것만으로는 부족하다. **빈 덤프도 유효한 덤프라서 통과한다**(실측:
+# 스키마가 없는 DB 를 덤프하면 837바이트 파일이 무결성 검증을 그대로 지나갔다).
+# 그대로 두면 DB 가 비어 버린 사고를 백업이 "성공"으로 덮고, 로테이션이 며칠 뒤
+# 마지막 정상 백업까지 지운다. 라이브 DB 의 테이블 수와 대조해 막는다.
+LIVE_TABLES="$(compose exec -T postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -tAc \
+  "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'" \
+  | tr -d '[:space:]')"
+# `TABLE public X` 는 테이블 정의, `TABLE DATA public X` 는 내용이다. 정의만 센다.
+DUMP_TABLES="$(list_dump | grep -E '[[:space:]]TABLE[[:space:]]' | grep -vcE '[[:space:]]TABLE DATA[[:space:]]' || true)"
+
+log "테이블 수 — 라이브 ${LIVE_TABLES:-?} / 덤프 ${DUMP_TABLES:-0}"
+
+if ! [ "${LIVE_TABLES:-0}" -gt 0 ] 2> /dev/null; then
+  die "라이브 DB 에 테이블이 없다 — 백업할 대상이 없거나 DATABASE 설정이 잘못됐다"
+fi
+if [ "${DUMP_TABLES:-0}" -ne "${LIVE_TABLES}" ]; then
+  die "덤프의 테이블 수(${DUMP_TABLES:-0})가 라이브(${LIVE_TABLES})와 다르다 — 불완전한 백업이다"
 fi
 
 mv "$TMP_PATH" "$DUMP_PATH"
