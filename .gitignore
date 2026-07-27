@@ -12,7 +12,13 @@ pids
 *.seed
 
 # Env
+# 실제 자격증명이 든 파일은 전부 추적 제외한다. `.env` 하나만 무시하면
+# `.env.prod`, `.env.local`, `.env.production` 같은 변형이 그대로 커밋될 수 있다.
+# 템플릿(`.env.example`, `.env.prod.example`)만 예외로 되살린다.
 .env
+.env.*
+!.env.example
+!.env.*.example
 
 # Dist
 dist/
