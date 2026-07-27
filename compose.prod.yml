@@ -41,11 +41,18 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      # 127.0.0.1 바인딩 — 호스트의 기존 리버스 프록시가 이 포트로 붙는다.
-      # 0.0.0.0 으로 열면 TLS 없이 인터넷에 그대로 노출된다.
-      - '0.0.0.0:${DB_PORT:-5444}:5432'
-    # 호스트 포트를 열지 않는다. 앱은 compose 내부 네트워크로만 접속한다.
-    # 백업 스크립트도 `docker compose exec` 로 컨테이너 안에서 pg_dump 한다.
+      # ⚠️ 이 포트는 compose 내부 통신에 필요하지 않다. 봇·web·migrator 는
+      # 서비스명(`postgres:5432`)으로 내부 네트워크를 통해 접속한다.
+      # 외부에서 DB 에 붙어야 할 때(예: web 을 Vercel 에서 돌릴 때)만 연다.
+      #
+      # DB_BIND 기본값은 127.0.0.1 이라 호스트 안에서만 보인다. 인터넷에 열려면
+      # .env.prod 에 DB_BIND=0.0.0.0 을 명시해야 한다 — 실수로 열리지 않게
+      # 기본을 좁혀 둔 것이고, 열 때는 반드시 아래를 함께 갖출 것.
+      #   · 강한 비밀번호(POSTGRES_PASSWORD)
+      #   · 접속 문자열에 sslmode=require
+      #   · 가능하면 방화벽으로 출처 제한(Vercel 은 egress IP 가 고정이 아니라 불가)
+      # 자세한 내용은 docs/ops/deployment.md 의 "web 을 Vercel 에서 돌리기" 참고.
+      - '${DB_BIND:-127.0.0.1}:${DB_PORT:-5444}:5432'
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
       interval: 10s

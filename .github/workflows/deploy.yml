@@ -246,20 +246,40 @@ jobs:
           compose pull
 
           echo "── 기동 (migrator 완료를 기다린 뒤 bot·web 시작)"
-          compose up -d --remove-orphans
+          # migrator 가 실패하면 compose up 자체가 비-0 으로 끝난다. set -e 로 여기서
+          # 죽으면 아래 진단이 실행되지 않아, 워크플로 로그에는
+          # "didn't complete successfully: exit 1" 만 남고 정작 원인은 사라진다.
+          # 종료 코드를 받아 두고 진단까지 마친 뒤에 실패시킨다.
+          up_status=0
+          compose up -d --remove-orphans || up_status=$?
 
           echo "── 마이그레이션 결과 확인"
-          mig_cid="$(compose ps -aq migrator)"
+          mig_cid="$(compose ps -aq migrator || true)"
           if [ -z "$mig_cid" ]; then
-            echo "migrator 컨테이너를 찾을 수 없다"; exit 1
+            echo "migrator 컨테이너를 찾을 수 없다 — 전체 상태:"
+            compose ps -a || true
+            exit 1
           fi
           mig_code="$(docker inspect -f '{{.State.ExitCode}}' "$mig_cid")"
           if [ "$mig_code" != '0' ]; then
             echo "migrator 실패 (exit ${mig_code}) — 로그:"
             docker logs "$mig_cid" 2>&1 | tail -50
+            echo "── 참고: migrator 가 보는 DATABASE_URL 의 호스트"
+            # 값 전체를 찍으면 비밀번호가 로그에 남는다. 호스트:포트만 뽑는다.
+            docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "$mig_cid" \
+              | sed -n 's|^DATABASE_URL=.*@\([^/]*\)/.*|  접속 대상: \1|p' || true
+            echo "  compose 내부에서는 'postgres:5432' 여야 한다. 호스트의 공인 IP 나"
+            echo "  localhost 를 가리키면 컨테이너에서 닿지 않아 여기서 실패한다."
             exit 1
           fi
           echo "migrator OK"
+
+          # migrator 는 성공했는데 up 이 실패했다면 다른 서비스 문제다.
+          if [ "$up_status" != '0' ]; then
+            echo "compose up 이 실패했다 (exit ${up_status}) — 전체 상태:"
+            compose ps -a || true
+            exit 1
+          fi
 
           echo "── web healthcheck 대기"
           web_cid="$(compose ps -q web || true)"
