@@ -71,6 +71,16 @@ cd /srv/idle-factory
 $EDITOR .env.prod
 ```
 
+`.env.prod` 에서 반드시 채워야 하는 값과 함정은 `.env.prod.example` 의 주석에
+전부 적혀 있다. 특히 두 가지를 확인한다.
+
+- `POSTGRES_DB` 는 **`-dev` 로 끝나면 안 된다.** `apps/bot` 통합 테스트는
+  `DATABASE_URL` 이 `-dev` 로 끝날 때만 실행되며 매 테스트마다 전체 테이블을
+  `TRUNCATE` 한다. 프로덕션 DB 이름을 `-dev` 로 두면 실수로 실행된 테스트가
+  프로덕션 데이터를 지운다.
+- `DATABASE_URL` 의 호스트는 `postgres`(compose 서비스명)다. `localhost` 는
+  컨테이너 자기 자신을 가리킨다.
+
 #### 이후 갱신
 
 **배포 워크플로는 이미지만 갱신한다.** `compose.prod.yml` 이나 백업 스크립트가
@@ -87,16 +97,6 @@ cd /srv/idle-factory && ./scripts/vps-sync.sh
 
 갱신을 잊어도 조용히 넘어가지 않는다. 배포 워크플로가 VPS 의 `compose.prod.yml`
 해시를 레포와 대조해 다르면 경고를 남긴다.
-
-`.env.prod` 에서 반드시 채워야 하는 값과 함정은 `.env.prod.example` 의 주석에
-전부 적혀 있다. 특히 두 가지를 확인한다.
-
-- `POSTGRES_DB` 는 **`-dev` 로 끝나면 안 된다.** `apps/bot` 통합 테스트는
-  `DATABASE_URL` 이 `-dev` 로 끝날 때만 실행되며 매 테스트마다 전체 테이블을
-  `TRUNCATE` 한다. 프로덕션 DB 이름을 `-dev` 로 두면 실수로 실행된 테스트가
-  프로덕션 데이터를 지운다.
-- `DATABASE_URL` 의 호스트는 `postgres`(compose 서비스명)다. `localhost` 는
-  컨테이너 자기 자신을 가리킨다.
 
 ### 2. GHCR 패키지 접근
 
