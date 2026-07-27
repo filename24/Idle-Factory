@@ -2,10 +2,10 @@ import { SapphireClient, container } from '@sapphire/framework'
 import { DatabaseClient } from '@idle/database'
 import { type ClientOptions, type Message } from 'discord.js'
 import Dokdo from 'dokdo'
-import { fileURLToPath } from 'url'
 
 import Logger from '@utils/Logger'
 import config from '../config'
+import { pieceRoot } from '@utils/pieceRoot'
 
 const logger = new Logger('bot')
 
@@ -18,7 +18,8 @@ export default class BotClient extends SapphireClient {
   public constructor(options: ClientOptions) {
     super({
       ...options,
-      baseUserDirectory: fileURLToPath(new URL('..', import.meta.url)),
+      // 번들 구조에 좌우되지 않는 경로. 근거는 utils/pieceRoot.ts 주석 참고.
+      baseUserDirectory: pieceRoot,
       defaultPrefix: config.bot.prefix,
       i18n: config.i18n.options
     })
