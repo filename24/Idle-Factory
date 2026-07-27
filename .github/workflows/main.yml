@@ -308,4 +308,8 @@ jobs:
           push: false
           # 스코프에 아키텍처를 넣어 amd64·arm64 레이어가 서로를 무효화하지 않게 한다.
           cache-from: type=gha,scope=${{ matrix.image }}-${{ vars.DEPLOY_ARCH || 'amd64' }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.image }}-${{ vars.DEPLOY_ARCH || 'amd64' }}
+          # cache-to 를 의도적으로 두지 않는다. PR 검증은 캐시를 **쓰기만** 한다.
+          # PR 마다 mode=max 캐시를 새로 쓰면 이미지 3개 × 커밋 수만큼 레이어가
+          # 쌓여 리포지터리 10GB 한도를 금세 채우고, 그러면 GitHub 이 LRU 로
+          # 밀어내면서 정작 배포에 쓰이는 캐시까지 날아간다(실제로 99% 까지 찼다).
+          # 캐시 갱신은 stable 배포(deploy.yml)에서만 한다.
