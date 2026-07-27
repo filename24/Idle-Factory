@@ -271,7 +271,9 @@ jobs:
     # PR 에서만 돈다. stable 푸시에서는 deploy.yml 이 같은 이미지를 실제로
     # 빌드해 GHCR 로 올리므로 여기서 또 빌드하면 순수 중복이다.
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    # 프로덕션과 같은 아키텍처에서 검증한다. arm64 배포인데 amd64 로만 빌드해
+    # 두면 네이티브 모듈(@napi-rs/canvas 등) 문제를 배포 시점에야 알게 된다.
+    runs-on: ${{ vars.DEPLOY_ARCH == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     permissions:
       contents: read
     strategy:
@@ -304,5 +306,6 @@ jobs:
           context: .
           file: ${{ matrix.dockerfile }}
           push: false
-          cache-from: type=gha,scope=${{ matrix.image }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+          # 스코프에 아키텍처를 넣어 amd64·arm64 레이어가 서로를 무효화하지 않게 한다.
+          cache-from: type=gha,scope=${{ matrix.image }}-${{ vars.DEPLOY_ARCH || 'amd64' }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}-${{ vars.DEPLOY_ARCH || 'amd64' }}

@@ -7,11 +7,6 @@ on:
   push:
     branches:
       - stable
-      # [임시 · 머지 직전 제거] 이 PR 자체를 검증하기 위한 프리뷰 트리거.
-      # deploy.yml 은 기본 브랜치에 있어야 workflow_dispatch 목록에 나타나므로
-      # PR 상태에서는 이 방법 외에 GHCR 푸시 경로를 관통 검증할 수 없다.
-      # 프리뷰 실행은 GHCR 푸시까지만 하고 배포 잡은 건너뛴다(deploy.if 참고).
-      - ci/deploy-pipeline
   workflow_dispatch:
 
 concurrency:
@@ -31,8 +26,10 @@ jobs:
       tag: ${{ steps.meta.outputs.tag }}
       registry: ${{ steps.meta.outputs.registry }}
       matrix: ${{ steps.meta.outputs.matrix }}
+      runner: ${{ steps.meta.outputs.runner }}
+      platform: ${{ steps.meta.outputs.platform }}
     steps:
-      - name: Compute tag, registry path and image set
+      - name: Compute tag, registry path, image set and target arch
         id: meta
         env:
           OWNER: ${{ github.repository_owner }}
@@ -41,8 +38,25 @@ jobs:
           # 리포지터리 Variables 에 WEB_ON_VERCEL=true 를 두면 web 을 Vercel 이
           # 담당하는 것으로 보고 여기서는 이미지를 만들지 않는다.
           WEB_ON_VERCEL: ${{ vars.WEB_ON_VERCEL }}
+          # 배포 대상 VPS 의 CPU 아키텍처. VPS 에서 `uname -m` 으로 확인한다:
+          #   x86_64 → amd64 (기본) / aarch64 → arm64
+          # 값을 틀리면 VPS 에서 `no matching manifest for linux/...` 로 pull 이
+          # 실패한다. 아래 deploy 잡이 그 불일치를 배포 전에 잡아 알려준다.
+          DEPLOY_ARCH: ${{ vars.DEPLOY_ARCH }}
         run: |
           set -euo pipefail
+
+          # 아키텍처마다 네이티브 러너를 골라 QEMU 에뮬레이션을 피한다.
+          # 에뮬레이션으로 arm64 를 빌드하면 pnpm install 과 next build 가
+          # 수 배로 느려진다.
+          case "${DEPLOY_ARCH:-amd64}" in
+            amd64) runner='ubuntu-latest'    ; platform='linux/amd64' ;;
+            arm64) runner='ubuntu-24.04-arm' ; platform='linux/arm64' ;;
+            *)
+              echo "::error::DEPLOY_ARCH 는 amd64 또는 arm64 여야 한다 (현재: ${DEPLOY_ARCH})"
+              exit 1
+              ;;
+          esac
           # GHCR 경로는 소문자만 허용한다. 오너에 대문자가 있으면 pull 이 깨진다.
           registry="ghcr.io/$(printf '%s' "$OWNER" | tr '[:upper:]' '[:lower:]')"
           short="$(printf '%s' "$SHA" | cut -c1-7)"
@@ -66,12 +80,16 @@ jobs:
           echo "registry=${registry}" >> "$GITHUB_OUTPUT"
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
           echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
+          echo "runner=${runner}" >> "$GITHUB_OUTPUT"
+          echo "platform=${platform}" >> "$GITHUB_OUTPUT"
           echo "이미지 태그: ${tag} (레지스트리: ${registry})" >> "$GITHUB_STEP_SUMMARY"
+          echo "대상 아키텍처: ${platform} (러너: ${runner})" >> "$GITHUB_STEP_SUMMARY"
 
   build-push:
     name: Build & push ${{ matrix.image }}
     needs: [prepare]
-    runs-on: ubuntu-latest
+    # 대상 아키텍처의 네이티브 러너에서 빌드한다(DEPLOY_ARCH 로 결정).
+    runs-on: ${{ needs.prepare.outputs.runner }}
     permissions:
       contents: read
       # GHCR 푸시에 필요. 기본 GITHUB_TOKEN 으로 충분하며 PAT 는 필요 없다.
@@ -102,6 +120,9 @@ jobs:
           context: .
           file: ${{ matrix.dockerfile }}
           push: true
+          # 러너와 같은 아키텍처라 에뮬레이션 없이 빌드된다. 명시해 두는 이유는
+          # 산출 매니페스트의 플랫폼을 의도대로 못 박기 위해서다.
+          platforms: ${{ needs.prepare.outputs.platform }}
           # sha-*(불변) 과 latest(이동) 를 함께 올린다. compose 는 불변 태그를
           # 참조하므로 롤백이 .env.prod 한 줄 수정으로 끝난다.
           tags: |
@@ -109,8 +130,10 @@ jobs:
             ${{ needs.prepare.outputs.registry }}/idle-factory-${{ matrix.image }}:latest
           build-args: |
             BUILD_NUMBER=${{ needs.prepare.outputs.tag }}
-          cache-from: type=gha,scope=${{ matrix.image }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+          # 캐시 스코프에 아키텍처를 넣는다. 넣지 않으면 amd64 와 arm64 레이어가
+          # 같은 스코프를 공유해 서로를 무효화한다.
+          cache-from: type=gha,scope=${{ matrix.image }}-${{ vars.DEPLOY_ARCH || 'amd64' }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}-${{ vars.DEPLOY_ARCH || 'amd64' }}
 
   deploy:
     name: Deploy to VPS
@@ -151,6 +174,7 @@ jobs:
           DEPLOY_DIR: ${{ vars.DEPLOY_DIR || '/srv/idle-factory' }}
           IMAGE_TAG: ${{ needs.prepare.outputs.tag }}
           WEB_ON_VERCEL: ${{ vars.WEB_ON_VERCEL }}
+          BUILD_PLATFORM: ${{ needs.prepare.outputs.platform }}
         run: |
           set -euo pipefail
 
@@ -173,7 +197,7 @@ jobs:
 
           ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o BatchMode=yes \
             "${VPS_USER}@${VPS_HOST}" \
-            "IMAGE_TAG='${IMAGE_TAG}' DEPLOY_DIR='${DEPLOY_DIR}' COMPOSE_SHA='${COMPOSE_SHA}' WEB_ON_VERCEL='${WEB_ON_VERCEL:-}' bash -s" <<'REMOTE'
+            "IMAGE_TAG='${IMAGE_TAG}' DEPLOY_DIR='${DEPLOY_DIR}' COMPOSE_SHA='${COMPOSE_SHA}' WEB_ON_VERCEL='${WEB_ON_VERCEL:-}' BUILD_PLATFORM='${BUILD_PLATFORM}' bash -s" <<'REMOTE'
           set -euo pipefail
 
           cd "$DEPLOY_DIR" || { echo "배포 디렉터리 없음: $DEPLOY_DIR"; exit 1; }
@@ -197,6 +221,24 @@ jobs:
           fi
 
           compose() { docker compose --env-file .env.prod -f compose.prod.yml "$@"; }
+
+          # 빌드한 이미지와 이 호스트의 CPU 아키텍처가 맞는지 먼저 본다. 어긋난 채
+          # pull 하면 compose 가 "no matching manifest for linux/..." 만 뱉는데,
+          # 그 메시지로는 원인이 아키텍처 불일치라는 것도, 어디를 고쳐야 하는지도
+          # 알기 어렵다. 게다가 compose 는 병렬 pull 중 하나가 깨지면 멀쩡한
+          # 서비스에까지 같은 에러를 붙여 원인을 더 흐린다.
+          case "$(uname -m)" in
+            x86_64)        host_platform='linux/amd64' ;;
+            aarch64|arm64) host_platform='linux/arm64' ;;
+            *)             host_platform="linux/$(uname -m)" ;;
+          esac
+          if [ "$host_platform" != "$BUILD_PLATFORM" ]; then
+            echo "아키텍처 불일치 — 이미지: ${BUILD_PLATFORM} / 이 호스트: ${host_platform} ($(uname -m))"
+            echo "리포지터리 Settings → Secrets and variables → Actions → Variables 에서"
+            echo "DEPLOY_ARCH 를 '${host_platform#linux/}' 로 설정하고 다시 배포할 것."
+            exit 1
+          fi
+          echo "아키텍처 확인: ${host_platform}"
 
           echo "── 이미지 pull (${IMAGE_TAG})"
           # GHCR 패키지가 private 이면 여기서 denied 가 난다. 패키지 가시성을
