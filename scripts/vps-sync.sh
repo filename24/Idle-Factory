@@ -22,7 +22,12 @@ set -euo pipefail
 REPO="${REPO:-filename24/Idle-Factory}"
 REF="${REF:-stable}"
 TARGET_DIR="${TARGET_DIR:-/srv/idle-factory}"
-RAW_BASE="https://raw.githubusercontent.com/${REPO}/${REF}"
+# 파일을 하나씩 raw.githubusercontent.com 에서 받지 않는다. 두 가지 이유다.
+#  1) raw 는 CDN 캐시가 걸려 push 직후 몇 분간 옛 내용을 준다(실측). codeload
+#     아카이브는 즉시 최신을 준다.
+#  2) 파일별로 받으면 요청 사이에 새 커밋이 끼어들어 서로 다른 커밋의 파일이
+#     섞일 수 있다. 아카이브는 한 커밋의 스냅숏이라 원자적으로 일관된다.
+ARCHIVE_URL="https://codeload.github.com/${REPO}/tar.gz/${REF}"
 
 log() { printf '[%s] %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$*"; }
 die() { log "오류: $*" >&2; exit 1; }
@@ -44,6 +49,7 @@ EXECUTABLE=(
 )
 
 command -v curl > /dev/null || die "curl 이 필요하다"
+command -v tar > /dev/null || die "tar 가 필요하다"
 
 log "레포 ${REPO} @ ${REF} → ${TARGET_DIR}"
 
@@ -56,13 +62,24 @@ STAGE="$(mktemp -d)"
 cleanup() { rm -rf "$STAGE"; }
 trap cleanup EXIT
 
+log "  아카이브 받는 중: ${REF}"
+if ! curl -fsSL "$ARCHIVE_URL" -o "${STAGE}/repo.tar.gz"; then
+  die "다운로드 실패: ${ARCHIVE_URL} (ref '${REF}' 가 존재하는지 확인할 것)"
+fi
+
+# 필요한 경로만 뽑는다. --strip-components=1 이 아카이브 최상위 디렉터리
+# (Idle-Factory-<ref>)를 벗겨낸다. 패턴이 하나라도 매칭되지 않으면 tar 가
+# 실패하므로, 파일이 사라진 변경을 조용히 넘기지 않는다.
+TAR_PATTERNS=()
+for f in "${FILES[@]}"; do TAR_PATTERNS+=("*/${f}"); done
+if ! tar -xzf "${STAGE}/repo.tar.gz" -C "$STAGE" --strip-components=1 \
+  --wildcards "${TAR_PATTERNS[@]}" 2> "${STAGE}/tar.err"; then
+  sed 's/^/      /' "${STAGE}/tar.err" >&2
+  die "아카이브에서 배포 파일을 뽑지 못했다"
+fi
+
 for f in "${FILES[@]}"; do
-  mkdir -p "${STAGE}/$(dirname "$f")"
-  log "  받는 중: ${f}"
-  if ! curl -fsSL "${RAW_BASE}/${f}" -o "${STAGE}/${f}"; then
-    die "다운로드 실패: ${RAW_BASE}/${f} (ref '${REF}' 가 존재하는지 확인할 것)"
-  fi
-  [ -s "${STAGE}/${f}" ] || die "빈 파일을 받았다: ${f}"
+  [ -s "${STAGE}/${f}" ] || die "아카이브에 비어 있거나 없는 파일: ${f}"
 done
 
 # compose 파일이 최소한 파싱은 되는지 본다. 값 보간은 .env.prod 가 필요해서

@@ -47,6 +47,10 @@ less /tmp/vps-sync.sh      # 실행 전에 한 번 읽어볼 것
 bash /tmp/vps-sync.sh
 ```
 
+이 첫 다운로드만 `raw.githubusercontent.com` 을 쓴다. raw 는 CDN 캐시가 걸려 방금
+머지한 내용이 몇 분간 안 보일 수 있는데, 스크립트가 실행되면서 codeload 아카이브로
+자기 자신까지 최신으로 갱신하므로 그냥 한 번 더 돌리면 된다.
+
 받아 놓는 결과는 이렇다.
 
 ```
