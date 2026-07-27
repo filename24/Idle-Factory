@@ -111,6 +111,10 @@ jobs:
     permissions:
       contents: read
     steps:
+      # compose.prod.yml 을 읽어 VPS 쪽 사본과 대조하기 위해 체크아웃한다.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Verify deploy secrets are present
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
@@ -139,6 +143,11 @@ jobs:
         run: |
           set -euo pipefail
 
+          # 이 워크플로는 이미지만 갱신한다. compose.prod.yml 이나 백업 스크립트가
+          # 바뀌었는데 VPS 쪽을 갱신하지 않으면 구식 정의로 계속 배포된다.
+          # 해시를 넘겨 원격에서 대조하게 한다.
+          COMPOSE_SHA="$(sha256sum compose.prod.yml | cut -d' ' -f1)"
+
           install -m 700 -d ~/.ssh
           printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
@@ -153,12 +162,20 @@ jobs:
 
           ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o BatchMode=yes \
             "${VPS_USER}@${VPS_HOST}" \
-            "IMAGE_TAG='${IMAGE_TAG}' DEPLOY_DIR='${DEPLOY_DIR}' bash -s" <<'REMOTE'
+            "IMAGE_TAG='${IMAGE_TAG}' DEPLOY_DIR='${DEPLOY_DIR}' COMPOSE_SHA='${COMPOSE_SHA}' bash -s" <<'REMOTE'
           set -euo pipefail
 
           cd "$DEPLOY_DIR" || { echo "배포 디렉터리 없음: $DEPLOY_DIR"; exit 1; }
-          [ -f compose.prod.yml ] || { echo "compose.prod.yml 없음 — 레포에서 복사할 것"; exit 1; }
+          [ -f compose.prod.yml ] || { echo "compose.prod.yml 없음 — scripts/vps-sync.sh 로 설치할 것"; exit 1; }
           [ -f .env.prod ] || { echo ".env.prod 없음 — .env.prod.example 을 복사해 채울 것"; exit 1; }
+
+          # compose 정의 드리프트 감지. 배포를 막지는 않는다(의도적 로컬 수정일
+          # 수도 있으므로). 다만 조용히 넘어가면 새 서비스나 새 필수 env 가
+          # 반영되지 않은 채 배포가 성공한 것처럼 보인다.
+          remote_compose_sha="$(sha256sum compose.prod.yml | cut -d' ' -f1)"
+          if [ "$remote_compose_sha" != "$COMPOSE_SHA" ]; then
+            echo "::warning::VPS 의 compose.prod.yml 이 레포와 다르다. \`./scripts/vps-sync.sh\` 로 갱신할 것 (레포 ${COMPOSE_SHA:0:12} / VPS ${remote_compose_sha:0:12})."
+          fi
 
           # 배포할 이미지 태그를 못 박는다. 이 파일이 지금 무엇이 돌고 있는지에
           # 대한 단일 기록이 되고, 롤백은 이 줄을 되돌리는 것으로 끝난다.

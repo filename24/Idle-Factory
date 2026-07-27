@@ -35,25 +35,54 @@ curl -fsSL https://get.docker.com | sh
 
 sudo mkdir -p /srv/idle-factory
 sudo chown "$USER":"$USER" /srv/idle-factory
-cd /srv/idle-factory
 ```
 
-레포에서 다음 세 가지만 가져다 둔다. 소스 전체는 필요 없다.
+배포에 필요한 파일은 `scripts/vps-sync.sh` 가 레포에서 받아 온다. 소스 전체를
+클론할 필요는 없다.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/filename24/Idle-Factory/stable/scripts/vps-sync.sh \
+  -o /tmp/vps-sync.sh
+less /tmp/vps-sync.sh      # 실행 전에 한 번 읽어볼 것
+bash /tmp/vps-sync.sh
+```
+
+받아 놓는 결과는 이렇다.
 
 ```
 /srv/idle-factory/
 ├── compose.prod.yml
-├── .env.prod            # .env.prod.example 을 복사해 채운 것
+├── .env.prod             # 템플릿에서 생성됨(권한 600). 값은 직접 채운다
+├── .env.prod.example
 └── scripts/
     ├── db-backup.sh
-    └── db-restore-drill.sh
+    ├── db-restore-drill.sh
+    └── vps-sync.sh
 ```
 
+이어서 값을 채운다.
+
 ```bash
-cp .env.prod.example .env.prod
-chmod 600 .env.prod      # 자격증명 파일이다
+cd /srv/idle-factory
 $EDITOR .env.prod
 ```
+
+#### 이후 갱신
+
+**배포 워크플로는 이미지만 갱신한다.** `compose.prod.yml` 이나 백업 스크립트가
+바뀌면 VPS 쪽은 그대로 남으므로 같은 스크립트를 다시 돌린다.
+
+```bash
+cd /srv/idle-factory && ./scripts/vps-sync.sh
+```
+
+- `.env.prod` 는 **절대 덮어쓰지 않는다.** 대신 템플릿에 새로 생긴 변수가 있으면
+  알려주므로, 그것만 채우면 된다.
+- 바뀐 파일은 `.bak` 로 한 세대 남긴다.
+- 특정 브랜치에서 가져오려면 `REF=<브랜치> ./scripts/vps-sync.sh`.
+
+갱신을 잊어도 조용히 넘어가지 않는다. 배포 워크플로가 VPS 의 `compose.prod.yml`
+해시를 레포와 대조해 다르면 경고를 남긴다.
 
 `.env.prod` 에서 반드시 채워야 하는 값과 함정은 `.env.prod.example` 의 주석에
 전부 적혀 있다. 특히 두 가지를 확인한다.
@@ -186,6 +215,10 @@ crontab -e
    - `bot` 이 running 이고 재시작 횟수가 0 (크래시 루프 감지)
 
    하나라도 실패하면 워크플로가 실패하고 해당 컨테이너 로그 마지막 50줄을 남긴다.
+
+`compose.prod.yml` 은 배포 대상이 아니다. 워크플로는 VPS 사본의 해시를 레포와
+대조해 다르면 경고만 남기고 배포는 계속한다. 경고가 보이면 `./scripts/vps-sync.sh`
+를 돌린다 — 새 서비스나 새 필수 env 가 들어온 변경이라면 갱신 전까지 반영되지 않는다.
 
 수동 재배포는 Actions → Deploy → Run workflow.
 
