@@ -315,22 +315,54 @@ jobs:
 
           # 봇은 HTTP 서버가 없어 healthcheck 를 걸 수 없다. 대신 잠깐 지켜본 뒤
           # 살아 있는지와 재시작 루프에 빠지지 않았는지를 본다.
-          echo "── bot 로그 스모크"
-          sleep 15
-          bot_cid="$(compose ps -q bot)"
-          running="$(docker inspect -f '{{.State.Running}}' "$bot_cid")"
-          restarts="$(docker inspect -f '{{.RestartCount}}' "$bot_cid")"
-          if [ "$running" != 'true' ]; then
-            echo "bot 이 실행 중이 아니다 — 로그:"
-            docker logs "$bot_cid" 2>&1 | tail -50
+          echo "── bot 로그인 확인"
+          bot_cid="$(compose ps -q bot || true)"
+          if [ -z "$bot_cid" ]; then
+            echo "bot 컨테이너를 찾을 수 없다 — 전체 상태:"
+            compose ps -a || true
             exit 1
           fi
+
+          # 프로세스가 살아 있는 것만으로는 부족하다. 게이트웨이 연결에 실패해도
+          # discord.js 는 조용히 재시도하므로 컨테이너는 그대로 Running 이고
+          # 재시작 카운트도 0 이다 — 봇이 아무 명령에도 응답하지 않는 상태가
+          # 배포 성공으로 보고된다(실제로 겪음).
+          # ready 리스너(src/listeners/ready.ts)가 남기는 로그를 기다려
+          # 로그인까지 확인한다. 문구를 바꾸면 여기도 함께 고칠 것.
+          logged_in=0
+          for _ in $(seq 1 24); do
+            if docker logs "$bot_cid" 2>&1 | grep -q 'Logged in as'; then
+              logged_in=1
+              break
+            fi
+            running="$(docker inspect -f '{{.State.Running}}' "$bot_cid")"
+            if [ "$running" != 'true' ]; then
+              echo "bot 이 실행 중이 아니다 — 로그:"
+              docker logs "$bot_cid" 2>&1 | tail -50
+              exit 1
+            fi
+            sleep 5
+          done
+
+          restarts="$(docker inspect -f '{{.RestartCount}}' "$bot_cid")"
           if [ "$restarts" != '0' ]; then
             echo "bot 이 ${restarts}회 재시작했다(크래시 루프 의심) — 로그:"
             docker logs "$bot_cid" 2>&1 | tail -50
             exit 1
           fi
-          echo "bot OK (재시작 0회)"
+
+          if [ "$logged_in" != '1' ]; then
+            echo "bot 이 120초 안에 Discord 로그인을 마치지 못했다 — 로그:"
+            docker logs "$bot_cid" 2>&1 | tail -50
+            echo "── 컨테이너에서 Discord API 에 닿는지 확인"
+            docker exec "$bot_cid" node -e \
+              "fetch('https://discord.com/api/v10/gateway').then(r=>r.json()).then(d=>console.log('  게이트웨이 응답:',JSON.stringify(d))).catch(e=>console.error('  실패:',e.message))" \
+              2>&1 || echo "  (확인 명령 자체가 실패했다)"
+            echo "  위가 실패하면 컨테이너 아웃바운드(DNS·방화벽) 문제,"
+            echo "  성공하는데 로그인이 안 되면 BOT_TOKEN 또는 인텐트 설정을 볼 것."
+            exit 1
+          fi
+          echo "bot OK (로그인 완료, 재시작 0회)"
 
           echo "── 배포 완료: ${IMAGE_TAG}"
           compose ps
