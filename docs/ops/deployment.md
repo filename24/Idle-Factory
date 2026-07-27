@@ -33,8 +33,19 @@ redis    (healthy) ─┘
 # Docker + compose 플러그인
 curl -fsSL https://get.docker.com | sh
 
+# 배포 유저가 sudo 없이 docker 를 쓰게 한다. 이걸 빼면 배포 워크플로의
+# `docker compose` 가 소켓 권한 오류(permission denied ... docker.sock)로 죽는다.
+sudo usermod -aG docker "$USER"
+
 sudo mkdir -p /srv/idle-factory
 sudo chown "$USER":"$USER" /srv/idle-factory
+```
+
+그룹 변경은 **새 로그인 세션부터** 적용된다. 로그아웃 후 다시 접속해 확인한다.
+(배포 워크플로는 매번 새 SSH 세션을 열므로 별도 조치가 필요 없다.)
+
+```bash
+docker ps      # sudo 없이 동작해야 한다
 ```
 
 배포에 필요한 파일은 `scripts/vps-sync.sh` 가 레포에서 받아 온다. 소스 전체를
@@ -118,20 +129,114 @@ docker pull ghcr.io/filename24/idle-factory-migrator:latest
   echo "$GHCR_PAT" | docker login ghcr.io -u <github-username> --password-stdin
   ```
 
-### 3. GitHub 시크릿
+### 3. 배포용 SSH 키와 GitHub 시크릿
+
+#### 3-1. 키 만들기
+
+**배포 전용** 키를 새로 만든다. 평소 쓰는 개인 키를 재사용하지 않는다 — 유출 시
+피해 범위가 다르고, 회수할 때 다른 접속까지 함께 끊긴다.
+
+```bash
+ssh-keygen -t ed25519 -C "github-actions-deploy@idle-factory" \
+  -f ~/.ssh/idle-factory-deploy -N ""
+```
+
+- `-N ""` — **패스프레이즈를 걸지 않는다.** GitHub Actions 는 비대화형이라 입력할
+  수단이 없다. 대신 키를 이 용도로만 좁히고 시크릿으로만 보관해 위험을 줄인다.
+- `-t ed25519` — RSA 보다 짧고 빠르다. OpenSSH 6.5+ 면 지원한다.
+
+두 파일이 생긴다. **둘을 섞지 않도록 주의한다.**
+
+| 파일                      | 정체   | 어디에 넣나                     |
+| ------------------------- | ------ | ------------------------------- |
+| `idle-factory-deploy.pub` | 공개키 | VPS 의 `~/.ssh/authorized_keys` |
+| `idle-factory-deploy`     | 개인키 | GitHub Secret `VPS_SSH_KEY`     |
+
+#### 3-2. VPS 에 공개키 등록
+
+```bash
+ssh-copy-id -i ~/.ssh/idle-factory-deploy.pub <VPS_USER>@<VPS_HOST>
+```
+
+`ssh-copy-id` 가 없으면 수동으로 붙인다.
+
+```bash
+cat ~/.ssh/idle-factory-deploy.pub | ssh <VPS_USER>@<VPS_HOST> \
+  'install -m 700 -d ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys'
+```
+
+#### 3-3. 접속 확인
+
+시크릿에 넣기 **전에** 이 키만으로 접속되는지 본다.
+
+```bash
+ssh -i ~/.ssh/idle-factory-deploy -o IdentitiesOnly=yes \
+  <VPS_USER>@<VPS_HOST> 'whoami && docker ps -q | wc -l'
+```
+
+`IdentitiesOnly=yes` 가 핵심이다. 없으면 ssh 에이전트에 올라간 **다른** 키로 접속이
+성공해서, 정작 이 키가 등록됐는지 확인하지 못한다. 여기서 `docker ps` 가 권한
+오류를 내면 §1 의 docker 그룹 설정이나 재로그인이 빠진 것이다.
+
+#### 3-4. 호스트 키 얻기 (권장)
+
+```bash
+ssh-keyscan -t ed25519 <VPS_HOST>
+```
+
+출력된 한 줄을 그대로 `VPS_SSH_HOST_KEY` 에 넣는다. 이 값이 없으면 워크플로가
+`ssh-keyscan` 결과를 검증 없이 신뢰하고(TOFU) 경고를 남긴다.
+
+#### 3-5. 시크릿 등록
 
 리포지터리 Settings → Secrets and variables → Actions.
 
-| 이름               | 필수 | 내용                                                                   |
-| ------------------ | ---- | ---------------------------------------------------------------------- |
-| `VPS_HOST`         | ✅   | VPS 주소                                                               |
-| `VPS_USER`         | ✅   | SSH 사용자                                                             |
-| `VPS_SSH_KEY`      | ✅   | 배포 전용 개인키(전문). VPS 의 `~/.ssh/authorized_keys` 에 공개키 등록 |
-| `VPS_SSH_HOST_KEY` | 권장 | `ssh-keyscan <host>` 결과. 없으면 호스트 키를 검증 없이 신뢰한다       |
+| 이름               | 필수 | 내용                                                 |
+| ------------------ | ---- | ---------------------------------------------------- |
+| `VPS_HOST`         | ✅   | VPS 주소 (IP 또는 도메인)                            |
+| `VPS_USER`         | ✅   | SSH 사용자 — §3-3 의 `whoami` 결과                   |
+| `VPS_SSH_KEY`      | ✅   | **개인키 전문** (`idle-factory-deploy`, `.pub` 아님) |
+| `VPS_SSH_HOST_KEY` | 권장 | §3-4 의 `ssh-keyscan` 출력 한 줄                     |
+
+`VPS_SSH_KEY` 는 `-----BEGIN OPENSSH PRIVATE KEY-----` 부터
+`-----END OPENSSH PRIVATE KEY-----` 까지 **줄바꿈을 포함해 통째로** 넣는다.
+
+```bash
+# macOS
+pbcopy < ~/.ssh/idle-factory-deploy
+# Linux (xclip)
+xclip -selection clipboard < ~/.ssh/idle-factory-deploy
+# 그 외 — 출력해서 전체 선택 복사
+cat ~/.ssh/idle-factory-deploy
+```
+
+줄바꿈이 뭉개져 한 줄로 들어가면 워크플로가 `Load key: error in libcrypto` 로
+실패한다. 그때는 시크릿을 지우고 다시 붙여넣는 것 말고는 방법이 없다.
+
+등록을 마치면 개인키 파일은 로컬에 남겨둘 이유가 없다. 지우거나 패스워드 매니저로
+옮긴다. 키를 잃어버렸으면 새로 만들어 §3-1 부터 다시 하면 된다 — 공개키만 갈아
+끼우면 되므로 비용이 거의 없다.
 
 GHCR 푸시는 기본 `GITHUB_TOKEN` 으로 처리되므로 별도 토큰이 필요 없다.
 
 배포 디렉터리가 `/srv/idle-factory` 가 아니면 Variables 에 `DEPLOY_DIR` 를 둔다.
+
+#### 선택적 강화
+
+이 키는 VPS 에서 임의 명령을 실행할 수 있다. 더 좁히고 싶다면 `authorized_keys`
+항목 앞에 옵션을 붙인다.
+
+```
+restrict,pty ssh-ed25519 AAAAC3Nza...키_전체... github-actions-deploy@idle-factory
+```
+
+`restrict` 는 포트 포워딩·에이전트 포워딩·X11 을 모두 막는다(명령 실행은 남는다).
+`command="..."` 로 실행 가능한 명령까지 한 개로 고정할 수도 있지만, 현재 배포
+워크플로는 스크립트를 heredoc 으로 보내므로 그렇게 하려면 배포 스크립트를 VPS 에
+두는 구조 변경이 필요하다.
+
+GitHub Actions 러너의 IP 는 고정이 아니므로 `from=` 으로 출처를 제한하는 방법은
+쓸 수 없다.
 
 ### 4. 리버스 프록시
 
@@ -428,6 +533,19 @@ Redis 는 백업 대상이 아니다. BullMQ 큐가 유실되면 예약 작업�
 재생성된다.
 
 ## 트러블슈팅
+
+### SSH 접속이 실패한다
+
+배포 워크플로의 `Deploy over SSH` 스텝 로그를 본다.
+
+- `Load key ".../deploy_key": error in libcrypto` → `VPS_SSH_KEY` 의 줄바꿈이
+  깨졌다. 개인키를 다시 통째로 붙여넣는다(§3-5).
+- `Permission denied (publickey)` → 공개키가 VPS 에 등록되지 않았거나 다른
+  사용자 계정에 등록됐다. `VPS_USER` 가 §3-3 의 `whoami` 결과와 같은지 확인한다.
+- `Host key verification failed` → `VPS_SSH_HOST_KEY` 가 실제 호스트 키와 다르다.
+  VPS 를 재설치했다면 호스트 키가 바뀌었으니 `ssh-keyscan` 을 다시 떠서 갱신한다.
+- `permission denied while trying to connect to the Docker daemon socket` →
+  배포 유저가 docker 그룹에 없다. §1 의 `usermod -aG docker` 를 하고 재로그인한다.
 
 ### `compose pull` 이 denied
 
