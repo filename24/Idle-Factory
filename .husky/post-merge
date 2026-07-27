@@ -1,7 +1,7 @@
 #!/bin/sh
 # graphify-hook-start
-# Auto-rebuilds the knowledge graph after each commit (code files only, no LLM needed).
-# Installed by: graphify hook install
+# Auto-rebuilds the knowledge graph after a merge or pull (code files only, no LLM needed).
+# Complements post-commit, which deliberately exits during a merge (see MERGE_HEAD guard there).
 
 # Deterministic clustering: networkx louvain iterates string-keyed sets whose
 # order is randomized per-process by PYTHONHASHSEED, so community assignments
@@ -21,7 +21,6 @@ fi
 GIT_DIR=${GIT_DIR:-$(git rev-parse --git-dir 2>/dev/null)}
 [ -d "$GIT_DIR/rebase-merge" ] && exit 0
 [ -d "$GIT_DIR/rebase-apply" ] && exit 0
-[ -f "$GIT_DIR/MERGE_HEAD" ] && exit 0
 [ -f "$GIT_DIR/CHERRY_PICK_HEAD" ] && exit 0
 
 [ "${GRAPHIFY_SKIP_HOOK:-0}" = "1" ] && exit 0
@@ -32,7 +31,10 @@ if [ -n "$_GFY_COMMONDIR" ] && [ "$_GFY_GITDIR" != "$_GFY_COMMONDIR" ]; then
     exit 0
 fi
 
-CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || git diff --name-only HEAD 2>/dev/null)
+# git records the pre-merge tip in ORIG_HEAD, so this covers both a fast-forward
+# pull (many commits at once) and a real merge commit. Falls back to the single-commit
+# range if ORIG_HEAD is absent (e.g. the hook run by hand).
+CHANGED=$(git diff --name-only ORIG_HEAD HEAD 2>/dev/null || git diff --name-only HEAD~1 HEAD 2>/dev/null)
 if [ -z "$CHANGED" ]; then
     exit 0
 fi

@@ -60,7 +60,11 @@ fi
 # fails loudly in the log if the package is broken under that interpreter.
 _GFY_PROBE="import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('graphify') else 1)"
 GRAPHIFY_PYTHON=""
-_PINNED='/home/coder/.local/share/uv/tools/graphifyy/bin/python'
+# Optional pinned interpreter. Left empty on purpose: this file is committed, so a
+# machine-specific absolute path here would leak one developer's layout into the repo.
+# Export GRAPHIFY_PYTHON_BIN to pin one locally; otherwise the probes below resolve it
+# from graphify-out/.graphify_python (gitignored, per-clone) or the graphify launcher on PATH.
+_PINNED="${GRAPHIFY_PYTHON_BIN:-}"
 if [ -n "$_PINNED" ] && [ -x "$_PINNED" ] && "$_PINNED" -c "$_GFY_PROBE" 2>/dev/null; then
     GRAPHIFY_PYTHON="$_PINNED"
 fi
