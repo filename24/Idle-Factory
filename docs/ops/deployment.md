@@ -48,6 +48,20 @@ sudo chown "$USER":"$USER" /srv/idle-factory
 docker ps      # sudo 없이 동작해야 한다
 ```
 
+이어서 **CPU 아키텍처를 확인한다.** 이미지는 이 아키텍처로 빌드되어야 한다.
+
+```bash
+uname -m
+```
+
+| 출력      | 리포지터리 Variable                |
+| --------- | ---------------------------------- |
+| `x86_64`  | `DEPLOY_ARCH` 불필요(기본 `amd64`) |
+| `aarch64` | `DEPLOY_ARCH=arm64` 필요           |
+
+설정하지 않으면 배포가 `no matching manifest for linux/arm64/v8` 로 멈춘다.
+등록 위치는 §3-5 를 참고한다.
+
 배포에 필요한 파일은 `scripts/vps-sync.sh` 가 레포에서 받아 온다. 소스 전체를
 클론할 필요는 없다.
 
@@ -219,7 +233,17 @@ cat ~/.ssh/idle-factory-deploy
 
 GHCR 푸시는 기본 `GITHUB_TOKEN` 으로 처리되므로 별도 토큰이 필요 없다.
 
-배포 디렉터리가 `/srv/idle-factory` 가 아니면 Variables 에 `DEPLOY_DIR` 를 둔다.
+같은 화면의 **Variables** 탭에는 다음을 둔다(시크릿이 아니다).
+
+| 이름            | 언제 필요한가                                    | 값        |
+| --------------- | ------------------------------------------------ | --------- |
+| `DEPLOY_ARCH`   | VPS 가 ARM 일 때 (§1 의 `uname -m` 이 `aarch64`) | `arm64`   |
+| `DEPLOY_DIR`    | 배포 디렉터리가 `/srv/idle-factory` 가 아닐 때   | 실제 경로 |
+| `WEB_ON_VERCEL` | web 을 Vercel 에서 돌릴 때                       | `true`    |
+
+`DEPLOY_ARCH` 는 이미지를 어느 아키텍처로 빌드할지와, 어느 러너에서 빌드할지를
+함께 결정한다. `arm64` 로 두면 GitHub 의 ARM 러너(`ubuntu-24.04-arm`)에서 네이티브로
+빌드하므로 QEMU 에뮬레이션 없이 평소 속도가 나온다.
 
 #### 선택적 강화
 
@@ -546,6 +570,20 @@ Redis 는 백업 대상이 아니다. BullMQ 큐가 유실되면 예약 작업�
   VPS 를 재설치했다면 호스트 키가 바뀌었으니 `ssh-keyscan` 을 다시 떠서 갱신한다.
 - `permission denied while trying to connect to the Docker daemon socket` →
   배포 유저가 docker 그룹에 없다. §1 의 `usermod -aG docker` 를 하고 재로그인한다.
+
+### `no matching manifest for linux/...`
+
+이미지가 VPS 와 다른 CPU 아키텍처로 빌드됐다. VPS 에서 `uname -m` 을 확인하고
+Variables 의 `DEPLOY_ARCH` 를 맞춘다(`aarch64` → `arm64`).
+
+배포 워크플로는 pull 전에 이 불일치를 먼저 잡아 어느 값을 어떻게 고쳐야 하는지
+알려준다. 그래도 이 메시지를 만났다면 `.env.prod` 의 `IMAGE_TAG` 가 아키텍처를
+고치기 전에 만들어진 오래된 태그를 가리키고 있을 수 있으니, 새 배포를 한 번 더
+돌린다.
+
+참고: compose 는 병렬 pull 중 하나가 실패하면 **멀쩡한 서비스에도 같은 에러를
+붙여 표시한다.** `postgres` 와 `redis` 까지 실패한 것처럼 보여도 실제 원인은
+우리 이미지 하나인 경우가 많다.
 
 ### `compose pull` 이 denied
 
