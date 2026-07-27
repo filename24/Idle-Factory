@@ -173,7 +173,101 @@ example.com {
 Discord Dev Portal → OAuth2 → Redirects 에 `https://<도메인>/api/auth/callback/discord`
 를 등록한다. 이 두 값이 어긋나면 로그인이 조용히 실패한다.
 
-### 5. 백업 crontab
+### 5. Cloudflare R2 (오프사이트 백업)
+
+백업을 VPS 로컬에만 두면 디스크나 호스트가 죽을 때 백업도 함께 사라진다. R2 는
+egress 비용이 없어 이 용도에 적합하다. `R2_BUCKET` 을 비워 두면 스크립트가 로컬
+보관만 하므로, 이 절을 건너뛰어도 배포 자체는 동작한다.
+
+#### 5-1. 버킷 만들기
+
+Cloudflare 대시보드 → **R2 Object Storage** → **Create bucket**.
+
+- 이름: `idle-factory-backups` (예시. `.env.prod` 의 `R2_BUCKET` 과 일치시킨다)
+- Location: 기본값(Automatic)으로 둔다. 특정 관할권이 필요하면 그때 지정한다.
+- Storage class: Standard
+
+#### 5-2. API 토큰 발급
+
+R2 화면 우측의 **API** → **Manage API tokens** → **Create Account API token**.
+
+- Permissions: **Object Read & Write** (버킷 생성·삭제 권한은 필요 없다)
+- Specify bucket(s): 위에서 만든 버킷 **하나만** 지정한다. 계정 전체 권한을 주면
+  이 키가 유출됐을 때 다른 버킷까지 노출된다.
+- TTL: 무기한이 부담스러우면 기간을 두고 갱신 일정을 잡는다.
+
+생성 직후 화면에 나오는 값을 그대로 기록한다.
+
+| 화면의 값         | `.env.prod` 키         |
+| ----------------- | ---------------------- |
+| Access Key ID     | `R2_ACCESS_KEY_ID`     |
+| Secret Access Key | `R2_SECRET_ACCESS_KEY` |
+
+⚠️ **Secret Access Key 는 이 화면을 벗어나면 다시 볼 수 없다.** 놓쳤으면 토큰을
+새로 만들어야 한다.
+
+#### 5-3. 엔드포인트 확인
+
+S3 호환 엔드포인트는 계정 ID 로 결정된다. R2 개요 화면이나 버킷 상세의
+**S3 API** 항목에 그대로 표시된다.
+
+```
+https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+```
+
+이 값이 `R2_ENDPOINT` 다. 버킷 이름을 URL 에 붙이지 않는다 — 버킷은
+`R2_BUCKET` 으로 따로 넘긴다.
+
+#### 5-4. `.env.prod` 채우기
+
+```bash
+R2_BUCKET=idle-factory-backups
+R2_ENDPOINT=https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+R2_ACCESS_KEY_ID=<Access Key ID>
+R2_SECRET_ACCESS_KEY=<Secret Access Key>
+R2_PREFIX=postgres
+R2_RETENTION_DAYS=30
+```
+
+`region` 은 설정하지 않는다. 스크립트가 R2 규약대로 `auto` 를 쓴다.
+
+#### 5-5. 연결 확인
+
+백업 스크립트는 호스트에 aws-cli 를 깔지 않고 컨테이너로 호출한다. 같은 방식으로
+자격증명을 먼저 검증한다. 값은 `.env.prod` 에서 읽어 셸 히스토리에 남기지 않는다.
+
+```bash
+cd /srv/idle-factory
+set -a; . ./.env.prod; set +a
+
+docker run --rm \
+  -e AWS_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" \
+  -e AWS_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" \
+  -e AWS_DEFAULT_REGION=auto \
+  amazon/aws-cli:latest --endpoint-url "$R2_ENDPOINT" \
+  s3 ls "s3://${R2_BUCKET}/"
+```
+
+빈 출력이면 성공이다(객체가 아직 없다). 실패하면 대개 다음 중 하나다.
+
+- `InvalidAccessKeyId` → 키를 잘못 옮겼거나 토큰이 삭제됐다
+- `AccessDenied` → 토큰이 이 버킷으로 스코프되지 않았다
+- `Could not connect to the endpoint URL` → `R2_ENDPOINT` 의 계정 ID 오타
+
+#### 5-6. lifecycle 규칙 (권장)
+
+`db-backup.sh` 가 업로드 후 `R2_RETENTION_DAYS` 를 넘긴 객체를 지운다. 다만
+스크립트가 며칠 돌지 못하면 정리도 멈추므로, 버킷 쪽에 안전망을 하나 더 둔다.
+
+버킷 → **Settings** → **Object lifecycle rules** → 규칙 추가:
+
+- Prefix: `postgres/`
+- Action: Delete objects, `R2_RETENTION_DAYS` 보다 넉넉한 값(예: 60일)
+
+스크립트 값보다 길게 잡는 것이 요점이다. 짧게 잡으면 R2 가 먼저 지워서 스크립트의
+보관 기간 설정이 무의미해진다.
+
+### 6. 백업 crontab
 
 ```bash
 crontab -e
@@ -184,7 +278,7 @@ crontab -e
 10 4 * * * cd /srv/idle-factory && ./scripts/db-backup.sh >> /var/log/idle-factory-backup.log 2>&1
 ```
 
-### 6. 이미지 GC
+### 7. 이미지 GC
 
 이미지가 하나에 400MB~900MB 다. 오래된 태그를 정리하지 않으면 디스크가 찬다.
 
@@ -193,7 +287,7 @@ crontab -e
 0 5 * * 0 docker image prune -af --filter "until=336h" >> /var/log/idle-factory-prune.log 2>&1
 ```
 
-### 7. 첫 배포 후 복구 리허설
+### 8. 첫 배포 후 복구 리허설
 
 백업이 "존재한다"와 "복구된다"는 다른 문제다. 최초 1회, 그리고 이후 분기마다
 리허설을 돌리고 리포트를 보관한다.
@@ -276,10 +370,18 @@ CI 의 `test-integration` 잡이 스키마 드리프트(마이그레이션 없�
 
 1. `pg_dump --format=custom` 을 **컨테이너 안에서** 실행한다(서버와 클라이언트
    버전 불일치가 원천적으로 없다).
-2. 임시 파일로 받고 `pg_restore --list` 로 읽어본 뒤에야 최종 이름으로 옮긴다.
-   0바이트·깨진 덤프가 "성공"으로 기록되는 사고를 막는다.
+2. 임시 파일로 받아 세 가지를 검사한 뒤에야 최종 이름으로 옮긴다.
+   - 0바이트가 아닌지
+   - `pg_restore --list` 로 읽히는지(깨진 덤프 차단)
+   - **덤프의 테이블 수가 라이브 DB 와 일치하는지**
 3. 로컬 보관(`BACKUP_RETENTION_DAYS`, 기본 7일) 후 Cloudflare R2 로 업로드하고
    원격도 정리한다(`R2_RETENTION_DAYS`, 기본 30일).
+
+3번의 테이블 수 대조가 왜 필요한지는 실측으로 확인했다. **빈 덤프도 유효한 덤프라서
+`pg_restore --list` 를 그대로 통과한다** — 스키마가 없는 DB 를 덤프하면 837바이트
+파일이 무결성 검증을 지나갔다. 그대로 두면 DB 가 비어 버린 사고(런북이 경고하는
+`-dev` 접미사 오설정 같은 것)를 백업이 "성공"으로 덮고, 로테이션이 며칠 뒤 마지막
+정상 백업까지 지운다. 지금은 그 상황에서 백업이 실패하고 부분 파일도 남기지 않는다.
 
 `R2_BUCKET` 이 비어 있으면 로컬 보관만 한다. VPS 디스크가 죽으면 백업도 함께
 사라지므로 프로덕션에서는 반드시 채운다.
