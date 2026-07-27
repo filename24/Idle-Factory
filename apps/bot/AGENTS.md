@@ -109,6 +109,12 @@ rollback, and recovery runbook.
 
 ## Conventions
 
+- **A new store directory must be added to `tsup.config.ts`.** Sapphire loads pieces
+  from the filesystem, and tsup only mirrors the directories listed as entries. Omit
+  one and the build still succeeds — that store is just silently empty at runtime.
+  When `preconditions` was missing, every command requiring one was blocked and the
+  bot answered nothing, with no error in the logs. `scripts/verify-build.mjs` runs at
+  the end of `pnpm build` and fails on this, but keep the entry list in sync anyway.
 - Prefer Sapphire's piece abstractions (`Command`, `Listener`, `InteractionHandler`) over raw discord.js handlers.
 - **Store directories hold pieces only.** Sapphire loads _every_ file under `commands/`, `listeners/`, and `interaction-handlers/` as a piece and throws `EMPTY_MODULE` at boot on any file without a piece class. Non-piece helpers (pure functions, payload/embed builders, decision logic) MUST live in `utils/` (or another non-store dir) — never inside a store directory, even if only one command uses them. Examples: `utils/landNav.ts`, `utils/announceAction.ts`, `utils/landMove.ts`.
 - Keep user-facing strings in `src/locales/*` and resolve via i18next.
