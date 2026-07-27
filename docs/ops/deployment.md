@@ -1,0 +1,359 @@
+# 배포 · 롤백 · 복구 런북
+
+단일 VPS + Docker Compose 기준 운영 절차. 이 문서에 적힌 명령은 모두 VPS 의
+배포 디렉터리(기본 `/srv/idle-factory`)에서 실행한다고 가정한다.
+
+## 구성
+
+| 이미지                                     | 역할                        | 엔트리포인트              |
+| ------------------------------------------ | --------------------------- | ------------------------- |
+| `ghcr.io/filename24/idle-factory-bot`      | Discord 봇                  | `node build/index.js`     |
+| `ghcr.io/filename24/idle-factory-web`      | Next.js 웹                  | `node apps/web/server.js` |
+| `ghcr.io/filename24/idle-factory-migrator` | 마이그레이션 전용 일회성 잡 | `prisma migrate deploy`   |
+
+Postgres 16 과 Redis 7 은 compose 컨테이너로 함께 뜬다. 데이터는 명명 볼륨
+(`idle-factory-prod_postgres_data`, `idle-factory-prod_redis_data`)에 남는다.
+
+기동 순서는 compose 가 강제한다.
+
+```
+postgres (healthy) ─┬─> migrator (완료) ─┬─> bot
+                    │                    └─> web
+redis    (healthy) ─┘
+```
+
+`migrator` 가 실패하면 봇과 웹은 아예 뜨지 않는다. 스키마와 코드가 어긋난 채
+돈이 오가는 명령을 처리하는 것보다 낫다는 판단이다.
+
+## 최초 1회 준비
+
+### 1. VPS
+
+```bash
+# Docker + compose 플러그인
+curl -fsSL https://get.docker.com | sh
+
+sudo mkdir -p /srv/idle-factory
+sudo chown "$USER":"$USER" /srv/idle-factory
+cd /srv/idle-factory
+```
+
+레포에서 다음 세 가지만 가져다 둔다. 소스 전체는 필요 없다.
+
+```
+/srv/idle-factory/
+├── compose.prod.yml
+├── .env.prod            # .env.prod.example 을 복사해 채운 것
+└── scripts/
+    ├── db-backup.sh
+    └── db-restore-drill.sh
+```
+
+```bash
+cp .env.prod.example .env.prod
+chmod 600 .env.prod      # 자격증명 파일이다
+$EDITOR .env.prod
+```
+
+`.env.prod` 에서 반드시 채워야 하는 값과 함정은 `.env.prod.example` 의 주석에
+전부 적혀 있다. 특히 두 가지를 확인한다.
+
+- `POSTGRES_DB` 는 **`-dev` 로 끝나면 안 된다.** `apps/bot` 통합 테스트는
+  `DATABASE_URL` 이 `-dev` 로 끝날 때만 실행되며 매 테스트마다 전체 테이블을
+  `TRUNCATE` 한다. 프로덕션 DB 이름을 `-dev` 로 두면 실수로 실행된 테스트가
+  프로덕션 데이터를 지운다.
+- `DATABASE_URL` 의 호스트는 `postgres`(compose 서비스명)다. `localhost` 는
+  컨테이너 자기 자신을 가리킨다.
+
+### 2. GHCR 패키지 접근
+
+레포는 public 이지만 **GHCR 패키지는 기본 private** 이다. 둘 중 하나를 한다.
+
+- (권장) GitHub → Packages → 각 패키지 → Package settings → Change visibility
+  → Public. VPS 에서 인증 없이 `docker pull` 이 된다.
+- 또는 VPS 에서 1회 로그인한다. `read:packages` 스코프 PAT 가 필요하다.
+  ```bash
+  echo "$GHCR_PAT" | docker login ghcr.io -u <github-username> --password-stdin
+  ```
+
+이 설정을 빼먹으면 배포 워크플로가 `compose pull` 단계에서 `denied` 로 멈춘다.
+
+### 3. GitHub 시크릿
+
+리포지터리 Settings → Secrets and variables → Actions.
+
+| 이름               | 필수 | 내용                                                                   |
+| ------------------ | ---- | ---------------------------------------------------------------------- |
+| `VPS_HOST`         | ✅   | VPS 주소                                                               |
+| `VPS_USER`         | ✅   | SSH 사용자                                                             |
+| `VPS_SSH_KEY`      | ✅   | 배포 전용 개인키(전문). VPS 의 `~/.ssh/authorized_keys` 에 공개키 등록 |
+| `VPS_SSH_HOST_KEY` | 권장 | `ssh-keyscan <host>` 결과. 없으면 호스트 키를 검증 없이 신뢰한다       |
+
+GHCR 푸시는 기본 `GITHUB_TOKEN` 으로 처리되므로 별도 토큰이 필요 없다.
+
+배포 디렉터리가 `/srv/idle-factory` 가 아니면 Variables 에 `DEPLOY_DIR` 를 둔다.
+
+### 4. 리버스 프록시
+
+프록시와 TLS 는 compose 밖(호스트의 기존 프록시)에서 담당한다. `web` 컨테이너는
+`127.0.0.1:3000` 에만 바인딩되므로 인터넷에 직접 노출되지 않는다.
+
+nginx:
+
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name example.com;
+
+    # ssl_certificate / ssl_certificate_key 는 기존 설정을 따른다.
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        # better-auth 가 콜백 URL 을 조립할 때 원본 스킴이 필요하다.
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade           $http_upgrade;
+        proxy_set_header Connection        "upgrade";
+    }
+}
+```
+
+Caddy:
+
+```caddy
+example.com {
+    reverse_proxy 127.0.0.1:3000
+}
+```
+
+프록시를 세운 뒤 `.env.prod` 의 `BETTER_AUTH_URL` 을 실제 도메인으로 맞추고,
+Discord Dev Portal → OAuth2 → Redirects 에 `https://<도메인>/api/auth/callback/discord`
+를 등록한다. 이 두 값이 어긋나면 로그인이 조용히 실패한다.
+
+### 5. 백업 crontab
+
+```bash
+crontab -e
+```
+
+```cron
+# 매일 04:10 (호스트 시간대 기준)
+10 4 * * * cd /srv/idle-factory && ./scripts/db-backup.sh >> /var/log/idle-factory-backup.log 2>&1
+```
+
+### 6. 이미지 GC
+
+이미지가 하나에 400MB~900MB 다. 오래된 태그를 정리하지 않으면 디스크가 찬다.
+
+```cron
+# 매주 일요일 05:00 — 어떤 컨테이너도 참조하지 않는 이미지 정리
+0 5 * * 0 docker image prune -af --filter "until=336h" >> /var/log/idle-factory-prune.log 2>&1
+```
+
+### 7. 첫 배포 후 복구 리허설
+
+백업이 "존재한다"와 "복구된다"는 다른 문제다. 최초 1회, 그리고 이후 분기마다
+리허설을 돌리고 리포트를 보관한다.
+
+```bash
+./scripts/db-backup.sh
+./scripts/db-restore-drill.sh
+```
+
+리포트는 `/var/backups/idle-factory/drills/` 에 쌓인다.
+
+## 일상 배포
+
+`stable` 에 병합되면 `.github/workflows/deploy.yml` 이 자동으로 처리한다.
+
+1. `prepare` — 이미지 태그를 `sha-<7자리>` 로 확정한다.
+2. `build-push` — bot·web·migrator 를 병렬 빌드해 GHCR 에 올린다. 태그는
+   `sha-<7자리>`(불변)와 `latest`(이동) 두 개.
+3. `deploy` — SSH 로 접속해 `.env.prod` 의 `IMAGE_TAG` 를 새 SHA 로 바꾸고
+   `compose pull && compose up -d` 를 실행한 뒤 다음을 검증한다.
+   - `migrator` 종료 코드가 0
+   - `web` 이 healthy (내부적으로 `/api/health` 를 호출한다)
+   - `bot` 이 running 이고 재시작 횟수가 0 (크래시 루프 감지)
+
+   하나라도 실패하면 워크플로가 실패하고 해당 컨테이너 로그 마지막 50줄을 남긴다.
+
+수동 재배포는 Actions → Deploy → Run workflow.
+
+### 지금 무엇이 돌고 있는지
+
+```bash
+grep '^IMAGE_TAG=' .env.prod
+docker compose --env-file .env.prod -f compose.prod.yml ps
+curl -s localhost:3000/api/health   # version 필드가 배포된 태그다
+```
+
+## 롤백
+
+이미지 태그가 불변이므로 롤백은 한 줄 수정이다.
+
+```bash
+cd /srv/idle-factory
+
+# 되돌릴 태그 확인 (GHCR 패키지 페이지 또는 배포 워크플로 실행 이력)
+sed -i 's|^IMAGE_TAG=.*|IMAGE_TAG=sha-1a2b3c4|' .env.prod
+
+docker compose --env-file .env.prod -f compose.prod.yml pull
+docker compose --env-file .env.prod -f compose.prod.yml up -d
+```
+
+### ⚠️ 스키마는 롤백되지 않는다
+
+Prisma 마이그레이션에는 down 마이그레이션이 없다. **이미지를 되돌려도 DB 스키마는
+그대로 최신 상태다.** 따라서 이전 이미지가 새 스키마와 호환되지 않으면 롤백해도
+서비스가 복구되지 않는다.
+
+이를 성립시키려면 파괴적 스키마 변경을 배포 2회로 쪼개야 한다(expand/contract).
+
+| 단계      | 배포 N                                   | 배포 N+1       |
+| --------- | ---------------------------------------- | -------------- |
+| 컬럼 추가 | nullable 로 추가 + 코드가 양쪽 모두 처리 | NOT NULL 승격  |
+| 컬럼 삭제 | 코드에서 사용 중단(컬럼은 남겨둠)        | 컬럼 DROP      |
+| 컬럼 개명 | 새 컬럼 추가 + 양쪽 쓰기(dual-write)     | 이전 컬럼 DROP |
+
+즉 **컬럼을 삭제하는 마이그레이션과 그 컬럼을 안 쓰게 만드는 코드 변경을 같은
+배포에 넣지 않는다.** 한 배포로 합치면 그 배포는 롤백 불가능한 배포가 된다.
+
+CI 의 `test-integration` 잡이 스키마 드리프트(마이그레이션 없는 스키마 변경)를
+막아 주지만, expand/contract 를 지켰는지는 사람이 판단해야 한다.
+
+## 백업 · 복구
+
+### 백업
+
+`scripts/db-backup.sh` 가 하는 일.
+
+1. `pg_dump --format=custom` 을 **컨테이너 안에서** 실행한다(서버와 클라이언트
+   버전 불일치가 원천적으로 없다).
+2. 임시 파일로 받고 `pg_restore --list` 로 읽어본 뒤에야 최종 이름으로 옮긴다.
+   0바이트·깨진 덤프가 "성공"으로 기록되는 사고를 막는다.
+3. 로컬 보관(`BACKUP_RETENTION_DAYS`, 기본 7일) 후 Cloudflare R2 로 업로드하고
+   원격도 정리한다(`R2_RETENTION_DAYS`, 기본 30일).
+
+`R2_BUCKET` 이 비어 있으면 로컬 보관만 한다. VPS 디스크가 죽으면 백업도 함께
+사라지므로 프로덕션에서는 반드시 채운다.
+
+### 복구 리허설
+
+프로덕션을 건드리지 않고, 임시 Postgres 컨테이너에 덤프를 복구해 테이블 집합과
+행 수를 프로덕션과 대조한다.
+
+```bash
+./scripts/db-restore-drill.sh                 # 최신 로컬 백업
+./scripts/db-restore-drill.sh /path/to.dump   # 특정 덤프
+```
+
+행 수 차이는 백업 시점 이후의 쓰기 때문에 정상적으로 발생한다. **테이블이 아예
+누락된 경우만 실패로 판정한다.**
+
+### 실제 복구
+
+```bash
+cd /srv/idle-factory
+COMPOSE="docker compose --env-file .env.prod -f compose.prod.yml"
+
+# 1. 쓰기를 멈춘다. Postgres 는 그대로 둔다.
+$COMPOSE stop bot web
+
+# 2. 복구 대상을 컨테이너로 넣는다.
+docker cp /var/backups/idle-factory/<덤프> "$($COMPOSE ps -q postgres)":/tmp/restore.dump
+
+# 3. 스키마째로 갈아끼운다. --clean --if-exists 가 기존 객체를 먼저 지운다.
+$COMPOSE exec -T postgres pg_restore \
+  --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" \
+  --clean --if-exists --no-owner --no-acl --exit-on-error \
+  /tmp/restore.dump
+
+# 4. 다시 올린다. migrator 가 스키마를 최신으로 맞춘다.
+$COMPOSE up -d
+```
+
+복구한 덤프가 현재 코드보다 오래된 스키마일 수 있으므로 4단계의 `migrator` 실행이
+반드시 성공해야 한다. 실패하면 로그를 보고 판단한다.
+
+Redis 는 백업 대상이 아니다. BullMQ 큐가 유실되면 예약 작업이 한 주기 지연될 뿐
+재생성된다.
+
+## 트러블슈팅
+
+### `compose pull` 이 denied
+
+GHCR 패키지가 private 이다. 위의 "GHCR 패키지 접근" 절을 따른다.
+
+### migrator 가 실패한다
+
+```bash
+docker compose --env-file .env.prod -f compose.prod.yml logs migrator
+```
+
+- `Can't reach database server` → `DATABASE_URL` 의 호스트가 `postgres` 인지,
+  `POSTGRES_*` 세 값과 자격증명이 일치하는지 확인한다.
+- `migrate found failed migration` → 이전 마이그레이션이 중간에 깨졌다. 원인을
+  고친 뒤 `prisma migrate resolve` 로 해당 마이그레이션을 정리해야 한다.
+  자동 재시도로는 풀리지 않는다.
+
+### web 이 healthy 가 되지 않는다
+
+```bash
+docker compose --env-file .env.prod -f compose.prod.yml logs web
+curl -i localhost:3000/api/health
+```
+
+`/api/health` 는 DB 를 확인하지 않는 liveness 프로브다. 이것이 200 인데 페이지가
+깨진다면 DB 나 인증 설정 문제이고, 이것 자체가 응답하지 않으면 프로세스가 죽은 것이다.
+
+### bot 이 재시작을 반복한다
+
+```bash
+docker compose --env-file .env.prod -f compose.prod.yml logs bot | tail -50
+```
+
+`Missing required environment variable: BOT_TOKEN` 이 가장 흔하다. 봇은 HTTP
+서버가 없어 healthcheck 를 걸 수 없으므로, 배포 워크플로가 기동 15초 후
+`RestartCount` 를 보고 크래시 루프를 판정한다.
+
+### 디스크가 찼다
+
+```bash
+docker system df
+du -sh /var/backups/idle-factory
+docker image prune -af --filter "until=336h"
+```
+
+Postgres 볼륨·백업·이미지 레이어가 같은 디스크에 있다. 백업이 디스크를 채워
+DB 를 멈추게 하는 것이 이 구성의 가장 현실적인 장애 시나리오다. `BACKUP_RETENTION_DAYS`
+를 줄이거나 백업 디렉터리를 별도 볼륨으로 옮긴다.
+
+## 알려진 제약
+
+- **단일 VPS = SPOF.** 호스트가 죽으면 전체가 멈춘다. 복구 수단은 백업뿐이다.
+- **무중단 배포 없음.** 배포마다 봇은 수 초, 웹은 짧은 502 가 발생한다.
+- **스키마 롤백 불가.** 위 expand/contract 절을 참고한다.
+- **Redis 미백업.** 예약 작업 큐는 재생성 가능한 상태로 취급한다.
+- **이미지가 무겁다**(400MB~900MB). Prisma 7 이 `@prisma/client` 의 peer 로
+  `prisma` CLI 체인을 프로덕션 트리까지 끌고 오는 것이 주된 원인이다. 재배포
+  전송량은 node_modules 레이어를 따로 떼어 완화해 두었다(앱 코드만 바뀌면
+  수 MB 만 전송된다).
+
+## 로컬에서 프로덕션 이미지 검증
+
+```bash
+docker build -f apps/bot/Dockerfile -t idle-factory-bot:test .
+docker build -f apps/web/Dockerfile -t idle-factory-web:test .
+docker build -f packages/database/Dockerfile -t idle-factory-migrator:test .
+```
+
+세 Dockerfile 모두 **빌드 컨텍스트가 레포 루트**다. 컨테이너 안에서
+`turbo prune` 을 실행하므로 워크스페이스 전체가 필요하다.
+
+`compose.prod.yml` 로 로컬 검증을 할 때는 프로젝트명이 `idle-factory-prod` 로
+고정돼 있어 `docker-compose.dev.yml` 스택(프로젝트명 `idle-factory`)과 섞이지
+않는다. 이 격리가 없으면 prod compose 를 올리는 순간 dev 컨테이너가 prod 정의로
+재생성된다.

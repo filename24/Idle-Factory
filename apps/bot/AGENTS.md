@@ -69,7 +69,28 @@ Current default (see `config.ts`): `GuildMessages` + `Guilds` only. Add intents 
 
 ## Docker
 
-`Dockerfile` is present for container builds. Provide `BOT_TOKEN` and `DATABASE_URL` at runtime (env or secret mount).
+`Dockerfile` builds the production image. **The build context is the repository
+root**, not this directory — the image runs `turbo prune bot --docker` inside the
+container, so it needs the whole workspace:
+
+```bash
+docker build -f apps/bot/Dockerfile -t idle-factory-bot .
+```
+
+Notes that bite if ignored:
+
+- Base image is `node:22-slim` (glibc), never alpine. `@napi-rs/canvas` resolves
+  its `linux-x64-gnu` native variant and breaks on musl.
+- `tsup` leaves `dependencies` external even with `bundle: true`, so the runtime
+  needs `node_modules`. The image flattens pnpm's symlink tree with
+  `pnpm deploy --prod --legacy`.
+- `StockChartRenderer` loads fonts from `process.cwd()/assets/fonts`, so the
+  image keeps `assets/` next to `build/` and asserts the font exists at build time.
+- Provide `BOT_TOKEN`, `DATABASE_URL`, and `REDIS_URL` at runtime. `BUILD_NUMBER`
+  is injected as a build arg because the image has no `.git` for `git rev-parse`.
+
+See [docs/ops/deployment.md](../../docs/ops/deployment.md) for the deploy,
+rollback, and recovery runbook.
 
 ## Conventions
 
