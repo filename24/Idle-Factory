@@ -1,7 +1,8 @@
 import { execSync } from 'child_process'
-import { fileURLToPath } from 'url'
+import { join } from 'path'
 import { IConfig } from '@types'
 import { ReportType } from './utils/Constants'
+import { pieceRoot } from './utils/pieceRoot'
 import { IntentsBitField } from 'discord.js'
 
 const env = (key: string, fallback = ''): string => process.env[key] ?? fallback
@@ -99,9 +100,9 @@ const config: IConfig = {
     options: {
       defaultNS: 'common',
       defaultMissingKey: 'generic',
-      defaultLanguageDirectory: fileURLToPath(
-        new URL('./locales', import.meta.url)
-      ),
+      // baseUserDirectory 와 같은 이유로 번들 위치에 의존하지 않는다.
+      // dev 는 src/locales, 프로덕션은 build/locales(빌드 스크립트가 복사).
+      defaultLanguageDirectory: join(pieceRoot, 'locales'),
       i18next: {
         fallbackLng: env('I18N_FALLBACK_LNG', 'en-US'),
         interpolation: {
