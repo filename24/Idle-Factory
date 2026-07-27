@@ -116,13 +116,30 @@ chmod 600 .env.prod
 
 # 템플릿에 새 변수가 추가됐는지 알려준다. 이걸 놓치면 compose 가 필수 변수
 # 누락으로 배포 시점에 멈춘다.
+#
+# 다만 전부 나열하면 대부분이 compose 에 기본값 있는 선택 변수라 노이즈가 되고,
+# 결국 경고를 무시하게 된다. compose 가 `${VAR:?...}` 로 필수라고 선언한 것만
+# 강조하고 나머지는 개수만 알린다.
 key_list() { grep -oE '^[A-Za-z_][A-Za-z0-9_]*=' "$1" | tr -d '=' | sort -u; }
+required_keys() {
+  grep -oE '\$\{[A-Za-z_][A-Za-z0-9_]*:\?' compose.prod.yml \
+    | sed -e 's/^\${//' -e 's/:?$//' | sort -u
+}
+
 MISSING="$(comm -23 <(key_list .env.prod.example) <(key_list .env.prod) || true)"
 if [ -n "$MISSING" ]; then
-  log ""
-  log "★ 템플릿에는 있는데 .env.prod 에 없는 변수:"
-  printf '%s\n' "$MISSING" | sed 's/^/      /'
-  log "  compose 가 필수로 요구하는 값이면 배포가 멈춘다. 확인해 채울 것."
+  MISSING_REQUIRED="$(comm -12 <(printf '%s\n' "$MISSING" | sort -u) <(required_keys) || true)"
+  MISSING_OPTIONAL_COUNT="$(comm -23 <(printf '%s\n' "$MISSING" | sort -u) <(required_keys) | grep -c . || true)"
+
+  if [ -n "$MISSING_REQUIRED" ]; then
+    log ""
+    log "★ .env.prod 에 없는 **필수** 변수 — 채우지 않으면 배포가 멈춘다:"
+    printf '%s\n' "$MISSING_REQUIRED" | sed 's/^/      /'
+  fi
+  if [ "${MISSING_OPTIONAL_COUNT:-0}" -gt 0 ]; then
+    log "  (선택 변수 ${MISSING_OPTIONAL_COUNT}개도 비어 있다 — compose 기본값을 쓴다."
+    log "   목록은 .env.prod.example 과 비교해 볼 것)"
+  fi
 fi
 
 # ── 최종 점검 ───────────────────────────────────────────────────────────
