@@ -1,0 +1,61 @@
+# Docker 빌드 컨텍스트 제외 목록
+#
+# 모든 이미지는 레포 루트를 빌드 컨텍스트로 삼고, 컨테이너 안에서
+# `turbo prune` → `pnpm install` → `turbo run build` 를 다시 수행한다.
+# 따라서 호스트의 설치·빌드 산출물은 컨텍스트에 넣지 않는다. 특히
+# node_modules 는 1GB 를 넘고, 넣으면 pnpm 심볼릭 링크가 그대로 복사돼
+# 컨테이너 안에서 깨진 트리가 된다.
+
+# ── 의존성 · 빌드 산출물 (컨테이너 안에서 재생성) ──
+**/node_modules
+**/dist
+**/build
+**/.next
+**/.turbo
+**/coverage
+**/*.tsbuildinfo
+# Prisma v7 generated client — 호스트 산출물이 섞이면 stale 클라이언트로 빌드된다.
+packages/database/src/generated
+# fumadocs-mdx 산출물 — next build 가 다시 만든다.
+apps/web/.source
+
+# ── VCS · 에이전트 작업 공간 ──
+# .git 을 넣지 않으므로 apps/bot/src/config.ts 의 `git rev-parse` 는 실패한다.
+# 대신 Dockerfile 이 BUILD_NUMBER 를 빌드 인자로 주입한다.
+.git
+.gitattributes
+# .claude/worktrees 안에 레포 사본이 중첩돼 컨텍스트가 폭발한다.
+.claude
+.agents
+.husky
+.vscode
+.github
+
+# ── 시크릿 ──
+# 이미지에 자격증명이 굳어 들어가는 것을 원천 차단한다. 템플릿은 필요 없다.
+.env
+.env.*
+**/.env
+**/.env.*
+
+# ── 런타임 이미지에 불필요한 문서 · 도구 산출물 ──
+graphify-out
+docs
+plans
+turbo/generators
+# 루트 레벨 문서만 제외한다. `**/*.md` 로 넓히면 apps/web/content 의 MDX 문서가
+# 빠져 fumadocs 빌드가 깨진다.
+*.md
+
+# ── 테스트 · 로컬 개발 전용 ──
+**/tests
+**/*.test.ts
+**/*.spec.ts
+**/playwright.config.ts
+**/playwright-report
+**/test-results
+docker-compose.dev.yml
+compose.prod.yml
+Dockerfile
+**/Dockerfile
+.dockerignore

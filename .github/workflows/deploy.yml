@@ -1,0 +1,279 @@
+name: Deploy
+
+# 배포는 stable 병합으로 자동 실행된다. 수동 재배포는 workflow_dispatch.
+# 롤백은 이 워크플로가 아니라 VPS 의 .env.prod 에서 IMAGE_TAG 를 이전 SHA 로
+# 되돌리고 compose up 을 다시 하는 절차다 — docs/ops/deployment.md 참고.
+on:
+  push:
+    branches:
+      - stable
+      # [임시 · 머지 직전 제거] 이 PR 자체를 검증하기 위한 프리뷰 트리거.
+      # deploy.yml 은 기본 브랜치에 있어야 workflow_dispatch 목록에 나타나므로
+      # PR 상태에서는 이 방법 외에 GHCR 푸시 경로를 관통 검증할 수 없다.
+      # 프리뷰 실행은 GHCR 푸시까지만 하고 배포 잡은 건너뛴다(deploy.if 참고).
+      - ci/deploy-pipeline
+  workflow_dispatch:
+
+concurrency:
+  # 배포는 겹치면 안 된다. 진행 중인 배포를 취소하면 마이그레이션이 반쯤
+  # 적용된 상태로 남을 수 있으므로 cancel-in-progress 를 끈다.
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    name: Resolve image coordinates
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+      registry: ${{ steps.meta.outputs.registry }}
+      matrix: ${{ steps.meta.outputs.matrix }}
+    steps:
+      - name: Compute tag, registry path and image set
+        id: meta
+        env:
+          OWNER: ${{ github.repository_owner }}
+          SHA: ${{ github.sha }}
+          REF: ${{ github.ref }}
+          # 리포지터리 Variables 에 WEB_ON_VERCEL=true 를 두면 web 을 Vercel 이
+          # 담당하는 것으로 보고 여기서는 이미지를 만들지 않는다.
+          WEB_ON_VERCEL: ${{ vars.WEB_ON_VERCEL }}
+        run: |
+          set -euo pipefail
+          # GHCR 경로는 소문자만 허용한다. 오너에 대문자가 있으면 pull 이 깨진다.
+          registry="ghcr.io/$(printf '%s' "$OWNER" | tr '[:upper:]' '[:lower:]')"
+          short="$(printf '%s' "$SHA" | cut -c1-7)"
+          # 프리뷰 브랜치 산출물은 태그로 구분해 stable 의 sha-* 와 섞이지 않게 한다.
+          if [ "$REF" = 'refs/heads/stable' ]; then
+            tag="sha-${short}"
+          else
+            tag="preview-${short}"
+          fi
+
+          bot='{"image":"bot","dockerfile":"apps/bot/Dockerfile"}'
+          web='{"image":"web","dockerfile":"apps/web/Dockerfile"}'
+          migrator='{"image":"migrator","dockerfile":"packages/database/Dockerfile"}'
+          if [ "${WEB_ON_VERCEL:-}" = 'true' ]; then
+            matrix="{\"include\":[${bot},${migrator}]}"
+            echo "web 이미지 생략 — Vercel 이 web 을 배포한다" >> "$GITHUB_STEP_SUMMARY"
+          else
+            matrix="{\"include\":[${bot},${web},${migrator}]}"
+          fi
+
+          echo "registry=${registry}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
+          echo "이미지 태그: ${tag} (레지스트리: ${registry})" >> "$GITHUB_STEP_SUMMARY"
+
+  build-push:
+    name: Build & push ${{ matrix.image }}
+    needs: [prepare]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # GHCR 푸시에 필요. 기본 GITHUB_TOKEN 으로 충분하며 PAT 는 필요 없다.
+      packages: write
+    strategy:
+      fail-fast: false
+      # prepare 가 계산한다 — WEB_ON_VERCEL 이면 web 이 빠진다.
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          # 세 Dockerfile 모두 컨테이너 안에서 turbo prune 을 실행하므로
+          # 컨텍스트는 반드시 레포 루트다.
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: true
+          # sha-*(불변) 과 latest(이동) 를 함께 올린다. compose 는 불변 태그를
+          # 참조하므로 롤백이 .env.prod 한 줄 수정으로 끝난다.
+          tags: |
+            ${{ needs.prepare.outputs.registry }}/idle-factory-${{ matrix.image }}:${{ needs.prepare.outputs.tag }}
+            ${{ needs.prepare.outputs.registry }}/idle-factory-${{ matrix.image }}:latest
+          build-args: |
+            BUILD_NUMBER=${{ needs.prepare.outputs.tag }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+  deploy:
+    name: Deploy to VPS
+    needs: [prepare, build-push]
+    # 프리뷰 브랜치 실행은 GHCR 푸시까지만 검증하고 여기서 멈춘다.
+    if: github.ref == 'refs/heads/stable' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # compose.prod.yml 을 읽어 VPS 쪽 사본과 대조하기 위해 체크아웃한다.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify deploy secrets are present
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          missing=''
+          [ -n "${VPS_HOST:-}" ] || missing="${missing} VPS_HOST"
+          [ -n "${VPS_USER:-}" ] || missing="${missing} VPS_USER"
+          [ -n "${VPS_SSH_KEY:-}" ] || missing="${missing} VPS_SSH_KEY"
+          if [ -n "$missing" ]; then
+            echo "::error::배포 시크릿 누락:${missing} — 리포지터리 Settings → Secrets 에 등록할 것."
+            exit 1
+          fi
+
+      - name: Deploy over SSH
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          # 선택. 없으면 ssh-keyscan 결과를 그대로 신뢰한다(TOFU).
+          VPS_SSH_HOST_KEY: ${{ secrets.VPS_SSH_HOST_KEY }}
+          DEPLOY_DIR: ${{ vars.DEPLOY_DIR || '/srv/idle-factory' }}
+          IMAGE_TAG: ${{ needs.prepare.outputs.tag }}
+          WEB_ON_VERCEL: ${{ vars.WEB_ON_VERCEL }}
+        run: |
+          set -euo pipefail
+
+          # 이 워크플로는 이미지만 갱신한다. compose.prod.yml 이나 백업 스크립트가
+          # 바뀌었는데 VPS 쪽을 갱신하지 않으면 구식 정의로 계속 배포된다.
+          # 해시를 넘겨 원격에서 대조하게 한다.
+          COMPOSE_SHA="$(sha256sum compose.prod.yml | cut -d' ' -f1)"
+
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          if [ -n "${VPS_SSH_HOST_KEY:-}" ]; then
+            printf '%s\n' "$VPS_SSH_HOST_KEY" > ~/.ssh/known_hosts
+          else
+            echo "::warning::VPS_SSH_HOST_KEY 미설정 — 호스트 키를 검증 없이 신뢰합니다(MITM 위험). \`ssh-keyscan <host>\` 결과를 시크릿으로 등록하는 것을 권장합니다."
+            ssh-keyscan -H "$VPS_HOST" > ~/.ssh/known_hosts 2>/dev/null
+          fi
+          chmod 600 ~/.ssh/known_hosts
+
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o BatchMode=yes \
+            "${VPS_USER}@${VPS_HOST}" \
+            "IMAGE_TAG='${IMAGE_TAG}' DEPLOY_DIR='${DEPLOY_DIR}' COMPOSE_SHA='${COMPOSE_SHA}' WEB_ON_VERCEL='${WEB_ON_VERCEL:-}' bash -s" <<'REMOTE'
+          set -euo pipefail
+
+          cd "$DEPLOY_DIR" || { echo "배포 디렉터리 없음: $DEPLOY_DIR"; exit 1; }
+          [ -f compose.prod.yml ] || { echo "compose.prod.yml 없음 — scripts/vps-sync.sh 로 설치할 것"; exit 1; }
+          [ -f .env.prod ] || { echo ".env.prod 없음 — .env.prod.example 을 복사해 채울 것"; exit 1; }
+
+          # compose 정의 드리프트 감지. 배포를 막지는 않는다(의도적 로컬 수정일
+          # 수도 있으므로). 다만 조용히 넘어가면 새 서비스나 새 필수 env 가
+          # 반영되지 않은 채 배포가 성공한 것처럼 보인다.
+          remote_compose_sha="$(sha256sum compose.prod.yml | cut -d' ' -f1)"
+          if [ "$remote_compose_sha" != "$COMPOSE_SHA" ]; then
+            echo "::warning::VPS 의 compose.prod.yml 이 레포와 다르다. \`./scripts/vps-sync.sh\` 로 갱신할 것 (레포 ${COMPOSE_SHA:0:12} / VPS ${remote_compose_sha:0:12})."
+          fi
+
+          # 배포할 이미지 태그를 못 박는다. 이 파일이 지금 무엇이 돌고 있는지에
+          # 대한 단일 기록이 되고, 롤백은 이 줄을 되돌리는 것으로 끝난다.
+          if grep -q '^IMAGE_TAG=' .env.prod; then
+            sed -i "s|^IMAGE_TAG=.*|IMAGE_TAG=${IMAGE_TAG}|" .env.prod
+          else
+            printf 'IMAGE_TAG=%s\n' "$IMAGE_TAG" >> .env.prod
+          fi
+
+          compose() { docker compose --env-file .env.prod -f compose.prod.yml "$@"; }
+
+          echo "── 이미지 pull (${IMAGE_TAG})"
+          # GHCR 패키지가 private 이면 여기서 denied 가 난다. 패키지 가시성을
+          # public 으로 바꾸거나 VPS 에서 `docker login ghcr.io` 를 1회 수행할 것.
+          compose pull
+
+          echo "── 기동 (migrator 완료를 기다린 뒤 bot·web 시작)"
+          compose up -d --remove-orphans
+
+          echo "── 마이그레이션 결과 확인"
+          mig_cid="$(compose ps -aq migrator)"
+          if [ -z "$mig_cid" ]; then
+            echo "migrator 컨테이너를 찾을 수 없다"; exit 1
+          fi
+          mig_code="$(docker inspect -f '{{.State.ExitCode}}' "$mig_cid")"
+          if [ "$mig_code" != '0' ]; then
+            echo "migrator 실패 (exit ${mig_code}) — 로그:"
+            docker logs "$mig_cid" 2>&1 | tail -50
+            exit 1
+          fi
+          echo "migrator OK"
+
+          echo "── web healthcheck 대기"
+          web_cid="$(compose ps -q web || true)"
+          if [ -z "$web_cid" ]; then
+            # web 이 없는 두 가지 경우를 구분한다. Vercel 로 옮긴 것이라면 정상이고,
+            # 그게 아니라면 .env.prod 의 COMPOSE_PROFILES 에서 self-hosted 가
+            # 빠져 web 이 조용히 사라진 설정 사고다. 후자를 성공으로 넘기면
+            # 웹이 죽은 채로 배포가 초록불이 된다.
+            if [ "${WEB_ON_VERCEL:-}" = 'true' ]; then
+              echo "web 서비스 없음 — Vercel 이 web 을 배포하므로 건너뛴다"
+            else
+              echo "web 서비스가 뜨지 않았다. .env.prod 의 COMPOSE_PROFILES 에"
+              echo "self-hosted 가 들어 있는지 확인할 것(비어 있으면 web 이 제외된다)."
+              echo "web 을 Vercel 로 옮긴 것이라면 리포지터리 Variables 에"
+              echo "WEB_ON_VERCEL=true 를 설정해야 한다."
+              exit 1
+            fi
+          else
+            ok=0
+            for _ in $(seq 1 36); do
+              status="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$web_cid")"
+              if [ "$status" = 'healthy' ]; then ok=1; break; fi
+              if [ "$status" = 'none' ]; then echo "web 이미지에 healthcheck 가 없다"; ok=1; break; fi
+              sleep 5
+            done
+            if [ "$ok" != '1' ]; then
+              echo "web 이 180초 안에 healthy 가 되지 않았다 — 로그:"
+              docker logs "$web_cid" 2>&1 | tail -50
+              exit 1
+            fi
+            echo "web OK"
+          fi
+
+          # 봇은 HTTP 서버가 없어 healthcheck 를 걸 수 없다. 대신 잠깐 지켜본 뒤
+          # 살아 있는지와 재시작 루프에 빠지지 않았는지를 본다.
+          echo "── bot 로그 스모크"
+          sleep 15
+          bot_cid="$(compose ps -q bot)"
+          running="$(docker inspect -f '{{.State.Running}}' "$bot_cid")"
+          restarts="$(docker inspect -f '{{.RestartCount}}' "$bot_cid")"
+          if [ "$running" != 'true' ]; then
+            echo "bot 이 실행 중이 아니다 — 로그:"
+            docker logs "$bot_cid" 2>&1 | tail -50
+            exit 1
+          fi
+          if [ "$restarts" != '0' ]; then
+            echo "bot 이 ${restarts}회 재시작했다(크래시 루프 의심) — 로그:"
+            docker logs "$bot_cid" 2>&1 | tail -50
+            exit 1
+          fi
+          echo "bot OK (재시작 0회)"
+
+          echo "── 배포 완료: ${IMAGE_TAG}"
+          compose ps
+          REMOTE
+
+      - name: Clean up SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

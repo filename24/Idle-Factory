@@ -76,4 +76,35 @@ No app-specific env is wired yet. When adding env access, prefer `process.env.NE
 
 ## Build/Deploy
 
-Designed to run on any Node >=18 host or Vercel. Ensure `DATABASE_URL` is set at runtime if route handlers query the DB via `@idle/database`.
+`next.config.js` sets `output: 'standalone'` plus `outputFileTracingRoot` pointed at
+the workspace root, so `next build` emits a self-contained server at
+`.next/standalone/apps/web/server.js`. File tracing pulls in `@prisma/client`, `pg`,
+and `ioredis`; the `@idle/*` workspace packages are inlined into the server bundle.
+
+`Dockerfile` builds the production image. **The build context is the repository
+root** — the image runs `turbo prune web --docker` inside the container:
+
+```bash
+docker build -f apps/web/Dockerfile -t idle-factory-web .
+```
+
+Notes:
+
+- `.next/static` and `public/` are **not** traced. The Dockerfile copies them
+  explicitly; omitting them yields a page that renders with every asset 404ing.
+- The build needs a dummy `DATABASE_URL`. `src/lib/db.ts` constructs
+  `DatabaseClient` at module load and `src/lib/env.ts`'s build-phase escape hatch
+  does not cover `DATABASE_URL`.
+- `NEXT_PUBLIC_*` values are substituted into the client bundle at build time and
+  cannot be injected at runtime. `NEXT_PUBLIC_APP_URL` is exposed as a build arg
+  and left empty by default, which makes better-auth's client fall back to the
+  relative `/api/auth` path (correct for same-origin deployments).
+- Runtime env: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`,
+  `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`.
+
+`GET /api/health` is a liveness probe (see `src/lib/health.ts`) used by the
+container healthcheck. It deliberately does not touch the database — a DB blip must
+not push web into a restart loop.
+
+See [docs/ops/deployment.md](../../docs/ops/deployment.md) for the deploy,
+rollback, and recovery runbook.

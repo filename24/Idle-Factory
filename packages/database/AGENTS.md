@@ -64,6 +64,39 @@ await db.disconnect()
 
 Turbo's root `db:generate` task is `cache: false` and is a dependency of `build`/`dev`.
 
+## Migrator Image
+
+`Dockerfile` builds a one-shot image whose only job is `prisma migrate deploy`.
+**The build context is the repository root:**
+
+```bash
+docker build -f packages/database/Dockerfile -t idle-factory-migrator .
+```
+
+It exists so `compose.prod.yml` can gate app startup on migration success
+(`depends_on: { migrator: { condition: service_completed_successfully } }`). If the
+migration fails, bot and web never start, and the two of them never race to migrate.
+
+Constraints discovered the hard way:
+
+- `pnpm deploy` is run **without** `--prod`. The `prisma` CLI and `dotenv` are
+  devDependencies here, and both are needed to run a migration. A `--prod` tree has
+  no `prisma` binary in `node_modules/.bin`.
+- `package.json`'s `files: ["dist"]` means `pnpm deploy` drops `prisma/` and
+  `prisma.config.ts`. The Dockerfile copies both explicitly.
+- The entrypoint calls `./node_modules/.bin/prisma` directly, never `pnpm exec`.
+  pnpm runs a dependency-status check first and tries `pnpm install`, which makes
+  corepack download a new pnpm and write into a root-owned `/app` as a non-root
+  user — `EACCES`.
+- `schema.prisma`'s datasource block has no `url`; `prisma.config.ts` injects it
+  from `DATABASE_URL`. Without that file the migrator has no target.
+- Prisma's schema engine links against libssl, which `node:*-slim` lacks, so the
+  runner installs `openssl`.
+
+See [docs/ops/deployment.md](../../docs/ops/deployment.md) for the deploy,
+rollback, and recovery runbook — including the expand/contract rule that keeps
+image rollbacks viable despite Prisma having no down migrations.
+
 ## Conventions
 
 - **Consume only via `@idle/database`.** Do not import from `@prisma/client` in apps — this package is the single integration point so the Prisma version and client generation stay consistent.
