@@ -67,16 +67,23 @@ $EDITOR .env.prod
 
 ### 2. GHCR 패키지 접근
 
-레포는 public 이지만 **GHCR 패키지는 기본 private** 이다. 둘 중 하나를 한다.
+**이 레포에서는 추가 설정이 필요 없다.** public 레포에서 `GITHUB_TOKEN` 으로
+푸시된 세 패키지가 public 으로 생성되어, 자격증명 없이 `docker pull` 이 된다
+(배포 워크플로 첫 실행 후 실측으로 확인).
 
-- (권장) GitHub → Packages → 각 패키지 → Package settings → Change visibility
-  → Public. VPS 에서 인증 없이 `docker pull` 이 된다.
+```bash
+# VPS 에서 확인
+docker pull ghcr.io/filename24/idle-factory-migrator:latest
+```
+
+이것이 실패한다면 패키지가 private 으로 만들어진 것이고, 배포 워크플로는
+`compose pull` 단계에서 `denied` 로 멈춘다. 그때만 둘 중 하나를 한다.
+
+- (권장) GitHub → Packages → 각 패키지 → Package settings → Change visibility → Public
 - 또는 VPS 에서 1회 로그인한다. `read:packages` 스코프 PAT 가 필요하다.
   ```bash
   echo "$GHCR_PAT" | docker login ghcr.io -u <github-username> --password-stdin
   ```
-
-이 설정을 빼먹으면 배포 워크플로가 `compose pull` 단계에서 `denied` 로 멈춘다.
 
 ### 3. GitHub 시크릿
 
