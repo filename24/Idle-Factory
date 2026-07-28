@@ -44,3 +44,6 @@ next-env.d.ts
 
 # e2e screenshot artifacts
 /tests/e2e/screenshots/
+
+# Sentry Config File
+.env.sentry-build-plugin
