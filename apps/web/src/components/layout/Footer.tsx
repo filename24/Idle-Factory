@@ -22,7 +22,7 @@ const linkGroups: Array<{
     links: [
       {
         label: 'Discord 서버',
-        href: 'https://discord.gg/idle-factory',
+        href: 'https://discord.gg/7aFczQk',
         external: true,
       },
     ],
@@ -39,7 +39,7 @@ export function Footer() {
           <div className="flex flex-col gap-3">
             <span className="font-display text-ink text-xl tracking-tight">Idle Factory</span>
             <p className="text-charcoal max-w-xs text-sm leading-relaxed break-keep">
-              방치하면 자라나는 나만의 공장. 디스코드에서 시작하는 아이들 팩토리.
+              방치하면 자라나는 나만의 공장. 디스코드에서 시작하는 Idle Factory.
             </p>
           </div>
 

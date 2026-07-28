@@ -2,6 +2,7 @@
 
 import { LogIn, LogOut } from 'lucide-react'
 import { useSession, signIn, signOut } from '@/lib/auth-client'
+import { useHydrated } from '@/hooks/useHydrated'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -10,12 +11,24 @@ import {
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
 
+/** 세션이 확정되기 전 자리를 잡아 두는 플레이스홀더. 서버·클라이언트 첫 렌더가 공유한다. */
+function AuthSkeleton() {
+  return <div aria-hidden="true" className="bg-elevated h-6 w-6 animate-pulse rounded-full" />
+}
+
 /** 헤더 우측 인증 영역 — 로그인 상태에 따라 아바타 드롭다운 또는 로그인 버튼 표시 */
 export function HeaderAuth() {
   const { data: session, isPending } = useSession()
 
-  if (isPending) {
-    return <div className="bg-elevated h-6 w-6 animate-pulse rounded-full" />
+  // 하이드레이션 가드. better-auth 의 useStore 는 `useRef(store.get())` 로 스냅샷을
+  // 잡고 getServerSnapshot 에도 같은 함수를 넘긴다(better-auth/dist/client/react/
+  // react-store.mjs). 그래서 세션 fetch 가 하이드레이션보다 먼저 끝나면 첫 클라이언트
+  // 렌더가 이미 isPending:false 로 계산돼 서버가 보낸 스켈레톤과 어긋난다.
+  // 하이드레이션이 끝나기 전에는 무조건 스켈레톤을 그려 첫 렌더를 서버와 일치시킨다.
+  const hydrated = useHydrated()
+
+  if (!hydrated || isPending) {
+    return <AuthSkeleton />
   }
 
   if (session?.user) {

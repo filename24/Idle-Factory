@@ -12,6 +12,11 @@ export const auth = betterAuth({
       clientSecret: env.DISCORD_CLIENT_SECRET,
     },
   },
+  onAPIError: {
+    // 기본값 '/api/auth/error' 는 better-auth 가 만든 영문 HTML 을 그대로 뱉는다.
+    // 우리 디자인 시스템 안의 한국어 안내 페이지로 돌린다(src/app/auth/error).
+    errorURL: '/auth/error',
+  },
   user: { modelName: 'authUser' },
   session: { modelName: 'authSession' },
   account: { modelName: 'authAccount' },
