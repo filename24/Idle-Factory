@@ -23,7 +23,8 @@
       "dependsOn": ["^build", "db:generate"],
       "inputs": ["public/**", "src/**/*.tsx", "src/**/*.ts", "src/**/*.css", "next.config.js"],
       "outputs": [".next/**", "!.next/cache/**"],
-      "outputLogs": "full"
+      "outputLogs": "full",
+      "passThroughEnv": ["SENTRY_AUTH_TOKEN"]
     },
     "lint": {
       "inputs": [
