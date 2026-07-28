@@ -62,9 +62,13 @@ runs:
       uses: actions/cache@v4
       with:
         path: ${{ steps.pnpm-config.outputs.STORE_PATH }}
-        key: ${{ runner.os }}-pnpm-store-cache-${{ steps.cache-rotation.outputs.YEAR_MONTH }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+        # 키에 runner.arch 를 넣는다. pnpm store 에는 플랫폼별 네이티브 바이너리
+        # (@napi-rs/canvas, @img/sharp, esbuild ...)가 들어 있어서, x64 와 arm64
+        # 러너가 같은 키를 공유하면 서로의 store 를 덮어써 엉뚱한 아키텍처의
+        # 바이너리를 복원하게 된다. 아키텍처를 섞어 쓰기 시작한 뒤로 실재하는 위험이다.
+        key: ${{ runner.os }}-${{ runner.arch }}-pnpm-store-cache-${{ steps.cache-rotation.outputs.YEAR_MONTH }}-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
-          ${{ runner.os }}-pnpm-store-cache-${{ steps.cache-rotation.outputs.YEAR_MONTH }}-
+          ${{ runner.os }}-${{ runner.arch }}-pnpm-store-cache-${{ steps.cache-rotation.outputs.YEAR_MONTH }}-
 
     - name: 📥 Install dependencies
       shell: bash
