@@ -1,17 +1,20 @@
-import type { PrismaClient } from '@idle/database'
+import type { PrismaClient, User } from '@idle/database'
 import {
   LAND_MAX_HEIGHT,
   LAND_MAX_WIDTH,
   generateSlotTypes,
   isInitiallyActive
 } from '@idle/game-core'
-import { runInTx, type Tx } from './base'
+import { LANG_AUTO, isSupportedLanguage } from '../utils/language'
+import { ServiceError, runInTx, type Tx } from './base'
 
 export interface EnsureUserInput {
   readonly discordId: string
   readonly nickname?: string
-  readonly lang?: string
 }
+
+/** `updateLang` 반환 타입 — Prisma 의 User row 그대로. */
+export type UserLangRow = User
 
 /** 유저의 첫 토지 index (docs/11-land.md — 1-based). */
 const STARTER_LAND_INDEX = 1
@@ -94,7 +97,7 @@ export const UserService = {
    * 이미 존재하는 행은 건드리지 않는다.
    */
   async ensureWithinTx(tx: Tx, input: EnsureUserInput): Promise<HydratedUser> {
-    const { discordId, nickname, lang } = input
+    const { discordId, nickname } = input
 
     const existing = await tx.user.findUnique({
       where: { id: discordId },
@@ -102,12 +105,14 @@ export const UserService = {
     })
 
     if (!existing) {
+      // lang 은 스키마 기본값 'auto'(서버 설정 따름)로 둔다. 가입 시점의
+      // 클라이언트 로케일을 개인 설정으로 박아두면 서버 언어 설정이 아무에게도
+      // 적용되지 않는다 — 클라이언트 로케일은 리졸버가 3순위로 이미 참조한다.
       await tx.user.create({
         data: {
           id: discordId,
           money: STARTER_MONEY,
-          ...(nickname !== undefined ? { nickname } : {}),
-          ...(lang !== undefined ? { lang } : {})
+          ...(nickname !== undefined ? { nickname } : {})
         }
       })
     }
@@ -143,5 +148,45 @@ export const UserService = {
     input: EnsureUserInput
   ): Promise<HydratedUser> {
     return runInTx(prisma, (tx) => UserService.ensureWithinTx(tx, input))
+  },
+
+  /**
+   * 유저 개인 언어 설정을 변경한다.
+   *
+   * 허용값은 `'auto'`(서버 설정 따름) 또는 번역 리소스가 존재하는 로케일뿐이다.
+   * 그 밖의 값은 `utils/language` 리졸버가 조용히 건너뛰기 때문에, 저장까지
+   * 허용하면 "설정은 바뀌었는데 언어는 안 바뀌는" 상태가 된다 — 쓰기 경계에서
+   * 막는 이유다. 검증은 존재 확인보다 먼저 수행한다.
+   *
+   * @param prisma Prisma 클라이언트
+   * @param discordId 대상 유저 snowflake
+   * @param lang `'auto'` 또는 지원 로케일
+   * @throws {ServiceError} `UNSUPPORTED_LANGUAGE` — 허용되지 않는 값
+   * @throws {ServiceError} `USER_NOT_FOUND` — 유저 row 없음
+   */
+  async updateLang(
+    prisma: PrismaClient,
+    discordId: string,
+    lang: string
+  ): Promise<UserLangRow> {
+    if (lang !== LANG_AUTO && !isSupportedLanguage(lang)) {
+      throw new ServiceError(
+        'UNSUPPORTED_LANGUAGE',
+        `unsupported language: ${lang}`
+      )
+    }
+
+    const exists = await prisma.user.findUnique({
+      where: { id: discordId },
+      select: { id: true }
+    })
+    if (!exists) {
+      throw new ServiceError('USER_NOT_FOUND', `user ${discordId} not found`)
+    }
+
+    return prisma.user.update({
+      where: { id: discordId },
+      data: { lang }
+    })
   }
 } as const

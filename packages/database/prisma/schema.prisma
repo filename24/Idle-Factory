@@ -133,7 +133,10 @@ enum QuestStatus {
 model User {
   id                   String    @id
   nickname             String?
-  lang                 String    @default("ko")
+  /// 개인 언어 설정. `'auto'` = 서버(Guild.lang) 설정을 따름, 그 외에는
+  /// apps/bot/src/utils/language.ts 의 SUPPORTED_LANGUAGES 중 하나.
+  /// 값 검증은 UserService.updateLang 이 담당한다.
+  lang                 String    @default("auto")
   money                BigInt    @default(0) // 💰 지갑
   xp                   BigInt    @default(0)
   level                Int       @default(1)

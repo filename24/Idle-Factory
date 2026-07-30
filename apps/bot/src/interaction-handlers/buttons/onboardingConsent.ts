@@ -122,8 +122,7 @@ export class OnboardingConsentButtonHandler extends InteractionHandler {
     await runInTx(db, async (tx) => {
       await UserService.ensureWithinTx(tx, {
         discordId: data.ownerId,
-        nickname: interaction.user.username,
-        lang: interaction.locale ?? undefined
+        nickname: interaction.user.username
       })
       await tx.user.update({
         where: { id: data.ownerId },

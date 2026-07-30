@@ -93,6 +93,10 @@ export type ServiceErrorCode =
   | 'GUILD_NOT_FOUND'
   | 'INVALID_CREDIT_VALUE'
   | 'AUDIT_REASON_REQUIRED'
+  // 언어 설정 (apps/bot/src/utils/language.ts)
+  // - UNSUPPORTED_LANGUAGE: 번역 리소스가 없는 로케일. 저장을 허용하면 리졸버가
+  //   조용히 무시해 "바꿨는데 안 바뀌는" 상태가 되므로 쓰기 경계에서 막는다.
+  | 'UNSUPPORTED_LANGUAGE'
 
 export class ServiceError extends Error {
   public readonly code: ServiceErrorCode

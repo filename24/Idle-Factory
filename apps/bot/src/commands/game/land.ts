@@ -861,8 +861,7 @@ export class LandCommand extends Command {
 
     const hydrated = await UserService.ensure(db, {
       discordId: interaction.user.id,
-      nickname: interaction.user.username,
-      lang: interaction.locale ?? undefined
+      nickname: interaction.user.username
     })
 
     const targetIndex =
@@ -891,8 +890,7 @@ export class LandCommand extends Command {
 
     await UserService.ensure(db, {
       discordId: interaction.user.id,
-      nickname: interaction.user.username,
-      lang: interaction.locale ?? undefined
+      nickname: interaction.user.username
     })
 
     try {
@@ -937,8 +935,7 @@ export class LandCommand extends Command {
 
     await UserService.ensure(db, {
       discordId: interaction.user.id,
-      nickname: interaction.user.username,
-      lang: interaction.locale ?? undefined
+      nickname: interaction.user.username
     })
 
     try {

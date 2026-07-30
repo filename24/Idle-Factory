@@ -49,8 +49,7 @@ export class HarvestCommand extends Command {
 
     await UserService.ensure(db, {
       discordId: interaction.user.id,
-      nickname: interaction.user.username,
-      lang: interaction.locale ?? 'en-US'
+      nickname: interaction.user.username
     })
 
     const result = await HarvestService.harvestAll(db, interaction.user.id)
