@@ -70,6 +70,18 @@ Rules:
 - **Performance targets:** LCP < 2.5s, INP < 200ms, CLS < 0.1. Images must declare explicit `width`/`height` and use `next/image`.
 - **Imports:** Use `@idle/api-types` for shared DTOs; do not duplicate types from the bot.
 
+## Internationalization
+
+`next-intl` **without i18n routing** — the locale lives in the `NEXT_LOCALE` cookie, not in the URL. That keeps `/ranking`, `/docs`, better-auth callbacks, and fumadocs routing untouched. The trade-off is accepted deliberately: `src/i18n/request.ts` reads `cookies()`, so every page renders dynamically and search engines only ever index one language.
+
+- **No user-facing string literals in components.** Every displayed string comes from `messages/<locale>.json` via `getTranslations` (server) or `useTranslations` (client). Korean JSDoc, `console.error` text, and log messages stay in the source — they are not user-facing.
+- **Edit `ko.json` and `en.json` together.** `tests/unit/messages.test.ts` fails the build on key-set drift, empty values, mismatched `{placeholder}` names, and leftover Hangul in `en.json`. This is the web counterpart of the bot's `i18n-sync` skill.
+- **Data arrays hold keys, not text.** Structures like `FactoryShowcase`'s `TIERS` or `RankingSort`'s options carry `nameKey` / `labelKey` strings; the catalog owns the wording. Never inline a translated string into a constant.
+- **`src/i18n/config.ts` is the single source of truth** for supported locales, and `resolveLocale` normalizes the cookie. Never interpolate a raw cookie value into the `messages/${locale}.json` dynamic import — the whitelist is what stops path traversal.
+- **Locale-shaped formatting is not translation.** Number magnitudes and rank notation differ per locale, so `formatCompact(value, locale)` and `formatRank(rank, locale)` take an explicit locale (ko uses 조/억/만 and `1위`; en uses K/M/B/T and `#1`). Money is a message pattern (`common.money`), not a hardcoded `원` suffix.
+- **Locale codes differ from the bot on purpose.** Web uses `ko` / `en` (`<html lang>` and URL convention); the bot is pinned to Discord's locale codes and uses `ko` / `en-US`. The two lists are independent — do not share them.
+- **Legal and docs content stays in its source language.** `src/app/terms/content.mdx` and the fumadocs pages under `content/` are not machine-translated; only their titles and metadata follow the locale.
+
 ## Environment
 
 No app-specific env is wired yet. When adding env access, prefer `process.env.NEXT_PUBLIC_*` for browser-exposed values and validate server-only env at module load.

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { getTranslations } from 'next-intl/server'
 import { withParams } from '@/lib/href'
 import { cn } from '@/lib/utils'
 
@@ -15,13 +16,14 @@ interface PaginationProps {
 /**
  * 페이지네이션 — 이전/다음 링크 + 현재/총 페이지. 경계에서 링크를 비활성(span)으로 렌더.
  */
-export function Pagination({
+export async function Pagination({
   page,
   totalPages,
   params,
   basePath = '/ranking',
-}: PaginationProps): React.ReactElement | null {
+}: PaginationProps): Promise<React.ReactElement | null> {
   if (totalPages <= 1) return null
+  const t = await getTranslations('pagination')
   const hasPrev = page > 1
   const hasNext = page < totalPages
 
@@ -31,7 +33,7 @@ export function Pagination({
   const disabledCls = 'border-hairline text-ash cursor-not-allowed opacity-50'
 
   return (
-    <nav aria-label="페이지 탐색" className="flex items-center justify-center gap-4">
+    <nav aria-label={t('label')} className="flex items-center justify-center gap-4">
       {hasPrev ? (
         <Link
           href={withParams(basePath, { ...params, page: page - 1 })}
@@ -39,12 +41,12 @@ export function Pagination({
           className={cn(baseCls, enabledCls)}
         >
           <ChevronLeft aria-hidden="true" className="size-4" />
-          이전
+          {t('prev')}
         </Link>
       ) : (
         <span className={cn(baseCls, disabledCls)} aria-disabled="true">
           <ChevronLeft aria-hidden="true" className="size-4" />
-          이전
+          {t('prev')}
         </span>
       )}
 
@@ -58,12 +60,12 @@ export function Pagination({
           rel="next"
           className={cn(baseCls, enabledCls)}
         >
-          다음
+          {t('next')}
           <ChevronRight aria-hidden="true" className="size-4" />
         </Link>
       ) : (
         <span className={cn(baseCls, disabledCls)} aria-disabled="true">
-          다음
+          {t('next')}
           <ChevronRight aria-hidden="true" className="size-4" />
         </span>
       )}

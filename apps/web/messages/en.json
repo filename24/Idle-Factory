@@ -1,0 +1,541 @@
+{
+  "meta": {
+    "title": "Idle Factory",
+    "description": "A factory-building economy simulation you play on Discord"
+  },
+  "nav": {
+    "ranking": "Ranking",
+    "dashboard": "Dashboard",
+    "docs": "Docs",
+    "home": "Home"
+  },
+  "locale": {
+    "label": "Language",
+    "switchTo": "Switch to {locale}"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "loading": "Loading",
+    "accountMenu": "Account menu",
+    "accountMenuNamed": "{name} account menu"
+  },
+  "footer": {
+    "tagline": "A factory that keeps growing while you are away. Start on Discord.",
+    "copyright": "Copyright © 2025 Idle Factory. All rights reserved.",
+    "designedBy": "Designed by Infinite Studio",
+    "groups": {
+      "service": "Service",
+      "community": "Community"
+    },
+    "links": {
+      "docs": "Docs",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "discord": "Discord server"
+    }
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "A Discord economy simulation",
+      "titleLine1": "Build your own",
+      "titleLine2": "industrial empire",
+      "subtitle": "Build factories inside your Discord server, produce materials, and trade them on the global market. Your factories keep running even while you are offline.",
+      "ctaPrimary": "Start with Discord",
+      "ctaSecondary": "Game guide",
+      "demoBuild": "Built an assembly line in slot 3 of factory 2.",
+      "demoSellItem": "iron-ore",
+      "demoSell": "Sold 500 iron ore on the global market instantly."
+    },
+    "cta": {
+      "titleLine1": "Start your factory",
+      "titleLine2": "right now",
+      "body1": "Invite the bot to your Discord server, or read the game guide first.",
+      "body2": "No account linking required — the bot alone is enough to start playing.",
+      "demoInvited": "The bot was added to your server",
+      "demoBuilding": "Starting construction of a farm",
+      "ctaPrimary": "Start with Discord",
+      "ctaSecondary": "Read the game guide",
+      "footnoteLeft": "Idle Factory · an idle factory game built on Discord",
+      "footnoteRight": "Free to play · no install needed"
+    },
+    "loop": {
+      "eyebrow": "// core loop",
+      "title": "Three simple steps, endless strategy",
+      "subtitle": "Grow an empire with a single command — no complicated controls",
+      "steps": {
+        "build": {
+          "title": "Buy land & build factories",
+          "description": "Buy land with server currency and place T1–T3 factories in its slots. Special slots grant bonuses."
+        },
+        "produce": {
+          "title": "Automatic production",
+          "description": "Factories produce materials around the clock. Each upgrade raises output exponentially."
+        },
+        "trade": {
+          "title": "Market trading",
+          "description": "Buy and sell materials on the global market to maximize profit. Prices move in real time with supply and demand."
+        }
+      }
+    },
+    "factories": {
+      "eyebrow": "// factory catalog",
+      "title": "11 factories across 3 tiers",
+      "subtitle": "From raw extraction to finished goods — build a vertically integrated empire",
+      "columns": {
+        "factory": "Factory",
+        "input": "Input",
+        "output": "Output"
+      },
+      "tiers": {
+        "t1": {
+          "label": "Raw extraction",
+          "desc": "Basic factories that gather natural resources"
+        },
+        "t2": {
+          "label": "Primary processing",
+          "desc": "Turns T1 raw materials into processed goods"
+        },
+        "t3": {
+          "label": "Finished goods",
+          "desc": "High-value finished goods from T2 materials (2×2 slots)"
+        }
+      },
+      "names": {
+        "farm": "Farm",
+        "mine": "Mine",
+        "lumberyard": "Lumberyard",
+        "oilfield": "Oil field",
+        "steelworks": "Steelworks",
+        "refinery": "Refinery",
+        "mill": "Mill",
+        "furniture": "Furniture plant",
+        "automotive": "Automotive plant",
+        "electronics": "Electronics plant",
+        "food": "Food plant"
+      },
+      "materials": {
+        "none": "—",
+        "grain": "Grain",
+        "ore": "Ore",
+        "timber": "Timber",
+        "crudeOil": "Crude oil",
+        "steel": "Steel",
+        "fuel": "Fuel",
+        "processedFood": "Processed food",
+        "furniture": "Furniture",
+        "steelAndFuel": "Steel + fuel",
+        "steelAndPlastic": "Steel + plastic",
+        "car": "Cars",
+        "electronics": "Electronics",
+        "packagedFood": "Packaged food"
+      }
+    },
+    "economy": {
+      "eyebrow": "Economy",
+      "title": "A living economy",
+      "subtitle": "The Idle Factory market is not a static shop. Player production and trades move prices, and each server's credit rating feeds back into productivity.",
+      "features": {
+        "market": {
+          "title": "Supply-driven prices",
+          "desc": "Prices fall as output rises and climb as goods grow scarce. Reading the market is how you win."
+        },
+        "invest": {
+          "title": "Stocks & investing",
+          "desc": "Can't produce a material yourself? Buy shares in a factory that does and collect a cut of its profit."
+        },
+        "server": {
+          "title": "Server credit",
+          "desc": "A server-wide production multiplier. The more active your players, the more every factory produces."
+        }
+      },
+      "metrics": {
+        "steel": {
+          "label": "Steel price"
+        },
+        "oil": {
+          "label": "Crude oil price"
+        },
+        "credit": {
+          "label": "Server credit"
+        },
+        "factories": {
+          "label": "Active factories"
+        },
+        "change24h": "24h change",
+        "changeVsYesterday": "vs. yesterday",
+        "asOfNow": "as of now",
+        "running": "running"
+      }
+    }
+  },
+  "common": {
+    "money": "{amount} 💰",
+    "retry": "Try again",
+    "errorDescription": "Something went wrong. Please try again in a moment.",
+    "people": "{count} players",
+    "count": "{count}",
+    "noName": "(unnamed)"
+  },
+  "ranking": {
+    "meta": {
+      "title": "Ranking · Idle Factory",
+      "description": "Cross-server player and server rankings by wealth, level, vault, and weekly activity"
+    },
+    "title": "Ranking",
+    "subtitle": "Player and server rankings across all servers",
+    "loadingLabel": "Loading ranking",
+    "tabsLabel": "Ranking type",
+    "tabs": {
+      "users": "Player ranking",
+      "guilds": "Server ranking"
+    },
+    "sort": {
+      "label": "Sort",
+      "money": "Wealth",
+      "level": "Level",
+      "vault": "Vault",
+      "weeklyDAU": "Weekly activity"
+    },
+    "empty": {
+      "users": {
+        "title": "No players have made the ranking yet.",
+        "description": "Start playing with the bot on Discord to appear here."
+      },
+      "guilds": {
+        "title": "No servers have made the ranking yet.",
+        "description": "Servers appear here once the bot sees activity in them."
+      }
+    },
+    "outOfRange": {
+      "title": "There is nothing to show on this page.",
+      "description": "The page number is out of range.",
+      "action": "Go to the first page"
+    },
+    "totalUsers": "{count} players total",
+    "totalGuilds": "{count} servers total",
+    "error": {
+      "title": "Could not load the ranking",
+      "description": "Something went wrong. Please try again in a moment."
+    },
+    "columns": {
+      "rank": "Rank",
+      "nickname": "Player",
+      "level": "Level",
+      "money": "Wealth",
+      "server": "Server",
+      "vault": "Vault",
+      "weeklyDAU": "Weekly activity",
+      "credit": "Credit"
+    },
+    "noNickname": "(no nickname)",
+    "noName": "(unnamed)",
+    "me": "you"
+  },
+  "pagination": {
+    "label": "Pagination",
+    "prev": "Previous",
+    "next": "Next"
+  },
+  "credit": {
+    "tier": {
+      "RESTRICTED": "Restricted",
+      "LIMITED": "Limited",
+      "NORMAL": "Normal",
+      "TRUSTED": "Trusted",
+      "ELITE": "Elite"
+    }
+  },
+  "dashboard": {
+    "me": {
+      "error": {
+        "title": "Could not load the dashboard"
+      },
+      "meta": {
+        "title": "My dashboard · Idle Factory",
+        "description": "Your wealth, level, quest progress, and joined servers"
+      },
+      "eyebrow": "My dashboard",
+      "fallbackName": "Player",
+      "notStarted": {
+        "title": "You have not started playing yet.",
+        "description": "{name}Build a factory with the bot on Discord and your wealth, level, and quests will show up here.",
+        "greeting": "{name}, ",
+        "action": "Read the getting-started guide"
+      },
+      "tiles": {
+        "money": "Wealth",
+        "questsInProgress": "Quests in progress",
+        "questsCompleted": "Ready to claim",
+        "questsCompletedHint": "Completed, not claimed",
+        "questsClaimed": "Quests completed"
+      },
+      "guilds": {
+        "title": "Your servers",
+        "empty": "You are not in any server yet.",
+        "emptyDescription": "Servers where you build or stay active will appear here.",
+        "viewStats": "View statistics →"
+      }
+    },
+    "guild": {
+      "error": {
+        "title": "Could not load the statistics"
+      },
+      "notFound": {
+        "title": "Server not found",
+        "description": "This server does not exist, or the bot has not joined it.",
+        "action": "View server ranking"
+      },
+      "meta": {
+        "notFound": "Server not found · Idle Factory",
+        "title": "{name} statistics · Idle Factory",
+        "description": "Vault, tax rate, credit, and activity statistics for {name}"
+      },
+      "eyebrow": "Server statistics",
+      "tiles": {
+        "vault": "Vault balance",
+        "weeklyDAU": "Weekly activity",
+        "weeklyDAUHint": "DAU over the last 7 days",
+        "surcharge": "Server surcharge",
+        "surchargeHint": "Added on top of the base progressive tax",
+        "credit": "Credit",
+        "factories": "Factories",
+        "totalTax": "Total tax collected"
+      },
+      "dau": {
+        "title": "Activity trend",
+        "subtitle": "Daily active players",
+        "chartLabel": "Daily active player trend",
+        "empty": "No recent activity recorded."
+      },
+      "settlement": {
+        "title": "Weekly settlement history",
+        "subtitle": "Tax added to the vault each week",
+        "chartLabel": "Weekly vault tax trend",
+        "empty": "No weekly settlements yet.",
+        "emptyDescription": "Settlements are tallied every Sunday (UTC).",
+        "columns": {
+          "week": "Week",
+          "revenue": "Sales revenue",
+          "vaultAdded": "Added to vault"
+        }
+      }
+    },
+    "xp": {
+      "label": "Level {level} experience progress {percent}%"
+    }
+  },
+  "login": {
+    "subtitle": "Sign in with Discord to manage your factories",
+    "button": "Sign in with Discord"
+  },
+  "terms": {
+    "meta": {
+      "title": "Terms of Service — Idle Factory"
+    },
+    "title": "Terms of Service"
+  },
+  "docs": {
+    "meta": {
+      "titleSuffix": "{title} — Idle Factory guide"
+    },
+    "sidebarLabel": "Docs navigation",
+    "search": {
+      "open": "Open docs search",
+      "trigger": "Search...",
+      "dialogLabel": "Docs search",
+      "placeholder": "Search the docs...",
+      "loading": "Searching...",
+      "noResults": "No results found.",
+      "prompt": "Type to search.",
+      "hintNavigate": "navigate",
+      "hintSelect": "open",
+      "hintClose": "close"
+    }
+  },
+  "authError": {
+    "access_denied": {
+      "title": "You cancelled the sign-in",
+      "description": "You declined access on the Discord consent screen. Granting permission is required to continue. Use the button below to sign in again."
+    },
+    "account_already_linked_to_different_user": {
+      "title": "This Discord account is already linked elsewhere",
+      "description": "This Discord account is linked to a different user. If it is really yours, sign in with the existing account or get in touch."
+    },
+    "banned": {
+      "title": "This account is suspended",
+      "description": "This account has been banned from the service. If you believe this is a mistake, please contact an operator."
+    },
+    "client_disabled": {
+      "title": "This application has been disabled",
+      "description": "The Discord application is currently deactivated. This is not something you can fix — please let an operator know."
+    },
+    "email_doesnt_match": {
+      "title": "The email addresses do not match",
+      "description": "The email on the Discord account you are linking differs from the signed-in account. Try again with an account that uses the same email."
+    },
+    "email_is_missing": {
+      "title": "Your Discord account has no email",
+      "description": "An email address is required to sign up. Add and verify an email in your Discord account settings, then try again."
+    },
+    "email_not_found": {
+      "title": "Could not read your email",
+      "description": "We could not retrieve an email address from your Discord account. Check that the account has a verified email, then try again."
+    },
+    "internal_server_error": {
+      "title": "A server error occurred",
+      "description": "Something unexpected went wrong while processing the sign-in. Please try again shortly."
+    },
+    "invalid_callback_request": {
+      "title": "Invalid callback request",
+      "description": "The request that came back from Discord was not correctly formed. Please start the sign-in over. Use the button below to sign in again."
+    },
+    "invalid_client": {
+      "title": "This service's Discord credentials are invalid",
+      "description": "Discord rejected this service's client ID or secret. The credentials have expired or are misconfigured. This is not something you can fix — please let an operator know."
+    },
+    "invalid_code": {
+      "title": "The authorization code is not valid",
+      "description": "The authorization code has already been used or has expired. This happens when the same link is reopened via back or refresh. Use the button below to sign in again."
+    },
+    "invalid_payload": {
+      "title": "The authentication data is corrupted",
+      "description": "The authentication data returned by Discord could not be parsed. Use the button below to sign in again."
+    },
+    "invalid_profile": {
+      "title": "The profile format could not be parsed",
+      "description": "Your Discord account information is not in the expected shape. If this repeats, please get in touch."
+    },
+    "invalid_redirect_uri": {
+      "title": "The redirect address is not registered",
+      "description": "The address you would return to after signing in does not match the list registered on the Discord application. This is not something you can fix — please let an operator know."
+    },
+    "invalid_request": {
+      "title": "The sign-in request was malformed",
+      "description": "A required value was missing or wrongly formatted. If you edited the link in the address bar, start over from the beginning. Use the button below to sign in again."
+    },
+    "invalid_scope": {
+      "title": "The requested permission scope is invalid",
+      "description": "The permission scope this service asked Discord for is not valid. This is not something you can fix — please let an operator know."
+    },
+    "invalid_token": {
+      "title": "Invalid token",
+      "description": "The authentication token is not valid — the link was tampered with or has already been used. Use the button below to sign in again."
+    },
+    "invalid_user": {
+      "title": "Invalid user",
+      "description": "The user in the request could not be verified. Sign in again, then retry."
+    },
+    "missing_profile": {
+      "title": "No profile information",
+      "description": "Sign-up cannot proceed without your Discord account information. Please try again shortly."
+    },
+    "name_is_missing": {
+      "title": "Your Discord account has no display name",
+      "description": "A display name is required to sign up. Check your Discord profile, then try again."
+    },
+    "no_callback_url": {
+      "title": "No return address was given",
+      "description": "The request did not include an address to go to after signing in. This is not something you can fix — please let an operator know."
+    },
+    "no_code": {
+      "title": "No authorization code was delivered",
+      "description": "Discord came back without an authorization code. This usually happens when the sign-in window is closed midway. Use the button below to sign in again."
+    },
+    "oauth_code_verification_failed": {
+      "title": "Authorization code verification failed",
+      "description": "The security verification (PKCE) value did not match. This happens when sign-in starts in one browser and finishes in another. In the same browser, use the button below to sign in again."
+    },
+    "oauth_provider_not_found": {
+      "title": "Sign-in provider not found",
+      "description": "The requested social sign-in provider is not configured on this service. This is not something you can fix — please let an operator know."
+    },
+    "payload_expired": {
+      "title": "The authentication request expired",
+      "description": "The sign-in request passed its validity window. Use the button below to sign in again."
+    },
+    "please_restart_the_process": {
+      "title": "Please start the sign-in over",
+      "description": "No in-progress authentication data remains — too much time passed, or cookies were cleared. Use the button below to sign in again."
+    },
+    "server_error": {
+      "title": "Discord returned an error",
+      "description": "Discord's authentication server returned an error. This is not a problem on our side — please try again shortly."
+    },
+    "signup_disabled": {
+      "title": "New sign-ups are closed right now",
+      "description": "Creating new accounts is currently paused. If you already have an account, sign in with it instead."
+    },
+    "state_mismatch": {
+      "title": "Security verification failed",
+      "description": "The anti-forgery state value did not match. This happens when cookies are blocked or the sign-in window was left open too long. Allow cookies, then use the button below to sign in again."
+    },
+    "temporarily_unavailable": {
+      "title": "Discord is temporarily unresponsive",
+      "description": "Discord's authentication servers are overloaded or under maintenance. Please try again in a few minutes."
+    },
+    "token_expired": {
+      "title": "The sign-in link expired",
+      "description": "The token passed its validity window. Use the button below to sign in again."
+    },
+    "unable_to_get_user_info": {
+      "title": "Could not fetch your Discord profile",
+      "description": "Reading your account information from Discord failed. If it keeps happening after a retry, please get in touch."
+    },
+    "unable_to_link_account": {
+      "title": "Could not link the account",
+      "description": "Linking your Discord account to an existing account failed. Please try again shortly."
+    },
+    "unauthorized_client": {
+      "title": "This application is not allowed to sign you in",
+      "description": "The Discord application is configured to disallow this sign-in method. This is not something you can fix — please let an operator know."
+    },
+    "unknown": {
+      "title": "Sign-in failed",
+      "description": "Authentication did not complete for an unknown reason. Please try again shortly. If you keep seeing this screen, get in touch and include the code below."
+    },
+    "unsupported_response_type": {
+      "title": "Unsupported authentication method",
+      "description": "Discord rejected the shape of the authentication request this service sent. This is not something you can fix — please let an operator know."
+    },
+    "user_creation_failed": {
+      "title": "Could not create your account",
+      "description": "An error occurred while creating a new account. If a retry does not help, please get in touch."
+    },
+    "user_info_is_missing": {
+      "title": "Your Discord profile came back empty",
+      "description": "Discord returned no account information. Please try again shortly."
+    },
+    "user_not_found": {
+      "title": "User not found",
+      "description": "No matching account exists — it may have been deleted. Please sign in again."
+    },
+    "meta": {
+      "title": "Sign-in failed — Idle Factory",
+      "description": "What went wrong during Discord sign-in, and how to fix it."
+    },
+    "kind": {
+      "user": "Sign-in flow issue",
+      "config": "Service configuration issue",
+      "server": "Temporary server issue"
+    },
+    "actions": {
+      "retry": "Sign in again",
+      "support": "Ask in the Discord server",
+      "home": "Back to home"
+    },
+    "detail": {
+      "code": "Error code",
+      "detail": "Details",
+      "unknownHint": "We have not seen this error before. Sharing the code above helps us find the cause faster."
+    }
+  },
+  "api": {
+    "errors": {
+      "guildNotFound": "Server not found.",
+      "guildStats": "Could not load the server statistics.",
+      "guildRanking": "Could not load the server ranking.",
+      "userRanking": "Could not load the player ranking."
+    }
+  }
+}

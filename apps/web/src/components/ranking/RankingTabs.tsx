@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 import { withParams } from '@/lib/href'
 import { cn } from '@/lib/utils'
 
@@ -9,19 +10,19 @@ interface RankingTabsProps {
   readonly active: RankingScope
 }
 
-const TABS: ReadonlyArray<{ scope: RankingScope; label: string }> = [
-  { scope: 'users', label: '유저 랭킹' },
-  { scope: 'guilds', label: '서버 랭킹' },
-]
+/** 탭 구성 — 라벨은 `ranking.tabs.<scope>` 메시지 키가 단일 진실 소스다. */
+const TABS: ReadonlyArray<RankingScope> = ['users', 'guilds']
 
 /**
  * 랭킹 스코프 탭 — 링크 기반(SSR·공유 가능 URL). 스코프 전환 시 정렬/페이지는
  * 기본값으로 리셋된다. role=tablist/tab + aria-selected 로 접근성 확보.
  */
-export function RankingTabs({ active }: RankingTabsProps): React.ReactElement {
+export async function RankingTabs({ active }: RankingTabsProps): Promise<React.ReactElement> {
+  const t = await getTranslations('ranking')
+
   return (
-    <div role="tablist" aria-label="랭킹 종류" className="border-hairline flex gap-1 border-b">
-      {TABS.map(({ scope, label }) => {
+    <div role="tablist" aria-label={t('tabsLabel')} className="border-hairline flex gap-1 border-b">
+      {TABS.map((scope) => {
         const selected = scope === active
         return (
           <Link
@@ -36,7 +37,7 @@ export function RankingTabs({ active }: RankingTabsProps): React.ReactElement {
                 : 'text-mute hover:text-body border-transparent',
             )}
           >
-            {label}
+            {t(`tabs.${scope}`)}
           </Link>
         )
       })}

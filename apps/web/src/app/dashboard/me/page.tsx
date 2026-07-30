@@ -6,30 +6,34 @@ import { Server } from 'lucide-react'
 import { auth } from '@/lib/auth'
 import { resolveGameUserId } from '@/lib/game-user'
 import { getMyDashboard } from '@/lib/queries/my-dashboard'
-import { formatInt, formatKoreanCompact } from '@/lib/format'
+import { getLocale, getTranslations } from 'next-intl/server'
+import { formatCompact, formatInt } from '@/lib/format'
+import { isLocale } from '@/i18n/config'
 import { StatTile } from '@/components/dashboard/StatTile'
 import { XpProgress } from '@/components/dashboard/XpProgress'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 
-export const metadata: Metadata = {
-  title: '내 대시보드 · Idle Factory',
-  description: '내 자산·레벨·퀘스트 현황과 참여 서버',
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('dashboard.me.meta')
+  return { title: t('title'), description: t('description') }
 }
 
 /** 로그인은 했지만 게임 계정이 없을 때의 안내. */
-function NotStarted({ name }: { name?: string | null }): React.ReactElement {
+async function NotStarted({ name }: { name?: string | null }): Promise<React.ReactElement> {
+  const t = await getTranslations('dashboard.me.notStarted')
+  // 인사말은 로케일마다 붙는 자리가 달라서(한국어는 "~님,", 영어는 "Name,")
+  // 본문 안의 {name} 자리에 통째로 끼워 넣는다. 이름이 없으면 빈 문자열.
+  const greeting = name ? t('greeting', { name }) : ''
+
   return (
     <section className="mx-auto max-w-2xl px-4 py-16 sm:px-6">
-      <EmptyState
-        title="아직 게임을 시작하지 않았습니다."
-        description={`${name ? `${name}님, ` : ''}Discord에서 봇 명령으로 공장을 건설하면 이곳에 자산·레벨·퀘스트 현황이 표시됩니다.`}
-      >
+      <EmptyState title={t('title')} description={t('description', { name: greeting })}>
         <Link
           href="/docs"
           className="text-link hover:text-link-hover text-sm underline-offset-2 hover:underline"
         >
-          게임 시작 가이드 보기
+          {t('action')}
         </Link>
       </EmptyState>
     </section>
@@ -50,7 +54,12 @@ export default async function MyDashboardPage(): Promise<React.ReactElement> {
 
   if (!data) return <NotStarted name={session.user.name} />
 
-  const displayName = data.nickname?.trim() || session.user.name || '플레이어'
+  const t = await getTranslations('dashboard.me')
+  const tCommon = await getTranslations('common')
+  const raw = await getLocale()
+  const locale = isLocale(raw) ? raw : 'ko'
+
+  const displayName = data.nickname?.trim() || session.user.name || t('fallbackName')
 
   return (
     <section
@@ -65,7 +74,7 @@ export default async function MyDashboardPage(): Promise<React.ReactElement> {
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0">
-          <p className="text-ash text-xs tracking-wide uppercase">내 대시보드</p>
+          <p className="text-ash text-xs tracking-wide uppercase">{t('eyebrow')}</p>
           <h1 id="me-heading" className="font-display text-ink truncate text-2xl break-keep">
             {displayName}
           </h1>
@@ -83,27 +92,30 @@ export default async function MyDashboardPage(): Promise<React.ReactElement> {
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatTile
-          label="보유 자산"
-          value={`${formatKoreanCompact(data.money)}원`}
-          hint={`${formatInt(data.money)}원`}
+          label={t('tiles.money')}
+          value={tCommon('money', { amount: formatCompact(data.money, locale) })}
+          hint={tCommon('money', { amount: formatInt(data.money) })}
         />
-        <StatTile label="진행 중 퀘스트" value={`${formatInt(data.quests.inProgress)}개`} />
         <StatTile
-          label="수령 대기"
-          value={`${formatInt(data.quests.completed)}개`}
-          hint="완료·미수령"
+          label={t('tiles.questsInProgress')}
+          value={tCommon('count', { count: formatInt(data.quests.inProgress) })}
+        />
+        <StatTile
+          label={t('tiles.questsCompleted')}
+          value={tCommon('count', { count: formatInt(data.quests.completed) })}
+          hint={t('tiles.questsCompletedHint')}
           valueClassName={data.quests.completed > 0 ? 'text-accent-orange' : undefined}
         />
-        <StatTile label="완료 퀘스트" value={`${formatInt(data.quests.claimed)}개`} />
+        <StatTile
+          label={t('tiles.questsClaimed')}
+          value={tCommon('count', { count: formatInt(data.quests.claimed) })}
+        />
       </div>
 
       <div className="space-y-3">
-        <h2 className="font-display text-ink text-lg">참여 서버</h2>
+        <h2 className="font-display text-ink text-lg">{t('guilds.title')}</h2>
         {data.guilds.length === 0 ? (
-          <EmptyState
-            title="참여 중인 서버가 없습니다."
-            description="공장을 건설하거나 활동한 서버가 여기에 표시됩니다."
-          />
+          <EmptyState title={t('guilds.empty')} description={t('guilds.emptyDescription')} />
         ) : (
           <ul className="border-hairline divide-divider-soft divide-y overflow-hidden rounded border">
             {data.guilds.map((g) => (
@@ -114,9 +126,9 @@ export default async function MyDashboardPage(): Promise<React.ReactElement> {
                 >
                   <Server aria-hidden="true" className="text-mute size-4 shrink-0" />
                   <span className="text-body min-w-0 flex-1 truncate">
-                    {g.name?.trim() || '(이름 없음)'}
+                    {g.name?.trim() || tCommon('noName')}
                   </span>
-                  <span className="text-ash text-xs">통계 보기 →</span>
+                  <span className="text-ash text-xs">{t('guilds.viewStats')}</span>
                 </Link>
               </li>
             ))}

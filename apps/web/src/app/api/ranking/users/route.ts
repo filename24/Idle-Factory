@@ -1,5 +1,6 @@
 import { getUserRanking } from '@/lib/queries/rankings'
 import { ok, fail } from '@/app/api/_lib/http'
+import { getTranslations } from 'next-intl/server'
 
 // searchParams(request.url)를 읽으므로 라우트는 동적. 60초 캐싱은 쿼리 계층의
 // unstable_cache(RANKING_REVALIDATE_SECONDS)가 담당한다.
@@ -13,6 +14,7 @@ export const dynamic = 'force-dynamic'
  * 제거한다. 본인 행 하이라이트는 페이지가 서버측 세션으로 처리하므로 API 에 id 가 불필요하다.
  */
 export async function GET(request: Request): Promise<Response> {
+  const t = await getTranslations('api.errors')
   try {
     const { searchParams } = new URL(request.url)
     const result = await getUserRanking(searchParams.get('sort'), searchParams.get('page'))
@@ -20,6 +22,6 @@ export async function GET(request: Request): Promise<Response> {
     return ok({ ...result, entries: publicEntries })
   } catch (error) {
     console.error('[api/ranking/users] 조회 실패:', error)
-    return fail('유저 랭킹을 불러오지 못했습니다.', 500)
+    return fail(t('userRanking'), 500)
   }
 }

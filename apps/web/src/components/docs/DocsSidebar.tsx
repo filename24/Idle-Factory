@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 import type { Root as PageTreeRoot, Node as PageTreeNode } from 'fumadocs-core/page-tree'
 
 interface DocsSidebarProps {
@@ -7,9 +8,11 @@ interface DocsSidebarProps {
 }
 
 /** 문서 사이드바 — 페이지 트리를 재귀적으로 렌더링 */
-export function DocsSidebar({ tree, currentPath }: DocsSidebarProps) {
+export async function DocsSidebar({ tree, currentPath }: DocsSidebarProps) {
+  const t = await getTranslations('docs')
+
   return (
-    <nav className="py-6 pr-4" aria-label="문서 네비게이션">
+    <nav className="py-6 pr-4" aria-label={t('sidebarLabel')}>
       {tree.children.map((node) => (
         <SidebarNode key={node.$id ?? String(node.name)} node={node} currentPath={currentPath} />
       ))}

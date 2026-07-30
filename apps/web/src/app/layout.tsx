@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { IBM_Plex_Mono } from 'next/font/google'
 import './globals.css'
 import 'katex/dist/katex.css'
+import { NextIntlClientProvider } from 'next-intl'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { Agentation } from 'agentation'
@@ -19,15 +21,27 @@ const plexMono = IBM_Plex_Mono({
   display: 'swap',
 })
 
-export const metadata: Metadata = {
-  title: 'Idle Factory',
-  description: 'Discord에서 즐기는 공장 건설 경제 시뮬레이션',
+/** 메타데이터도 현재 로케일을 따른다 — 공유 카드/검색 결과가 화면과 어긋나지 않게. */
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('meta')
+  return {
+    title: t('title'),
+    description: t('description'),
+  }
 }
 
 /** 루트 레이아웃 — 웜 다크(#171717) 터미널 캔버스, 모노스페이스 단일 서체, 공통 Header/Footer 포함 */
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // 쿠키로 정해진 현재 로케일. <html lang> 이 실제 본문 언어와 어긋나면
+  // 스크린리더 발음과 브라우저 번역 판단이 모두 틀어진다.
+  const locale = await getLocale()
+
   return (
-    <html lang="ko" className={`dark ${plexMono.variable} antialiased`} suppressHydrationWarning>
+    <html
+      lang={locale}
+      className={`dark ${plexMono.variable} antialiased`}
+      suppressHydrationWarning
+    >
       <head>
         {/* 한글 모노스페이스 — 나눔고딕코딩(라틴은 IBM Plex Mono가 우선, 한글만 폴백) */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -39,12 +53,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <Providers>
-          <Header />
-          <main>{children}</main>
-          <Footer />
-          {process.env.NODE_ENV === 'development' && <Agentation />}
-        </Providers>
+        <NextIntlClientProvider>
+          <Providers>
+            <Header />
+            <main>{children}</main>
+            <Footer />
+            {process.env.NODE_ENV === 'development' && <Agentation />}
+          </Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   )

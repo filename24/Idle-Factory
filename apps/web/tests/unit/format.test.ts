@@ -1,5 +1,11 @@
 import { describe, test, expect } from 'vitest'
-import { formatInt, formatKoreanCompact, formatPercent, formatRank } from '../../src/lib/format'
+import {
+  formatCompact,
+  formatInt,
+  formatKoreanCompact,
+  formatPercent,
+  formatRank,
+} from '../../src/lib/format'
 
 describe('formatInt', () => {
   test('bigint 을 천 단위 콤마로 포맷한다', () => {
@@ -57,5 +63,53 @@ describe('formatPercent', () => {
 describe('formatRank', () => {
   test('순위를 "N위"로 표기한다', () => {
     expect(formatRank(1)).toBe('1위')
+  })
+})
+
+describe('formatCompact — 로케일 분기', () => {
+  test('ko 는 조/억/만 단위를 쓴다', () => {
+    expect(formatCompact(123456789, 'ko')).toBe('1.2억')
+    expect(formatCompact(12345, 'ko')).toBe('1.2만')
+    expect(formatCompact(1000000000000n, 'ko')).toBe('1조')
+  })
+
+  test('en 은 K/M/B/T 단위를 쓴다', () => {
+    expect(formatCompact(123456789, 'en')).toBe('123.4M')
+    expect(formatCompact(12345, 'en')).toBe('12.3K')
+    expect(formatCompact(1000000000000n, 'en')).toBe('1T')
+    expect(formatCompact(2500000000n, 'en')).toBe('2.5B')
+  })
+
+  test('단위 미만은 두 로케일 모두 콤마 그룹핑된 원값', () => {
+    expect(formatCompact(999, 'ko')).toBe('999')
+    expect(formatCompact(999, 'en')).toBe('999')
+    expect(formatCompact(0, 'en')).toBe('0')
+  })
+
+  test('음수도 부호를 유지한다', () => {
+    expect(formatCompact(-12345, 'ko')).toBe('-1.2만')
+    expect(formatCompact(-12345, 'en')).toBe('-12.3K')
+  })
+
+  test('ko 분기는 기존 formatKoreanCompact 와 동일하다', () => {
+    for (const v of [0, 999, 9999, 12345, 123456789, 1000000000000n]) {
+      expect(formatCompact(v, 'ko')).toBe(formatKoreanCompact(v))
+    }
+  })
+})
+
+describe('formatRank — 로케일 분기', () => {
+  test('ko 는 "N위"', () => {
+    expect(formatRank(1, 'ko')).toBe('1위')
+    expect(formatRank(12, 'ko')).toBe('12위')
+  })
+
+  test('en 은 "#N"', () => {
+    expect(formatRank(1, 'en')).toBe('#1')
+    expect(formatRank(12, 'en')).toBe('#12')
+  })
+
+  test('로케일을 생략하면 한국어를 유지한다 — 기존 호출부 호환', () => {
+    expect(formatRank(3)).toBe('3위')
   })
 })

@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server'
 import { formatInt } from '@/lib/format'
 
 interface XpProgressProps {
@@ -14,12 +15,13 @@ interface XpProgressProps {
  * 레벨·XP 진행 바 — 플랫 트랙 위 accent-blue 채움.
  * 근거: docs/design/09-level-xp.md §XP 공식 (레벨 내 XP / 요구 XP).
  */
-export function XpProgress({
+export async function XpProgress({
   level,
   xpInLevel,
   xpRequired,
   percent,
-}: XpProgressProps): React.ReactElement {
+}: XpProgressProps): Promise<React.ReactElement> {
+  const t = await getTranslations('dashboard.xp')
   const clamped = Math.max(0, Math.min(100, percent))
   return (
     <div className="flex flex-col gap-2">
@@ -35,7 +37,7 @@ export function XpProgress({
         aria-valuenow={clamped}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label={`레벨 ${level} 경험치 진행률 ${clamped}%`}
+        aria-label={t('label', { level, percent: clamped })}
       >
         <div className="bg-accent-blue h-full rounded-full" style={{ width: `${clamped}%` }} />
       </div>

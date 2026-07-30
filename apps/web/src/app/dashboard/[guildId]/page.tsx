@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getGuildStats } from '@/lib/queries/guild-stats'
-import { formatInt, formatKoreanCompact, formatPercent } from '@/lib/format'
-import { creditTierLabel, creditTierColorClass } from '@/lib/credit-label'
+import { getLocale, getTranslations } from 'next-intl/server'
+import { formatCompact, formatInt, formatPercent } from '@/lib/format'
+import { creditTierColorClass } from '@/lib/credit-label'
+import { isLocale } from '@/i18n/config'
 import { StatTile } from '@/components/dashboard/StatTile'
 import { BarChart, type BarDatum } from '@/components/charts/BarChart'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -19,10 +21,11 @@ function shortDate(iso: string): string {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { guildId } = await params
   const stats = await getGuildStats(guildId)
-  if (!stats) return { title: '서버를 찾을 수 없음 · Idle Factory' }
+  const t = await getTranslations('dashboard.guild.meta')
+  if (!stats) return { title: t('notFound') }
   return {
-    title: `${stats.name} 통계 · Idle Factory`,
-    description: `${stats.name} 서버의 금고·세율·신뢰도·활동 통계`,
+    title: t('title', { name: stats.name }),
+    description: t('description', { name: stats.name }),
   }
 }
 
@@ -38,16 +41,25 @@ export default async function GuildDashboardPage({ params }: Props): Promise<Rea
   const stats = await getGuildStats(guildId)
   if (!stats) notFound()
 
+  const t = await getTranslations('dashboard.guild')
+  const tCommon = await getTranslations('common')
+  const tCredit = await getTranslations('credit.tier')
+  const raw = await getLocale()
+  const locale = isLocale(raw) ? raw : 'ko'
+  const money = (v: bigint | number | string) =>
+    tCommon('money', { amount: formatCompact(v, locale) })
+  const moneyExact = (v: bigint | number | string) => tCommon('money', { amount: formatInt(v) })
+
   const dauData: BarDatum[] = stats.dauTrend.map((p) => ({
     label: shortDate(p.date),
     value: p.count,
-    display: `${formatInt(p.count)}명`,
+    display: tCommon('people', { count: formatInt(p.count) }),
   }))
 
   const settlementData: BarDatum[] = stats.settlements.map((p) => ({
     label: shortDate(p.weekStart),
     value: Number(p.taxPaid),
-    display: `${formatKoreanCompact(p.taxPaid)}원`,
+    display: money(p.taxPaid),
   }))
 
   return (
@@ -56,83 +68,86 @@ export default async function GuildDashboardPage({ params }: Props): Promise<Rea
       className="mx-auto max-w-4xl space-y-8 px-4 py-10 sm:px-6"
     >
       <header className="space-y-1">
-        <p className="text-ash text-xs tracking-wide uppercase">서버 통계</p>
+        <p className="text-ash text-xs tracking-wide uppercase">{t('eyebrow')}</p>
         <h1 id="guild-heading" className="font-display text-ink text-3xl break-keep">
-          {stats.name?.trim() || '(이름 없음)'}
+          {stats.name?.trim() || tCommon('noName')}
         </h1>
       </header>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <StatTile
-          label="금고 잔액"
-          value={`${formatKoreanCompact(stats.vault)}원`}
-          hint={`${formatInt(stats.vault)}원`}
+          label={t('tiles.vault')}
+          value={money(stats.vault)}
+          hint={moneyExact(stats.vault)}
         />
-        <StatTile label="주간 활동" value={`${formatInt(stats.weeklyDAU)}명`} hint="최근 7일 DAU" />
         <StatTile
-          label="서버 가산세"
+          label={t('tiles.weeklyDAU')}
+          value={tCommon('people', { count: formatInt(stats.weeklyDAU) })}
+          hint={t('tiles.weeklyDAUHint')}
+        />
+        <StatTile
+          label={t('tiles.surcharge')}
           value={formatPercent(stats.taxSurcharge)}
-          hint="기본 누진세에 가산"
+          hint={t('tiles.surchargeHint')}
         />
         <StatTile
-          label="신뢰도"
-          value={creditTierLabel(stats.creditTier)}
+          label={t('tiles.credit')}
+          value={tCredit(stats.creditTier)}
           hint={`${formatInt(stats.credit)} / 2000`}
           valueClassName={creditTierColorClass(stats.creditTier)}
         />
-        <StatTile label="소속 공장" value={`${formatInt(stats.factoryCount)}개`} />
         <StatTile
-          label="누적 세수"
-          value={`${formatKoreanCompact(stats.totalTaxCollected)}원`}
-          hint={`${formatInt(stats.totalTaxCollected)}원`}
+          label={t('tiles.factories')}
+          value={tCommon('count', { count: formatInt(stats.factoryCount) })}
+        />
+        <StatTile
+          label={t('tiles.totalTax')}
+          value={money(stats.totalTaxCollected)}
+          hint={moneyExact(stats.totalTaxCollected)}
         />
       </div>
 
       <div className="border-hairline bg-surface space-y-4 rounded border p-5">
         <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-ink text-lg">활동 추이</h2>
-          <span className="text-ash text-xs">일별 활동 유저 수</span>
+          <h2 className="font-display text-ink text-lg">{t('dau.title')}</h2>
+          <span className="text-ash text-xs">{t('dau.subtitle')}</span>
         </div>
         {dauData.length === 0 ? (
-          <EmptyState title="최근 활동 기록이 없습니다." />
+          <EmptyState title={t('dau.empty')} />
         ) : (
-          <BarChart
-            data={dauData}
-            color="var(--color-chart-2)"
-            ariaLabel="일별 활동 유저 수 추이"
-          />
+          <BarChart data={dauData} color="var(--color-chart-2)" ariaLabel={t('dau.chartLabel')} />
         )}
       </div>
 
       <div className="border-hairline bg-surface space-y-4 rounded border p-5">
         <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-ink text-lg">주간 정산 히스토리</h2>
-          <span className="text-ash text-xs">주별 금고 적립 세액</span>
+          <h2 className="font-display text-ink text-lg">{t('settlement.title')}</h2>
+          <span className="text-ash text-xs">{t('settlement.subtitle')}</span>
         </div>
         {settlementData.length === 0 ? (
           <EmptyState
-            title="주간 정산 내역이 아직 없습니다."
-            description="매주 일요일(UTC) 정산이 집계됩니다."
+            title={t('settlement.empty')}
+            description={t('settlement.emptyDescription')}
           />
         ) : (
           <div className="space-y-6">
             <BarChart
               data={settlementData}
               color="var(--color-chart-1)"
-              ariaLabel="주별 금고 적립 세액 추이"
+              ariaLabel={t('settlement.chartLabel')}
             />
             <div className="border-hairline overflow-x-auto rounded border">
               <table className="w-full min-w-[24rem] border-collapse text-sm">
                 <thead>
                   <tr className="border-hairline text-mute border-b text-xs">
                     <th scope="col" className="px-4 py-2.5 text-left font-medium">
-                      정산 주
+                      {t('settlement.columns.week')}
                     </th>
                     <th scope="col" className="px-4 py-2.5 text-right font-medium">
-                      판매 수익
+                      {t('settlement.columns.revenue')}
                     </th>
                     <th scope="col" className="px-4 py-2.5 text-right font-medium">
-                      금고 적립
+                      {t('settlement.columns.vaultAdded')}
                     </th>
                   </tr>
                 </thead>
@@ -147,15 +162,15 @@ export default async function GuildDashboardPage({ params }: Props): Promise<Rea
                         </td>
                         <td
                           className="text-body px-4 py-2.5 text-right tabular-nums"
-                          title={`${formatInt(s.salesRevenue)}원`}
+                          title={moneyExact(s.salesRevenue)}
                         >
-                          {formatKoreanCompact(s.salesRevenue)}원
+                          {money(s.salesRevenue)}
                         </td>
                         <td
                           className="text-ink px-4 py-2.5 text-right tabular-nums"
-                          title={`${formatInt(s.taxPaid)}원`}
+                          title={moneyExact(s.taxPaid)}
                         >
-                          {formatKoreanCompact(s.taxPaid)}원
+                          {money(s.taxPaid)}
                         </td>
                       </tr>
                     ))}

@@ -1,7 +1,9 @@
 import Link from 'next/link'
 import { getCreditTier } from '@idle/game-core'
-import { formatInt, formatKoreanCompact } from '@/lib/format'
-import { creditTierLabel, creditTierColorClass } from '@/lib/credit-label'
+import { getLocale, getTranslations } from 'next-intl/server'
+import { formatCompact, formatInt } from '@/lib/format'
+import { creditTierColorClass } from '@/lib/credit-label'
+import { isLocale } from '@/i18n/config'
 import { cn } from '@/lib/utils'
 import type { GuildRankEntry } from '@/lib/queries/rankings'
 
@@ -18,26 +20,34 @@ function rankColor(rank: number): string {
 }
 
 /** 서버 랭킹 테이블 — 순위·서버명(대시보드 링크)·금고·주간 활동·신뢰도. */
-export function GuildRankingTable({ entries }: GuildRankingTableProps): React.ReactElement {
+export async function GuildRankingTable({
+  entries,
+}: GuildRankingTableProps): Promise<React.ReactElement> {
+  const t = await getTranslations('ranking')
+  const tCredit = await getTranslations('credit.tier')
+  const tMoney = await getTranslations('common')
+  const raw = await getLocale()
+  const locale = isLocale(raw) ? raw : 'ko'
+
   return (
     <div className="border-hairline overflow-x-auto rounded border">
       <table className="w-full min-w-[32rem] border-collapse text-sm">
         <thead>
           <tr className="border-hairline text-mute border-b text-xs">
             <th scope="col" className="w-16 px-4 py-3 text-right font-medium">
-              순위
+              {t('columns.rank')}
             </th>
             <th scope="col" className="px-4 py-3 text-left font-medium">
-              서버
+              {t('columns.server')}
             </th>
             <th scope="col" className="px-4 py-3 text-right font-medium">
-              금고
+              {t('columns.vault')}
             </th>
             <th scope="col" className="w-24 px-4 py-3 text-right font-medium">
-              주간 활동
+              {t('columns.weeklyDAU')}
             </th>
             <th scope="col" className="w-24 px-4 py-3 text-right font-medium">
-              신뢰도
+              {t('columns.credit')}
             </th>
           </tr>
         </thead>
@@ -59,20 +69,20 @@ export function GuildRankingTable({ entries }: GuildRankingTableProps): React.Re
                     href={`/dashboard/${e.id}`}
                     className="text-link hover:text-link-hover focus-visible:ring-ring rounded underline-offset-2 outline-none hover:underline focus-visible:ring-2"
                   >
-                    {e.name?.trim() || '(이름 없음)'}
+                    {e.name?.trim() || t('noName')}
                   </Link>
                 </td>
                 <td
                   className="text-ink px-4 py-3 text-right tabular-nums"
-                  title={`${formatInt(e.vault)}원`}
+                  title={tMoney('money', { amount: formatInt(e.vault) })}
                 >
-                  {formatKoreanCompact(e.vault)}원
+                  {tMoney('money', { amount: formatCompact(e.vault, locale) })}
                 </td>
                 <td className="text-body px-4 py-3 text-right tabular-nums">
                   {formatInt(e.weeklyDAU)}
                 </td>
                 <td className="px-4 py-3 text-right tabular-nums">
-                  <span className={creditTierColorClass(tier)}>{creditTierLabel(tier)}</span>
+                  <span className={creditTierColorClass(tier)}>{tCredit(tier)}</span>
                   <span className="text-ash ml-1.5 text-xs">{e.credit}</span>
                 </td>
               </tr>

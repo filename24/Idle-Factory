@@ -3,6 +3,7 @@ import { LogIn } from 'lucide-react'
 import { LoginButton } from './LoginButton'
 import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
+import { getTranslations } from 'next-intl/server'
 import { safeInternalPath } from '@/lib/href'
 
 interface Props {
@@ -18,6 +19,8 @@ export default async function LoginPage({ searchParams }: Props) {
   const session = await auth.api.getSession({ headers: await headers() })
   if (session) redirect(safeCallback)
 
+  const t = await getTranslations('login')
+
   return (
     <section
       aria-labelledby="login-heading"
@@ -32,9 +35,7 @@ export default async function LoginPage({ searchParams }: Props) {
           >
             Idle Factory
           </h1>
-          <p className="text-mute text-sm break-keep">
-            Discord 계정으로 로그인하여 공장을 관리하세요
-          </p>
+          <p className="text-mute text-sm break-keep">{t('subtitle')}</p>
         </div>
         <div className="mt-8">
           <LoginButton callbackUrl={safeCallback} />

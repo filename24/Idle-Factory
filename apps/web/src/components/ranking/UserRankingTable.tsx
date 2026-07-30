@@ -1,4 +1,6 @@
-import { formatInt, formatKoreanCompact } from '@/lib/format'
+import { getLocale, getTranslations } from 'next-intl/server'
+import { formatCompact, formatInt } from '@/lib/format'
+import { isLocale } from '@/i18n/config'
 import { cn } from '@/lib/utils'
 import type { UserRankEntry } from '@/lib/queries/rankings'
 
@@ -17,26 +19,31 @@ function rankColor(rank: number): string {
 }
 
 /** 유저 랭킹 테이블 — 순위·닉네임·레벨·보유 자산. 본인 행 하이라이트. */
-export function UserRankingTable({
+export async function UserRankingTable({
   entries,
   highlightId,
-}: UserRankingTableProps): React.ReactElement {
+}: UserRankingTableProps): Promise<React.ReactElement> {
+  const t = await getTranslations('ranking')
+  const tMoney = await getTranslations('common')
+  const raw = await getLocale()
+  const locale = isLocale(raw) ? raw : 'ko'
+
   return (
     <div className="border-hairline overflow-x-auto rounded border">
       <table className="w-full min-w-[28rem] border-collapse text-sm">
         <thead>
           <tr className="border-hairline text-mute border-b text-xs">
             <th scope="col" className="w-16 px-4 py-3 text-right font-medium">
-              순위
+              {t('columns.rank')}
             </th>
             <th scope="col" className="px-4 py-3 text-left font-medium">
-              닉네임
+              {t('columns.nickname')}
             </th>
             <th scope="col" className="w-20 px-4 py-3 text-right font-medium">
-              레벨
+              {t('columns.level')}
             </th>
             <th scope="col" className="px-4 py-3 text-right font-medium">
-              보유 자산
+              {t('columns.money')}
             </th>
           </tr>
         </thead>
@@ -58,15 +65,15 @@ export function UserRankingTable({
                   {e.rank}
                 </td>
                 <td className="text-body max-w-[12rem] truncate px-4 py-3">
-                  {e.nickname?.trim() || '(닉네임 없음)'}
-                  {mine ? <span className="text-accent-blue ml-2 text-xs">나</span> : null}
+                  {e.nickname?.trim() || t('noNickname')}
+                  {mine ? <span className="text-accent-blue ml-2 text-xs">{t('me')}</span> : null}
                 </td>
                 <td className="text-body px-4 py-3 text-right tabular-nums">Lv.{e.level}</td>
                 <td
                   className="text-ink px-4 py-3 text-right tabular-nums"
-                  title={`${formatInt(e.money)}원`}
+                  title={tMoney('money', { amount: formatInt(e.money) })}
                 >
-                  {formatKoreanCompact(e.money)}원
+                  {tMoney('money', { amount: formatCompact(e.money, locale) })}
                 </td>
               </tr>
             )
