@@ -45,5 +45,16 @@
     "error": {
       "notAdmin": "Only members with the `Manage Server` permission can change these settings."
     }
+  },
+  "userSettings": {
+    "title": "🌐 Language Settings",
+    "body": "Your current language: **{{lang}}**\n\nPick the language the bot should reply to you in.",
+    "footer": "Your personal setting overrides the server setting and applies across every server.",
+    "langPlaceholder": "Select a language",
+    "autoLabel": "Follow server setting",
+    "error": {
+      "notOwner": "This panel belongs to someone else. Run `/language` to open your own.",
+      "unsupported": "That language is not supported. Please pick one from the list."
+    }
   }
 }

@@ -1,10 +1,14 @@
+import { getTranslations } from 'next-intl/server'
+
 /** 랭킹 로딩 스켈레톤 — 탭/테이블 자리 표시. */
-export default function RankingLoading(): React.ReactElement {
+export default async function RankingLoading(): Promise<React.ReactElement> {
+  const t = await getTranslations('ranking')
+
   return (
     <section
       className="mx-auto max-w-4xl px-4 py-10 sm:px-6"
       aria-busy="true"
-      aria-label="랭킹 불러오는 중"
+      aria-label={t('loadingLabel')}
     >
       <div className="mb-6 space-y-2">
         <div className="bg-elevated h-8 w-24 animate-pulse rounded" />

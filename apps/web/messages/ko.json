@@ -1,0 +1,541 @@
+{
+  "meta": {
+    "title": "Idle Factory",
+    "description": "Discord에서 즐기는 공장 건설 경제 시뮬레이션"
+  },
+  "nav": {
+    "ranking": "랭킹",
+    "dashboard": "대시보드",
+    "docs": "문서",
+    "home": "홈"
+  },
+  "locale": {
+    "label": "언어",
+    "switchTo": "{locale}로 전환"
+  },
+  "auth": {
+    "signIn": "로그인",
+    "signOut": "로그아웃",
+    "loading": "불러오는 중",
+    "accountMenu": "계정 메뉴",
+    "accountMenuNamed": "{name} 계정 메뉴"
+  },
+  "footer": {
+    "tagline": "방치하면 자라나는 나만의 공장. 디스코드에서 시작하는 Idle Factory.",
+    "copyright": "Copyright © 2025 Idle Factory. All rights reserved.",
+    "designedBy": "Designed by Infinite Studio",
+    "groups": {
+      "service": "서비스",
+      "community": "커뮤니티"
+    },
+    "links": {
+      "docs": "문서",
+      "terms": "이용약관",
+      "privacy": "개인정보 처리방침",
+      "discord": "Discord 서버"
+    }
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "Discord 경제 시뮬레이션",
+      "titleLine1": "내 손으로 짓는",
+      "titleLine2": "산업 제국",
+      "subtitle": "Discord 서버 안에서 공장을 건설하고, 자재를 생산하고, 글로벌 시장에서 거래하세요. 접속하지 않아도 공장은 계속 돌아갑니다.",
+      "ctaPrimary": "Discord로 시작하기",
+      "ctaSecondary": "게임 가이드",
+      "demoBuild": "2공장 3번 슬롯에 조립 라인을 건설했습니다.",
+      "demoSellItem": "철광석",
+      "demoSell": "철광석 500개를 글로벌 시장에 즉시 판매했습니다."
+    },
+    "cta": {
+      "titleLine1": "지금 바로",
+      "titleLine2": "공장을 시작하세요",
+      "body1": "Discord 서버에 봇을 초대하거나, 게임 가이드를 먼저 읽어보세요.",
+      "body2": "계정 연동 없이 봇만 있으면 바로 플레이할 수 있습니다.",
+      "demoInvited": "봇이 서버에 추가되었습니다",
+      "demoBuilding": "농장 건설을 시작합니다",
+      "ctaPrimary": "Discord로 시작하기",
+      "ctaSecondary": "게임 가이드 읽기",
+      "footnoteLeft": "Idle Factory · Discord 기반 방치형 공장 게임",
+      "footnoteRight": "무료 플레이 · 설치 불필요"
+    },
+    "loop": {
+      "eyebrow": "// 핵심 루프",
+      "title": "간단한 3단계, 무한한 전략",
+      "subtitle": "복잡한 조작 없이 명령어 하나로 제국을 키워가세요",
+      "steps": {
+        "build": {
+          "title": "토지 구매 & 공장 건설",
+          "description": "서버 화폐로 토지를 구입하고 슬롯에 T1~T3 공장을 배치하세요. 특수 슬롯은 보너스를 제공합니다."
+        },
+        "produce": {
+          "title": "자동 생산",
+          "description": "공장은 24시간 쉬지 않고 자재를 생산합니다. 업그레이드할수록 생산 효율이 기하급수적으로 증가합니다."
+        },
+        "trade": {
+          "title": "마켓 거래",
+          "description": "글로벌 마켓에서 자재를 사고팔아 수익을 극대화하세요. 수급에 따라 가격이 실시간으로 변동됩니다."
+        }
+      }
+    },
+    "factories": {
+      "eyebrow": "// 공장 카탈로그",
+      "title": "11가지 공장, 3단계 티어",
+      "subtitle": "원료 채취부터 완제품 생산까지 — 수직 통합 제국을 구축하세요",
+      "columns": {
+        "factory": "공장",
+        "input": "투입",
+        "output": "산출"
+      },
+      "tiers": {
+        "t1": {
+          "label": "원료 채취",
+          "desc": "자연 자원을 수집하는 기초 공장"
+        },
+        "t2": {
+          "label": "1차 가공",
+          "desc": "T1 원료를 가공재로 변환"
+        },
+        "t3": {
+          "label": "완제품",
+          "desc": "T2 가공재로 고부가가치 완제품 생산 (2×2 슬롯)"
+        }
+      },
+      "names": {
+        "farm": "농장",
+        "mine": "광산",
+        "lumberyard": "벌목장",
+        "oilfield": "유전",
+        "steelworks": "제철소",
+        "refinery": "정유소",
+        "mill": "제분소",
+        "furniture": "가구 공장",
+        "automotive": "자동차 공장",
+        "electronics": "전자 공장",
+        "food": "식품 공장"
+      },
+      "materials": {
+        "none": "—",
+        "grain": "곡물",
+        "ore": "광석",
+        "timber": "목재",
+        "crudeOil": "원유",
+        "steel": "철강",
+        "fuel": "연료",
+        "processedFood": "가공식품",
+        "furniture": "가구",
+        "steelAndFuel": "철강+연료",
+        "steelAndPlastic": "철강+플라스틱",
+        "car": "자동차",
+        "electronics": "전자제품",
+        "packagedFood": "완제 식품"
+      }
+    },
+    "economy": {
+      "eyebrow": "경제 시스템",
+      "title": "살아있는 경제 시스템",
+      "subtitle": "Idle Factory의 시장은 단순한 상점이 아닙니다. 플레이어의 생산과 거래가 가격을 움직이고, 서버 전체의 신뢰도가 생산성에 영향을 줍니다.",
+      "features": {
+        "market": {
+          "title": "수급 기반 가격 변동",
+          "desc": "생산량이 많아지면 가격이 떨어지고, 희소해지면 오릅니다. 시장을 읽는 플레이어가 이깁니다."
+        },
+        "invest": {
+          "title": "주식 & 투자",
+          "desc": "자재를 직접 생산하기 어렵다면 해당 공장의 주식을 사세요. 수익의 일부가 배당됩니다."
+        },
+        "server": {
+          "title": "서버 신뢰도",
+          "desc": "서버 전체의 생산 효율을 나타냅니다. 플레이어가 활발할수록 모든 공장의 생산량이 올라갑니다."
+        }
+      },
+      "metrics": {
+        "steel": {
+          "label": "철강 시세"
+        },
+        "oil": {
+          "label": "원유 시세"
+        },
+        "credit": {
+          "label": "서버 신뢰도"
+        },
+        "factories": {
+          "label": "활성 공장"
+        },
+        "change24h": "24h 변동",
+        "changeVsYesterday": "전일 대비",
+        "asOfNow": "현재 기준",
+        "running": "가동 중"
+      }
+    }
+  },
+  "common": {
+    "money": "{amount}원",
+    "retry": "다시 시도",
+    "errorDescription": "일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+    "people": "{count}명",
+    "count": "{count}개",
+    "noName": "(이름 없음)"
+  },
+  "ranking": {
+    "meta": {
+      "title": "랭킹 · Idle Factory",
+      "description": "전 서버 유저·서버 순위 — 보유 자산·레벨·금고·주간 활동 기준"
+    },
+    "title": "랭킹",
+    "subtitle": "전 서버 유저·서버 순위",
+    "loadingLabel": "랭킹 불러오는 중",
+    "tabsLabel": "랭킹 종류",
+    "tabs": {
+      "users": "유저 랭킹",
+      "guilds": "서버 랭킹"
+    },
+    "sort": {
+      "label": "정렬",
+      "money": "보유 자산",
+      "level": "레벨",
+      "vault": "금고",
+      "weeklyDAU": "주간 활동"
+    },
+    "empty": {
+      "users": {
+        "title": "아직 랭킹에 오른 유저가 없습니다.",
+        "description": "Discord에서 봇으로 게임을 시작하면 랭킹에 등록됩니다."
+      },
+      "guilds": {
+        "title": "아직 랭킹에 오른 서버가 없습니다.",
+        "description": "봇이 참여 중인 서버가 활동을 시작하면 랭킹에 등록됩니다."
+      }
+    },
+    "outOfRange": {
+      "title": "이 페이지에는 표시할 항목이 없습니다.",
+      "description": "페이지 번호가 범위를 벗어났습니다.",
+      "action": "첫 페이지로 이동"
+    },
+    "totalUsers": "총 {count}명",
+    "totalGuilds": "총 {count}개 서버",
+    "error": {
+      "title": "랭킹을 불러오지 못했습니다",
+      "description": "일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
+    },
+    "columns": {
+      "rank": "순위",
+      "nickname": "닉네임",
+      "level": "레벨",
+      "money": "보유 자산",
+      "server": "서버",
+      "vault": "금고",
+      "weeklyDAU": "주간 활동",
+      "credit": "신뢰도"
+    },
+    "noNickname": "(닉네임 없음)",
+    "noName": "(이름 없음)",
+    "me": "나"
+  },
+  "pagination": {
+    "label": "페이지 탐색",
+    "prev": "이전",
+    "next": "다음"
+  },
+  "credit": {
+    "tier": {
+      "RESTRICTED": "제한",
+      "LIMITED": "주의",
+      "NORMAL": "정상",
+      "TRUSTED": "신뢰",
+      "ELITE": "엘리트"
+    }
+  },
+  "dashboard": {
+    "me": {
+      "error": {
+        "title": "대시보드를 불러오지 못했습니다"
+      },
+      "meta": {
+        "title": "내 대시보드 · Idle Factory",
+        "description": "내 자산·레벨·퀘스트 현황과 참여 서버"
+      },
+      "eyebrow": "내 대시보드",
+      "fallbackName": "플레이어",
+      "notStarted": {
+        "title": "아직 게임을 시작하지 않았습니다.",
+        "description": "{name}Discord에서 봇 명령으로 공장을 건설하면 이곳에 자산·레벨·퀘스트 현황이 표시됩니다.",
+        "greeting": "{name}님, ",
+        "action": "게임 시작 가이드 보기"
+      },
+      "tiles": {
+        "money": "보유 자산",
+        "questsInProgress": "진행 중 퀘스트",
+        "questsCompleted": "수령 대기",
+        "questsCompletedHint": "완료·미수령",
+        "questsClaimed": "완료 퀘스트"
+      },
+      "guilds": {
+        "title": "참여 서버",
+        "empty": "참여 중인 서버가 없습니다.",
+        "emptyDescription": "공장을 건설하거나 활동한 서버가 여기에 표시됩니다.",
+        "viewStats": "통계 보기 →"
+      }
+    },
+    "guild": {
+      "error": {
+        "title": "통계를 불러오지 못했습니다"
+      },
+      "notFound": {
+        "title": "서버를 찾을 수 없습니다",
+        "description": "존재하지 않거나 봇이 참여하지 않는 서버입니다.",
+        "action": "서버 랭킹 보기"
+      },
+      "meta": {
+        "notFound": "서버를 찾을 수 없음 · Idle Factory",
+        "title": "{name} 통계 · Idle Factory",
+        "description": "{name} 서버의 금고·세율·신뢰도·활동 통계"
+      },
+      "eyebrow": "서버 통계",
+      "tiles": {
+        "vault": "금고 잔액",
+        "weeklyDAU": "주간 활동",
+        "weeklyDAUHint": "최근 7일 DAU",
+        "surcharge": "서버 가산세",
+        "surchargeHint": "기본 누진세에 가산",
+        "credit": "신뢰도",
+        "factories": "소속 공장",
+        "totalTax": "누적 세수"
+      },
+      "dau": {
+        "title": "활동 추이",
+        "subtitle": "일별 활동 유저 수",
+        "chartLabel": "일별 활동 유저 수 추이",
+        "empty": "최근 활동 기록이 없습니다."
+      },
+      "settlement": {
+        "title": "주간 정산 히스토리",
+        "subtitle": "주별 금고 적립 세액",
+        "chartLabel": "주별 금고 적립 세액 추이",
+        "empty": "주간 정산 내역이 아직 없습니다.",
+        "emptyDescription": "매주 일요일(UTC) 정산이 집계됩니다.",
+        "columns": {
+          "week": "정산 주",
+          "revenue": "판매 수익",
+          "vaultAdded": "금고 적립"
+        }
+      }
+    },
+    "xp": {
+      "label": "레벨 {level} 경험치 진행률 {percent}%"
+    }
+  },
+  "login": {
+    "subtitle": "Discord 계정으로 로그인하여 공장을 관리하세요",
+    "button": "Discord로 로그인"
+  },
+  "terms": {
+    "meta": {
+      "title": "이용약관 — Idle Factory"
+    },
+    "title": "이용약관"
+  },
+  "docs": {
+    "meta": {
+      "titleSuffix": "{title} — Idle Factory 가이드"
+    },
+    "sidebarLabel": "문서 네비게이션",
+    "search": {
+      "open": "문서 검색 열기",
+      "trigger": "검색...",
+      "dialogLabel": "문서 검색",
+      "placeholder": "문서 검색...",
+      "loading": "검색 중...",
+      "noResults": "검색 결과가 없습니다.",
+      "prompt": "검색어를 입력하세요.",
+      "hintNavigate": "이동",
+      "hintSelect": "이동",
+      "hintClose": "닫기"
+    }
+  },
+  "authError": {
+    "access_denied": {
+      "title": "로그인을 취소했습니다",
+      "description": "Discord 인증 화면에서 접근 권한을 거부했습니다. 계속하려면 권한을 허용해야 합니다. 아래 버튼으로 다시 로그인해 주세요."
+    },
+    "account_already_linked_to_different_user": {
+      "title": "이미 다른 계정에 연결된 Discord 계정입니다",
+      "description": "이 Discord 계정은 다른 사용자에게 연결돼 있습니다. 본인 계정이 맞다면 기존 계정으로 로그인하거나 문의해 주세요."
+    },
+    "banned": {
+      "title": "이용이 제한된 계정입니다",
+      "description": "이 계정은 서비스 이용이 정지됐습니다. 조치가 부당하다고 생각되면 운영자에게 문의해 주세요."
+    },
+    "client_disabled": {
+      "title": "이 애플리케이션이 비활성화됐습니다",
+      "description": "Discord 애플리케이션이 사용 중지 상태입니다. 사용자가 해결할 수 있는 문제가 아닙니다. 운영자에게 알려 주세요."
+    },
+    "email_doesnt_match": {
+      "title": "이메일이 일치하지 않습니다",
+      "description": "연결하려는 Discord 계정의 이메일이 로그인된 계정과 다릅니다. 같은 이메일을 쓰는 계정으로 다시 시도해 주세요."
+    },
+    "email_is_missing": {
+      "title": "Discord 계정에 이메일이 없습니다",
+      "description": "가입에는 이메일이 필요합니다. Discord 계정 설정에서 이메일을 등록하고 인증한 뒤 다시 시도해 주세요."
+    },
+    "email_not_found": {
+      "title": "이메일을 확인할 수 없습니다",
+      "description": "Discord 계정에서 이메일을 가져오지 못했습니다. 이메일 인증을 마친 계정인지 확인한 뒤 다시 시도해 주세요."
+    },
+    "internal_server_error": {
+      "title": "서버에서 오류가 발생했습니다",
+      "description": "로그인 처리 중 예기치 못한 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
+    },
+    "invalid_callback_request": {
+      "title": "잘못된 콜백 요청입니다",
+      "description": "Discord 에서 돌아온 요청의 형식이 올바르지 않습니다. 처음부터 다시 로그인해 주세요. 아래 버튼으로 다시 로그인해 주세요."
+    },
+    "invalid_client": {
+      "title": "서비스의 Discord 자격증명이 올바르지 않습니다",
+      "description": "Discord 가 이 서비스의 클라이언트 ID 또는 시크릿을 거부했습니다. 자격증명이 만료됐거나 잘못 설정된 상태입니다. 사용자가 해결할 수 있는 문제가 아닙니다. 운영자에게 알려 주세요."
+    },
+    "invalid_code": {
+      "title": "인증 코드가 유효하지 않습니다",
+      "description": "인증 코드가 이미 사용됐거나 만료됐습니다. 뒤로가기나 새로고침으로 같은 링크를 다시 열면 발생합니다. 아래 버튼으로 다시 로그인해 주세요."
+    },
+    "invalid_payload": {
+      "title": "인증 데이터가 손상됐습니다",
+      "description": "Discord 에서 돌아온 인증 데이터를 해석할 수 없습니다. 아래 버튼으로 다시 로그인해 주세요."
+    },
+    "invalid_profile": {
+      "title": "프로필 형식을 해석할 수 없습니다",
+      "description": "Discord 계정 정보의 형식이 예상과 다릅니다. 반복되면 문의해 주세요."
+    },
+    "invalid_redirect_uri": {
+      "title": "리다이렉트 주소가 등록돼 있지 않습니다",
+      "description": "로그인 후 돌아올 주소가 Discord 애플리케이션에 등록된 목록과 다릅니다. 사용자가 해결할 수 있는 문제가 아닙니다. 운영자에게 알려 주세요."
+    },
+    "invalid_request": {
+      "title": "잘못된 로그인 요청입니다",
+      "description": "요청에 필요한 값이 빠졌거나 형식이 맞지 않습니다. 주소창의 링크를 직접 수정했다면 처음부터 다시 시작해 주세요. 아래 버튼으로 다시 로그인해 주세요."
+    },
+    "invalid_scope": {
+      "title": "요청한 권한 범위가 올바르지 않습니다",
+      "description": "서비스가 Discord 에 요청한 권한 범위가 유효하지 않습니다. 사용자가 해결할 수 있는 문제가 아닙니다. 운영자에게 알려 주세요."
+    },
+    "invalid_token": {
+      "title": "유효하지 않은 토큰입니다",
+      "description": "인증 토큰이 올바르지 않습니다. 링크가 변조됐거나 이미 사용된 경우입니다. 아래 버튼으로 다시 로그인해 주세요."
+    },
+    "invalid_user": {
+      "title": "유효하지 않은 사용자입니다",
+      "description": "요청에 담긴 사용자를 확인할 수 없습니다. 다시 로그인한 뒤 시도해 주세요."
+    },
+    "missing_profile": {
+      "title": "프로필 정보가 없습니다",
+      "description": "Discord 계정 정보를 받지 못해 가입을 진행할 수 없습니다. 잠시 후 다시 시도해 주세요."
+    },
+    "name_is_missing": {
+      "title": "Discord 계정에 표시 이름이 없습니다",
+      "description": "가입에는 표시 이름이 필요합니다. Discord 프로필을 확인한 뒤 다시 시도해 주세요."
+    },
+    "no_callback_url": {
+      "title": "돌아올 주소가 지정되지 않았습니다",
+      "description": "로그인 완료 후 이동할 주소가 요청에 없습니다. 사용자가 해결할 수 있는 문제가 아닙니다. 운영자에게 알려 주세요."
+    },
+    "no_code": {
+      "title": "인증 코드가 전달되지 않았습니다",
+      "description": "Discord 가 인증 코드 없이 돌아왔습니다. 로그인 창을 중간에 닫았을 때 주로 발생합니다. 아래 버튼으로 다시 로그인해 주세요."
+    },
+    "oauth_code_verification_failed": {
+      "title": "인증 코드 검증에 실패했습니다",
+      "description": "보안 검증(PKCE) 값이 맞지 않습니다. 로그인을 시작한 브라우저와 완료한 브라우저가 다르면 발생합니다. 같은 브라우저에서 아래 버튼으로 다시 로그인해 주세요."
+    },
+    "oauth_provider_not_found": {
+      "title": "로그인 제공자를 찾을 수 없습니다",
+      "description": "요청한 소셜 로그인 제공자가 서비스에 설정돼 있지 않습니다. 사용자가 해결할 수 있는 문제가 아닙니다. 운영자에게 알려 주세요."
+    },
+    "payload_expired": {
+      "title": "인증 요청이 만료됐습니다",
+      "description": "로그인 요청의 유효 시간이 지났습니다. 아래 버튼으로 다시 로그인해 주세요."
+    },
+    "please_restart_the_process": {
+      "title": "로그인을 처음부터 다시 시작해 주세요",
+      "description": "진행 중이던 인증 정보가 남아 있지 않습니다. 시간이 오래 지났거나 쿠키가 지워진 경우입니다. 아래 버튼으로 다시 로그인해 주세요."
+    },
+    "server_error": {
+      "title": "Discord 쪽에서 오류가 발생했습니다",
+      "description": "Discord 인증 서버가 오류를 반환했습니다. 서비스 문제가 아니므로 잠시 후 다시 시도해 주세요."
+    },
+    "signup_disabled": {
+      "title": "지금은 신규 가입을 받지 않습니다",
+      "description": "새 계정 생성이 중지된 상태입니다. 이미 계정이 있다면 기존 계정으로 로그인해 주세요."
+    },
+    "state_mismatch": {
+      "title": "보안 검증에 실패했습니다",
+      "description": "요청 위조를 막는 state 값이 일치하지 않습니다. 쿠키가 차단됐거나 로그인 창을 너무 오래 열어 뒀을 때 발생합니다. 쿠키를 허용한 뒤 아래 버튼으로 다시 로그인해 주세요."
+    },
+    "temporarily_unavailable": {
+      "title": "Discord 가 일시적으로 응답하지 않습니다",
+      "description": "Discord 인증 서버가 잠시 과부하 상태이거나 점검 중입니다. 몇 분 뒤에 다시 시도해 주세요."
+    },
+    "token_expired": {
+      "title": "인증 링크가 만료됐습니다",
+      "description": "토큰의 유효 시간이 지났습니다. 아래 버튼으로 다시 로그인해 주세요."
+    },
+    "unable_to_get_user_info": {
+      "title": "Discord 프로필을 가져오지 못했습니다",
+      "description": "Discord 에서 계정 정보를 읽는 데 실패했습니다. 잠시 후 다시 시도해도 같다면 문의해 주세요."
+    },
+    "unable_to_link_account": {
+      "title": "계정을 연결하지 못했습니다",
+      "description": "Discord 계정을 기존 계정에 연결하는 데 실패했습니다. 잠시 후 다시 시도해 주세요."
+    },
+    "unauthorized_client": {
+      "title": "이 애플리케이션은 로그인 권한이 없습니다",
+      "description": "Discord 애플리케이션이 이 방식의 로그인을 사용할 수 없도록 설정돼 있습니다. 사용자가 해결할 수 있는 문제가 아닙니다. 운영자에게 알려 주세요."
+    },
+    "unknown": {
+      "title": "로그인에 실패했습니다",
+      "description": "알 수 없는 이유로 인증이 완료되지 않았습니다. 잠시 후 다시 시도해 주세요. 계속 같은 화면이 보이면 아래 코드와 함께 문의해 주세요."
+    },
+    "unsupported_response_type": {
+      "title": "지원하지 않는 인증 방식입니다",
+      "description": "서비스가 Discord 에 보낸 인증 요청 형식을 Discord 가 받아들이지 않았습니다. 사용자가 해결할 수 있는 문제가 아닙니다. 운영자에게 알려 주세요."
+    },
+    "user_creation_failed": {
+      "title": "계정을 만들지 못했습니다",
+      "description": "새 계정을 생성하는 도중 오류가 발생했습니다. 잠시 후 다시 시도해도 같다면 문의해 주세요."
+    },
+    "user_info_is_missing": {
+      "title": "Discord 프로필이 비어 있습니다",
+      "description": "Discord 가 계정 정보를 반환하지 않았습니다. 잠시 후 다시 시도해 주세요."
+    },
+    "user_not_found": {
+      "title": "사용자를 찾을 수 없습니다",
+      "description": "해당하는 계정이 존재하지 않습니다. 계정이 삭제됐을 수 있습니다. 새로 로그인해 주세요."
+    },
+    "meta": {
+      "title": "로그인 실패 — Idle Factory",
+      "description": "Discord 로그인 중 발생한 문제와 해결 방법을 안내합니다."
+    },
+    "kind": {
+      "user": "로그인 절차 문제",
+      "config": "서비스 설정 문제",
+      "server": "일시적 서버 문제"
+    },
+    "actions": {
+      "retry": "다시 로그인",
+      "support": "Discord 서버에서 문의",
+      "home": "홈으로 돌아가기"
+    },
+    "detail": {
+      "code": "에러 코드",
+      "detail": "상세",
+      "unknownHint": "처음 보는 오류입니다. 위 코드를 함께 알려 주시면 원인을 빨리 찾을 수 있습니다."
+    }
+  },
+  "api": {
+    "errors": {
+      "guildNotFound": "서버를 찾을 수 없습니다.",
+      "guildStats": "서버 통계를 불러오지 못했습니다.",
+      "guildRanking": "서버 랭킹을 불러오지 못했습니다.",
+      "userRanking": "유저 랭킹을 불러오지 못했습니다."
+    }
+  }
+}

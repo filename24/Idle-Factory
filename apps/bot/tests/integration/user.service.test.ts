@@ -99,20 +99,74 @@ describe('UserService.ensure', () => {
     }
   })
 
-  it('persists the lang field when passed', async () => {
+  // 과거에는 ensure 가 가입 시점 interaction.locale 을 lang 에 박아넣었다.
+  // 그러면 모든 유저가 개인 언어를 "고른" 상태가 되어 서버 언어 설정이 아무에게도
+  // 적용되지 않는다. 이제 개인 언어는 /language 로만 설정한다.
+  it("seeds lang as 'auto' so the guild setting still applies", async () => {
     const discordId = '100000000000000004'
 
-    const hydrated = await UserService.ensure(testPrisma, {
-      discordId,
-      lang: 'en'
-    })
+    const hydrated = await UserService.ensure(testPrisma, { discordId })
 
-    expect(hydrated.lang).toBe('en')
+    expect(hydrated.lang).toBe('auto')
 
     const fromDb = await testPrisma.user.findUniqueOrThrow({
       where: { id: discordId },
       select: { lang: true }
     })
-    expect(fromDb.lang).toBe('en')
+    expect(fromDb.lang).toBe('auto')
+  })
+})
+
+describe('UserService.updateLang', () => {
+  beforeAll(async () => {
+    await resetDb()
+  })
+
+  beforeEach(async () => {
+    await resetDb()
+  })
+
+  afterAll(async () => {
+    await closeDb()
+  })
+
+  it('persists an explicit personal language choice', async () => {
+    const discordId = '100000000000000005'
+    await UserService.ensure(testPrisma, { discordId })
+
+    const updated = await UserService.updateLang(testPrisma, discordId, 'en-US')
+
+    expect(updated.lang).toBe('en-US')
+
+    const fromDb = await testPrisma.user.findUniqueOrThrow({
+      where: { id: discordId },
+      select: { lang: true }
+    })
+    expect(fromDb.lang).toBe('en-US')
+  })
+
+  it("can be reset to 'auto' to follow the guild setting again", async () => {
+    const discordId = '100000000000000006'
+    await UserService.ensure(testPrisma, { discordId })
+    await UserService.updateLang(testPrisma, discordId, 'en-US')
+
+    const reset = await UserService.updateLang(testPrisma, discordId, 'auto')
+
+    expect(reset.lang).toBe('auto')
+  })
+
+  it('rejects a locale with no translation resources', async () => {
+    const discordId = '100000000000000007'
+    await UserService.ensure(testPrisma, { discordId })
+
+    await expect(
+      UserService.updateLang(testPrisma, discordId, 'fr')
+    ).rejects.toMatchObject({ code: 'UNSUPPORTED_LANGUAGE' })
+
+    const fromDb = await testPrisma.user.findUniqueOrThrow({
+      where: { id: discordId },
+      select: { lang: true }
+    })
+    expect(fromDb.lang).toBe('auto')
   })
 })

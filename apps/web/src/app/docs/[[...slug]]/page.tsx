@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { source } from '@/lib/source'
 import { Steps, Step } from 'fumadocs-ui/components/steps'
 import defaultMdxComponents from 'fumadocs-ui/mdx'
+import { getTranslations } from 'next-intl/server'
 
 export const runtime = 'nodejs'
 
@@ -47,8 +48,9 @@ export async function generateMetadata({ params }: Props) {
   const { slug } = await params
   const page = source.getPage(slug)
   if (!page) return {}
+  const t = await getTranslations('docs.meta')
   return {
-    title: `${page.data.title} — Idle Factory 가이드`,
+    title: t('titleSuffix', { title: page.data.title }),
     description: page.data.description,
   }
 }

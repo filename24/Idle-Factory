@@ -64,3 +64,13 @@ export const ONBOARDING_PROMPT_VERSION = 'v1'
 export const GUILD_SETTINGS_OPEN_PREFIX = 'guild:settings:open:'
 export const GUILD_SETTINGS_LANG_PREFIX = 'guild:settings:lang:'
 export const GUILD_SETTINGS_TAX_PREFIX = 'guild:settings:tax:'
+
+/**
+ * 개인 설정 인터랙션 customId prefix.
+ *
+ * - `user:settings:lang:<userId>` — `/language` 의 개인 언어 select.
+ *
+ * 길드 설정과 달리 권한 검증 대신 **호출자 본인 여부**만 확인한다. 남의 패널을
+ * 눌러 남의 설정을 바꾸는 것을 막기 위해 customId 에 소유자 id 를 박아둔다.
+ */
+export const USER_SETTINGS_LANG_PREFIX = 'user:settings:lang:'

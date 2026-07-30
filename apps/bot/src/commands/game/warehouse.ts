@@ -51,8 +51,7 @@ export class WarehouseCommand extends Command {
 
     await UserService.ensure(db, {
       discordId: interaction.user.id,
-      nickname: interaction.user.username,
-      lang: interaction.locale ?? 'en-US'
+      nickname: interaction.user.username
     })
 
     const view = await WarehouseService.view(db, interaction.user.id)
@@ -85,8 +84,7 @@ export class WarehouseCommand extends Command {
 
     await UserService.ensure(db, {
       discordId: interaction.user.id,
-      nickname: interaction.user.username,
-      lang: interaction.locale ?? 'en-US'
+      nickname: interaction.user.username
     })
 
     try {

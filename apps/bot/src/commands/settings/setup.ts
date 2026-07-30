@@ -1,6 +1,7 @@
 import { Command } from '@sapphire/framework'
 import { fetchT } from '@sapphire/plugin-i18next'
 import { simpleV2Payload, V2_ACCENT } from '@utils/ComponentsV2'
+import { isSupportedLanguage } from '@utils/language'
 
 export class SetupCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -45,7 +46,11 @@ export class SetupCommand extends Command {
       data: {
         id: guild.id,
         name: guild.name,
-        lang: interaction.locale ?? 'en-US'
+        // 번역 리소스가 없는 로케일(ja, fr …)을 그대로 저장하면 리졸버가 무시하고
+        // 설정 패널에는 raw 코드가 그대로 노출된다. 지원 목록으로 클램프한다.
+        lang: isSupportedLanguage(interaction.locale)
+          ? interaction.locale
+          : 'en-US'
       }
     })
 

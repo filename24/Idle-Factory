@@ -10,6 +10,7 @@ import {
   normalizeGuildSort,
   normalizePage,
 } from '@/lib/queries/rankings'
+import { getTranslations } from 'next-intl/server'
 import { formatInt } from '@/lib/format'
 import { RankingTabs, type RankingScope } from '@/components/ranking/RankingTabs'
 import { RankingSort } from '@/components/ranking/RankingSort'
@@ -18,9 +19,9 @@ import { GuildRankingTable } from '@/components/ranking/GuildRankingTable'
 import { Pagination } from '@/components/ranking/Pagination'
 import { EmptyState } from '@/components/common/EmptyState'
 
-export const metadata: Metadata = {
-  title: '랭킹 · Idle Factory',
-  description: '전 서버 유저·서버 순위 — 보유 자산·레벨·금고·주간 활동 기준',
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('ranking.meta')
+  return { title: t('title'), description: t('description') }
 }
 
 interface Props {
@@ -32,17 +33,21 @@ function toScope(value?: string): RankingScope {
 }
 
 /** 페이지 범위를 벗어났을 때의 안내 (1페이지로 복귀 링크 포함). */
-function OutOfRange({ scope, sort }: { scope: RankingScope; sort: string }): React.ReactElement {
+async function OutOfRange({
+  scope,
+  sort,
+}: {
+  scope: RankingScope
+  sort: string
+}): Promise<React.ReactElement> {
+  const t = await getTranslations('ranking.outOfRange')
   return (
-    <EmptyState
-      title="이 페이지에는 표시할 항목이 없습니다."
-      description="페이지 번호가 범위를 벗어났습니다."
-    >
+    <EmptyState title={t('title')} description={t('description')}>
       <Link
         href={`/ranking?scope=${scope}&sort=${sort}`}
         className="text-link hover:text-link-hover text-sm underline-offset-2 hover:underline"
       >
-        첫 페이지로 이동
+        {t('action')}
       </Link>
     </EmptyState>
   )
@@ -59,6 +64,7 @@ export default async function RankingPage({ searchParams }: Props): Promise<Reac
   const sp = await searchParams
   const scope = toScope(sp.scope)
   const page = normalizePage(sp.page)
+  const t = await getTranslations('ranking')
 
   let panel: React.ReactNode
   if (scope === 'users') {
@@ -83,10 +89,7 @@ export default async function RankingPage({ searchParams }: Props): Promise<Reac
           <RankingSort scope="users" active={sort} />
         </div>
         {result.total === 0 ? (
-          <EmptyState
-            title="아직 랭킹에 오른 유저가 없습니다."
-            description="Discord에서 봇으로 게임을 시작하면 랭킹에 등록됩니다."
-          />
+          <EmptyState title={t('empty.users.title')} description={t('empty.users.description')} />
         ) : result.entries.length === 0 ? (
           <OutOfRange scope="users" sort={sort} />
         ) : (
@@ -97,7 +100,9 @@ export default async function RankingPage({ searchParams }: Props): Promise<Reac
               totalPages={result.totalPages}
               params={{ scope: 'users', sort }}
             />
-            <p className="text-ash text-center text-xs">총 {formatInt(result.total)}명</p>
+            <p className="text-ash text-center text-xs">
+              {t('totalUsers', { count: formatInt(result.total) })}
+            </p>
           </div>
         )}
       </>
@@ -111,10 +116,7 @@ export default async function RankingPage({ searchParams }: Props): Promise<Reac
           <RankingSort scope="guilds" active={sort} />
         </div>
         {result.total === 0 ? (
-          <EmptyState
-            title="아직 랭킹에 오른 서버가 없습니다."
-            description="봇이 참여 중인 서버가 활동을 시작하면 랭킹에 등록됩니다."
-          />
+          <EmptyState title={t('empty.guilds.title')} description={t('empty.guilds.description')} />
         ) : result.entries.length === 0 ? (
           <OutOfRange scope="guilds" sort={sort} />
         ) : (
@@ -125,7 +127,9 @@ export default async function RankingPage({ searchParams }: Props): Promise<Reac
               totalPages={result.totalPages}
               params={{ scope: 'guilds', sort }}
             />
-            <p className="text-ash text-center text-xs">총 {formatInt(result.total)}개 서버</p>
+            <p className="text-ash text-center text-xs">
+              {t('totalGuilds', { count: formatInt(result.total) })}
+            </p>
           </div>
         )}
       </>
@@ -136,9 +140,9 @@ export default async function RankingPage({ searchParams }: Props): Promise<Reac
     <section aria-labelledby="ranking-heading" className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
       <header className="mb-6 space-y-1">
         <h1 id="ranking-heading" className="font-display text-ink text-3xl break-keep">
-          랭킹
+          {t('title')}
         </h1>
-        <p className="text-mute text-sm break-keep">전 서버 유저·서버 순위</p>
+        <p className="text-mute text-sm break-keep">{t('subtitle')}</p>
       </header>
       <RankingTabs active={scope} />
       <div role="tabpanel">{panel}</div>

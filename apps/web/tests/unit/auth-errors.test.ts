@@ -1,4 +1,6 @@
 import { describe, test, expect } from 'vitest'
+import ko from '../../messages/ko.json'
+import en from '../../messages/en.json'
 import {
   AUTH_ERROR_CATALOG,
   normalizeAuthErrorCode,
@@ -110,13 +112,30 @@ describe('AUTH_ERROR_CATALOG', () => {
     expect(AUTH_ERROR_CATALOG).toHaveProperty(UNKNOWN_AUTH_ERROR_CODE)
   })
 
-  test('모든 항목이 비어있지 않은 한국어 제목과 설명을 가진다', () => {
-    for (const [code, entry] of Object.entries(AUTH_ERROR_CATALOG)) {
-      expect(entry.title.trim(), `${code} title 이 비었다`).not.toBe('')
-      expect(entry.description.trim(), `${code} description 이 비었다`).not.toBe('')
-      expect(entry.title, `${code} title 에 한글이 없다`).toMatch(/[가-힣]/)
-      expect(entry.description, `${code} description 에 한글이 없다`).toMatch(/[가-힣]/)
+  // 표시 문구는 messages/<locale>.json 으로 옮겼다. 분류만 추가하고 메시지를
+  // 빼먹으면 화면에 `authError.foo.title` 같은 키 문자열이 그대로 나온다.
+  test('모든 항목이 ko/en 양쪽에 제목과 설명을 가진다', () => {
+    const catalogs = { ko: ko.authError, en: en.authError } as Record<
+      string,
+      Record<string, { title?: string; description?: string }>
+    >
+    for (const code of Object.keys(AUTH_ERROR_CATALOG)) {
+      for (const [locale, messages] of Object.entries(catalogs)) {
+        const entry = messages[code]
+        expect(entry, `${locale} 에 ${code} 메시지가 없다`).toBeDefined()
+        expect(entry?.title?.trim(), `${locale}/${code} title 이 비었다`).toBeTruthy()
+        expect(entry?.description?.trim(), `${locale}/${code} description 이 비었다`).toBeTruthy()
+      }
     }
+  })
+
+  test('메시지 카탈로그에 분류 없는 고아 코드가 없다', () => {
+    // 반대 방향 — 메시지만 있고 분류가 없으면 kind/action 이 폴백으로 잘못 잡힌다.
+    const META_KEYS = ['meta', 'kind', 'actions', 'detail']
+    const orphans = Object.keys(ko.authError)
+      .filter((key) => !META_KEYS.includes(key))
+      .filter((code) => !(code in AUTH_ERROR_CATALOG))
+    expect(orphans).toEqual([])
   })
 
   test('모든 항목이 유효한 kind 와 action 을 가진다', () => {
@@ -137,10 +156,10 @@ describe('AUTH_ERROR_CATALOG', () => {
 })
 
 describe('resolveAuthError', () => {
-  test('알려진 코드는 카탈로그 콘텐츠를 그대로 돌려준다', () => {
+  test('알려진 코드는 그대로 메시지 코드가 된다', () => {
     const result = resolveAuthError('access_denied')
     expect(result.code).toBe('access_denied')
-    expect(result.title).toBe(AUTH_ERROR_CATALOG.access_denied.title)
+    expect(result.messageCode).toBe('access_denied')
     expect(result.known).toBe(true)
   })
 
@@ -157,10 +176,17 @@ describe('resolveAuthError', () => {
     expect(result.action).not.toBe('retry')
   })
 
-  test('알 수 없는 코드는 폴백 콘텐츠로 떨어진다', () => {
+  test('알 수 없는 코드는 폴백 분류로 떨어진다', () => {
     const result = resolveAuthError('something_we_never_saw')
     expect(result.known).toBe(false)
-    expect(result.title).toBe(AUTH_ERROR_CATALOG[UNKNOWN_AUTH_ERROR_CODE].title)
+    expect(result.kind).toBe(AUTH_ERROR_CATALOG[UNKNOWN_AUTH_ERROR_CODE]!.kind)
+    expect(result.action).toBe(AUTH_ERROR_CATALOG[UNKNOWN_AUTH_ERROR_CODE]!.action)
+  })
+
+  test('알 수 없는 코드의 messageCode 는 unknown 으로 눌린다', () => {
+    // code 를 그대로 t() 에 넘기면 키가 없어 렌더가 깨진다.
+    const result = resolveAuthError('something_we_never_saw')
+    expect(result.messageCode).toBe(UNKNOWN_AUTH_ERROR_CODE)
   })
 
   test('알 수 없는 코드여도 원본 코드를 보존한다', () => {

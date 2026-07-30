@@ -21,17 +21,20 @@ import {
   GUILD_SETTINGS_LANG_PREFIX,
   GUILD_SETTINGS_TAX_PREFIX
 } from '@utils/Constants'
+import { LANGUAGE_LABELS, SUPPORTED_LANGUAGES } from '@utils/language'
 
-/** 설정 가능한 언어 — i18n locales 키와 1:1 일치. */
-export const GUILD_LANG_CHOICES: readonly string[] = ['ko', 'en-US']
+/**
+ * 설정 가능한 언어 — 번역 리소스 목록을 그대로 따른다.
+ *
+ * 별도 배열로 복제하면 `src/locales/` 에 언어를 추가했을 때 한쪽만 늘어나
+ * "고를 수는 있는데 번역이 없는" 상태가 된다. 단일 진실 소스에서 파생한다.
+ */
+export const GUILD_LANG_CHOICES: readonly string[] = SUPPORTED_LANGUAGES
 
 /** 설정 가능한 세율 (0~0.20, 5% 단위). docs/07 §세금·정산. */
 export const GUILD_TAX_CHOICES: readonly number[] = [0, 0.05, 0.1, 0.15, 0.2]
 
-const LANG_LABELS: Record<string, string> = {
-  ko: '한국어',
-  'en-US': 'English'
-}
+const LANG_LABELS: Record<string, string> = LANGUAGE_LABELS
 
 /**
  * 길드 설정 패널 컨테이너를 만든다.

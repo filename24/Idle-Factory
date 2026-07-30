@@ -39,6 +39,7 @@
   },
   "devDependencies": {
     "@types/uuid": "^9.0.7",
+    "@vitest/coverage-v8": "^2.1.8",
     "eslint": "^9.0.0",
     "eslint-config-idle": "workspace:^",
     "eslint-plugin-unused-imports": "^4.0.0",
@@ -46,8 +47,8 @@
     "tsup": "^8.5.1",
     "tsx": "^4.19.4",
     "typescript": "^6.0.3",
-    "vitest": "^2.1.8",
-    "@vitest/coverage-v8": "^2.1.8"
+    "vite-tsconfig-paths": "6.1.1",
+    "vitest": "^2.1.8"
   },
   "eslintIgnore": [
     "node_modules",

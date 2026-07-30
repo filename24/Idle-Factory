@@ -2,6 +2,7 @@ import { execSync } from 'child_process'
 import { join } from 'path'
 import { IConfig } from '@types'
 import { ReportType } from './utils/Constants'
+import { createLanguageFetcher } from './utils/language'
 import { pieceRoot } from './utils/pieceRoot'
 import { IntentsBitField } from 'discord.js'
 
@@ -69,7 +70,7 @@ const config: IConfig = {
     },
     token: requireEnv('BOT_TOKEN'),
     owners: parseList(process.env.BOT_OWNERS),
-    prefix: env('BOT_PREFIX', '<@786891249005232179> '),
+    prefix: env('BOT_PREFIX', ';;'),
     cooldown: Number(env('BOT_COOLDOWN', '2000')),
     shardingOptions: undefined
   },
@@ -103,6 +104,10 @@ const config: IConfig = {
       // baseUserDirectory 와 같은 이유로 번들 위치에 의존하지 않는다.
       // dev 는 src/locales, 프로덕션은 build/locales(빌드 스크립트가 복사).
       defaultLanguageDirectory: join(pieceRoot, 'locales'),
+      // 이 리졸버가 없으면 플러그인 기본값 `() => null` 이 쓰이고, 언어는
+      // guild.preferredLocale 로만 정해진다 — DB 의 User.lang / Guild.lang 이
+      // 통째로 무시된다.
+      fetchLanguage: createLanguageFetcher(),
       i18next: {
         fallbackLng: env('I18N_FALLBACK_LNG', 'en-US'),
         interpolation: {

@@ -1,6 +1,11 @@
 import { defineConfig } from 'vitest/config'
+import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig({
+  // tsconfig 의 path alias(@utils/@structures/@managers/@types)를 그대로 해석한다.
+  // 없으면 alias 를 쓰는 소스는 테스트에서 로드조차 되지 않아, 테스트를 쓰려고
+  // 소스의 import 스타일을 relative 로 바꾸는 본말전도가 생긴다.
+  plugins: [tsconfigPaths()],
   test: {
     include: ['tests/**/*.test.ts'],
     pool: 'forks',

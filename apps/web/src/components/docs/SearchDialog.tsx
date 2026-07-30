@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useDocsSearch } from 'fumadocs-core/search/client'
 import { Search, FileText, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
+import { useLocale, useTranslations } from 'next-intl'
 import type { SharedProps } from 'fumadocs-ui/contexts/search'
 
 interface SearchResult {
@@ -16,7 +17,11 @@ interface SearchResult {
 
 /** 한글 토크나이저 기반 문서 검색 다이얼로그 */
 export default function DocsSearchDialog({ open, onOpenChange }: SharedProps) {
-  const { search, setSearch, query } = useDocsSearch({ type: 'fetch', locale: 'ko' })
+  const t = useTranslations('docs.search')
+  // 검색 인덱스는 현재 표시 로케일을 그대로 따라간다. 'ko' 로 고정하면
+  // 영어 화면에서도 한국어 토크나이저가 돌아 결과가 어긋난다.
+  const locale = useLocale()
+  const { search, setSearch, query } = useDocsSearch({ type: 'fetch', locale })
   const inputRef = useRef<HTMLInputElement>(null)
   const dialogRef = useRef<HTMLDivElement>(null)
   const prevFocusRef = useRef<HTMLElement | null>(null)
@@ -98,7 +103,7 @@ export default function DocsSearchDialog({ open, onOpenChange }: SharedProps) {
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-label="문서 검색"
+        aria-label={t('dialogLabel')}
         className="border-hairline-strong bg-surface relative z-10 mx-4 w-full max-w-xl overflow-hidden rounded border"
       >
         {/* 검색 입력 */}
@@ -108,8 +113,8 @@ export default function DocsSearchDialog({ open, onOpenChange }: SharedProps) {
             ref={inputRef}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="문서 검색..."
-            aria-label="문서 검색"
+            placeholder={t('placeholder')}
+            aria-label={t('dialogLabel')}
             className="text-ink placeholder:text-mute flex-1 bg-transparent text-sm outline-none"
           />
           <kbd
@@ -123,19 +128,17 @@ export default function DocsSearchDialog({ open, onOpenChange }: SharedProps) {
         {/* 결과 */}
         <div className="max-h-[60vh] overflow-y-auto">
           {query.isLoading && (
-            <div className="text-mute px-4 py-8 text-center text-sm">검색 중...</div>
+            <div className="text-mute px-4 py-8 text-center text-sm">{t('loading')}</div>
           )}
 
           {!query.isLoading && search && results.length === 0 && (
             <div className="text-mute px-4 py-8 text-center text-sm break-keep">
-              검색 결과가 없습니다.
+              {t('noResults')}
             </div>
           )}
 
           {!query.isLoading && !search && (
-            <div className="text-mute px-4 py-8 text-center text-sm break-keep">
-              검색어를 입력하세요.
-            </div>
+            <div className="text-mute px-4 py-8 text-center text-sm break-keep">{t('prompt')}</div>
           )}
 
           {results.length > 0 && (
@@ -176,13 +179,16 @@ export default function DocsSearchDialog({ open, onOpenChange }: SharedProps) {
         {/* 푸터 */}
         <div className="border-hairline bg-deep text-mute flex items-center gap-3 border-t px-4 py-2 text-[10px]">
           <span>
-            <kbd className="border-hairline-strong rounded border px-1 py-0.5">↑↓</kbd> 이동
+            <kbd className="border-hairline-strong rounded border px-1 py-0.5">↑↓</kbd>{' '}
+            {t('hintNavigate')}
           </span>
           <span>
-            <kbd className="border-hairline-strong rounded border px-1 py-0.5">↵</kbd> 이동
+            <kbd className="border-hairline-strong rounded border px-1 py-0.5">↵</kbd>{' '}
+            {t('hintSelect')}
           </span>
           <span>
-            <kbd className="border-hairline-strong rounded border px-1 py-0.5">ESC</kbd> 닫기
+            <kbd className="border-hairline-strong rounded border px-1 py-0.5">ESC</kbd>{' '}
+            {t('hintClose')}
           </span>
         </div>
       </div>

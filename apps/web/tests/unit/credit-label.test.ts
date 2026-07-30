@@ -1,18 +1,19 @@
 import { describe, test, expect } from 'vitest'
 import type { CreditTier } from '@idle/game-core'
-import { creditTierLabel, creditTierColorClass } from '../../src/lib/credit-label'
+import ko from '../../messages/ko.json'
+import en from '../../messages/en.json'
+import { creditTierColorClass } from '../../src/lib/credit-label'
 
-describe('creditTierLabel', () => {
-  test('모든 구간에 한국어 라벨을 매핑한다', () => {
-    const cases: Record<CreditTier, string> = {
-      RESTRICTED: '제한',
-      LIMITED: '주의',
-      NORMAL: '정상',
-      TRUSTED: '신뢰',
-      ELITE: '엘리트',
-    }
-    for (const [tier, label] of Object.entries(cases)) {
-      expect(creditTierLabel(tier as CreditTier)).toBe(label)
+// 구간 라벨은 messages/<locale>.json 의 `credit.tier.<TIER>` 로 옮겼다.
+// 여기서는 "모든 구간에 라벨이 존재하는가"만 지킨다 — 하나라도 빠지면
+// 화면에 키 문자열이 그대로 노출된다.
+describe('credit.tier 메시지 키', () => {
+  const TIERS: CreditTier[] = ['RESTRICTED', 'LIMITED', 'NORMAL', 'TRUSTED', 'ELITE']
+
+  test('ko/en 카탈로그가 모든 구간 라벨을 갖는다', () => {
+    for (const tier of TIERS) {
+      expect(ko.credit.tier[tier]).toBeTruthy()
+      expect(en.credit.tier[tier]).toBeTruthy()
     }
   })
 })

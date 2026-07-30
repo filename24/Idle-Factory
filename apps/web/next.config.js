@@ -1,7 +1,13 @@
 const { createMDX } = require('fumadocs-mdx/next')
+const createNextIntlPlugin = require('next-intl/plugin')
 const path = require('path')
 
 const withMDX = createMDX()
+
+// 로케일을 URL 이 아닌 쿠키로 관리한다("without i18n routing"). 미들웨어가 필요 없고
+// 기존 경로(/ranking, /docs …)와 fumadocs 라우팅이 그대로 유지된다.
+// 요청별 로케일·메시지는 src/i18n/request.ts 가 정한다(플러그인 기본 경로).
+const withNextIntl = createNextIntlPlugin()
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -24,7 +30,7 @@ const nextConfig = {
   },
 }
 
-module.exports = withMDX(nextConfig)
+module.exports = withNextIntl(withMDX(nextConfig))
 
 // Injected content via Sentry wizard below
 

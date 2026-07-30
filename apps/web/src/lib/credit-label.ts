@@ -1,21 +1,7 @@
 import type { CreditTier } from '@idle/game-core'
 
-/**
- * 신뢰도 구간(CreditTier)의 한국어 라벨.
- * 근거: docs/design/07-global-system.md §신뢰도 효과 (구간별).
- */
-const CREDIT_TIER_LABEL: Record<CreditTier, string> = {
-  RESTRICTED: '제한',
-  LIMITED: '주의',
-  NORMAL: '정상',
-  TRUSTED: '신뢰',
-  ELITE: '엘리트',
-}
-
-/** 신뢰도 구간 → 한국어 라벨. */
-export function creditTierLabel(tier: CreditTier): string {
-  return CREDIT_TIER_LABEL[tier]
-}
+// 구간 라벨은 `credit.tier.<TIER>` 메시지 키로 옮겼다(messages/<locale>.json).
+// 근거: docs/design/07-global-system.md §신뢰도 효과 (구간별).
 
 /**
  * 신뢰도 구간 → 디자인 토큰 시맨틱 색 클래스(텍스트).
