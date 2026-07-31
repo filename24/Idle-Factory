@@ -1,12 +1,14 @@
 import { db } from '../db'
 import { computeXpProgress } from '../xp-progress'
+import { computeWarehouseSummary, type WarehouseSummary } from '../warehouse-summary'
 
 /**
  * 내 대시보드 데이터 접근 계층 (인증 필요 페이지 전용).
  *
- * 자산·레벨·레벨 내 XP 진행도 + 퀘스트 현황(상태별 집계) + 참여 서버 목록을 조립한다.
- * `User.xp` 는 "레벨 내 XP"(services/reward.ts §applyXp 규약)이므로
- * 진행률 = xp / xpRequiredForLevel(level). 근거: #20 §내 대시보드.
+ * 자산·레벨·레벨 내 XP 진행도 + 퀘스트 현황(상태별 집계) + 창고 재고 +
+ * 참여 서버 목록을 조립한다. `User.xp` 는 "레벨 내 XP"(services/reward.ts
+ * §applyXp 규약)이므로 진행률 = xp / xpRequiredForLevel(level).
+ * 근거: #20 §내 대시보드.
  */
 
 /** 퀘스트 상태별 요약. */
@@ -36,6 +38,8 @@ export interface MyDashboard {
   /** 진행률 0~100 (정수). */
   readonly xpPercent: number
   readonly quests: QuestSummary
+  /** 창고 요약. 창고 행이 없거나 등급이 유효 범위를 벗어나면 null. */
+  readonly warehouse: WarehouseSummary | null
   readonly guilds: MyGuild[]
 }
 
@@ -53,7 +57,7 @@ export async function getMyDashboard(gameUserId: string): Promise<MyDashboard | 
   })
   if (!user) return null
 
-  const [questGroups, factoryGuilds, activityGuilds] = await Promise.all([
+  const [questGroups, factoryGuilds, activityGuilds, warehouseRow] = await Promise.all([
     db.userQuest.groupBy({ by: ['status'], where: { userId: gameUserId }, _count: { _all: true } }),
     db.factory.findMany({
       where: { userId: gameUserId, guildId: { not: null } },
@@ -64,6 +68,10 @@ export async function getMyDashboard(gameUserId: string): Promise<MyDashboard | 
       where: { userId: gameUserId },
       select: { guildId: true },
       distinct: ['guildId'],
+    }),
+    db.warehouse.findUnique({
+      where: { userId: gameUserId },
+      select: { grade: true, stacks: { select: { material: true, count: true } } },
     }),
   ])
 
@@ -88,6 +96,9 @@ export async function getMyDashboard(gameUserId: string): Promise<MyDashboard | 
   const guilds: MyGuild[] = guildRows.map((g) => ({ id: g.id, name: g.name }))
 
   const { xpRequired, xpInLevel, xpPercent } = computeXpProgress(user.level, user.xp)
+  const warehouse = warehouseRow
+    ? computeWarehouseSummary(warehouseRow.grade, warehouseRow.stacks)
+    : null
 
   return {
     id: user.id,
@@ -98,6 +109,7 @@ export async function getMyDashboard(gameUserId: string): Promise<MyDashboard | 
     xpRequired: xpRequired.toString(),
     xpPercent,
     quests,
+    warehouse,
     guilds,
   }
 }

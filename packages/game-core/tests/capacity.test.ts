@@ -4,11 +4,27 @@ import {
   computeFree,
   computeUsed,
   isFull,
+  MATERIAL_TYPES,
   MATERIAL_VOLUME,
   unitsThatFit,
   upgradeCostOf,
   volumeOf,
 } from '../src/warehouse/capacity'
+
+describe('MATERIAL_TYPES', () => {
+  it('covers every material in MATERIAL_VOLUME, in declaration order', () => {
+    expect(MATERIAL_TYPES).toEqual(Object.keys(MATERIAL_VOLUME))
+  })
+
+  it('lists T1 raw materials first and the special drop last', () => {
+    expect(MATERIAL_TYPES[0]).toBe('GRAIN')
+    expect(MATERIAL_TYPES.at(-1)).toBe('RAW_BOOSTER')
+  })
+
+  it('has no duplicates', () => {
+    expect(new Set(MATERIAL_TYPES).size).toBe(MATERIAL_TYPES.length)
+  })
+})
 
 describe('capacityOf', () => {
   it('returns capacity for grade 1', () => {
