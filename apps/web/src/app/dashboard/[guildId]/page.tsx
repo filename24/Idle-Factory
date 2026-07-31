@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getGuildStats } from '@/lib/queries/guild-stats'
 import { getLocale, getTranslations } from 'next-intl/server'
@@ -67,11 +68,24 @@ export default async function GuildDashboardPage({ params }: Props): Promise<Rea
       aria-labelledby="guild-heading"
       className="mx-auto max-w-4xl space-y-8 px-4 py-10 sm:px-6"
     >
-      <header className="space-y-1">
-        <p className="text-ash text-xs tracking-wide uppercase">{t('eyebrow')}</p>
-        <h1 id="guild-heading" className="font-display text-ink text-3xl break-keep">
-          {stats.name?.trim() || tCommon('noName')}
-        </h1>
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div className="space-y-1">
+          <p className="text-ash text-xs tracking-wide uppercase">{t('eyebrow')}</p>
+          <h1 id="guild-heading" className="font-display text-ink text-3xl break-keep">
+            {stats.name?.trim() || tCommon('noName')}
+          </h1>
+        </div>
+        {/*
+          권한 검사 없이 링크만 노출한다. 설정 페이지가 자체적으로 인가하고
+          권한이 없으면 안내를 띄우므로, 여기서 Discord 를 조회해 링크를
+          숨기는 것은 공개 페이지에 불필요한 외부 호출만 추가하는 일이다.
+        */}
+        <Link
+          href={`/dashboard/${guildId}/settings`}
+          className="border-hairline text-ash hover:text-ink hover:bg-surface focus-visible:ring-ring rounded border px-3 py-1.5 text-xs transition-colors outline-none focus-visible:ring-2"
+        >
+          {t('manageSettings')}
+        </Link>
       </header>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">

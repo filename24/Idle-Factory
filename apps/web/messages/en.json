@@ -354,7 +354,8 @@
           "revenue": "Sales revenue",
           "vaultAdded": "Added to vault"
         }
-      }
+      },
+      "manageSettings": "Manage settings"
     },
     "xp": {
       "label": "Level {level} experience progress {percent}%"
@@ -823,6 +824,49 @@
       "empty": "No price data yet.",
       "emptyDescription": "Material prices appear here once the game is running.",
       "tickNotice": "Prices tick every 30 minutes; this view is cached for up to 5 minutes."
+    }
+  },
+  "guildAdmin": {
+    "meta": {
+      "title": "Server Settings · Idle Factory",
+      "description": "Server language and surtax settings"
+    },
+    "title": "Server settings",
+    "backToStats": "Back to stats",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Saved.",
+    "lang": {
+      "label": "Server language",
+      "description": "The bot's default language in this server. Personal settings take priority."
+    },
+    "tax": {
+      "label": "Surtax",
+      "description": "An extra tax rate on trades. Revenue goes to the server vault."
+    },
+    "errors": {
+      "INVALID_GUILD_ID": "Invalid server.",
+      "UNAUTHENTICATED": "Please sign in.",
+      "SCOPE_REQUIRED": "Server list permission is required.",
+      "NOT_MEMBER": "You do not have permission to manage this server.",
+      "FORBIDDEN": "You do not have permission to manage this server.",
+      "GUILD_NOT_REGISTERED": "The bot is not in this server.",
+      "RATE_LIMITED": "Too many requests. Try again shortly.",
+      "DISCORD_UNAVAILABLE": "Could not reach Discord.",
+      "INVALID_VALUE": "That value is not allowed.",
+      "INTERNAL": "Something went wrong."
+    },
+    "errorHints": {
+      "INVALID_GUILD_ID": "Check the URL.",
+      "UNAUTHENTICATED": "Sign in with Discord and try again.",
+      "SCOPE_REQUIRED": "Signing in to Discord again is required to check your server permissions. Please sign out and back in.",
+      "NOT_MEMBER": "Only members with Manage Server can change these settings.",
+      "FORBIDDEN": "Only members with Manage Server can change these settings.",
+      "GUILD_NOT_REGISTERED": "Invite the bot and the server registers automatically.",
+      "RATE_LIMITED": "Wait a moment and refresh.",
+      "DISCORD_UNAVAILABLE": "Check Discord status and try again.",
+      "INVALID_VALUE": "Pick a value from the list.",
+      "INTERNAL": "Contact an admin if this keeps happening."
     }
   }
 }

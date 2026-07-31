@@ -10,6 +10,20 @@ export const auth = betterAuth({
     discord: {
       clientId: env.DISCORD_CLIENT_ID,
       clientSecret: env.DISCORD_CLIENT_SECRET,
+      /**
+       * `identify`·`email` 기본 스코프에 `guilds` 를 더한다.
+       *
+       * 서버 관리자 콘솔이 "이 유저가 그 서버에서 ManageGuild 를 갖는가"를
+       * 판정하려면 유저의 길드 목록이 필요하다. `guilds` 는 부분 길드 객체에
+       * `owner` 와 **계산된** `permissions` 를 함께 주므로 요청 한 번으로 모든
+       * 서버를 판정할 수 있다. `guilds.members.read` 는 서버마다 요청이
+       * 필요하고 계산된 권한도 주지 않는다.
+       *
+       * 스코프를 추가해도 **기존 세션은 자동으로 갱신되지 않는다.**
+       * `AuthAccount.scope`(콤마 결합)에 `guilds` 가 없으면 재동의를 유도해야
+       * 하며, 그 판정은 `lib/discord/permissions.ts` 의 `hasScope` 가 한다.
+       */
+      scope: ['guilds'],
     },
   },
   onAPIError: {

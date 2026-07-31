@@ -354,7 +354,8 @@
           "revenue": "판매 수익",
           "vaultAdded": "금고 적립"
         }
-      }
+      },
+      "manageSettings": "서버 설정 관리"
     },
     "xp": {
       "label": "레벨 {level} 경험치 진행률 {percent}%"
@@ -823,6 +824,49 @@
       "empty": "시세 정보가 아직 없습니다.",
       "emptyDescription": "게임이 시작되면 자재 시세가 여기에 표시됩니다.",
       "tickNotice": "시세는 30분마다 갱신되며, 화면은 최대 5분까지 캐시됩니다."
+    }
+  },
+  "guildAdmin": {
+    "meta": {
+      "title": "서버 설정 · Idle Factory",
+      "description": "서버 언어와 가산세 설정"
+    },
+    "title": "서버 설정",
+    "backToStats": "서버 통계로",
+    "save": "저장",
+    "saving": "저장 중…",
+    "saved": "저장했습니다.",
+    "lang": {
+      "label": "서버 언어",
+      "description": "이 서버에서 봇이 사용할 기본 언어입니다. 개인 언어 설정이 우선합니다."
+    },
+    "tax": {
+      "label": "가산세",
+      "description": "거래에 추가로 붙는 세율입니다. 세수는 서버 금고로 적립됩니다."
+    },
+    "errors": {
+      "INVALID_GUILD_ID": "올바르지 않은 서버입니다.",
+      "UNAUTHENTICATED": "로그인이 필요합니다.",
+      "SCOPE_REQUIRED": "서버 목록 권한이 필요합니다.",
+      "NOT_MEMBER": "이 서버를 관리할 권한이 없습니다.",
+      "FORBIDDEN": "이 서버를 관리할 권한이 없습니다.",
+      "GUILD_NOT_REGISTERED": "봇이 없는 서버입니다.",
+      "RATE_LIMITED": "요청이 너무 잦습니다. 잠시 후 다시 시도해 주세요.",
+      "DISCORD_UNAVAILABLE": "Discord 연결에 실패했습니다.",
+      "INVALID_VALUE": "선택한 값이 올바르지 않습니다.",
+      "INTERNAL": "처리 중 문제가 생겼습니다."
+    },
+    "errorHints": {
+      "INVALID_GUILD_ID": "주소를 확인해 주세요.",
+      "UNAUTHENTICATED": "Discord 계정으로 로그인한 뒤 다시 시도해 주세요.",
+      "SCOPE_REQUIRED": "서버 관리 권한을 확인하려면 Discord 재로그인이 필요합니다. 로그아웃 후 다시 로그인해 주세요.",
+      "NOT_MEMBER": "서버 설정은 서버 관리 권한이 있는 사람만 변경할 수 있습니다.",
+      "FORBIDDEN": "서버 설정은 서버 관리 권한이 있는 사람만 변경할 수 있습니다.",
+      "GUILD_NOT_REGISTERED": "봇을 초대하면 서버가 자동으로 등록됩니다.",
+      "RATE_LIMITED": "잠시 기다린 뒤 새로고침해 주세요.",
+      "DISCORD_UNAVAILABLE": "Discord 상태를 확인한 뒤 다시 시도해 주세요.",
+      "INVALID_VALUE": "목록에 있는 값 중에서 선택해 주세요.",
+      "INTERNAL": "문제가 계속되면 관리자에게 문의해 주세요."
     }
   }
 }
