@@ -1,9 +1,60 @@
 import { type LucideIcon, Circle, Coins, LineChart, TrendingDown, TrendingUp } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
+import { formatInt } from '@/lib/format'
+import { formatPpm } from '@/lib/market-math'
+import { getMarketFeed } from '@/lib/queries/market-feed'
 
 /** 경제 시스템 소개 섹션 */
 export async function EconomySection() {
   const t = await getTranslations('home.economy')
+  const tCommon = await getTranslations('common')
+
+  // 랜딩은 절대 500 을 내면 안 된다 — DB 가 흔들려도 예시 수치로 떨어진다.
+  const feed = await getMarketFeed().catch(() => null)
+
+  const metrics: MetricRow[] = feed
+    ? [
+        {
+          key: 'steel',
+          value: tCommon('money', { amount: formatInt(feed.steelPrice) }),
+          change: `${feed.steelChangePpm > 0 ? '+' : ''}${formatPpm(feed.steelChangePpm)}`,
+          changeSubKey: 'changeFromBase',
+          accentClass:
+            feed.steelChangePpm >= 0 ? 'border-l-accent-green/60' : 'border-l-accent-red/60',
+          changeClass: feed.steelChangePpm >= 0 ? 'text-accent-green' : 'text-accent-red',
+          valueClass: 'text-ink',
+        },
+        {
+          key: 'oil',
+          value: tCommon('money', { amount: formatInt(feed.oilPrice) }),
+          change: `${feed.oilChangePpm > 0 ? '+' : ''}${formatPpm(feed.oilChangePpm)}`,
+          changeSubKey: 'changeFromBase',
+          accentClass:
+            feed.oilChangePpm >= 0 ? 'border-l-accent-green/60' : 'border-l-accent-red/60',
+          changeClass: feed.oilChangePpm >= 0 ? 'text-accent-green' : 'text-accent-red',
+          valueClass: 'text-ink',
+        },
+        {
+          key: 'credit',
+          value: formatInt(feed.avgCredit),
+          change: feed.creditTier,
+          changeSubKey: 'tierLabel',
+          accentClass: 'border-l-hairline-strong',
+          changeClass: 'text-mute',
+          valueClass: 'text-ink',
+        },
+        {
+          key: 'factories',
+          value: formatInt(feed.factoryCount),
+          change: '',
+          changeKey: 'running',
+          changeSubKey: 'asOfNow',
+          accentClass: 'border-l-hairline-strong',
+          changeClass: 'text-mute',
+          valueClass: 'text-ink',
+        },
+      ]
+    : METRICS
 
   return (
     <section className="border-hairline border-b">
@@ -50,13 +101,22 @@ export async function EconomySection() {
                 <LineChart aria-hidden="true" className="size-3.5" />
                 Market Feed
               </span>
-              <span className="text-accent-green flex items-center gap-1.5 text-[10px] tracking-[0.15em] uppercase">
-                <Circle aria-hidden="true" className="size-2 fill-current" />
-                Live
-              </span>
+              {feed ? (
+                <span className="text-accent-green flex items-center gap-1.5 text-[10px] tracking-[0.15em] uppercase">
+                  <Circle aria-hidden="true" className="size-2 fill-current" />
+                  Live
+                </span>
+              ) : (
+                /* 실데이터가 없을 때 "Live" 를 달면 안 된다 — 이 패널이
+                   하드코딩 수치에 Live 배지를 붙이고 있던 것이 문제였다. */
+                <span className="text-mute flex items-center gap-1.5 text-[10px] tracking-[0.15em] uppercase">
+                  <Circle aria-hidden="true" className="size-2" />
+                  {t('metrics.sample')}
+                </span>
+              )}
             </div>
 
-            {METRICS.map((m) => (
+            {metrics.map((m) => (
               <div
                 key={m.key}
                 className={`border-hairline flex items-center justify-between border-b border-l-2 px-4 py-5 last:border-b-0 ${m.accentClass}`}
@@ -116,7 +176,7 @@ const FEATURES = [
  * 라벨과 변동 설명만 `home.economy.metrics.*` 키로 뺀다.
  * `changeKey` 가 있으면 change 대신 번역문을 쓴다(숫자가 아닌 문구인 경우).
  */
-const METRICS: Array<{
+interface MetricRow {
   key: string
   value: string
   change: string
@@ -125,12 +185,14 @@ const METRICS: Array<{
   accentClass: string
   changeClass: string
   valueClass: string
-}> = [
+}
+
+const METRICS: MetricRow[] = [
   {
     key: 'steel',
     value: '₩ 4,820',
     change: '3.2%',
-    changeSubKey: 'change24h',
+    changeSubKey: 'changeFromBase',
     accentClass: 'border-l-accent-green/60',
     changeClass: 'text-accent-green',
     valueClass: 'text-ink',
@@ -139,7 +201,7 @@ const METRICS: Array<{
     key: 'oil',
     value: '₩ 2,105',
     change: '1.7%',
-    changeSubKey: 'change24h',
+    changeSubKey: 'changeFromBase',
     accentClass: 'border-l-accent-red/60',
     changeClass: 'text-accent-red',
     valueClass: 'text-ink',
@@ -148,7 +210,7 @@ const METRICS: Array<{
     key: 'credit',
     value: '87%',
     change: '+2pt',
-    changeSubKey: 'changeVsYesterday',
+    changeSubKey: 'tierLabel',
     accentClass: 'border-l-hairline-strong',
     changeClass: 'text-accent-green',
     valueClass: 'text-ink',

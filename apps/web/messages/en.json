@@ -7,7 +7,8 @@
     "ranking": "Ranking",
     "dashboard": "Dashboard",
     "docs": "Docs",
-    "home": "Home"
+    "home": "Home",
+    "market": "Market"
   },
   "locale": {
     "label": "Language",
@@ -162,10 +163,11 @@
         "factories": {
           "label": "Active factories"
         },
-        "change24h": "24h change",
-        "changeVsYesterday": "vs. yesterday",
         "asOfNow": "as of now",
-        "running": "running"
+        "running": "running",
+        "changeFromBase": "vs base price",
+        "tierLabel": "avg credit tier",
+        "sample": "Sample"
       }
     }
   },
@@ -803,6 +805,24 @@
       "title": "Harvested {count} factories",
       "xp": "{amount} XP",
       "levelUp": "Reached level {newLevel}!"
+    }
+  },
+  "market": {
+    "meta": {
+      "title": "Market Prices · Idle Factory",
+      "description": "Global material prices and active listings"
+    },
+    "prices": {
+      "title": "Global market prices",
+      "description": "Current price against the base price for each material.",
+      "material": "Material",
+      "basePrice": "Base",
+      "currentPrice": "Current",
+      "change": "Change",
+      "recentSales": "Recent volume",
+      "empty": "No price data yet.",
+      "emptyDescription": "Material prices appear here once the game is running.",
+      "tickNotice": "Prices tick every 30 minutes; this view is cached for up to 5 minutes."
     }
   }
 }

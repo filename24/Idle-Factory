@@ -7,7 +7,8 @@
     "ranking": "랭킹",
     "dashboard": "대시보드",
     "docs": "문서",
-    "home": "홈"
+    "home": "홈",
+    "market": "마켓"
   },
   "locale": {
     "label": "언어",
@@ -162,10 +163,11 @@
         "factories": {
           "label": "활성 공장"
         },
-        "change24h": "24h 변동",
-        "changeVsYesterday": "전일 대비",
         "asOfNow": "현재 기준",
-        "running": "가동 중"
+        "running": "가동 중",
+        "changeFromBase": "기준가 대비",
+        "tierLabel": "평균 신뢰도 등급",
+        "sample": "예시"
       }
     }
   },
@@ -803,6 +805,24 @@
       "title": "공장 {count}곳에서 수확했습니다",
       "xp": "경험치 +{amount}",
       "levelUp": "레벨 {newLevel} 달성!"
+    }
+  },
+  "market": {
+    "meta": {
+      "title": "마켓 시세 · Idle Factory",
+      "description": "글로벌 자재 시세와 활성 매물"
+    },
+    "prices": {
+      "title": "글로벌 마켓 시세",
+      "description": "자재별 기준가 대비 현재 시세입니다.",
+      "material": "자재",
+      "basePrice": "기준가",
+      "currentPrice": "현재가",
+      "change": "등락",
+      "recentSales": "최근 거래량",
+      "empty": "시세 정보가 아직 없습니다.",
+      "emptyDescription": "게임이 시작되면 자재 시세가 여기에 표시됩니다.",
+      "tickNotice": "시세는 30분마다 갱신되며, 화면은 최대 5분까지 캐시됩니다."
     }
   }
 }
