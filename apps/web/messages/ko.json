@@ -537,5 +537,68 @@
       "guildRanking": "서버 랭킹을 불러오지 못했습니다.",
       "userRanking": "유저 랭킹을 불러오지 못했습니다."
     }
+  },
+  "game": {
+    "errors": {
+      "USER_NOT_FOUND": "게임 계정을 찾을 수 없어요.",
+      "INSUFFICIENT_MONEY": "자금이 부족해요.",
+      "INSUFFICIENT_MATERIAL": "자재가 부족해요.",
+      "WAREHOUSE_FULL": "창고가 가득 찼어요.",
+      "SLOT_OCCUPIED": "이미 다른 공장이 있는 자리예요.",
+      "SLOT_LOCKED": "아직 잠긴 슬롯이에요. 먼저 확장해 주세요.",
+      "SLOT_ALREADY_UNLOCKED": "이미 해금된 슬롯이에요.",
+      "OUT_OF_BOUNDS": "토지 범위를 벗어난 위치예요.",
+      "FACTORY_NOT_FOUND": "공장을 찾을 수 없어요.",
+      "FACTORY_LISTED": "상장된 공장은 철거할 수 없어요.",
+      "LEVEL_LOCKED": "레벨이 부족해요.",
+      "MAX_GRADE": "이미 최대 등급이에요.",
+      "CREDIT_RESTRICTED": "서버 신뢰도가 낮아 이 기능을 쓸 수 없어요.",
+      "BOOSTER_NOT_AVAILABLE": "지금은 부스터를 선택할 수 없어요.",
+      "RAW_BOOSTER_ALREADY_APPLIED": "이미 원료 부스터가 적용된 공장이에요.",
+      "MAX_LANDS": "토지를 더 살 수 없어요. 이미 최대치예요.",
+      "LAND_ALREADY_EXISTS": "이미 보유한 토지예요.",
+      "INVALID_LAND_INDEX": "구매할 수 없는 토지 번호예요.",
+      "LAND_NOT_FOUND": "토지를 찾을 수 없어요.",
+      "MOVE_SAME_POSITION": "이미 그 자리에 있는 공장이에요.",
+      "QUEST_NOT_FOUND": "퀘스트를 찾을 수 없어요.",
+      "QUEST_NOT_COMPLETED": "아직 완료하지 않은 퀘스트예요.",
+      "QUEST_ALREADY_CLAIMED": "이미 보상을 받은 퀘스트예요.",
+      "INVALID_QUANTITY": "수량이 올바르지 않아요.",
+      "INVALID_PRICE": "가격이 올바르지 않아요.",
+      "INVALID_DURATION": "등록 기간이 올바르지 않아요.",
+      "PRICE_OUT_OF_RANGE": "시세 대비 허용 범위를 벗어난 가격이에요.",
+      "LISTING_NOT_FOUND": "매물을 찾을 수 없어요.",
+      "LISTING_NOT_ACTIVE": "이미 판매되었거나 만료된 매물이에요.",
+      "NOT_LISTING_OWNER": "본인 매물만 취소할 수 있어요.",
+      "SELF_PURCHASE": "본인 매물은 구매할 수 없어요.",
+      "PRICE_NOT_FOUND": "시세 정보를 찾을 수 없어요.",
+      "MATERIAL_NOT_DIRECT_BUYABLE": "직접 구매할 수 없는 자재예요.",
+      "DAILY_LIMIT_EXCEEDED": "오늘의 직접 구매 한도를 모두 썼어요.",
+      "CREDIT_LISTING_BLOCKED": "서버 신뢰도가 낮아 매물을 등록할 수 없어요.",
+      "STOCK_NOT_FOUND": "종목을 찾을 수 없어요.",
+      "STOCK_SELF_TRADE": "본인이 상장한 종목은 거래할 수 없어요.",
+      "STOCK_INSUFFICIENT_SHARES": "보유 주식이 부족해요.",
+      "STOCK_LISTING_CONDITION_NOT_MET": "상장 조건을 충족하지 못했어요.",
+      "STOCK_ALREADY_LISTED": "이미 상장된 공장이에요.",
+      "STOCK_FLOAT_EXHAUSTED": "남은 유통 주식이 없어요.",
+      "STOCK_RATE_LIMITED": "같은 종목을 너무 자주 거래했어요. 잠시 후 다시 시도해 주세요.",
+      "STOCK_IPO_PRICE_OUT_OF_RANGE": "상장가가 허용 범위를 벗어났어요.",
+      "STOCK_LEVEL_GATE": "주식 거래를 하기에는 레벨이 부족해요.",
+      "GUILD_NOT_FOUND": "서버를 찾을 수 없어요.",
+      "INVALID_CREDIT_VALUE": "신뢰도 값이 올바르지 않아요.",
+      "AUDIT_REASON_REQUIRED": "사유를 입력해야 해요.",
+      "UNSUPPORTED_LANGUAGE": "지원하지 않는 언어예요."
+    }
+  },
+  "mutation": {
+    "errors": {
+      "UNAUTHENTICATED": "로그인이 필요해요.",
+      "NO_GAME_ACCOUNT": "게임 계정이 없어요. 디스코드에서 먼저 시작해 주세요.",
+      "CONSENT_REQUIRED": "약관 동의가 필요해요. 디스코드에서 동의해 주세요.",
+      "FORBIDDEN_RESOURCE": "접근할 수 없는 대상이에요.",
+      "RATE_LIMITED": "너무 자주 요청했어요. 잠시 후 다시 시도해 주세요.",
+      "INVALID_INPUT": "입력값이 올바르지 않아요.",
+      "INTERNAL": "처리 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요."
+    }
   }
 }

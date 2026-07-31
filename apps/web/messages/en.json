@@ -537,5 +537,68 @@
       "guildRanking": "Could not load the server ranking.",
       "userRanking": "Could not load the player ranking."
     }
+  },
+  "game": {
+    "errors": {
+      "USER_NOT_FOUND": "Game account not found.",
+      "INSUFFICIENT_MONEY": "Not enough money.",
+      "INSUFFICIENT_MATERIAL": "Not enough materials.",
+      "WAREHOUSE_FULL": "Your warehouse is full.",
+      "SLOT_OCCUPIED": "That slot is already occupied.",
+      "SLOT_LOCKED": "That slot is still locked. Expand it first.",
+      "SLOT_ALREADY_UNLOCKED": "That slot is already unlocked.",
+      "OUT_OF_BOUNDS": "That position is outside the land.",
+      "FACTORY_NOT_FOUND": "Factory not found.",
+      "FACTORY_LISTED": "A listed factory cannot be demolished.",
+      "LEVEL_LOCKED": "Your level is too low.",
+      "MAX_GRADE": "Already at the maximum grade.",
+      "CREDIT_RESTRICTED": "This server's credit score is too low for this action.",
+      "BOOSTER_NOT_AVAILABLE": "No booster choice is available right now.",
+      "RAW_BOOSTER_ALREADY_APPLIED": "This factory already has a raw booster.",
+      "MAX_LANDS": "You already own the maximum number of lands.",
+      "LAND_ALREADY_EXISTS": "You already own that land.",
+      "INVALID_LAND_INDEX": "That land number cannot be purchased.",
+      "LAND_NOT_FOUND": "Land not found.",
+      "MOVE_SAME_POSITION": "The factory is already at that position.",
+      "QUEST_NOT_FOUND": "Quest not found.",
+      "QUEST_NOT_COMPLETED": "That quest is not complete yet.",
+      "QUEST_ALREADY_CLAIMED": "You already claimed that reward.",
+      "INVALID_QUANTITY": "That quantity is not valid.",
+      "INVALID_PRICE": "That price is not valid.",
+      "INVALID_DURATION": "That listing duration is not valid.",
+      "PRICE_OUT_OF_RANGE": "That price is outside the allowed range.",
+      "LISTING_NOT_FOUND": "Listing not found.",
+      "LISTING_NOT_ACTIVE": "That listing is no longer active.",
+      "NOT_LISTING_OWNER": "You can only cancel your own listings.",
+      "SELF_PURCHASE": "You cannot buy your own listing.",
+      "PRICE_NOT_FOUND": "No price data found.",
+      "MATERIAL_NOT_DIRECT_BUYABLE": "That material cannot be bought directly.",
+      "DAILY_LIMIT_EXCEEDED": "You have used today's direct purchase limit.",
+      "CREDIT_LISTING_BLOCKED": "This server's credit score is too low to list items.",
+      "STOCK_NOT_FOUND": "Stock not found.",
+      "STOCK_SELF_TRADE": "You cannot trade a stock you listed yourself.",
+      "STOCK_INSUFFICIENT_SHARES": "You do not hold enough shares.",
+      "STOCK_LISTING_CONDITION_NOT_MET": "The listing requirements are not met.",
+      "STOCK_ALREADY_LISTED": "That factory is already listed.",
+      "STOCK_FLOAT_EXHAUSTED": "No shares are left to buy.",
+      "STOCK_RATE_LIMITED": "You traded this stock too often. Try again shortly.",
+      "STOCK_IPO_PRICE_OUT_OF_RANGE": "That IPO price is outside the allowed range.",
+      "STOCK_LEVEL_GATE": "Your level is too low to trade stocks.",
+      "GUILD_NOT_FOUND": "Server not found.",
+      "INVALID_CREDIT_VALUE": "That credit value is not valid.",
+      "AUDIT_REASON_REQUIRED": "A reason is required.",
+      "UNSUPPORTED_LANGUAGE": "That language is not supported."
+    }
+  },
+  "mutation": {
+    "errors": {
+      "UNAUTHENTICATED": "Please sign in.",
+      "NO_GAME_ACCOUNT": "No game account yet. Start playing in Discord first.",
+      "CONSENT_REQUIRED": "You need to accept the terms in Discord first.",
+      "FORBIDDEN_RESOURCE": "You do not have access to that.",
+      "RATE_LIMITED": "Too many requests. Try again shortly.",
+      "INVALID_INPUT": "That input is not valid.",
+      "INTERNAL": "Something went wrong. Try again shortly."
+    }
   }
 }
