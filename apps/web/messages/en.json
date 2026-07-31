@@ -601,5 +601,55 @@
       "INVALID_INPUT": "That input is not valid.",
       "INTERNAL": "Something went wrong. Try again shortly."
     }
+  },
+  "quest": {
+    "title": "Quests",
+    "tutorialChain": "Tutorial {order}/{total}",
+    "progressLabel": "Progress",
+    "rewardLabel": "Reward",
+    "statusCompleted": "Ready to claim",
+    "claimButton": "Claim reward",
+    "claiming": "Claiming…",
+    "reward": {
+      "money": "{amount}",
+      "xp": "{amount} XP",
+      "material": "{material} +{amount}"
+    },
+    "claimed": {
+      "title": "Reward claimed",
+      "already": "You already claimed this reward.",
+      "levelUp": "Reached level {newLevel}!"
+    },
+    "unlocked": {
+      "body": "A new quest is available — {title}"
+    },
+    "empty": {
+      "tutorialDone": "You finished the tutorial.",
+      "tutorialDoneDescription": "You completed {count} quests. New quests will appear here.",
+      "noVisible": "No quests in progress.",
+      "noVisibleDescription": "Start playing in Discord to receive the tutorial quests."
+    },
+    "tutorial": {
+      "1": {
+        "title": "Build your first factory",
+        "description": "Build one T1 factory."
+      },
+      "2": {
+        "title": "First harvest",
+        "description": "Harvest a factory once."
+      },
+      "3": {
+        "title": "Sell on market",
+        "description": "List at least one material on the market."
+      },
+      "4": {
+        "title": "Upgrade a factory",
+        "description": "Upgrade a factory to grade 2."
+      },
+      "5": {
+        "title": "Second factory",
+        "description": "Own two T1 factories."
+      }
+    }
   }
 }

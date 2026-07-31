@@ -9,6 +9,7 @@ import { getMyDashboard } from '@/lib/queries/my-dashboard'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { formatCompact, formatInt } from '@/lib/format'
 import { isLocale } from '@/i18n/config'
+import { QuestSection } from '@/components/dashboard/QuestSection'
 import { StatTile } from '@/components/dashboard/StatTile'
 import { XpProgress } from '@/components/dashboard/XpProgress'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -111,6 +112,8 @@ export default async function MyDashboardPage(): Promise<React.ReactElement> {
           value={tCommon('count', { count: formatInt(data.quests.claimed) })}
         />
       </div>
+
+      <QuestSection gameUserId={data.id} />
 
       <div className="space-y-3">
         <h2 className="font-display text-ink text-lg">{t('guilds.title')}</h2>

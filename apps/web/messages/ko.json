@@ -601,5 +601,55 @@
       "INVALID_INPUT": "입력값이 올바르지 않아요.",
       "INTERNAL": "처리 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요."
     }
+  },
+  "quest": {
+    "title": "퀘스트",
+    "tutorialChain": "튜토리얼 {order}/{total}",
+    "progressLabel": "진행도",
+    "rewardLabel": "보상",
+    "statusCompleted": "수령 대기",
+    "claimButton": "보상 받기",
+    "claiming": "수령 중…",
+    "reward": {
+      "money": "{amount}",
+      "xp": "경험치 +{amount}",
+      "material": "{material} +{amount}"
+    },
+    "claimed": {
+      "title": "보상을 받았습니다",
+      "already": "이미 받은 보상이에요.",
+      "levelUp": "레벨 {newLevel} 달성!"
+    },
+    "unlocked": {
+      "body": "새 퀘스트가 열렸습니다 — {title}"
+    },
+    "empty": {
+      "tutorialDone": "튜토리얼을 모두 마쳤습니다.",
+      "tutorialDoneDescription": "{count}개 퀘스트를 완료했어요. 새 퀘스트가 준비되면 여기에 표시됩니다.",
+      "noVisible": "진행 중인 퀘스트가 없습니다.",
+      "noVisibleDescription": "Discord에서 게임을 시작하면 튜토리얼 퀘스트가 표시됩니다."
+    },
+    "tutorial": {
+      "1": {
+        "title": "첫 공장 건설",
+        "description": "T1 공장을 1개 건설해보세요."
+      },
+      "2": {
+        "title": "첫 수확",
+        "description": "공장에서 자재를 1회 수확해보세요."
+      },
+      "3": {
+        "title": "자재 판매",
+        "description": "마켓에 자재를 1개 이상 등록해보세요."
+      },
+      "4": {
+        "title": "공장 업그레이드",
+        "description": "공장을 2등급으로 업그레이드해보세요."
+      },
+      "5": {
+        "title": "두 번째 공장",
+        "description": "T1 공장을 2개 보유하세요."
+      }
+    }
   }
 }
