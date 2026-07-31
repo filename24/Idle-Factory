@@ -22,6 +22,7 @@
   "dependencies": {
     "@idle/database": "workspace:^",
     "@idle/game-core": "workspace:^",
+    "@idle/game-services": "workspace:^",
     "@napi-rs/canvas": "1.0.2",
     "@sapphire/framework": "^5.3.7",
     "@sapphire/pieces": "^4.3.9",
