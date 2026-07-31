@@ -793,5 +793,16 @@
       "SPEED": "Speed",
       "PROFIT": "Profit"
     }
+  },
+  "harvest": {
+    "title": "Harvest",
+    "harvestAll": "Harvest all",
+    "harvesting": "Harvesting…",
+    "nothingToHarvest": "Nothing to harvest yet. Try again shortly.",
+    "done": {
+      "title": "Harvested {count} factories",
+      "xp": "{amount} XP",
+      "levelUp": "Reached level {newLevel}!"
+    }
   }
 }

@@ -793,5 +793,16 @@
       "SPEED": "속도",
       "PROFIT": "수익"
     }
+  },
+  "harvest": {
+    "title": "수확",
+    "harvestAll": "전체 수확",
+    "harvesting": "수확 중…",
+    "nothingToHarvest": "아직 수확할 자재가 없어요. 잠시 후 다시 시도해 주세요.",
+    "done": {
+      "title": "공장 {count}곳에서 수확했습니다",
+      "xp": "경험치 +{amount}",
+      "levelUp": "레벨 {newLevel} 달성!"
+    }
   }
 }

@@ -9,6 +9,7 @@ import { getMyDashboard } from '@/lib/queries/my-dashboard'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { formatCompact, formatInt } from '@/lib/format'
 import { isLocale } from '@/i18n/config'
+import { HarvestAllButton } from '@/components/game/HarvestAllButton'
 import { QuestSection } from '@/components/dashboard/QuestSection'
 import { StatTile } from '@/components/dashboard/StatTile'
 import { WarehousePanel } from '@/components/dashboard/WarehousePanel'
@@ -116,6 +117,7 @@ export default async function MyDashboardPage(): Promise<React.ReactElement> {
 
       <div className="space-y-3">
         <h2 className="font-display text-ink text-lg">{t('assets.title')}</h2>
+        <HarvestAllButton />
         <Link
           href="/dashboard/me/land"
           className="border-hairline hover:bg-surface focus-visible:ring-ring flex items-center gap-3 rounded border px-4 py-3 text-sm transition-colors outline-none focus-visible:ring-2"

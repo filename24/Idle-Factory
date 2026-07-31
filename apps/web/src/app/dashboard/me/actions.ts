@@ -14,6 +14,16 @@
 
 import { claimQuest } from '@/lib/mutations/quest-claim'
 import type { QuestClaimSuccess } from '@/lib/mutations/quest-claim'
+import {
+  buildFactory,
+  buyLand,
+  destroyFactory,
+  expandSlot,
+  harvestAll,
+  harvestOne,
+  moveFactory,
+  upgradeFactory,
+} from '@/lib/mutations/game-loop'
 import type { MutationResult } from '@/lib/mutation'
 
 /**
@@ -25,4 +35,72 @@ export async function claimQuestAction(
   formData: FormData,
 ): Promise<MutationResult<QuestClaimSuccess>> {
   return claimQuest(formData)
+}
+
+/** 전체 공장 일괄 수확. */
+export async function harvestAllAction(): Promise<MutationResult<unknown>> {
+  return harvestAll({})
+}
+
+/**
+ * 단일 공장 수확.
+ *
+ * @param formData `factoryId`
+ */
+export async function harvestOneAction(formData: FormData): Promise<MutationResult<unknown>> {
+  return harvestOne(formData)
+}
+
+/**
+ * 공장 건설.
+ *
+ * @param formData `type`, `anchorX`, `anchorY`, `landIndex`
+ */
+export async function buildFactoryAction(formData: FormData): Promise<MutationResult<unknown>> {
+  return buildFactory(formData)
+}
+
+/**
+ * 공장 업그레이드.
+ *
+ * @param formData `factoryId`
+ */
+export async function upgradeFactoryAction(formData: FormData): Promise<MutationResult<unknown>> {
+  return upgradeFactory(formData)
+}
+
+/**
+ * 공장 철거.
+ *
+ * @param formData `factoryId`
+ */
+export async function destroyFactoryAction(formData: FormData): Promise<MutationResult<unknown>> {
+  return destroyFactory(formData)
+}
+
+/**
+ * 공장 이전.
+ *
+ * @param formData `factoryId`, `landIndex`, `toX`, `toY`
+ */
+export async function moveFactoryAction(formData: FormData): Promise<MutationResult<unknown>> {
+  return moveFactory(formData)
+}
+
+/**
+ * 토지 구매.
+ *
+ * @param formData `targetIndex`
+ */
+export async function buyLandAction(formData: FormData): Promise<MutationResult<unknown>> {
+  return buyLand(formData)
+}
+
+/**
+ * 잠긴 슬롯 확장.
+ *
+ * @param formData `landIndex`, `x`, `y`
+ */
+export async function expandSlotAction(formData: FormData): Promise<MutationResult<unknown>> {
+  return expandSlot(formData)
 }
