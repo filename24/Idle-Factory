@@ -535,7 +535,8 @@
       "guildNotFound": "서버를 찾을 수 없습니다.",
       "guildStats": "서버 통계를 불러오지 못했습니다.",
       "guildRanking": "서버 랭킹을 불러오지 못했습니다.",
-      "userRanking": "유저 랭킹을 불러오지 못했습니다."
+      "userRanking": "유저 랭킹을 불러오지 못했습니다.",
+      "rateLimited": "요청이 너무 잦아요. 잠시 후 다시 시도해 주세요."
     }
   },
   "game": {

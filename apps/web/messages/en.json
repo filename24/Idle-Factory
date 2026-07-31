@@ -535,7 +535,8 @@
       "guildNotFound": "Server not found.",
       "guildStats": "Could not load the server statistics.",
       "guildRanking": "Could not load the server ranking.",
-      "userRanking": "Could not load the player ranking."
+      "userRanking": "Could not load the player ranking.",
+      "rateLimited": "Too many requests. Try again shortly."
     }
   },
   "game": {
