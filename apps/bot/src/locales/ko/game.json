@@ -93,7 +93,9 @@
         "used": "사용 중",
         "free": "여유",
         "stacks": "보관 자원"
-      }
+      },
+      "slots": "{{used}} / {{capacity}} 슬롯",
+      "empty": "보관 중인 자원이 없어요."
     },
     "upgrade": {
       "success": "창고를 G{{grade}}(으)로 업그레이드했어요!",
@@ -202,7 +204,8 @@
       "warehouseGrade": "창고 등급",
       "factoryCount": "공장 수",
       "serverCredit": "서버 신뢰도"
-    }
+    },
+    "warehouseMore": "외 {{count}}종은 `/warehouse view` 에서 확인할 수 있어요."
   },
   "common": {
     "error": {

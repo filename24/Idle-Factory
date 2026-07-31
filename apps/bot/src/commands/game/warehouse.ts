@@ -16,16 +16,20 @@ import { WarehouseService, type WarehouseView } from '../../services/warehouse'
 import { ServiceError } from '../../services/base'
 import { formatBigInt } from '../../structures/renderers/FactoryRenderer'
 import { localizeMaterial } from '../../utils/enumLocale'
+import { stackLines } from '../../utils/warehouseDisplay'
 import type { MaterialType } from '@idle/game-core'
 
+/**
+ * 보관 자원 블록. 표시 로직은 `/profile` 과 공유해 두 커맨드의 재고 표기가
+ * 갈리지 않게 한다.
+ *
+ * @param view 창고 조회 결과
+ * @param t 대상 로케일 `t` 함수
+ * @returns 자재별 라인 목록, 재고가 없으면 안내 문구
+ */
 function stacksDisplay(view: WarehouseView, t: TFunction): string {
-  const nonEmpty = view.stacks.filter((s) => s.count > 0n)
-  if (nonEmpty.length === 0) return '—'
-  return nonEmpty
-    .map(
-      (s) => `• ${localizeMaterial(t, s.material)}: ${formatBigInt(s.count)}`
-    )
-    .join('\n')
+  const lines = stackLines(t, view.stacks)
+  return lines.length === 0 ? t('game:warehouse.view.empty') : lines.join('\n')
 }
 
 export class WarehouseCommand extends Command {

@@ -48,6 +48,21 @@ export const MATERIAL_VOLUME: Readonly<Record<MaterialType, bigint>> = {
 }
 
 /**
+ * 표시·순회용 자재 종류 목록 (T1 → T2 → T3 → 특수, 선언 순서).
+ *
+ * `MATERIAL_VOLUME` 의 키 순서를 그대로 쓴다. 배열 리터럴로 따로 적으면 자재가
+ * 추가될 때 누락돼도 컴파일이 통과하지만, `Readonly<Record<MaterialType, bigint>>`
+ * 의 키를 재사용하면 누락이 타입 레벨에서 원천 차단된다.
+ *
+ * 창고 스택 조회에는 `orderBy` 가 없어 DB 반환 순서가 비결정적이므로
+ * (`apps/bot/src/services/warehouse.ts` §loadWarehouse), 재고를 나열하는 표시
+ * 계층은 이 순서를 기준으로 직접 정렬한다.
+ */
+export const MATERIAL_TYPES: readonly MaterialType[] = Object.keys(
+  MATERIAL_VOLUME,
+) as MaterialType[]
+
+/**
  * 자재의 부피 계수를 반환한다.
  *
  * @param material 자재 종류
@@ -122,6 +137,28 @@ export const WAREHOUSE_UPGRADE_COST: Readonly<Record<number, WarehouseUpgradeCos
   10: { money: 50_000_000n, material: 'CAR', amount: 50n },
 }
 
+/** 용량 테이블에 정의된 등급 목록 — 등급 범위의 단일 출처. */
+const WAREHOUSE_GRADES: readonly number[] = Object.keys(WAREHOUSE_CAPACITY).map(Number)
+
+/** 창고 등급 하한. */
+export const MIN_WAREHOUSE_GRADE: number = Math.min(...WAREHOUSE_GRADES)
+
+/** 창고 등급 상한. */
+export const MAX_WAREHOUSE_GRADE: number = Math.max(...WAREHOUSE_GRADES)
+
+/**
+ * 창고 등급이 용량 테이블에 존재하는 유효 등급인지 판정한다.
+ *
+ * 범위를 상수로 따로 적으면 용량 테이블이 늘어날 때 표시 계층이 조용히
+ * 어긋나므로(`MATERIAL_TYPES` 와 같은 이유), 테이블 자체를 기준으로 삼는다.
+ *
+ * @param grade 창고 등급
+ * @returns 유효하면 `true` (= `capacityOf` 가 던지지 않음)
+ */
+export function isValidWarehouseGrade(grade: number): boolean {
+  return grade >= MIN_WAREHOUSE_GRADE && grade <= MAX_WAREHOUSE_GRADE
+}
+
 /**
  * 주어진 등급의 창고 용량.
  *
@@ -130,8 +167,8 @@ export const WAREHOUSE_UPGRADE_COST: Readonly<Record<number, WarehouseUpgradeCos
  * @throws {RangeError} 등급이 1..10을 벗어난 경우
  */
 export function capacityOf(grade: number): bigint {
-  if (grade < 1 || grade > 10) {
-    throw new RangeError('grade out of 1..10')
+  if (!isValidWarehouseGrade(grade)) {
+    throw new RangeError(`grade out of ${MIN_WAREHOUSE_GRADE}..${MAX_WAREHOUSE_GRADE}`)
   }
   return WAREHOUSE_CAPACITY[grade]!
 }
