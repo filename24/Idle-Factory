@@ -1,12 +1,14 @@
 /**
  * `/profile` 커맨드.
  *
- * 호출자의 프로필(레벨/XP/돈/창고 등급/공장 수)을 Components v2 컨테이너로 보여준다.
+ * 호출자의 프로필(레벨/XP/돈/창고 등급/공장 수)과 창고 재고를 Components v2
+ * 컨테이너로 보여준다. 재고를 인라인으로 붙이는 이유는 `/warehouse view` 를
+ * 따로 치지 않고도 프로필 한 번으로 보유 자재를 확인하게 하기 위해서다.
  *
  * XP 표시는 `xp / xpRequiredForLevel(level + 1)` 포맷(현재 누적 XP / 다음 레벨 요구량).
  * BigInt 필드는 `formatBigInt`로 천단위 구분 포맷팅한다.
  *
- * 참조: `docs/design/09-level-xp.md`.
+ * 참조: `docs/design/09-level-xp.md`, `docs/design/05-warehouse.md`.
  */
 
 import { Command } from '@sapphire/framework'
@@ -14,6 +16,7 @@ import { fetchT } from '@sapphire/plugin-i18next'
 import { simpleV2Payload, V2_ACCENT } from '../../utils/ComponentsV2'
 import { getCreditTier, xpRequiredForLevel } from '@idle/game-core'
 import { formatBigInt } from '../../structures/renderers/FactoryRenderer'
+import { buildProfileWarehouseSection } from '../../utils/warehouseDisplay'
 import { UserService } from '../../services/user'
 
 /**
@@ -52,9 +55,19 @@ export class ProfileCommand extends Command {
       nickname: interaction.user.username
     })
 
-    const factoryCount = await db.factory.count({
-      where: { userId: hydrated.id }
-    })
+    // 공장 수와 창고 재고는 서로 독립적이라 한 번에 던진다.
+    // `WarehouseService.view` 를 쓰지 않는 이유: 그쪽은 Serializable 트랜잭션을
+    // 새로 열지만(services/warehouse.ts §view), 등급은 이미 `UserService.ensure`
+    // 결과에 들어 있어 프로필은 재고 행만 읽으면 충분하다.
+    const [factoryCount, stacks] = await Promise.all([
+      db.factory.count({ where: { userId: hydrated.id } }),
+      hydrated.warehouse
+        ? db.warehouseStack.findMany({
+            where: { warehouseId: hydrated.warehouse.id },
+            select: { material: true, count: true }
+          })
+        : Promise.resolve([])
+    ])
 
     const level = hydrated.level
     const xp = hydrated.xp
@@ -85,13 +98,19 @@ export class ProfileCommand extends Command {
       }
     }
 
-    const body = lines.join('\n')
+    const warehouse = buildProfileWarehouseSection(
+      t,
+      hydrated.warehouse?.grade ?? 1,
+      stacks
+    )
+    const body = [...lines, '', warehouse.body].join('\n')
 
     return interaction.reply(
       simpleV2Payload({
         accent: V2_ACCENT.info,
         title: t('game:profile.title', { nickname: displayName }),
         body,
+        footer: warehouse.footer,
         ephemeral: false
       })
     )

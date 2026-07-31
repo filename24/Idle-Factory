@@ -246,6 +246,21 @@
       "ELITE": "Elite"
     }
   },
+  "material": {
+    "GRAIN": "Grain",
+    "ORE": "Ore",
+    "WOOD": "Wood",
+    "CRUDE_OIL": "Crude Oil",
+    "STEEL": "Steel",
+    "FUEL": "Fuel",
+    "PLASTIC": "Plastic",
+    "PROCESSED_FOOD": "Processed Food",
+    "FURNITURE": "Furniture",
+    "CAR": "Car",
+    "ELECTRONIC": "Electronics",
+    "FINISHED_FOOD": "Finished Food",
+    "RAW_BOOSTER": "Raw Booster"
+  },
   "dashboard": {
     "me": {
       "error": {
@@ -253,7 +268,7 @@
       },
       "meta": {
         "title": "My dashboard · Idle Factory",
-        "description": "Your wealth, level, quest progress, and joined servers"
+        "description": "Your wealth, level, warehouse stock, quest progress, and joined servers"
       },
       "eyebrow": "My dashboard",
       "fallbackName": "Player",
@@ -269,6 +284,19 @@
         "questsCompleted": "Ready to claim",
         "questsCompletedHint": "Completed, not claimed",
         "questsClaimed": "Quests completed"
+      },
+      "warehouse": {
+        "title": "Warehouse",
+        "grade": "Grade G{grade}",
+        "usage": "{used} / {capacity} slots",
+        "progressLabel": "Warehouse usage {percent}%",
+        "freeHint": "{free} slots free",
+        "empty": "No materials stored.",
+        "emptyDescription": "Materials you harvest from factories will appear here.",
+        "columns": {
+          "material": "Material",
+          "count": "Amount"
+        }
       },
       "guilds": {
         "title": "Your servers",

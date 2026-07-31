@@ -10,6 +10,7 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { formatCompact, formatInt } from '@/lib/format'
 import { isLocale } from '@/i18n/config'
 import { StatTile } from '@/components/dashboard/StatTile'
+import { WarehousePanel } from '@/components/dashboard/WarehousePanel'
 import { XpProgress } from '@/components/dashboard/XpProgress'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
@@ -111,6 +112,8 @@ export default async function MyDashboardPage(): Promise<React.ReactElement> {
           value={tCommon('count', { count: formatInt(data.quests.claimed) })}
         />
       </div>
+
+      <WarehousePanel summary={data.warehouse} />
 
       <div className="space-y-3">
         <h2 className="font-display text-ink text-lg">{t('guilds.title')}</h2>

@@ -93,7 +93,9 @@
         "used": "Used",
         "free": "Free",
         "stacks": "Stored materials"
-      }
+      },
+      "slots": "{{used}} / {{capacity}} slots",
+      "empty": "No materials stored."
     },
     "upgrade": {
       "success": "Warehouse upgraded to G{{grade}}!",
@@ -202,7 +204,8 @@
       "warehouseGrade": "Warehouse grade",
       "factoryCount": "Factories",
       "serverCredit": "Server Credit"
-    }
+    },
+    "warehouseMore": "{{count}} more material type(s) — see `/warehouse view`."
   },
   "common": {
     "error": {
