@@ -303,6 +303,11 @@
         "empty": "You are not in any server yet.",
         "emptyDescription": "Servers where you build or stay active will appear here.",
         "viewStats": "View statistics →"
+      },
+      "assets": {
+        "title": "My assets",
+        "land": "Land layout",
+        "view": "View →"
       }
     },
     "guild": {
@@ -678,6 +683,115 @@
         "title": "Second factory",
         "description": "Own two T1 factories."
       }
+    }
+  },
+  "land": {
+    "meta": {
+      "title": "My Land · Idle Factory",
+      "description": "Land layout and factory placement"
+    },
+    "title": "Land {index}",
+    "gridLabel": "Land {index} layout",
+    "navLabel": "Land navigation",
+    "backToDashboard": "Back to dashboard",
+    "prev": "Previous",
+    "next": "Next",
+    "position": "{position} / {total}",
+    "tiles": {
+      "factories": "Factories",
+      "unlocked": "Unlocked",
+      "locked": "Locked"
+    },
+    "cell": {
+      "locked": "Row {x}, column {y} — locked",
+      "empty": "Row {x}, column {y} — empty",
+      "special": "Special slot — {type}",
+      "factory": "{name} · grade {grade}"
+    },
+    "slotType": {
+      "NORMAL": "Normal",
+      "ORE": "Ore Vein",
+      "FERTILE": "Fertile",
+      "FOREST": "Forest",
+      "OIL": "Oil Field",
+      "WATER": "Water"
+    }
+  },
+  "factory": {
+    "meta": {
+      "title": "Factory Detail · Idle Factory",
+      "description": "Factory grade, output and upgrade cost"
+    },
+    "backToLand": "Back to land {index}",
+    "listed": "Listed",
+    "tiles": {
+      "grade": "Grade",
+      "gradeMax": "Max grade",
+      "position": "Position",
+      "positionValue": "Row {x}, col {y}",
+      "landHint": "Land {index}",
+      "bonus": "Output bonus",
+      "bonusHint": "Slot ×{slot} · Synergy ×{synergy}",
+      "slotType": "Slot type"
+    },
+    "production": {
+      "title": "Production",
+      "output": "Output",
+      "secondary": "By-products",
+      "recipe": "Inputs",
+      "noRecipe": "None",
+      "perTick": "per 10 min",
+      "shortageMode": "On shortage"
+    },
+    "upgrade": {
+      "title": "Upgrade",
+      "toGrade": "Cost to grade {grade}",
+      "material": "Materials",
+      "maxReached": "Maximum grade reached.",
+      "booster": "Upgrade booster",
+      "noBooster": "None",
+      "rawBooster": "Raw booster",
+      "applied": "Applied",
+      "notApplied": "Not applied"
+    },
+    "costs": {
+      "title": "Costs",
+      "build": "Build cost",
+      "move": "Move cost",
+      "refund": "Demolish refund",
+      "listedBlocked": "Cannot demolish while listed"
+    },
+    "type": {
+      "FARM": "Farm",
+      "MINE": "Mine",
+      "LUMBER": "Lumber Mill",
+      "OIL_WELL": "Oil Well",
+      "STEEL_MILL": "Steel Mill",
+      "REFINERY": "Refinery",
+      "FLOUR_MILL": "Flour Mill",
+      "FURNITURE_FACTORY": "Furniture Factory",
+      "CAR_FACTORY": "Car Factory",
+      "ELECTRONICS_FACTORY": "Electronics Factory",
+      "FOOD_FACTORY": "Food Factory"
+    },
+    "slotType": {
+      "NORMAL": "Normal",
+      "ORE": "Ore Vein",
+      "FERTILE": "Fertile",
+      "FOREST": "Forest",
+      "OIL": "Oil Field",
+      "WATER": "Water"
+    },
+    "shortageMode": {
+      "PAUSE": "Pause",
+      "AUTO_BUY": "Auto buy",
+      "PARTIAL": "Partial"
+    },
+    "booster": {
+      "SAVING": "Saving",
+      "RARE": "Rare",
+      "SPEED": "Speed",
+      "PROFIT": "Profit"
     }
   }
 }

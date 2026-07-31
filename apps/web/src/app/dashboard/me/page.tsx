@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
-import { Server } from 'lucide-react'
+import { Map, Server } from 'lucide-react'
 import { auth } from '@/lib/auth'
 import { resolveGameUserId } from '@/lib/game-user'
 import { getMyDashboard } from '@/lib/queries/my-dashboard'
@@ -112,6 +112,18 @@ export default async function MyDashboardPage(): Promise<React.ReactElement> {
           label={t('tiles.questsClaimed')}
           value={tCommon('count', { count: formatInt(data.quests.claimed) })}
         />
+      </div>
+
+      <div className="space-y-3">
+        <h2 className="font-display text-ink text-lg">{t('assets.title')}</h2>
+        <Link
+          href="/dashboard/me/land"
+          className="border-hairline hover:bg-surface focus-visible:ring-ring flex items-center gap-3 rounded border px-4 py-3 text-sm transition-colors outline-none focus-visible:ring-2"
+        >
+          <Map aria-hidden="true" className="text-mute size-4 shrink-0" />
+          <span className="text-body min-w-0 flex-1">{t('assets.land')}</span>
+          <span className="text-ash text-xs">{t('assets.view')}</span>
+        </Link>
       </div>
 
       <WarehousePanel summary={data.warehouse} />

@@ -303,6 +303,11 @@
         "empty": "참여 중인 서버가 없습니다.",
         "emptyDescription": "공장을 건설하거나 활동한 서버가 여기에 표시됩니다.",
         "viewStats": "통계 보기 →"
+      },
+      "assets": {
+        "title": "내 자산",
+        "land": "토지 배치도",
+        "view": "보기 →"
       }
     },
     "guild": {
@@ -678,6 +683,115 @@
         "title": "두 번째 공장",
         "description": "T1 공장을 2개 보유하세요."
       }
+    }
+  },
+  "land": {
+    "meta": {
+      "title": "내 토지 · Idle Factory",
+      "description": "토지 배치와 공장 현황"
+    },
+    "title": "토지 {index}",
+    "gridLabel": "토지 {index} 배치도",
+    "navLabel": "토지 이동",
+    "backToDashboard": "대시보드로",
+    "prev": "이전 토지",
+    "next": "다음 토지",
+    "position": "{position} / {total}",
+    "tiles": {
+      "factories": "공장",
+      "unlocked": "해금 슬롯",
+      "locked": "잠긴 슬롯"
+    },
+    "cell": {
+      "locked": "{x}행 {y}열 — 잠김",
+      "empty": "{x}행 {y}열 — 비어 있음",
+      "special": "특수 슬롯 — {type}",
+      "factory": "{name} · 등급 {grade}"
+    },
+    "slotType": {
+      "NORMAL": "일반",
+      "ORE": "광맥",
+      "FERTILE": "비옥지",
+      "FOREST": "삼림",
+      "OIL": "유전지",
+      "WATER": "수원"
+    }
+  },
+  "factory": {
+    "meta": {
+      "title": "공장 상세 · Idle Factory",
+      "description": "공장 등급·생산량·업그레이드 비용"
+    },
+    "backToLand": "토지 {index}로",
+    "listed": "상장됨",
+    "tiles": {
+      "grade": "등급",
+      "gradeMax": "최대 등급",
+      "position": "위치",
+      "positionValue": "{x}행 {y}열",
+      "landHint": "토지 {index}",
+      "bonus": "생산 보너스",
+      "bonusHint": "슬롯 ×{slot} · 시너지 ×{synergy}",
+      "slotType": "슬롯 종류"
+    },
+    "production": {
+      "title": "생산",
+      "output": "산출",
+      "secondary": "부산물",
+      "recipe": "필요 원료",
+      "noRecipe": "없음",
+      "perTick": "10분당",
+      "shortageMode": "원료 부족 시"
+    },
+    "upgrade": {
+      "title": "업그레이드",
+      "toGrade": "{grade}등급 비용",
+      "material": "필요 자재",
+      "maxReached": "최대 등급에 도달했습니다.",
+      "booster": "업그레이드 부스터",
+      "noBooster": "없음",
+      "rawBooster": "원료 부스터",
+      "applied": "적용됨",
+      "notApplied": "미적용"
+    },
+    "costs": {
+      "title": "비용",
+      "build": "건설 원가",
+      "move": "이전 비용",
+      "refund": "철거 환급",
+      "listedBlocked": "상장 중에는 철거 불가"
+    },
+    "type": {
+      "FARM": "농장",
+      "MINE": "광산",
+      "LUMBER": "목재소",
+      "OIL_WELL": "유전",
+      "STEEL_MILL": "제철소",
+      "REFINERY": "정유소",
+      "FLOUR_MILL": "제분소",
+      "FURNITURE_FACTORY": "가구 공장",
+      "CAR_FACTORY": "자동차 공장",
+      "ELECTRONICS_FACTORY": "전자 공장",
+      "FOOD_FACTORY": "식품 공장"
+    },
+    "slotType": {
+      "NORMAL": "일반",
+      "ORE": "광맥",
+      "FERTILE": "비옥지",
+      "FOREST": "삼림",
+      "OIL": "유전지",
+      "WATER": "수원"
+    },
+    "shortageMode": {
+      "PAUSE": "대기",
+      "AUTO_BUY": "자동 구매",
+      "PARTIAL": "부분 생산"
+    },
+    "booster": {
+      "SAVING": "절약",
+      "RARE": "희귀",
+      "SPEED": "속도",
+      "PROFIT": "수익"
     }
   }
 }
