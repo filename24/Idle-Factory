@@ -30,7 +30,9 @@ flowchart TD
 | 유저 거래 | ⭕     |
 | 주식 수익 | ⭕     |
 
-> 구체적 수치는 `09-level-xp.md` 참조 (미정)
+> 구체적 수치는 `09-level-xp.md` 참조
+>
+> **코드 기준**: `packages/game-core/src/xp/level.ts` 의 `xpForEvent()` 가 `TICK_PRODUCTION`(+5/tick) · `MARKET_SELL`(+20/건) · `USER_TRADE`(+15/건) · `STOCK_REALIZE`(+10/건) · `BUILD`/`UPGRADE`(비용/1000, 상한 1000)를 확정 수치로 구현한다.
 
 ## 자원 흐름 요약
 

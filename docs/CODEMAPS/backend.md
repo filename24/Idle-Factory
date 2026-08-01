@@ -102,7 +102,9 @@ Key methods:
 
 - `ensure(userId)` — Create default 4×4 land (index 1)
 - `buy(userId, index)` — Purchase land 2–5 (escalating cost)
-- `expandFactory(factoryId, direction)` — Grow factory footprint (Phase 2)
+- `expandSlot(prisma, { userId, landIndex, x, y })` — Purchase and activate one locked slot
+
+> **Code reference**: `packages/game-services/src/land.ts:160` implements `LandService.expandSlot`, wired through the live `/land expand` subcommand (`apps/bot/src/commands/game/land.ts:926` `handleExpand`).
 
 Land rules:
 
@@ -146,9 +148,14 @@ Root: `apps/bot/src/interaction-handlers/`
 
 ### Modals
 
-| Handler | File                | CustomId Pattern | Purpose |
-| ------- | ------------------- | ---------------- | ------- |
-| (stub)  | `modals/example.ts` | (placeholder)    | TBD     |
+| Handler                       | File                                      | CustomId Pattern                                 | Purpose                                          |
+| ----------------------------- | ----------------------------------------- | ------------------------------------------------ | ------------------------------------------------ |
+| marketListDetails             | `modals/marketListDetails.ts`             | `market:list:details:<material>`                 | Market listing detail input (qty/price/duration) |
+| marketListPriceCustom         | `modals/marketListPriceCustom.ts`         | `market:list:prc_m:<material>:<days>:<quantity>` | Custom listing price input                       |
+| marketSellQuantityCustom      | `modals/marketSellQuantityCustom.ts`      | `market:sell:qty_m:<material>`                   | Custom sell quantity input                       |
+| marketDirectBuyQuantityCustom | `modals/marketDirectBuyQuantityCustom.ts` | `market:dbuy:qty_m:<material>`                   | Custom direct-buy quantity input                 |
+| stockBuyQuantity              | `modals/stockBuyQuantity.ts`              | `stock:buyqty:<stockId>`                         | Stock buy share quantity input                   |
+| stockSellQuantity             | `modals/stockSellQuantity.ts`             | `stock:sellqty:<stockId>`                        | Stock sell share quantity input                  |
 
 ## Utility Modules
 
@@ -198,9 +205,7 @@ Root: `apps/bot/src/listeners/`
 
 Error listeners:
 
-- `errors/chatInputCommand.ts` — Slash command error handler
-- `errors/interaction.ts` — Interaction error dispatch
-- `errors/message.ts` — Message command error (none currently)
+- `errors/commandError.ts` (`ChatInputCommandErrorListener`) — Slash command error handler; the only error listener currently registered. Prefix/message commands are not used by this bot, so there is no dedicated message-command error listener.
 
 ## Transaction Pattern
 

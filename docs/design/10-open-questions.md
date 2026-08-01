@@ -60,13 +60,16 @@
 
 - [ ] 사기 방지 규칙 세부 수치
 - [ ] UI/명령어 구조
-- [ ] 서버 관리자 전용 명령어
-- [ ] 통계/대시보드 페이지
+- [x] ~~서버 관리자 전용 명령어~~ 구현 완료
+  > **코드 기준**: `apps/bot/src/commands/game/server.ts` 의 `/server announce`, `apps/bot/src/interaction-handlers/buttons/guildSettings.ts`·`selects/guildSettingsTax.ts` 가 Discord `ManageGuild` 권한으로 게이팅된 서버 관리자 전용 기능을 구현한다.
+- [x] ~~통계/대시보드 페이지~~ 구현 완료
+  > **코드 기준**: `apps/web/src/app/dashboard/`(`me/`, `[guildId]/`)와 `apps/web/src/app/ranking/` 이 `StatTile`·`BarChart`·`GuildRankingTable`·`UserRankingTable` 컴포넌트로 개인·서버 대시보드와 랭킹 페이지를 서비스한다.
 - [ ] 알림/이벤트 시스템
 
 ## 🔵 Low (향후 로드맵)
 
-- [ ] i18n 지원
+- [x] ~~i18n 지원~~ 구현 완료 (#60)
+  > **코드 기준**: 봇은 `apps/bot/src/commands/settings/language.ts`(`LanguageCommand`)와 `apps/bot/src/utils/language.ts`(`SUPPORTED_LANGUAGES`, `resolveLanguage()`)로, 웹은 `apps/web/src/i18n/config.ts`(`LOCALES`, `resolveLocale()`)와 `LocaleSwitcher` 컴포넌트로 ko/en 전환을 지원한다.
 - [ ] 시즌/이벤트 시스템
 - [ ] 업적 시스템
 - [ ] 길드/연합 시스템
@@ -77,12 +80,14 @@
 ```mermaid
 flowchart TD
     Core[공장 종류 ✅] --> Tier[Tier 별 자재 관계 ✅]
-    Tier --> Cost[공장 비용 ❌]
-    Tier --> Recipe[T2/T3 레시피 ❌]
-    Cost --> Warehouse[창고 용량 ❌]
-    Cost --> XP[XP 공식 ❌]
-    Recipe --> Market[마켓 변동 ❌]
-    Market --> Stock[주식 공식 ❌]
-    XP --> Level[레벨 해금 ❌]
-    Level --> Global[글로벌 시스템 구간 ❌]
+    Tier --> Cost[공장 비용 ✅]
+    Tier --> Recipe[T2/T3 레시피 ✅]
+    Cost --> Warehouse[창고 용량 ✅]
+    Cost --> XP[XP 공식 ✅]
+    Recipe --> Market[마켓 변동 ✅]
+    Market --> Stock[주식 공식 ✅]
+    XP --> Level[레벨 해금 ✅]
+    Level --> Global[글로벌 시스템 구간 ✅]
 ```
+
+> **코드 기준**: `packages/game-core/src/factories/cost.ts`(`buildCost`·`upgradeMoneyCost`), `factories/catalog.ts`(`FACTORY_CATALOG`), `warehouse/capacity.ts`(`WAREHOUSE_CAPACITY`), `xp/level.ts`(`xpForEvent`·`xpRequiredForLevel`), `land/expansion.ts`(`landExpansionLevelRequirement`)와 `apps/bot/src/services/marketPrice.ts`·`services/stock.ts`·`services/guild.ts`(`CreditEffects`)가 위 항목을 모두 구현한다.

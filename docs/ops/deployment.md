@@ -718,8 +718,9 @@ docker compose --env-file .env.prod -f compose.prod.yml logs bot | tail -50
 ```
 
 `Missing required environment variable: BOT_TOKEN` 이 가장 흔하다. 봇은 HTTP
-서버가 없어 healthcheck 를 걸 수 없으므로, 배포 워크플로가 기동 15초 후
-`RestartCount` 를 보고 크래시 루프를 판정한다.
+서버가 없어 healthcheck 를 걸 수 없으므로, 배포 워크플로가 `Logged in as` 로그를
+최대 120초(5초 간격 24회) 기다리는 동안, 그 확인이 끝난 직후 `RestartCount` 를
+보고 크래시 루프를 판정한다.
 
 ### 디스크가 찼다
 

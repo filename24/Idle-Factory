@@ -250,6 +250,15 @@ flowchart LR
 - **유통 경로 3종 모두 허용**: 글로벌 마켓 / 유저 상점 / 직거래
 - **경제적 의미**: 생산·거래의 최종 소비재 역할 → 영구 소모로 인플레 방지
 
+> **미구현 (후속 스코프)**: 위 획득 경로는 확정 스펙이나 현재 코드와는 다르다. `RAW_BOOSTER`는
+> T3 공장이 아니라 `RARE` 부스터가 적용된 **T1/T2** 공장의 tick 생산에서만 드롭되며
+> (`packages/game-core/src/factories/booster.ts`의 `RARE_BOOSTER_DROP_RATE` — T1 0.5% / T2 1% / T3 0%),
+> `CAR_FACTORY`·`ELECTRONICS_FACTORY`(T3) 생산 경로에는 `RAW_BOOSTER` 산출이 전혀 없다.
+> 유통 경로도 3종 중 어느 것도 아직 열려 있지 않다: `RAW_BOOSTER`는
+> `packages/game-core/src/simulation/sell.ts`의 `NON_SELLABLE` 집합과
+> `apps/bot/src/commands/game/market.ts`의 `MATERIAL_CHOICES`(글로벌 마켓 판매·유저 상점 등록 공용
+> 셀렉트) 양쪽 모두에서 제외되어 있고, 유저 간 직거래(자재 트레이드) 명령 자체가 존재하지 않는다.
+
 ## 자재 부족 시 동작 (T2/T3)
 
 유저가 공장별로 동작 모드를 **직접 설정**. 기본값은 **A**.
@@ -274,17 +283,17 @@ flowchart TD
     Mode -->|C| Partial[비례 생산]
 ```
 
-## MVP 범위
+## 공장 로스터 (11종 구현 완료)
 
-초기 릴리스(Phase 1)에는 아래 6개만 먼저 구현:
+11종 전체 공장이 구현되어 있으며, 해금은 티어별 레벨 조건([09-level-xp.md](09-level-xp.md) §레벨별 해금, 균일안)만으로 결정된다. 별도의 "Phase" 구분 없이 레벨 조건만 충족하면 즉시 건설 가능하다.
 
-| Tier | 공장               |
-| ---- | ------------------ |
-| T1   | 농장, 광산, 목재소 |
-| T2   | 제철소, 제분소     |
-| T3   | 자동차 공장        |
+| Tier | 공장                                  | 해금 레벨 |
+| ---- | ------------------------------------- | --------- |
+| T1   | 농장, 광산, 목재소, 유전              | Lv.1      |
+| T2   | 제철소, 정유소, 제분소, 가구공장      | Lv.5      |
+| T3   | 자동차 공장, 전자제품 공장, 식품 공장 | Lv.10     |
 
-> **Phase 2에서 나머지 5종 투입 (2026-07-03 확정):** 유전(T1)·정유소(T2)·가구공장(T2)·전자제품 공장(T3)·식품 공장(T3)을 해금해 11종 로스터를 완성한다. 해금 레벨은 균일안(T1 Lv.1 / T2 Lv.5 / T3 Lv.10, [09-level-xp.md](09-level-xp.md) §레벨별 해금). 특히 정유소 해금으로 플라스틱 공급이 열려 자동차·전자제품 공장의 생산 병목이 해소된다.
+> **코드 기준**: `packages/game-core/src/factories/catalog.ts`의 `FACTORY_CATALOG`가 11종 전체에 대해 `baseProduction`/`recipe`/`buildCost`/`upgradeMaterialBase`/`unlockLevel`을 완비하고 있고, `packages/game-services/src/factory.ts`의 `FactoryService.build()`는 `user.level < entry.unlockLevel` 조건만으로 건설을 검증한다(`catalog.ts`의 `mvp` 필드는 참조하지 않음). `apps/bot/src/commands/game/land.ts`의 건설 셀렉트 메뉴도 레벨 조건만으로 11종을 모두 노출한다.
 
 ## 관련 스키마
 

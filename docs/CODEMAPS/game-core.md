@@ -4,7 +4,9 @@
 
 **Package:** `packages/game-core`
 
-**Purpose:** Pure TypeScript calculation logic, zero I/O dependencies. Shared by both bot and future web app.
+**Purpose:** Pure TypeScript calculation logic, zero I/O dependencies. Shared by both bot and web app.
+
+> **Code reference**: `apps/web/package.json` depends on `@idle/game-core` (`workspace:^`) and 15+ files under `apps/web/src` already import it (e.g. `lib/xp-progress.ts`, `lib/land-grid.ts`, `components/land/LandGrid.tsx`).
 
 ## Module Structure
 
@@ -126,14 +128,15 @@ buildCost(type: FactoryType): bigint
 upgradeMoneyCost(type: FactoryType, currentGrade: number): bigint
 upgradeMaterialCost(type: FactoryType, currentGrade: number): MaterialBag
 
-// Move (Phase 2): fraction of build cost
+// Move: 25% of build cost (shipped — `/land move` command, LandService.moveFactory, integration-tested)
 moveCost(type: FactoryType): bigint
 
 // Demolish: 50% refund of build cost (floor)
 demolishRefund(type: FactoryType): bigint
 
-// Land expansion (Phase 2): escalating per purchase
-landExpansionCost(userLevel: number, nextLandIndex: 1..4): bigint
+// Land expansion: escalating per purchase (shipped in Phase 1, wired into `/land expand`)
+// Actually defined in src/land/expansion.ts, re-exported via the barrel
+landExpansionCost(landIndex: 1..5, expansionOrder: 1..7): bigint
 ```
 
 All costs return `bigint` for precision.

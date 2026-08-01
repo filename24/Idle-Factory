@@ -187,7 +187,7 @@ These codemaps are **generated** from the live codebase and should be regenerate
 - **New major features** land (commands, services, schema changes)
 - **Packages added/removed** (workspace layout changes)
 - **Design formulas updated** (game-core calculations)
-- **API routes added** (if web dashboard launches)
+- **API routes added or changed** (`apps/web/src/app/api/`, `apps/web/src/app/dashboard/`, `apps/web/src/app/market/` — the web dashboard, ranking, and market surfaces already ship; update when new endpoints land)
 
 To regenerate:
 

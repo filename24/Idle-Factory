@@ -47,14 +47,29 @@
 
 ### apps/web
 
-| Package       | Version | Purpose               | Status    |
-| ------------- | ------- | --------------------- | --------- |
-| `next`        | 15.0.0  | React framework       | ✓ Planned |
-| `react`       | 19.0.0  | UI library            | ✓ Planned |
-| `tailwindcss` | 4.0.0   | CSS utility framework | ✓ Planned |
-| `typescript`  | 6.0.3   | Type checking         | ✓ Planned |
+| Package           | Version   | Purpose                           | Status     |
+| ----------------- | --------- | --------------------------------- | ---------- |
+| `next`            | 16.2.4    | React framework                   | ✓ Active   |
+| `react`           | 19.2.5    | UI library                        | ✓ Active   |
+| `react-dom`       | 19.2.5    | React DOM renderer                | ✓ Active   |
+| `tailwindcss`     | ^4.2.2    | CSS utility framework (dev dep)   | ✓ Active   |
+| `typescript`      | ^6.0.3    | Type checking (dev dep, hoisted)  | ✓ Active   |
+| `better-auth`     | 1.6.9     | Discord OAuth authentication      | ✓ Active   |
+| `fumadocs-core`   | 16.8.3    | Docs site engine (`/docs` route)  | ✓ Active   |
+| `fumadocs-ui`     | 16.8.3    | Docs UI components                | ✓ Active   |
+| `next-intl`       | 4.13.4    | i18n (ko/en, cookie-based locale) | ✓ Active   |
+| `@sentry/nextjs`  | ^10.68.0  | Error monitoring                  | ✓ Active   |
+| `@idle/database`  | workspace | Prisma + Redis wrapper            | ✓ Internal |
+| `@idle/game-core` | workspace | Pure domain logic                 | ✓ Internal |
 
-_Web app is currently a stub; full dependencies TBD._
+Table above is representative, not exhaustive — `apps/web/package.json` declares 24
+production dependencies and 16 dev dependencies in total.
+
+> **Code reference**: `apps/web/src/app/page.tsx` assembles the real landing page
+> from `HeroSection`/`CoreLoopSection`/`FactoryShowcase`/`EconomySection`/`CtaSection`,
+> `apps/web/src/lib/auth.ts` wires `better-auth` with Discord OAuth, and
+> `next.config.js` (`output: 'standalone'`) plus `apps/web/Dockerfile` build a
+> deployable production image.
 
 ## External Services
 
@@ -88,6 +103,7 @@ _Web app is currently a stub; full dependencies TBD._
 - Primary data store (Prisma ORM)
 - Transactions (ACID isolation)
 - Indexing (created_at, user_id, etc.)
+- Web auth session storage (`AuthSession` model via `better-auth`'s Prisma adapter)
 
 **Driver:** `@prisma/adapter-pg` (native)
 
@@ -101,7 +117,10 @@ _Web app is currently a stub; full dependencies TBD._
 
 - GlobalMarketPrice cache (30-min TTL)
 - Rate limit tracking (sliding window)
-- Session state (TBD for web auth)
+
+Web auth session state is **not** stored in Redis — it lives in PostgreSQL (see
+above). `apps/web/src/lib/db.ts` constructs its `DatabaseClient` with
+`useRedis: false`.
 
 **Client:** `ioredis` 5.10.1
 
@@ -232,12 +251,12 @@ High/Critical findings block deploy in CI.
 
 ## Compatibility Matrix
 
-| Component          | Node    | Platform              | Status     |
-| ------------------ | ------- | --------------------- | ---------- |
-| apps/bot           | ≥ 20.19 | Linux, macOS, Windows | ✓ Tested   |
-| packages/database  | ≥ 20.19 | Linux, macOS, Windows | ✓ Tested   |
-| packages/game-core | ≥ 18    | Any (pure JS)         | ✓ Tested   |
-| apps/web           | ≥ 18    | Any (Next.js)         | ⏳ Planned |
+| Component          | Node    | Platform              | Status   |
+| ------------------ | ------- | --------------------- | -------- |
+| apps/bot           | ≥ 20.19 | Linux, macOS, Windows | ✓ Tested |
+| packages/database  | ≥ 20.19 | Linux, macOS, Windows | ✓ Tested |
+| packages/game-core | ≥ 18    | Any (pure JS)         | ✓ Tested |
+| apps/web           | ≥ 18    | Any (Next.js)         | ✓ Tested |
 
 ---
 

@@ -79,6 +79,10 @@ demandFactor  = (recentSales - avgSales) / avgSales × k   // k: 보정 계수 (
 | 기간별 추가 세율 | 기간이 길수록 세율 증가 (아래 표)         |
 | 가격 제한        | 글로벌 가격의 **±50% 범위**만 허용        |
 
+> **미구현 (후속 스코프)**: 동시 등록 한도(`5 + floor(level/5)`, 최대 20개) 규칙은 확정 스펙이나
+> `MarketService.list()`(`apps/bot/src/services/market.ts`)에는 반영되어 있지 않다 — 유저의 활성
+> 매물(status=ACTIVE) 개수를 세거나 제한하는 코드가 없어 현재는 등록 개수가 무제한이다.
+
 ### 기간별 세율 테이블
 
 등록 기간을 길게 설정할수록 시장 선점 효과가 커지므로, 세율을 누진 적용합니다.
@@ -119,6 +123,12 @@ netRevenue = salePrice - tax
 2. 짧은 시간 내 반복 거래 감지 (스팸 방지)
 3. 비정상적으로 낮거나 높은 가격 거래 차단
 4. 신규 계정은 일정 기간 마켓 제한
+
+> **미구현 (후속 스코프)**: 위 1·4번 규칙은 확정 스펙이나 현재 코드에는 반영되어 있지 않다. IP 취득이
+> 기술적으로 불가능해(1번) 신규 계정·신규 서버 멤버 여부를 대체 신뢰 시그널로 계산하지만
+> (`assessActorTrust()`, `apps/bot/src/services/tradeLog.ts`), `logMarketBuySignal()`
+> (`apps/bot/src/commands/game/market.ts`)이 구조화 로깅만 남길 뿐(v0, 비차단) 실제로 거래를 막거나
+> 제한하는 코드는 없다.
 
 ```mermaid
 flowchart LR

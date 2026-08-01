@@ -39,7 +39,7 @@ flowchart TB
 - **이중과세 없음** — 한 거래는 정확히 **한 번만** 과세된다. 거래의 활동 서버는 `TradeLog.guildId`(거래 시점 캡처)로 확정되며, 주간 정산에서 그 서버로만 귀속된다.
 - 마켓 등록 시점의 활동 서버는 `MarketListing.guildId`에 캡처되어, 인터랙션이 없는 만료 회수(`expireStale`)에서도 활동 서버를 승계한다.
 
-> **스키마 근거**: `TradeLog.guildId`·`MarketListing.guildId` 컬럼이 이미 스키마에 존재한다(PR #35). 서버 탈퇴 시 두 FK 모두 `onDelete: SetNull`로 유령 참조를 방어한다.
+> **스키마 근거**: `TradeLog.guildId`·`MarketListing.guildId` 컬럼이 이미 스키마에 존재한다(PR #35). `TradeLog.guildId`는 실제 FK로 서버 탈퇴 시 `onDelete: SetNull`로 방어하고, `MarketListing.guildId`는 FK 없는 best-effort 컬럼으로 애플리케이션 레벨 가드(`expireStale`의 `resolveExistingGuildIds`)가 유령 참조를 방어한다.
 
 ## 신뢰도 시스템
 
@@ -76,7 +76,7 @@ baselineDecay = 10   // 매주 자연 감쇠 (활성도 없으면 하락)
 - DAU 5명 → +2 - 10 = **-8**
 - DAU 0명 → 0 - 10 = **-10**
 
-> 세금 미납은 별도로 처리 (금고 부족 시 매일 -10, 기존 로직 유지).
+> 세금 미납은 별도로 처리 (미납(`taxDue > taxPaid`) 발생 시 매일 -10 — 아래 §세금 흐름의 신뢰도 유지 공식 참고).
 
 ## 세금 시스템
 
@@ -119,6 +119,8 @@ baselineDecay = 10   // 매주 자연 감쇠 (활성도 없으면 하락)
 - 주간 판매 수익 누적 → 구간별 세율 적용 → 서버 금고로 이체
 - 유저는 정산 직전 자산 이동 불가 (회피 방지)
 
+> **미구현 (후속 스코프)**: 위 회피 방지책은 v1 코드에 없다. `weeklySettlement.ts`의 `WeeklySettlementService.settleWeek` 주석에 따르면 자산 스냅샷·시세는 잡 실행 시점 기준이며, 정산 윈도 종료 후 잡 실행까지의 자산 변동은 v1에서 허용한다.
+
 ### 세금 용도 (서버 금고 분배)
 
 | 비율    | 용도                                               |
@@ -144,10 +146,12 @@ flowchart TD
     Drop --> Block[기능 제한]
 ```
 
-**신뢰도 유지 공식(제안)**:
+**신뢰도 유지 공식**:
 
-- 세율 × 서버 총자산 × 계수 < 실제 서버 금고
-- 불만족 시 매일 신뢰도 -10
+- 실제 판정 기준은 사전적 수식(세율×서버총자산×계수 비교)이 아니라, 가장 최근 정산 주의 `WeeklySettlementLine` 중 해당 서버에 `taxDue > taxPaid`(미납 발생)인 라인이 있는지 여부다.
+- 미납 발생 시 매일 신뢰도 -10 (`UNPAID_DAILY_PENALTY`)
+
+> **코드 기준**: `apps/bot/src/scheduled-tasks/daily-global.ts`의 `applyUnpaidPenalty()`가 가장 최근 `WeeklySettlementLine`(`guildId != null`)의 `taxDue > taxPaid` 여부로 미납 서버를 판정하고, `UNPAID_DAILY_PENALTY`(-10)를 `applyCreditDelta`로 0~2000 범위에 적용한다.
 
 ## 비활성 서버 자산 분배
 
@@ -202,5 +206,6 @@ flowchart LR
 - `Guild.vault` — 서버 금고 (BigInt)
 - `Guild.taxSurcharge` — 서버별 추가 세율 (기본 0, 범위 0 ~ 0.20 · 코드 현행)
 - `Guild.weeklyDAU` — 주간 활성 유저 수 (신뢰도 증감 기준)
-- `WeeklySettlement` — 주 1회 세금 정산 기록 (`weekStart` unique per guild)
+- `WeeklySettlement` — 주 1회 세금 정산 기록 (`weekStart` unique per user; `guildId`는 #16에서 deprecated되어 신규 행은 항상 null)
+- `WeeklySettlementLine` — 정산의 서버별 과세 내역 (`guildId`+`weekStart` 인덱스, unique 아님)
 - `InactiveServerPool` — 30일 비활성 서버 자산 재분배 풀

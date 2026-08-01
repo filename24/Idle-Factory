@@ -67,7 +67,9 @@ profitDelta    = (last24hProfit - avg7dProfit) / avg7dProfit
 ```
 
 - **서킷브레이커**: 일일 ±30% clamp
-- **0-나눗셈 가드 (U-5, 2026-07-03 확정)**: `totalVolume = 0` 이면 `demandPressure = 0`, `avg7dProfit = 0` 이면 `profitDelta = 0` 으로 처리한다. ※ 주가 재계산 알고리즘은 아직 미구현이며, 본 가드는 구현 시 지켜야 할 확정 스펙이다.
+- **0-나눗셈 가드 (U-5, 2026-07-03 확정)**: `totalVolume = 0` 이면 `demandPressure = 0`, `avg7dProfit = 0` 이면 `profitDelta = 0` 으로 처리한다.
+
+> **코드 기준**: `packages/game-core/src/stock/price.ts` 의 `computeNextStockPrice` 가 위 가드와 서킷브레이커 clamp 를 구현한다. `apps/bot/src/services/stockPrice.ts` 의 `StockPriceService.priceTick` 이 TradeLog/StockProfitLog 집계 후 이를 호출해 `StockPriceTick` 을 생성하고 `Stock.currentPrice`/`lastTickAt` 을 갱신하며, 1시간 주기 실행은 `apps/bot/src/scheduled-tasks/stock-price-tick.ts` 의 `StockPriceTickTask` 가 담당한다.
 
 ## 배당 시스템
 
@@ -92,6 +94,8 @@ userDividend      = eachShareDividend × userSharesHeld
 - 동일 IP/부계정 간 거래 차단
 - 동일 종목 1시간 내 반복 매수/매도 rate limit
 - **공매도 미지원** (MVP 스코프 외)
+
+> **미구현 (후속 스코프)**: "동일 IP/부계정 간 거래 차단"은 확정 스펙이나 현재 코드에는 없다. Discord API 가 IP 를 제공하지 않아 실제 차단은 불가능하며(`apps/bot/src/services/stock.ts` 모듈 독스트링 — 동일 IP/부계정 차단은 비차단 로깅 v0, 신규 구현 없음), 마켓 거래에 존재하는 계정/서버가입 나이 기반 비차단 신뢰 시그널 로깅(`apps/bot/src/services/tradeLog.ts` 의 `assessActorTrust`)도 주식 거래 경로(`assertTradeAllowed`)에는 연결되어 있지 않다.
 
 ## 미결정 사항 (MVP 후 튜닝)
 

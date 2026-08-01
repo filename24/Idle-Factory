@@ -39,16 +39,7 @@ P_{\text{new}} = \text{clamp}\!\left(P_{\text{base}} \times (1 + \epsilon) \time
 
 ### 등록 한도
 
-```math
-\text{최대 등록 수} = \min\!\left(5 + \left\lfloor \frac{\text{레벨}}{5} \right\rfloor,\ 20\right)
-```
-
-| 레벨   | 최대 등록 수 |
-| ------ | ------------ |
-| Lv.1~4 | 5개          |
-| Lv.5~9 | 6개          |
-| Lv.20+ | 9개          |
-| Lv.75+ | 20개 (상한)  |
+현재 유저 상점에 동시 등록할 수 있는 매물 개수에는 별도 제한이 없습니다.
 
 ### 가격 제한
 
@@ -77,10 +68,8 @@ P_{\text{new}} = \text{clamp}\!\left(P_{\text{base}} \times (1 + \epsilon) \time
 <Callout type="error" title="자동 탐지 제재">
   시스템은 다음 행위를 자동으로 탐지하고 제한합니다:
   <ul>
-    <li>동일 IP/부계정 간 반복 거래</li>
-    <li>짧은 시간 내 비정상적인 대량 거래</li>
+    <li>동일 상대와의 반복 거래(다수 거래 시 지급 경험치 감소)</li>
     <li>글로벌가 ±50%를 벗어난 비정상 가격 거래</li>
-    <li>신규 계정의 초기 마켓 접근 제한</li>
   </ul>
 </Callout>
 
@@ -96,9 +85,9 @@ P_{\text{new}} = \text{clamp}\!\left(P_{\text{base}} \times (1 + \epsilon) \time
 </Step>
 <Step>
 
-#### T3 자재는 유저 상점으로
+#### T3 자재 구매는 유저 상점으로
 
-글로벌 마켓에 T3 시세가 없으므로 유저 상점이 유일한 판로입니다.
+T3 완제품(자동차·전자·식품)은 글로벌 마켓에서 시세 확인과 즉시 판매는 가능하지만, 직접 구매(돈으로 즉시 사기)는 지원하지 않습니다. T3 자재를 빠르게 구해야 한다면 유저 상점을 이용하세요.
 
 </Step>
 <Step>

@@ -9,7 +9,9 @@
 - 빗금 명령어(`/`) 전용
 - 현실 경제 시스템 (수요·공급에 따른 자재 가격 변동)
 - 멀티 서버 글로벌 경제 (서버 단위 신뢰도/세금)
-- i18n 지원 (추후)
+- i18n 지원 (한국어/영어, 유저·서버 단위 언어 설정)
+
+> **코드 기준**: `apps/bot/src/utils/language.ts` 의 `SUPPORTED_LANGUAGES`(`ko`, `en-US`)와 `resolveLanguage()` 가 유저/서버 우선순위 언어 리졸버를 구현하며, `/language` 명령(`apps/bot/src/commands/settings/language.ts` 의 `LanguageCommand`)으로 노출된다. 웹은 `apps/web/src/i18n/config.ts` 의 `LOCALES`(`ko`, `en`)와 `resolveLocale()`, `LocaleSwitcher.tsx` 가 동일 기능을 제공한다.
 
 ## 핵심 컨셉
 
