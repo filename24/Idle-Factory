@@ -52,7 +52,9 @@ demandFactor  = (recentSales - avgSales) / avgSales × k   // k: 보정 계수 (
 - **거래량 보정**: 최근 30분 판매량이 평균보다 많으면 상승, 적으면 하락
 - **극단값 방지**: 하한 70%, 상한 200%로 clamp
 - **유저 직구매 가격** = `newPrice × 2` (04-economy.md 참고)
-- **0-나눗셈 가드 (U-5, 2026-07-03 확정)**: `avgSales = 0` 이면 `demandFactor = 0` 으로 처리(랜덤 노이즈만 적용). ※ 30분 재계산 알고리즘은 아직 미구현이며, 본 가드는 구현 시 지켜야 할 확정 스펙이다.
+- **0-나눗셈 가드 (U-5, 2026-07-03 확정)**: `avgSales = 0` 이면 `demandFactor = 0` 으로 처리(랜덤 노이즈만 적용).
+
+> **코드 기준**: 공식은 `packages/game-core/src/market/price.ts` 의 `computeNextPrice` 가, U-5 가드는 같은 파일의 `computeDemandFactorPpm` 이 (`avgSales <= 0` → `0n`) 구현한다. `avgSales` 는 `computeNextAvgSales` 의 EMA 로 갱신되며, 30분 주기 실행은 `apps/bot/src/scheduled-tasks/market-price-tick.ts` 의 `MarketPriceTickTask` 가 담당한다.
 
 ### 유저 → 글로벌 판매 (U-3, 2026-07-03 확정)
 
@@ -65,7 +67,7 @@ demandFactor  = (recentSales - avgSales) / avgSales × k   // k: 보정 계수 (
 | 수요 반영 | 판매 수량을 `recentSales` 에 반영 → 다음 변동 주기 하락 압력 |
 | 수량 한도 | **무제한** (v1)                                              |
 
-> v1 스코프. 현재 코드에는 유저→글로벌 매도 경로가 아직 없다(마켓 서비스는 유저 상점 리스팅만 처리). 구현 시 위 스펙을 따른다.
+> **코드 기준**: `apps/bot/src/services/marketSell.ts` 의 `MarketSellService` 가 위 스펙대로 구현하며 `/마켓 판매`(`market sell`) 서브커맨드로 노출된다. 체결 시 `recentSales += qty` 로 다음 tick 의 demandFactor 에 반영하고, `TradeLog` 에 `kind=MARKET_SELL`·`toUserId=null` 로 기록한다.
 
 ## 유저 상점 — 규칙
 
