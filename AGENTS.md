@@ -6,8 +6,8 @@ Monorepo for the **Idle Factory** Discord game: a Sapphire.js/discord.js bot, a 
 
 - **Package manager:** pnpm 10.9 (workspaces). Enforced via `packageManager` field.
 - **Build orchestration:** Turborepo (`turbo.json`).
-- **Language:** TypeScript 5.8, Node >= 20.19 for runtime apps.
-- **Database:** PostgreSQL via Prisma 6.19. Optional Redis cache via ioredis.
+- **Language:** TypeScript 6.0, Node >= 20.19 for runtime apps.
+- **Database:** PostgreSQL via Prisma 7. Optional Redis cache via ioredis.
 - **Lint/format:** ESLint 9 (flat config) + Prettier 3, wired through `eslint-config-idle`.
 - **Git hygiene:** Husky + lint-staged + commitlint (conventional commits).
 
@@ -16,15 +16,17 @@ Monorepo for the **Idle Factory** Discord game: a Sapphire.js/discord.js bot, a 
 ```
 apps/
   bot/       Discord bot (Sapphire.js + discord.js v14)
-  web/       Next.js 15 (App Router, React 19, Tailwind v4)
+  web/       Next.js 16 (App Router, React 19, Tailwind v4)
 packages/
   api-types/           Shared TS types (flags, Snowflake helpers)
   database/            Prisma client wrapper + Redis, re-exports @prisma/client
   eslint-config-idle/  Shared ESLint flat config
+  game-core/           Pure domain logic: factory/warehouse/land/XP formulas, zero DB/network deps
+  game-services/       Prisma-bound service layer for money/XP/material transactions (bot + web)
   tsconfig/            Shared tsconfig presets (base, node16)
 ```
 
-Workspace globs live in `pnpm-workspace.yaml`. Shared env keys (`DATABASE_URL`, `REDIS_URL`, `BOT_TOKEN`, `NODE_ENV`) are declared in `turbo.json#globalEnv`.
+Workspace globs live in `pnpm-workspace.yaml`. Shared env keys (`NODE_ENV`, `DATABASE_URL`, `REDIS_URL`, `BOT_TOKEN`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `NEXT_PUBLIC_APP_URL`) are declared in `turbo.json#globalEnv`.
 
 ## Common Commands
 
@@ -39,6 +41,12 @@ Run from the repo root:
 | `pnpm dev`            | `turbo run dev` (persistent, depends on `db:generate`).              |
 | `pnpm lint`           | Workspace lint.                                                      |
 | `pnpm format`         | Workspace format.                                                    |
+| `pnpm typecheck`      | `turbo run typecheck`.                                               |
+| `pnpm test`           | `turbo run test`.                                                    |
+| `pnpm test:unit`      | `turbo run test:unit`.                                               |
+| `pnpm db:dev:up`      | Start local Postgres/Redis via `docker-compose.dev.yml`.             |
+| `pnpm db:dev:down`    | Stop the local Postgres/Redis stack.                                 |
+| `pnpm db:dev:reset`   | Recreate the local Postgres/Redis stack (drops volumes).             |
 | `pnpm update`         | Interactive recursive dep update.                                    |
 | `pnpm generate`       | `turbo gen` scaffolding.                                             |
 
@@ -71,7 +79,7 @@ Skip Context7 only for pure language constructs (TypeScript syntax, standard Nod
 - **Discord UI — Components v2 (bot mandatory, no exceptions):** Every user-facing payload emitted from `apps/bot` — slash command replies, button/select/modal interaction responses, scheduled notifications, and error/failure responses **included** — MUST be built via the `componentsv2-builder` skill on top of Components v2 (`MessageFlags.IsComponentsV2`). Using `EmbedBuilder`, `embeds`, raw `content` alongside the v2 flag, `poll`, or `stickers` is **strictly forbidden**. The only allowed variation the skill acknowledges is an "intentional flat layout without a Container root" — still pure Components v2. Violations block PR review. See `.claude/skills/componentsv2-builder/SKILL.md` and `apps/bot/AGENTS.md` for details.
 - **Commits:** Conventional Commits enforced by commitlint (`@commitlint/config-conventional` + angular). Types in use: `feat`, `fix`, `refactor`, `docs`, `chore`, `ci`, `perf`, `test`.
 - **Pre-commit:** `lint-staged` runs formatters/linters on staged files (see `.lintstagedrc.json`).
-- **TS configs:** Apps/packages extend `tsconfig/base.json` (`target: ES2022`, `strict: true`, `moduleResolution: node`). Node-flavored packages use `tsconfig/node16.json`.
+- **TS configs:** `apps/bot` and all `packages/*` extend `tsconfig/base.json` (`target: ES2022`, `strict: true`, `moduleResolution: node`); node-flavored packages use `tsconfig/node16.json`. `apps/web` does not extend the shared preset — it keeps a standalone `tsconfig.json` for Next.js-specific settings (`moduleResolution: bundler`, the `next` plugin, path aliases).
 - **Bundling:** Libraries and the bot use `tsup` (shared root `tsup.config.ts` as a template). The web app uses Next.js' own bundler.
 
 ## CI / CD
@@ -95,7 +103,7 @@ Token-lean architecture snapshots live in `docs/CODEMAPS/`. Start at [`docs/CODE
 | `INDEX.md`        | Navigation hub — links to all codemaps                   |
 | `architecture.md` | 3-layer system design, service boundaries, data flow     |
 | `backend.md`      | Bot commands (18), services (5), handler mapping         |
-| `data.md`         | Prisma schema — 25 tables, 8 enums, relationships        |
+| `data.md`         | Prisma schema — 28 tables, 11 enums, relationships       |
 | `game-core.md`    | Factory specs, cost formulas, production calc, XP system |
 | `dependencies.md` | External services, build tools, package list             |
 

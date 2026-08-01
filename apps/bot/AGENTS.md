@@ -18,10 +18,14 @@ src/
 ├─ bot.ts                Boots BotClient with config.bot.options
 ├─ config.ts             Env-driven IConfig (token, intents, i18n, logger, report)
 ├─ structures/
-│   └─ BotClient.ts      Sapphire client extension
-├─ commands/             Slash commands (dev, info, settings, contexts)
+│   ├─ BotClient.ts      Sapphire client extension
+│   └─ renderers/        Components v2 payload builders (Land, Market, Stock, Quest, ...)
+├─ commands/             Slash commands (dev, game, info, settings, contexts)
 ├─ listeners/            ready / guildCreate / messageCreate / errors/*
 ├─ interaction-handlers/ Component & modal handlers
+├─ preconditions/        OwnerOnly, Onboarding
+├─ services/             Business logic (admin, announce, market, user, weeklySettlement, ...)
+├─ scheduled-tasks/      BullMQ task pieces (see Scheduled Tasks section below)
 ├─ managers/
 │   └─ ErrorManager.ts
 ├─ locales/              i18next JSON resources (`<lng>/<ns>.json`, e.g. `en-US/common.json`)
@@ -29,18 +33,19 @@ src/
 └─ utils/                Logger, Embed, Constants, Algorithms, SnowFlake
 ```
 
-Path aliases (`@utils`, `@structures`, `@types`) are declared in `tsconfig.json` and must be kept in sync when directories move.
+Path aliases (`@utils`, `@structures`, `@managers`, `@types`) are declared in `tsconfig.json` and must be kept in sync when directories move.
 
 ## Configuration
 
-All config flows through `src/config.ts`:
+Most config flows through `src/config.ts`:
 
 - `requireEnv('BOT_TOKEN')` — throws on startup if missing.
-- Optional env: `BOT_NAME`, `BOT_PREFIX`, `BOT_OWNERS` (comma list), `BOT_COOLDOWN`, `BOT_SHARDING`, `DEV_GUILD_ID`, `GITHUB_TOKEN`.
+- Optional env: `BOT_NAME`, `BOT_PREFIX`, `BOT_OWNERS` (comma list), `BOT_COOLDOWN`, `BOT_SHARDING`, `DEV_GUILD_ID`, `GITHUB_TOKEN`, `BUILD_VERSION` (defaults to `0.1.4`, shown in the startup banner).
 - Reporting: `REPORT_TYPE` (`webhook` | `text`), `REPORT_WEBHOOK_URL`, `REPORT_TEXT_GUILD_ID`, `REPORT_TEXT_CHANNEL_ID`.
 - Logging: `LOG_LEVEL`, `LOG_DEV`.
 - i18n: `I18N_FALLBACK_LNG` (defaults to `en-US`). Loaded by `@sapphire/plugin-i18next` from `src/locales/<lng>/<ns>.json`; default namespace is `common`.
 - `BUILD_NUMBER` falls back to `git rev-parse --short HEAD` when unset.
+- `NEXT_PUBLIC_APP_URL` is read directly in `utils/Constants.ts` (not `config.ts`) to build the terms-of-service link; defaults to `https://idle.inft.kr` when unset.
 
 Copy `.env.example` to `.env` for local development. Never commit `.env`.
 
@@ -61,15 +66,15 @@ source has a meaningful default, mirror it in the compose default
 
 ## Scripts
 
-| Command          | Purpose                                              |
-| ---------------- | ---------------------------------------------------- |
-| `pnpm dev`       | `tsx` watch-run of `src/index.ts`.                   |
-| `pnpm build`     | `tsup` bundle into `build/`.                         |
-| `pnpm start`     | Run the built `build/index.js`.                      |
-| `pnpm generate`  | `prisma generate` (bot depends on `@prisma/client`). |
-| `pnpm typecheck` | `tsc --noEmit`.                                      |
-| `pnpm lint`      | ESLint over `.ts` files.                             |
-| `pnpm lint:fix`  | Prettier + ESLint `--fix`.                           |
+| Command          | Purpose                                                                                            |
+| ---------------- | -------------------------------------------------------------------------------------------------- |
+| `pnpm dev`       | `tsx` watch-run of `src/index.ts`.                                                                 |
+| `pnpm build`     | `tsup` bundle into `build/`.                                                                       |
+| `pnpm start`     | Run the built `build/index.js`.                                                                    |
+| `pnpm generate`  | `prisma generate` (bot depends on `@idle/database`, which re-exports the generated Prisma client). |
+| `pnpm typecheck` | `tsc --noEmit`.                                                                                    |
+| `pnpm lint`      | ESLint over `.ts` files.                                                                           |
+| `pnpm lint:fix`  | Prettier + ESLint `--fix`.                                                                         |
 
 Prisma client generation is a prerequisite for `build`/`dev` and is declared in the root `turbo.json` via `db:generate`.
 
@@ -121,7 +126,7 @@ rollback, and recovery runbook.
 - **Language resolution lives in `utils/language.ts`, wired via `config.i18n.options.fetchLanguage`.** The plugin's default `fetchLanguage` is `() => null`, which makes the language depend solely on `guild.preferredLocale` and silently ignores `User.lang` / `Guild.lang`. Never drop that wiring — the settings UI keeps working while doing nothing. Priority: `User.lang` (explicit personal choice, `'auto'` skips this tier) → `Guild.lang` (admin choice) → `interactionLocale` → `null` (plugin default). `SUPPORTED_LANGUAGES` in the same module is the single source of truth: adding a locale means adding both a `src/locales/<lng>/` directory and an entry there.
 - **i18next `TFunction` typing.** Two i18next versions resolve in the tree (plugin v26 + a transitive v25). Never `import type { TFunction } from 'i18next'` — it conflicts with the type `fetchT` (from `@sapphire/plugin-i18next`) returns and breaks `tsc`. Derive it instead: `type T = Awaited<ReturnType<typeof fetchT>>`, or let it infer from the callback signature.
 - **Global/server notifications go through `AnnounceService`** (`services/announce.ts`). Scheduled jobs and `/debug` dispatch server announcements to each guild's `Guild.announceChannelId` via `announce` / `announceMany`; it silently no-ops when the client or channel is unavailable, so it is safe to call from jobs and tests. Do not `channel.send` ad-hoc for global events. The channel is configured with `/server announce`.
-- Do not import from `@prisma/client` directly; use `@idle/database` when it is added as a dependency.
+- Do not import from `@prisma/client` directly; use `@idle/database`, which is already a dependency and wraps the generated Prisma client.
 
 ## Operator Tooling — `/admin` vs `/debug`
 
@@ -154,7 +159,7 @@ Channel webhooks are not application-owned, so the payload needs
 ## Testing
 
 - Unit tests mock services / `container` and never touch a DB. Integration tests (`tests/integration/**`) run against a REAL dev Postgres — start it with `pnpm db:dev:up` (`localhost:5433`, a `*-dev` database). `tests/integration/setup.ts` only `TRUNCATE`s tables, so the schema must already be migrated. Vitest runs `singleFork` and the dev DB is shared across processes, so integration suites are **not** safe to run in parallel.
-- Vitest does not resolve TS path aliases (`@utils`, `@structures`). In tests, import source via relative paths or `vi.mock` the alias; a source file that transitively imports an alias will fail to load in a unit test unless mocked. (Cleaner fix if it keeps biting: add `vite-tsconfig-paths` to `vitest.config.ts`.)
+- Vitest resolves TS path aliases (`@utils`, `@structures`, `@managers`, `@types`) via the `vite-tsconfig-paths` plugin configured in `vitest.config.ts`. No manual workaround (relative imports, `vi.mock`-ing the alias) is needed.
 
 ## Discord UI — Components v2 (mandatory)
 

@@ -35,6 +35,7 @@ src/
 ├─ xp/
 │   └─ level.ts                Per-event XP awards, level-up application
 └─ simulation/                 Economy balance simulator (issue #31)
+    ├─ index.ts                Barrel: re-exports all simulation modules
     ├─ engine.ts               10-min tick loop: harvest → sell → buy → reinvest
     ├─ types.ts                Scenario / user / market value objects
     ├─ profiles.ts             HARDCORE / CASUAL / IDLE play profiles
@@ -54,7 +55,7 @@ src/
     └─ rng.ts                  Deterministic mulberry32 RNG
 ```
 
-Design sources: `docs/design/00-onboarding.md`, `03-factories.md`, `04-economy.md`, `05-warehouse.md`, `06-market.md`, `07-global-system.md`, `09-level-xp.md`, `11-land.md`.
+Design sources: `docs/design/00-onboarding.md`, `02-core-loop.md`, `03-factories.md`, `04-economy.md`, `05-warehouse.md`, `06-market.md`, `07-global-system.md`, `08-stock.md`, `09-level-xp.md`, `11-land.md`.
 
 ## Build
 
@@ -129,7 +130,7 @@ None. Zero runtime dependencies — this package must remain safe to import from
 
 ## Dev Deps
 
-- `vitest` — unit test runner
+- `vitest`, `@vitest/coverage-v8` — unit test runner + coverage provider (powers `pnpm test:coverage`)
 - `tsx` — TypeScript runner for `scripts/sim.ts` (dev-only; never imported from `src/`)
 - `tsup`, `typescript`, `eslint-config-idle`, `tsconfig`
 
@@ -139,7 +140,7 @@ None. Zero runtime dependencies — this package must remain safe to import from
 - **No DB/Prisma dependency.** This package is pure domain. Never add I/O deps such as `@idle/database`, `@prisma/client`, or `ioredis`. The enums in `types.ts` are manually kept value-compatible with the Prisma schema.
 - **Manually synced tables.** Two constants mirror data that lives in the database package and have no automatic sync: `types.ts` enums (↔ `schema.prisma`) and `market/basePrices.ts` (↔ `prisma/seed.ts`'s `MARKET_BASE_PRICES`). Change one, change the other. A drift guard test (`tests/simulation/basePrices.test.ts`) parses the seed file and fails on mismatch — do not weaken it.
 - **Immutability.** Internal tables and catalogs are all `readonly` / `Readonly<...>`. Calculation functions never mutate their inputs (including `MaterialBag`).
-- **`bigint` first.** All resource and currency amounts are `bigint` to avoid precision loss. When crossing through `Number` is unavoidable (e.g. `Math.pow`-based land expansion cost), leave a comment explaining the rationale.
+- **`bigint` first.** All resource and currency amounts are `bigint` to avoid precision loss. Cost/expansion formulas (`factories/cost.ts`, `land/expansion.ts`) use a local `bigintPow` helper specifically to avoid `Math.pow`'s `Number` precision limits. When crossing through `Number` truly is unavoidable (e.g. the fractional-exponent XP formula `Math.pow(level, 2.2)` in `xp/level.ts`), leave a comment explaining the rationale.
 - **Test coverage target 80%+.** Maintain `vitest` unit tests focused on formulas and branch coverage. When any numeric formula changes, update both the design doc and the test in the same change.
 - **Cite design docs.** Numeric constants (cost tables, XP requirements, probabilities) must reference the matching `docs/design/XX-*.md` section in their JSDoc for traceability.
 - **Privacy:** Marked `private: true`; do not publish to npm.

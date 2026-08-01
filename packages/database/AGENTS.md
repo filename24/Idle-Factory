@@ -6,28 +6,28 @@ Thin wrapper around Prisma Client with optional Redis via ioredis. Re-exports th
 
 ```
 src/
-├─ index.ts                Re-exports: `export * from '@prisma/client'` + `DatabaseClient`
+├─ index.ts                Re-exports: `./generated/client.js` + `./generated/models.js` + `DatabaseClient`
 └─ structures/
     └─ Client.ts           `DatabaseClient extends PrismaClient` with optional Redis
 prisma/
 ├─ schema.prisma           Prisma schema (PostgreSQL)
-└─ seed.js                 Seed script
-prisma.config.ts           Prisma v6 config
+└─ seed.ts                 Seed script (run via `tsx`, see `prisma.config.ts`)
+prisma.config.ts           Prisma v7 config
 ```
 
 ## Data Model (overview)
 
 Defined in `prisma/schema.prisma`, provider `postgresql`, URL from `DATABASE_URL`:
 
-- **User** `id, flag (BigInt), nickname?, lang, factory[]`
-- **Guild** `id, name, lang, tax, globalExp, flag`
-- **Stock** `id, name, price (BigInt), latestPrice (BigInt[]), boughtCount, soldCount`
-- **Factory** `id, ownerId, owners[], exp, type (BigInt), flag (BigInt), workers[], items[]`
-- **Item** `id (cuid), factoryId, name, count, price, flag, factory`
+- **User** `id, flag (BigInt), nickname?, lang, factories[]` (also money, xp, level, lands, warehouse, listings, holdings, purchases, settlements, userQuests)
+- **Guild** `id, name, lang, credit, taxSurcharge, vault (BigInt), weeklyDAU, flag (BigInt)`
+- **Stock** `id (1:1 Factory via factoryId), market, ipoPrice (BigInt), currentPrice (BigInt), sharesOutstanding, weeklyProfit (BigInt), dividendRatePpm`
+- **Factory** `id, userId, type (FactoryType enum), tier, grade, exp (BigInt), flag (BigInt), workers[], slots[]`
+- **WarehouseStack** `id (cuid), warehouseId, material (MaterialType), count (BigInt), warehouse`
 - **Worker** `id (cuid), factoryId?, flag, name, job, exp, athletics, strength, machinery`
 - **Notice** `id (uuid), title, description, postedAt, updatedAt` — indexed on `title`, `postedAt`
 
-Timestamps use Prisma `DateTime` (ISO 8601 / RFC 3339 on the wire, e.g. `2026-04-19T10:58:00.000Z`). Any schema change requires re-running `pnpm db:generate` and committing updated Prisma artifacts.
+Timestamps use Prisma `DateTime` (ISO 8601 / RFC 3339 on the wire, e.g. `2026-04-19T10:58:00.000Z`). Any schema change requires re-running `pnpm db:migrate:dev` to produce a committed migration file under `prisma/migrations/`, then `pnpm db:generate` to regenerate the local Prisma client (`src/generated/` is gitignored and never committed).
 
 ## DatabaseClient API
 
@@ -102,4 +102,4 @@ image rollbacks viable despite Prisma having no down migrations.
 - **Consume only via `@idle/database`.** Do not import from `@prisma/client` in apps — this package is the single integration point so the Prisma version and client generation stay consistent.
 - **Migrations over `db push`.** Use `db:migrate:dev` locally to produce migration files; `db push` is acceptable only for throwaway sandboxes.
 - **Connection lifecycle.** `DatabaseClient` auto-connects; long-running processes should call `disconnect()` on shutdown. Avoid constructing multiple clients per process.
-- **BigInt fields** (`flag`, `type`, `price`, `latestPrice`) must be handled with `BigInt` end-to-end; do not coerce to `Number` where precision matters.
+- **BigInt fields** (`flag`, `exp`, `money`, `xp`, `ipoPrice`, `currentPrice`, `MarketListing.price`, etc.) must be handled with `BigInt` end-to-end; do not coerce to `Number` where precision matters.

@@ -35,15 +35,15 @@ apps/bot  /  apps/web  presentation, auth, i18n
 
 ## Scripts
 
-| Command                 | Purpose                                           |
-| ----------------------- | ------------------------------------------------- |
-| `pnpm build`            | tsup → `dist/` (ESM + CJS + d.ts)                 |
-| `pnpm typecheck`        | `tsc --noEmit`                                    |
-| `pnpm test:unit`        | Unit tests only — no database required            |
-| `pnpm test:integration` | Integration tests — **requires the dev Postgres** |
-| `pnpm test:coverage`    | Coverage with the 80% gate                        |
+| Command                 | Purpose                                               |
+| ----------------------- | ----------------------------------------------------- |
+| `pnpm build`            | tsup → `dist/` (ESM + CJS + d.ts)                     |
+| `pnpm typecheck`        | `tsc --noEmit`                                        |
+| `pnpm test:unit`        | Unit tests only — no database required                |
+| `pnpm test:integration` | Fails today — `tests/integration/` does not exist yet |
+| `pnpm test:coverage`    | Coverage with the 80% gate                            |
 
-`test:integration` connects to the real development database and truncates tables. It is not parallel-safe and must not run against a database anyone else is using.
+No integration suite has been migrated into this package yet — `tests/` currently holds only `base.retry.test.ts`, a unit test that mocks `PrismaClient` rather than touching a real database. When a real `tests/integration/` suite lands here, it should follow the same dev-Postgres caution as `apps/bot`'s integration tests: not parallel-safe, must not run against a database anyone else is using.
 
 ## Coverage gate
 

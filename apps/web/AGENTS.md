@@ -1,39 +1,59 @@
 # apps/web — Next.js Web App
 
-The public web surface for Idle Factory. Currently a thin Next.js 15 scaffold; treat this as the landing/dashboard target.
+The public web surface for Idle Factory: a landing page, better-auth login/dashboard, guild ranking, and fumadocs-powered documentation.
 
 ## Stack
 
-- **Framework:** Next.js 15.3 (App Router).
+- **Framework:** Next.js 16.2 (App Router).
 - **UI:** React 19 + React DOM 19.
 - **Styling:** Tailwind CSS v4 (`@tailwindcss/postcss`), Prettier Tailwind plugin, Autoprefixer, PostCSS.
 - **Lint:** ESLint 9 flat config via `eslint-config-idle` + `eslint-config-next`.
-- **TypeScript:** extends `tsconfig/base.json`.
+- **TypeScript:** standalone `tsconfig.json` (does not extend `tsconfig/base.json` — Next.js requires its own `module`/`moduleResolution` settings).
 
 ## Directory Layout
 
 ```
-src/app/
-├─ layout.tsx      Root layout
-├─ page.tsx        Home page (default create-next-app scaffold)
-├─ globals.css     Tailwind entry
-└─ favicon.ico
-public/            Static assets (shipped as-is)
-next.config.js     Next.js config
-tailwind.config.ts Tailwind content globs + theme
-postcss.config.js  PostCSS pipeline (Tailwind v4)
+src/
+├─ app/               App Router: api/, auth/, dashboard/, docs/, login/, market/, ranking/, terms/, layout.tsx, page.tsx (landing), globals.css
+├─ components/        Feature UI: home/, dashboard/, ranking/, guild-admin/, land/, game/, docs/, layout/, charts/, common/, ui/ (shadcn)
+├─ lib/               Utilities: env.ts, auth.ts, db.ts, format.ts, market-math.ts, mutation/, mutations/, queries/, ...
+├─ hooks/             Client-side hooks
+└─ i18n/              next-intl config (config.ts, request.ts, actions.ts)
+messages/             next-intl catalogs — ko.json, en.json
+content/docs/         fumadocs MDX content (facilities/, getting-started/, advanced/, economy/)
+tests/
+├─ unit/              Vitest unit specs
+├─ e2e/               Playwright specs
+└─ pages/             Playwright page objects
+public/               Static assets (shipped as-is)
+middleware.ts         Route protection (better-auth session check)
+components.json       shadcn/ui config
+next.config.js        Next.js config
+tailwind.config.ts    Tailwind content globs + theme
+postcss.config.js     PostCSS pipeline (Tailwind v4)
+playwright.config.ts  Playwright E2E config
+vitest.config.ts      Vitest unit test config
+source.config.ts      fumadocs source config
+sentry.*.config.ts    Sentry server/edge instrumentation
 ```
 
-The current `page.tsx` is an untouched `create-next-app` template — replace it rather than layering on top when starting real UI work.
+`src/app/page.tsx` assembles the production landing sections (`HeroSection`, `CoreLoopSection`, `FactoryShowcase`, `EconomySection`, `CtaSection`) from `src/components/home/` — extend those components rather than replacing the page.
 
 ## Scripts
 
-| Command      | Purpose                                     |
-| ------------ | ------------------------------------------- |
-| `pnpm dev`   | `next dev`.                                 |
-| `pnpm build` | `next build` (outputs `.next/`).            |
-| `pnpm start` | `next start` (serves the built app).        |
-| `pnpm lint`  | `next lint` (wraps the flat ESLint config). |
+| Command                        | Purpose                                                                                   |
+| ------------------------------ | ----------------------------------------------------------------------------------------- |
+| `pnpm dev`                     | `next dev`.                                                                               |
+| `pnpm build`                   | `next build` (outputs `.next/`).                                                          |
+| `pnpm start`                   | `next start` (serves the built app).                                                      |
+| `pnpm lint`                    | `eslint .` (flat ESLint config — combines `eslint-config-next` and `eslint-config-idle`). |
+| `pnpm typecheck`               | `fumadocs-mdx && tsc --noEmit`.                                                           |
+| `pnpm test` / `pnpm test:unit` | `vitest run` against `tests/unit/`.                                                       |
+| `pnpm test:unit:watch`         | `vitest` in watch mode.                                                                   |
+| `pnpm test:coverage`           | `vitest run --coverage`.                                                                  |
+| `pnpm test:e2e`                | `playwright test` against `tests/e2e/`.                                                   |
+| `pnpm test:e2e:ui`             | `playwright test --ui`.                                                                   |
+| `pnpm test:e2e:report`         | `playwright show-report`.                                                                 |
 
 Turbo overrides `web#build` inputs/outputs in the root `turbo.json` so Next's `.next/cache/**` is excluded from the cache artifact set.
 
@@ -68,7 +88,7 @@ Rules:
 - **Styling:** Tailwind v4 utility classes. Centralize tokens in `tailwind.config.ts` / `globals.css` (`@theme`); avoid hardcoded colors and magic spacing.
 - **Accessibility:** Use semantic HTML; hero/landing surfaces should meet the web design-quality bar (intentional hierarchy, real hover/focus states, no template-looking defaults).
 - **Performance targets:** LCP < 2.5s, INP < 200ms, CLS < 0.1. Images must declare explicit `width`/`height` and use `next/image`.
-- **Imports:** Use `@idle/api-types` for shared DTOs; do not duplicate types from the bot.
+- **Imports:** Use types re-exported from `@idle/database` (Prisma models) and `@idle/game-core` / `@idle/game-services` for shared DTOs; do not duplicate types from the bot. (`@idle/api-types` exists in `packages/api-types` but is not currently a dependency of any workspace — do not add imports from it without first wiring it into `package.json`.)
 
 ## Internationalization
 
@@ -76,7 +96,7 @@ Rules:
 
 - **No user-facing string literals in components.** Every displayed string comes from `messages/<locale>.json` via `getTranslations` (server) or `useTranslations` (client). Korean JSDoc, `console.error` text, and log messages stay in the source — they are not user-facing.
 - **Edit `ko.json` and `en.json` together.** `tests/unit/messages.test.ts` fails the build on key-set drift, empty values, mismatched `{placeholder}` names, and leftover Hangul in `en.json`. This is the web counterpart of the bot's `i18n-sync` skill.
-- **Data arrays hold keys, not text.** Structures like `FactoryShowcase`'s `TIERS` or `RankingSort`'s options carry `nameKey` / `labelKey` strings; the catalog owns the wording. Never inline a translated string into a constant.
+- **Data arrays hold keys, not text.** Structures like `FactoryShowcase`'s `TIERS` carry `nameKey` strings, and `RankingSort`'s `SORT_OPTIONS` carry the message key directly as the option value; the catalog owns the wording. Never inline a translated string into a constant.
 - **`src/i18n/config.ts` is the single source of truth** for supported locales, and `resolveLocale` normalizes the cookie. Never interpolate a raw cookie value into the `messages/${locale}.json` dynamic import — the whitelist is what stops path traversal.
 - **Locale-shaped formatting is not translation.** Number magnitudes and rank notation differ per locale, so `formatCompact(value, locale)` and `formatRank(rank, locale)` take an explicit locale (ko uses 조/억/만 and `1위`; en uses K/M/B/T and `#1`). Money is a message pattern (`common.money`), not a hardcoded `원` suffix.
 - **Locale codes differ from the bot on purpose.** Web uses `ko` / `en` (`<html lang>` and URL convention); the bot is pinned to Discord's locale codes and uses `ko` / `en-US`. The two lists are independent — do not share them.
@@ -84,7 +104,7 @@ Rules:
 
 ## Environment
 
-No app-specific env is wired yet. When adding env access, prefer `process.env.NEXT_PUBLIC_*` for browser-exposed values and validate server-only env at module load.
+Server-only env is validated lazily in `src/lib/env.ts` (`requireEnv` throws on first access when a key is missing, except during the Next.js production build phase): `BETTER_AUTH_SECRET`, `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`. `BETTER_AUTH_URL` and `DATABASE_URL` are read directly from `process.env` elsewhere (see `.env.example`). `NEXT_PUBLIC_APP_URL` is the one browser-exposed value — see the Build/Deploy section below for its build-time semantics. Follow the same `requireEnv` pattern for any new server-only env var; use `process.env.NEXT_PUBLIC_*` only for values that must reach the client bundle.
 
 ## Build/Deploy
 

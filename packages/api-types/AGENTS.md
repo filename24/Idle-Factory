@@ -1,6 +1,6 @@
 # @idle/api-types — Shared Type Package
 
-Shared TypeScript types and small utilities used by both the bot and the web app. Consumed across workspaces via `@idle/api-types`.
+Shared TypeScript types and small utilities intended for use by both the bot and the web app via `@idle/api-types`. Not currently consumed by any workspace — neither `apps/bot` nor `apps/web` depend on this package yet.
 
 ## Contents
 
@@ -24,11 +24,12 @@ Consumers must run the package's `build` task at least once (Turbo handles this 
 
 ## Scripts
 
-| Command       | Purpose               |
-| ------------- | --------------------- |
-| `pnpm build`  | Bundle with `tsup`.   |
-| `pnpm lint`   | `prettier --check .`. |
-| `pnpm format` | `prettier --write .`. |
+| Command          | Purpose               |
+| ---------------- | --------------------- |
+| `pnpm build`     | Bundle with `tsup`.   |
+| `pnpm lint`      | `prettier --check .`. |
+| `pnpm format`    | `prettier --write .`. |
+| `pnpm typecheck` | `tsc --noEmit`.       |
 
 ## Runtime Deps
 
@@ -37,6 +38,6 @@ Consumers must run the package's `build` task at least once (Turbo handles this 
 ## Conventions
 
 - **Types only / tiny pure helpers.** Do not introduce runtime dependencies on discord.js, Prisma, Next.js, or any app-specific framework — this package must remain usable by every workspace.
-- **Stable public surface.** Any symbol exported from `src/index.ts` is effectively public API across the monorepo; rename/remove with care and update call sites in `apps/bot` and `apps/web` in the same change.
-- **No side effects.** Keep modules tree-shakable — avoid top-level work.
+- **Stable public surface.** Any symbol exported from `src/index.ts` is intended to be public API across the monorepo; rename/remove with care. Note: as of now, neither `apps/bot` nor `apps/web` depends on this package, so there are no existing call sites to update — apply this guidance once a workspace actually wires in `@idle/api-types`.
+- **Minimal side effects.** Keep modules tree-shakable — simple top-level `const` instantiation of stateless helper objects (e.g. `SnowFlake.ts`'s `SnowflakeId`) is fine, but avoid heavier top-level work (I/O, timers, global mutation).
 - **Privacy:** Marked `private: true`; do not publish to npm.
