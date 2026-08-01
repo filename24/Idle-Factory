@@ -35,6 +35,42 @@
     },
     "notice": {
       "title": "Notice"
+    },
+    "help": {
+      "title": "📖 Idle Factory Commands",
+      "intro": "An idle management game where you build factories, produce materials, and sell them. Click any command below to run it right away.",
+      "gettingStarted": {
+        "title": "🚀 New here?",
+        "body": "1. Register the bot on your server with `/setup`.\n2. Check your land with `/land view`, then build on an empty slot with `/factory build`.\n3. Wait a while, then collect what you produced with `/harvest`.\n4. Sell materials with `/market sell` and reinvest the money into more factories."
+      },
+      "categories": {
+        "game": "🏭 Game",
+        "info": "ℹ️ Info",
+        "settings": "⚙️ Settings",
+        "dev": "🛠️ Developer"
+      },
+      "entries": {
+        "factory": "Build, upgrade, inspect, or destroy your factories.",
+        "harvest": "Harvest all of your factories at once.",
+        "land": "View your land, buy new plots, and unlock locked slots.",
+        "market": "List, sell, and buy materials, and check global prices.",
+        "profile": "Check your assets and factory overview.",
+        "quest": "Check your active quest.",
+        "server": "View the server vault and set the announcement channel.",
+        "stock": "List your factories as stocks and trade server shares.",
+        "warehouse": "Check your warehouse and upgrade its grade.",
+        "help": "Open this help page.",
+        "ping": "Check the bot's latency and uptime.",
+        "announcement": "Check the notice board.",
+        "language": "Pick the language the bot replies to you in.",
+        "setup": "Set the bot up on this server for the first time.",
+        "admin": "Operators only — adjust guild credit and market listings.",
+        "debug": "Developers only — manipulate your own game state.",
+        "attributes": "Developers only — roll the attribute gacha.",
+        "공지": "Developers only — send or delete a notice."
+      },
+      "unknownCategory": "No such category. Run the command without a category to see everything.",
+      "footer": "Command names are localized too · Only you can see this help"
     }
   },
   "guildSettings": {
