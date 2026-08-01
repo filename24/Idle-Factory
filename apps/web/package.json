@@ -21,6 +21,7 @@
     "@better-fetch/fetch": "1.1.21",
     "@idle/database": "workspace:^",
     "@idle/game-core": "workspace:^",
+    "@idle/game-services": "workspace:^",
     "@sentry/nextjs": "^10.68.0",
     "@tailwindcss/typography": "0.5.19",
     "agentation": "3.0.2",

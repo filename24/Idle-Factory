@@ -5,10 +5,9 @@
  * 재시도, 비재시도 에러 즉시 전파, 최대 시도 소진 동작을 검증한다.
  */
 
-import { describe, expect, it, vi } from 'vitest'
-
-import { runInTx } from '../../src/services/base'
 import type { PrismaClient } from '@idle/database'
+import { describe, expect, it, vi } from 'vitest'
+import { runInTx } from '../src/base'
 
 type TxBehavior = 'ok' | 'p2034' | 'p2002' | 'plain'
 
@@ -55,15 +54,9 @@ describe('runInTx retry', () => {
   })
 
   it('5회(최대 시도) 모두 P2034 면 마지막 P2034 를 rethrow 한다', async () => {
-    const { prisma, $transaction } = makePrisma([
-      'p2034',
-      'p2034',
-      'p2034',
-      'p2034',
-      'p2034'
-    ])
+    const { prisma, $transaction } = makePrisma(['p2034', 'p2034', 'p2034', 'p2034', 'p2034'])
     await expect(runInTx(prisma, async () => 1)).rejects.toMatchObject({
-      code: 'P2034'
+      code: 'P2034',
     })
     expect($transaction).toHaveBeenCalledTimes(5)
   })
@@ -71,16 +64,14 @@ describe('runInTx retry', () => {
   it('비재시도 에러(P2002)는 즉시 전파하고 재시도하지 않는다', async () => {
     const { prisma, $transaction } = makePrisma(['p2002'])
     await expect(runInTx(prisma, async () => 1)).rejects.toMatchObject({
-      code: 'P2002'
+      code: 'P2002',
     })
     expect($transaction).toHaveBeenCalledTimes(1)
   })
 
   it('code 없는 일반 에러도 재시도하지 않는다', async () => {
     const { prisma, $transaction } = makePrisma(['plain'])
-    await expect(runInTx(prisma, async () => 1)).rejects.toThrow(
-      'no code error'
-    )
+    await expect(runInTx(prisma, async () => 1)).rejects.toThrow('no code error')
     expect($transaction).toHaveBeenCalledTimes(1)
   })
 })

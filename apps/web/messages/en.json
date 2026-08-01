@@ -7,7 +7,8 @@
     "ranking": "Ranking",
     "dashboard": "Dashboard",
     "docs": "Docs",
-    "home": "Home"
+    "home": "Home",
+    "market": "Market"
   },
   "locale": {
     "label": "Language",
@@ -162,10 +163,11 @@
         "factories": {
           "label": "Active factories"
         },
-        "change24h": "24h change",
-        "changeVsYesterday": "vs. yesterday",
         "asOfNow": "as of now",
-        "running": "running"
+        "running": "running",
+        "changeFromBase": "vs base price",
+        "tierLabel": "avg credit tier",
+        "sample": "Sample"
       }
     }
   },
@@ -303,6 +305,11 @@
         "empty": "You are not in any server yet.",
         "emptyDescription": "Servers where you build or stay active will appear here.",
         "viewStats": "View statistics →"
+      },
+      "assets": {
+        "title": "My assets",
+        "land": "Land layout",
+        "view": "View →"
       }
     },
     "guild": {
@@ -347,7 +354,8 @@
           "revenue": "Sales revenue",
           "vaultAdded": "Added to vault"
         }
-      }
+      },
+      "manageSettings": "Manage settings"
     },
     "xp": {
       "label": "Level {level} experience progress {percent}%"
@@ -563,7 +571,302 @@
       "guildNotFound": "Server not found.",
       "guildStats": "Could not load the server statistics.",
       "guildRanking": "Could not load the server ranking.",
-      "userRanking": "Could not load the player ranking."
+      "userRanking": "Could not load the player ranking.",
+      "rateLimited": "Too many requests. Try again shortly."
+    }
+  },
+  "game": {
+    "errors": {
+      "USER_NOT_FOUND": "Game account not found.",
+      "INSUFFICIENT_MONEY": "Not enough money.",
+      "INSUFFICIENT_MATERIAL": "Not enough materials.",
+      "WAREHOUSE_FULL": "Your warehouse is full.",
+      "SLOT_OCCUPIED": "That slot is already occupied.",
+      "SLOT_LOCKED": "That slot is still locked. Expand it first.",
+      "SLOT_ALREADY_UNLOCKED": "That slot is already unlocked.",
+      "OUT_OF_BOUNDS": "That position is outside the land.",
+      "FACTORY_NOT_FOUND": "Factory not found.",
+      "FACTORY_LISTED": "A listed factory cannot be demolished.",
+      "LEVEL_LOCKED": "Your level is too low.",
+      "MAX_GRADE": "Already at the maximum grade.",
+      "CREDIT_RESTRICTED": "This server's credit score is too low for this action.",
+      "BOOSTER_NOT_AVAILABLE": "No booster choice is available right now.",
+      "RAW_BOOSTER_ALREADY_APPLIED": "This factory already has a raw booster.",
+      "MAX_LANDS": "You already own the maximum number of lands.",
+      "LAND_ALREADY_EXISTS": "You already own that land.",
+      "INVALID_LAND_INDEX": "That land number cannot be purchased.",
+      "LAND_NOT_FOUND": "Land not found.",
+      "MOVE_SAME_POSITION": "The factory is already at that position.",
+      "QUEST_NOT_FOUND": "Quest not found.",
+      "QUEST_NOT_COMPLETED": "That quest is not complete yet.",
+      "QUEST_ALREADY_CLAIMED": "You already claimed that reward.",
+      "INVALID_QUANTITY": "That quantity is not valid.",
+      "INVALID_PRICE": "That price is not valid.",
+      "INVALID_DURATION": "That listing duration is not valid.",
+      "PRICE_OUT_OF_RANGE": "That price is outside the allowed range.",
+      "LISTING_NOT_FOUND": "Listing not found.",
+      "LISTING_NOT_ACTIVE": "That listing is no longer active.",
+      "NOT_LISTING_OWNER": "You can only cancel your own listings.",
+      "SELF_PURCHASE": "You cannot buy your own listing.",
+      "PRICE_NOT_FOUND": "No price data found.",
+      "MATERIAL_NOT_DIRECT_BUYABLE": "That material cannot be bought directly.",
+      "DAILY_LIMIT_EXCEEDED": "You have used today's direct purchase limit.",
+      "CREDIT_LISTING_BLOCKED": "This server's credit score is too low to list items.",
+      "STOCK_NOT_FOUND": "Stock not found.",
+      "STOCK_SELF_TRADE": "You cannot trade a stock you listed yourself.",
+      "STOCK_INSUFFICIENT_SHARES": "You do not hold enough shares.",
+      "STOCK_LISTING_CONDITION_NOT_MET": "The listing requirements are not met.",
+      "STOCK_ALREADY_LISTED": "That factory is already listed.",
+      "STOCK_FLOAT_EXHAUSTED": "No shares are left to buy.",
+      "STOCK_RATE_LIMITED": "You traded this stock too often. Try again shortly.",
+      "STOCK_IPO_PRICE_OUT_OF_RANGE": "That IPO price is outside the allowed range.",
+      "STOCK_LEVEL_GATE": "Your level is too low to trade stocks.",
+      "GUILD_NOT_FOUND": "Server not found.",
+      "INVALID_CREDIT_VALUE": "That credit value is not valid.",
+      "AUDIT_REASON_REQUIRED": "A reason is required.",
+      "UNSUPPORTED_LANGUAGE": "That language is not supported."
+    }
+  },
+  "mutation": {
+    "errors": {
+      "UNAUTHENTICATED": "Please sign in.",
+      "NO_GAME_ACCOUNT": "No game account yet. Start playing in Discord first.",
+      "CONSENT_REQUIRED": "You need to accept the terms in Discord first.",
+      "FORBIDDEN_RESOURCE": "You do not have access to that.",
+      "RATE_LIMITED": "Too many requests. Try again shortly.",
+      "INVALID_INPUT": "That input is not valid.",
+      "INTERNAL": "Something went wrong. Try again shortly."
+    }
+  },
+  "quest": {
+    "title": "Quests",
+    "tutorialChain": "Tutorial {order}/{total}",
+    "progressLabel": "Progress",
+    "rewardLabel": "Reward",
+    "statusCompleted": "Ready to claim",
+    "claimButton": "Claim reward",
+    "claiming": "Claiming…",
+    "reward": {
+      "money": "{amount}",
+      "xp": "{amount} XP",
+      "material": "{material} +{amount}"
+    },
+    "claimed": {
+      "title": "Reward claimed",
+      "already": "You already claimed this reward.",
+      "levelUp": "Reached level {newLevel}!"
+    },
+    "unlocked": {
+      "body": "A new quest is available — {title}"
+    },
+    "empty": {
+      "tutorialDone": "You finished the tutorial.",
+      "tutorialDoneDescription": "You completed {count} quests. New quests will appear here.",
+      "noVisible": "No quests in progress.",
+      "noVisibleDescription": "Start playing in Discord to receive the tutorial quests."
+    },
+    "tutorial": {
+      "1": {
+        "title": "Build your first factory",
+        "description": "Build one T1 factory."
+      },
+      "2": {
+        "title": "First harvest",
+        "description": "Harvest a factory once."
+      },
+      "3": {
+        "title": "Sell on market",
+        "description": "List at least one material on the market."
+      },
+      "4": {
+        "title": "Upgrade a factory",
+        "description": "Upgrade a factory to grade 2."
+      },
+      "5": {
+        "title": "Second factory",
+        "description": "Own two T1 factories."
+      }
+    }
+  },
+  "land": {
+    "meta": {
+      "title": "My Land · Idle Factory",
+      "description": "Land layout and factory placement"
+    },
+    "title": "Land {index}",
+    "gridLabel": "Land {index} layout",
+    "navLabel": "Land navigation",
+    "backToDashboard": "Back to dashboard",
+    "prev": "Previous",
+    "next": "Next",
+    "position": "{position} / {total}",
+    "tiles": {
+      "factories": "Factories",
+      "unlocked": "Unlocked",
+      "locked": "Locked"
+    },
+    "cell": {
+      "locked": "Row {x}, column {y} — locked",
+      "empty": "Row {x}, column {y} — empty",
+      "special": "Special slot — {type}",
+      "factory": "{name} · grade {grade}"
+    },
+    "slotType": {
+      "NORMAL": "Normal",
+      "ORE": "Ore Vein",
+      "FERTILE": "Fertile",
+      "FOREST": "Forest",
+      "OIL": "Oil Field",
+      "WATER": "Water"
+    }
+  },
+  "factory": {
+    "meta": {
+      "title": "Factory Detail · Idle Factory",
+      "description": "Factory grade, output and upgrade cost"
+    },
+    "backToLand": "Back to land {index}",
+    "listed": "Listed",
+    "tiles": {
+      "grade": "Grade",
+      "gradeMax": "Max grade",
+      "position": "Position",
+      "positionValue": "Row {x}, col {y}",
+      "landHint": "Land {index}",
+      "bonus": "Output bonus",
+      "bonusHint": "Slot ×{slot} · Synergy ×{synergy}",
+      "slotType": "Slot type"
+    },
+    "production": {
+      "title": "Production",
+      "output": "Output",
+      "secondary": "By-products",
+      "recipe": "Inputs",
+      "noRecipe": "None",
+      "perTick": "per 10 min",
+      "shortageMode": "On shortage"
+    },
+    "upgrade": {
+      "title": "Upgrade",
+      "toGrade": "Cost to grade {grade}",
+      "material": "Materials",
+      "maxReached": "Maximum grade reached.",
+      "booster": "Upgrade booster",
+      "noBooster": "None",
+      "rawBooster": "Raw booster",
+      "applied": "Applied",
+      "notApplied": "Not applied"
+    },
+    "costs": {
+      "title": "Costs",
+      "build": "Build cost",
+      "move": "Move cost",
+      "refund": "Demolish refund",
+      "listedBlocked": "Cannot demolish while listed"
+    },
+    "type": {
+      "FARM": "Farm",
+      "MINE": "Mine",
+      "LUMBER": "Lumber Mill",
+      "OIL_WELL": "Oil Well",
+      "STEEL_MILL": "Steel Mill",
+      "REFINERY": "Refinery",
+      "FLOUR_MILL": "Flour Mill",
+      "FURNITURE_FACTORY": "Furniture Factory",
+      "CAR_FACTORY": "Car Factory",
+      "ELECTRONICS_FACTORY": "Electronics Factory",
+      "FOOD_FACTORY": "Food Factory"
+    },
+    "slotType": {
+      "NORMAL": "Normal",
+      "ORE": "Ore Vein",
+      "FERTILE": "Fertile",
+      "FOREST": "Forest",
+      "OIL": "Oil Field",
+      "WATER": "Water"
+    },
+    "shortageMode": {
+      "PAUSE": "Pause",
+      "AUTO_BUY": "Auto buy",
+      "PARTIAL": "Partial"
+    },
+    "booster": {
+      "SAVING": "Saving",
+      "RARE": "Rare",
+      "SPEED": "Speed",
+      "PROFIT": "Profit"
+    }
+  },
+  "harvest": {
+    "title": "Harvest",
+    "harvestAll": "Harvest all",
+    "harvesting": "Harvesting…",
+    "nothingToHarvest": "Nothing to harvest yet. Try again shortly.",
+    "done": {
+      "title": "Harvested {count} factories",
+      "xp": "{amount} XP",
+      "levelUp": "Reached level {newLevel}!"
+    }
+  },
+  "market": {
+    "meta": {
+      "title": "Market Prices · Idle Factory",
+      "description": "Global material prices and active listings"
+    },
+    "prices": {
+      "title": "Global market prices",
+      "description": "Current price against the base price for each material.",
+      "material": "Material",
+      "basePrice": "Base",
+      "currentPrice": "Current",
+      "change": "Change",
+      "recentSales": "Recent volume",
+      "empty": "No price data yet.",
+      "emptyDescription": "Material prices appear here once the game is running.",
+      "tickNotice": "Prices tick every 30 minutes; this view is cached for up to 5 minutes."
+    }
+  },
+  "guildAdmin": {
+    "meta": {
+      "title": "Server Settings · Idle Factory",
+      "description": "Server language and surtax settings"
+    },
+    "title": "Server settings",
+    "backToStats": "Back to stats",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Saved.",
+    "lang": {
+      "label": "Server language",
+      "description": "The bot's default language in this server. Personal settings take priority."
+    },
+    "tax": {
+      "label": "Surtax",
+      "description": "An extra tax rate on trades. Revenue goes to the server vault."
+    },
+    "errors": {
+      "INVALID_GUILD_ID": "Invalid server.",
+      "UNAUTHENTICATED": "Please sign in.",
+      "SCOPE_REQUIRED": "Server list permission is required.",
+      "NOT_MEMBER": "You do not have permission to manage this server.",
+      "FORBIDDEN": "You do not have permission to manage this server.",
+      "GUILD_NOT_REGISTERED": "The bot is not in this server.",
+      "RATE_LIMITED": "Too many requests. Try again shortly.",
+      "DISCORD_UNAVAILABLE": "Could not reach Discord.",
+      "INVALID_VALUE": "That value is not allowed.",
+      "INTERNAL": "Something went wrong."
+    },
+    "errorHints": {
+      "INVALID_GUILD_ID": "Check the URL.",
+      "UNAUTHENTICATED": "Sign in with Discord and try again.",
+      "SCOPE_REQUIRED": "Signing in to Discord again is required to check your server permissions. Please sign out and back in.",
+      "NOT_MEMBER": "Only members with Manage Server can change these settings.",
+      "FORBIDDEN": "Only members with Manage Server can change these settings.",
+      "GUILD_NOT_REGISTERED": "Invite the bot and the server registers automatically.",
+      "RATE_LIMITED": "Wait a moment and refresh.",
+      "DISCORD_UNAVAILABLE": "Check Discord status and try again.",
+      "INVALID_VALUE": "Pick a value from the list.",
+      "INTERNAL": "Contact an admin if this keeps happening."
     }
   }
 }

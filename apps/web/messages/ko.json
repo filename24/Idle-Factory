@@ -7,7 +7,8 @@
     "ranking": "랭킹",
     "dashboard": "대시보드",
     "docs": "문서",
-    "home": "홈"
+    "home": "홈",
+    "market": "마켓"
   },
   "locale": {
     "label": "언어",
@@ -162,10 +163,11 @@
         "factories": {
           "label": "활성 공장"
         },
-        "change24h": "24h 변동",
-        "changeVsYesterday": "전일 대비",
         "asOfNow": "현재 기준",
-        "running": "가동 중"
+        "running": "가동 중",
+        "changeFromBase": "기준가 대비",
+        "tierLabel": "평균 신뢰도 등급",
+        "sample": "예시"
       }
     }
   },
@@ -303,6 +305,11 @@
         "empty": "참여 중인 서버가 없습니다.",
         "emptyDescription": "공장을 건설하거나 활동한 서버가 여기에 표시됩니다.",
         "viewStats": "통계 보기 →"
+      },
+      "assets": {
+        "title": "내 자산",
+        "land": "토지 배치도",
+        "view": "보기 →"
       }
     },
     "guild": {
@@ -347,7 +354,8 @@
           "revenue": "판매 수익",
           "vaultAdded": "금고 적립"
         }
-      }
+      },
+      "manageSettings": "서버 설정 관리"
     },
     "xp": {
       "label": "레벨 {level} 경험치 진행률 {percent}%"
@@ -563,7 +571,302 @@
       "guildNotFound": "서버를 찾을 수 없습니다.",
       "guildStats": "서버 통계를 불러오지 못했습니다.",
       "guildRanking": "서버 랭킹을 불러오지 못했습니다.",
-      "userRanking": "유저 랭킹을 불러오지 못했습니다."
+      "userRanking": "유저 랭킹을 불러오지 못했습니다.",
+      "rateLimited": "요청이 너무 잦아요. 잠시 후 다시 시도해 주세요."
+    }
+  },
+  "game": {
+    "errors": {
+      "USER_NOT_FOUND": "게임 계정을 찾을 수 없어요.",
+      "INSUFFICIENT_MONEY": "자금이 부족해요.",
+      "INSUFFICIENT_MATERIAL": "자재가 부족해요.",
+      "WAREHOUSE_FULL": "창고가 가득 찼어요.",
+      "SLOT_OCCUPIED": "이미 다른 공장이 있는 자리예요.",
+      "SLOT_LOCKED": "아직 잠긴 슬롯이에요. 먼저 확장해 주세요.",
+      "SLOT_ALREADY_UNLOCKED": "이미 해금된 슬롯이에요.",
+      "OUT_OF_BOUNDS": "토지 범위를 벗어난 위치예요.",
+      "FACTORY_NOT_FOUND": "공장을 찾을 수 없어요.",
+      "FACTORY_LISTED": "상장된 공장은 철거할 수 없어요.",
+      "LEVEL_LOCKED": "레벨이 부족해요.",
+      "MAX_GRADE": "이미 최대 등급이에요.",
+      "CREDIT_RESTRICTED": "서버 신뢰도가 낮아 이 기능을 쓸 수 없어요.",
+      "BOOSTER_NOT_AVAILABLE": "지금은 부스터를 선택할 수 없어요.",
+      "RAW_BOOSTER_ALREADY_APPLIED": "이미 원료 부스터가 적용된 공장이에요.",
+      "MAX_LANDS": "토지를 더 살 수 없어요. 이미 최대치예요.",
+      "LAND_ALREADY_EXISTS": "이미 보유한 토지예요.",
+      "INVALID_LAND_INDEX": "구매할 수 없는 토지 번호예요.",
+      "LAND_NOT_FOUND": "토지를 찾을 수 없어요.",
+      "MOVE_SAME_POSITION": "이미 그 자리에 있는 공장이에요.",
+      "QUEST_NOT_FOUND": "퀘스트를 찾을 수 없어요.",
+      "QUEST_NOT_COMPLETED": "아직 완료하지 않은 퀘스트예요.",
+      "QUEST_ALREADY_CLAIMED": "이미 보상을 받은 퀘스트예요.",
+      "INVALID_QUANTITY": "수량이 올바르지 않아요.",
+      "INVALID_PRICE": "가격이 올바르지 않아요.",
+      "INVALID_DURATION": "등록 기간이 올바르지 않아요.",
+      "PRICE_OUT_OF_RANGE": "시세 대비 허용 범위를 벗어난 가격이에요.",
+      "LISTING_NOT_FOUND": "매물을 찾을 수 없어요.",
+      "LISTING_NOT_ACTIVE": "이미 판매되었거나 만료된 매물이에요.",
+      "NOT_LISTING_OWNER": "본인 매물만 취소할 수 있어요.",
+      "SELF_PURCHASE": "본인 매물은 구매할 수 없어요.",
+      "PRICE_NOT_FOUND": "시세 정보를 찾을 수 없어요.",
+      "MATERIAL_NOT_DIRECT_BUYABLE": "직접 구매할 수 없는 자재예요.",
+      "DAILY_LIMIT_EXCEEDED": "오늘의 직접 구매 한도를 모두 썼어요.",
+      "CREDIT_LISTING_BLOCKED": "서버 신뢰도가 낮아 매물을 등록할 수 없어요.",
+      "STOCK_NOT_FOUND": "종목을 찾을 수 없어요.",
+      "STOCK_SELF_TRADE": "본인이 상장한 종목은 거래할 수 없어요.",
+      "STOCK_INSUFFICIENT_SHARES": "보유 주식이 부족해요.",
+      "STOCK_LISTING_CONDITION_NOT_MET": "상장 조건을 충족하지 못했어요.",
+      "STOCK_ALREADY_LISTED": "이미 상장된 공장이에요.",
+      "STOCK_FLOAT_EXHAUSTED": "남은 유통 주식이 없어요.",
+      "STOCK_RATE_LIMITED": "같은 종목을 너무 자주 거래했어요. 잠시 후 다시 시도해 주세요.",
+      "STOCK_IPO_PRICE_OUT_OF_RANGE": "상장가가 허용 범위를 벗어났어요.",
+      "STOCK_LEVEL_GATE": "주식 거래를 하기에는 레벨이 부족해요.",
+      "GUILD_NOT_FOUND": "서버를 찾을 수 없어요.",
+      "INVALID_CREDIT_VALUE": "신뢰도 값이 올바르지 않아요.",
+      "AUDIT_REASON_REQUIRED": "사유를 입력해야 해요.",
+      "UNSUPPORTED_LANGUAGE": "지원하지 않는 언어예요."
+    }
+  },
+  "mutation": {
+    "errors": {
+      "UNAUTHENTICATED": "로그인이 필요해요.",
+      "NO_GAME_ACCOUNT": "게임 계정이 없어요. 디스코드에서 먼저 시작해 주세요.",
+      "CONSENT_REQUIRED": "약관 동의가 필요해요. 디스코드에서 동의해 주세요.",
+      "FORBIDDEN_RESOURCE": "접근할 수 없는 대상이에요.",
+      "RATE_LIMITED": "너무 자주 요청했어요. 잠시 후 다시 시도해 주세요.",
+      "INVALID_INPUT": "입력값이 올바르지 않아요.",
+      "INTERNAL": "처리 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요."
+    }
+  },
+  "quest": {
+    "title": "퀘스트",
+    "tutorialChain": "튜토리얼 {order}/{total}",
+    "progressLabel": "진행도",
+    "rewardLabel": "보상",
+    "statusCompleted": "수령 대기",
+    "claimButton": "보상 받기",
+    "claiming": "수령 중…",
+    "reward": {
+      "money": "{amount}",
+      "xp": "경험치 +{amount}",
+      "material": "{material} +{amount}"
+    },
+    "claimed": {
+      "title": "보상을 받았습니다",
+      "already": "이미 받은 보상이에요.",
+      "levelUp": "레벨 {newLevel} 달성!"
+    },
+    "unlocked": {
+      "body": "새 퀘스트가 열렸습니다 — {title}"
+    },
+    "empty": {
+      "tutorialDone": "튜토리얼을 모두 마쳤습니다.",
+      "tutorialDoneDescription": "{count}개 퀘스트를 완료했어요. 새 퀘스트가 준비되면 여기에 표시됩니다.",
+      "noVisible": "진행 중인 퀘스트가 없습니다.",
+      "noVisibleDescription": "Discord에서 게임을 시작하면 튜토리얼 퀘스트가 표시됩니다."
+    },
+    "tutorial": {
+      "1": {
+        "title": "첫 공장 건설",
+        "description": "T1 공장을 1개 건설해보세요."
+      },
+      "2": {
+        "title": "첫 수확",
+        "description": "공장에서 자재를 1회 수확해보세요."
+      },
+      "3": {
+        "title": "자재 판매",
+        "description": "마켓에 자재를 1개 이상 등록해보세요."
+      },
+      "4": {
+        "title": "공장 업그레이드",
+        "description": "공장을 2등급으로 업그레이드해보세요."
+      },
+      "5": {
+        "title": "두 번째 공장",
+        "description": "T1 공장을 2개 보유하세요."
+      }
+    }
+  },
+  "land": {
+    "meta": {
+      "title": "내 토지 · Idle Factory",
+      "description": "토지 배치와 공장 현황"
+    },
+    "title": "토지 {index}",
+    "gridLabel": "토지 {index} 배치도",
+    "navLabel": "토지 이동",
+    "backToDashboard": "대시보드로",
+    "prev": "이전 토지",
+    "next": "다음 토지",
+    "position": "{position} / {total}",
+    "tiles": {
+      "factories": "공장",
+      "unlocked": "해금 슬롯",
+      "locked": "잠긴 슬롯"
+    },
+    "cell": {
+      "locked": "{x}행 {y}열 — 잠김",
+      "empty": "{x}행 {y}열 — 비어 있음",
+      "special": "특수 슬롯 — {type}",
+      "factory": "{name} · 등급 {grade}"
+    },
+    "slotType": {
+      "NORMAL": "일반",
+      "ORE": "광맥",
+      "FERTILE": "비옥지",
+      "FOREST": "삼림",
+      "OIL": "유전지",
+      "WATER": "수원"
+    }
+  },
+  "factory": {
+    "meta": {
+      "title": "공장 상세 · Idle Factory",
+      "description": "공장 등급·생산량·업그레이드 비용"
+    },
+    "backToLand": "토지 {index}로",
+    "listed": "상장됨",
+    "tiles": {
+      "grade": "등급",
+      "gradeMax": "최대 등급",
+      "position": "위치",
+      "positionValue": "{x}행 {y}열",
+      "landHint": "토지 {index}",
+      "bonus": "생산 보너스",
+      "bonusHint": "슬롯 ×{slot} · 시너지 ×{synergy}",
+      "slotType": "슬롯 종류"
+    },
+    "production": {
+      "title": "생산",
+      "output": "산출",
+      "secondary": "부산물",
+      "recipe": "필요 원료",
+      "noRecipe": "없음",
+      "perTick": "10분당",
+      "shortageMode": "원료 부족 시"
+    },
+    "upgrade": {
+      "title": "업그레이드",
+      "toGrade": "{grade}등급 비용",
+      "material": "필요 자재",
+      "maxReached": "최대 등급에 도달했습니다.",
+      "booster": "업그레이드 부스터",
+      "noBooster": "없음",
+      "rawBooster": "원료 부스터",
+      "applied": "적용됨",
+      "notApplied": "미적용"
+    },
+    "costs": {
+      "title": "비용",
+      "build": "건설 원가",
+      "move": "이전 비용",
+      "refund": "철거 환급",
+      "listedBlocked": "상장 중에는 철거 불가"
+    },
+    "type": {
+      "FARM": "농장",
+      "MINE": "광산",
+      "LUMBER": "목재소",
+      "OIL_WELL": "유전",
+      "STEEL_MILL": "제철소",
+      "REFINERY": "정유소",
+      "FLOUR_MILL": "제분소",
+      "FURNITURE_FACTORY": "가구 공장",
+      "CAR_FACTORY": "자동차 공장",
+      "ELECTRONICS_FACTORY": "전자 공장",
+      "FOOD_FACTORY": "식품 공장"
+    },
+    "slotType": {
+      "NORMAL": "일반",
+      "ORE": "광맥",
+      "FERTILE": "비옥지",
+      "FOREST": "삼림",
+      "OIL": "유전지",
+      "WATER": "수원"
+    },
+    "shortageMode": {
+      "PAUSE": "대기",
+      "AUTO_BUY": "자동 구매",
+      "PARTIAL": "부분 생산"
+    },
+    "booster": {
+      "SAVING": "절약",
+      "RARE": "희귀",
+      "SPEED": "속도",
+      "PROFIT": "수익"
+    }
+  },
+  "harvest": {
+    "title": "수확",
+    "harvestAll": "전체 수확",
+    "harvesting": "수확 중…",
+    "nothingToHarvest": "아직 수확할 자재가 없어요. 잠시 후 다시 시도해 주세요.",
+    "done": {
+      "title": "공장 {count}곳에서 수확했습니다",
+      "xp": "경험치 +{amount}",
+      "levelUp": "레벨 {newLevel} 달성!"
+    }
+  },
+  "market": {
+    "meta": {
+      "title": "마켓 시세 · Idle Factory",
+      "description": "글로벌 자재 시세와 활성 매물"
+    },
+    "prices": {
+      "title": "글로벌 마켓 시세",
+      "description": "자재별 기준가 대비 현재 시세입니다.",
+      "material": "자재",
+      "basePrice": "기준가",
+      "currentPrice": "현재가",
+      "change": "등락",
+      "recentSales": "최근 거래량",
+      "empty": "시세 정보가 아직 없습니다.",
+      "emptyDescription": "게임이 시작되면 자재 시세가 여기에 표시됩니다.",
+      "tickNotice": "시세는 30분마다 갱신되며, 화면은 최대 5분까지 캐시됩니다."
+    }
+  },
+  "guildAdmin": {
+    "meta": {
+      "title": "서버 설정 · Idle Factory",
+      "description": "서버 언어와 가산세 설정"
+    },
+    "title": "서버 설정",
+    "backToStats": "서버 통계로",
+    "save": "저장",
+    "saving": "저장 중…",
+    "saved": "저장했습니다.",
+    "lang": {
+      "label": "서버 언어",
+      "description": "이 서버에서 봇이 사용할 기본 언어입니다. 개인 언어 설정이 우선합니다."
+    },
+    "tax": {
+      "label": "가산세",
+      "description": "거래에 추가로 붙는 세율입니다. 세수는 서버 금고로 적립됩니다."
+    },
+    "errors": {
+      "INVALID_GUILD_ID": "올바르지 않은 서버입니다.",
+      "UNAUTHENTICATED": "로그인이 필요합니다.",
+      "SCOPE_REQUIRED": "서버 목록 권한이 필요합니다.",
+      "NOT_MEMBER": "이 서버를 관리할 권한이 없습니다.",
+      "FORBIDDEN": "이 서버를 관리할 권한이 없습니다.",
+      "GUILD_NOT_REGISTERED": "봇이 없는 서버입니다.",
+      "RATE_LIMITED": "요청이 너무 잦습니다. 잠시 후 다시 시도해 주세요.",
+      "DISCORD_UNAVAILABLE": "Discord 연결에 실패했습니다.",
+      "INVALID_VALUE": "선택한 값이 올바르지 않습니다.",
+      "INTERNAL": "처리 중 문제가 생겼습니다."
+    },
+    "errorHints": {
+      "INVALID_GUILD_ID": "주소를 확인해 주세요.",
+      "UNAUTHENTICATED": "Discord 계정으로 로그인한 뒤 다시 시도해 주세요.",
+      "SCOPE_REQUIRED": "서버 관리 권한을 확인하려면 Discord 재로그인이 필요합니다. 로그아웃 후 다시 로그인해 주세요.",
+      "NOT_MEMBER": "서버 설정은 서버 관리 권한이 있는 사람만 변경할 수 있습니다.",
+      "FORBIDDEN": "서버 설정은 서버 관리 권한이 있는 사람만 변경할 수 있습니다.",
+      "GUILD_NOT_REGISTERED": "봇을 초대하면 서버가 자동으로 등록됩니다.",
+      "RATE_LIMITED": "잠시 기다린 뒤 새로고침해 주세요.",
+      "DISCORD_UNAVAILABLE": "Discord 상태를 확인한 뒤 다시 시도해 주세요.",
+      "INVALID_VALUE": "목록에 있는 값 중에서 선택해 주세요.",
+      "INTERNAL": "문제가 계속되면 관리자에게 문의해 주세요."
     }
   }
 }

@@ -23,6 +23,12 @@ export async function Header() {
         {/* 네비게이션 */}
         <nav className="flex items-center gap-1">
           <Link
+            href="/market"
+            className="text-mute hover:text-ink focus-visible:text-ink focus-visible:ring-ring focus-visible:ring-offset-canvas rounded px-3 py-1.5 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+          >
+            {t('market')}
+          </Link>
+          <Link
             href="/ranking"
             className="text-mute hover:text-ink focus-visible:text-ink focus-visible:ring-ring focus-visible:ring-offset-canvas rounded px-3 py-1.5 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
           >

@@ -2,13 +2,15 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
-import { Server } from 'lucide-react'
+import { Map, Server } from 'lucide-react'
 import { auth } from '@/lib/auth'
 import { resolveGameUserId } from '@/lib/game-user'
 import { getMyDashboard } from '@/lib/queries/my-dashboard'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { formatCompact, formatInt } from '@/lib/format'
 import { isLocale } from '@/i18n/config'
+import { HarvestAllButton } from '@/components/game/HarvestAllButton'
+import { QuestSection } from '@/components/dashboard/QuestSection'
 import { StatTile } from '@/components/dashboard/StatTile'
 import { WarehousePanel } from '@/components/dashboard/WarehousePanel'
 import { XpProgress } from '@/components/dashboard/XpProgress'
@@ -113,7 +115,22 @@ export default async function MyDashboardPage(): Promise<React.ReactElement> {
         />
       </div>
 
+      <div className="space-y-3">
+        <h2 className="font-display text-ink text-lg">{t('assets.title')}</h2>
+        <HarvestAllButton />
+        <Link
+          href="/dashboard/me/land"
+          className="border-hairline hover:bg-surface focus-visible:ring-ring flex items-center gap-3 rounded border px-4 py-3 text-sm transition-colors outline-none focus-visible:ring-2"
+        >
+          <Map aria-hidden="true" className="text-mute size-4 shrink-0" />
+          <span className="text-body min-w-0 flex-1">{t('assets.land')}</span>
+          <span className="text-ash text-xs">{t('assets.view')}</span>
+        </Link>
+      </div>
+
       <WarehousePanel summary={data.warehouse} />
+
+      <QuestSection gameUserId={data.id} />
 
       <div className="space-y-3">
         <h2 className="font-display text-ink text-lg">{t('guilds.title')}</h2>
