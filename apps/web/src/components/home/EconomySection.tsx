@@ -2,7 +2,25 @@ import { type LucideIcon, Circle, Coins, LineChart, TrendingDown, TrendingUp } f
 import { getTranslations } from 'next-intl/server'
 import { formatInt } from '@/lib/format'
 import { formatPpm } from '@/lib/market-math'
-import { getMarketFeed } from '@/lib/queries/market-feed'
+import { getMarketFeed, type MarketFeed } from '@/lib/queries/market-feed'
+
+/** 마켓 피드 조회 상한(ms). DB가 흔들릴 때 랜딩 함수가 오래 열려 있는 것을 막는다. */
+const FEED_TIMEOUT_MS = 2_500
+
+/**
+ * 마켓 피드를 시간 제한付き로 가져온다.
+ *
+ * 상한을 넘기면 `null`을 반환해 예시 수치(SAMPLE)로 떨어진다 —
+ * DB 타임아웃까지 기다리면 Vercel Function Duration 과금이 늘어난다.
+ */
+async function getFeedWithTimeout(): Promise<MarketFeed | null> {
+  const timeout = new Promise<null>((resolve) => {
+    const timer = setTimeout(() => resolve(null), FEED_TIMEOUT_MS)
+    // 서버리스 함수 종료를 막지 않는다.
+    if (typeof timer.unref === 'function') timer.unref()
+  })
+  return Promise.race([getMarketFeed(), timeout]).catch(() => null)
+}
 
 /** 경제 시스템 소개 섹션 */
 export async function EconomySection() {
@@ -10,7 +28,7 @@ export async function EconomySection() {
   const tCommon = await getTranslations('common')
 
   // 랜딩은 절대 500 을 내면 안 된다 — DB 가 흔들려도 예시 수치로 떨어진다.
-  const feed = await getMarketFeed().catch(() => null)
+  const feed = await getFeedWithTimeout()
 
   const metrics: MetricRow[] = feed
     ? [
@@ -162,6 +180,43 @@ const TAG_ICONS: Record<string, LucideIcon> = {
   MKT: LineChart,
   INV: Coins,
   SRV: TrendingUp,
+}
+
+/**
+ * 마켓 피드 스켈레톤.
+ *
+ * 랜딩 `page.tsx` 의 `<Suspense>` 폴백으로 쓰인다. 실데이터 패널과 같은
+ * 외곽 크기(2열 그리드·4행)를 유지해 스트리밍 교체 시 레이아웃 밀림(CLS)을 막는다.
+ */
+export function EconomySkeleton(): React.ReactElement {
+  return (
+    <section aria-hidden="true" className="border-hairline border-b">
+      <div className="mx-auto max-w-4xl px-4 py-20 sm:px-6 sm:py-28">
+        <div className="grid gap-16 lg:grid-cols-2 lg:items-start lg:gap-20">
+          <div>
+            <div className="bg-elevated h-3 w-40 animate-pulse rounded" />
+            <div className="bg-elevated mt-6 h-9 w-3/4 animate-pulse rounded" />
+            <div className="bg-elevated mt-4 h-4 w-full animate-pulse rounded" />
+            <div className="bg-elevated mt-2 h-4 w-5/6 animate-pulse rounded" />
+          </div>
+          <div className="border-hairline-strong bg-deep overflow-hidden rounded border">
+            <div className="border-hairline border-b px-4 py-3">
+              <div className="bg-elevated h-3 w-28 animate-pulse rounded" />
+            </div>
+            {[0, 1, 2, 3].map((row) => (
+              <div
+                key={row}
+                className="border-hairline flex items-center justify-between border-b px-4 py-5 last:border-b-0"
+              >
+                <div className="bg-elevated h-7 w-28 animate-pulse rounded" />
+                <div className="bg-elevated h-4 w-20 animate-pulse rounded" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
 }
 
 /** 표시 문구는 `home.economy.features.<key>` 메시지 키가 단일 진실 소스다. */

@@ -30,9 +30,11 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.0.0",
     "@prisma/client": "^7.0.0",
-    "ioredis": "^5.10.1"
+    "ioredis": "^5.10.1",
+    "pg": "8.23.0"
   },
   "devDependencies": {
+    "@types/pg": "8.23.1",
     "dotenv": "^16.4.5",
     "eslint-config-idle": "workspace:^",
     "prisma": "^7.0.0",
